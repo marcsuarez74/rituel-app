@@ -1102,6 +1102,24 @@ ${batch}
     ]);
   });
 
+  it('micro-batch : les pipes suivants restent dans le détail (aucune perte)', () => {
+    const { data } = parseWeeklyFile(md(`### Micro-batch
+- lundi: doubler le plat | cuire 10 min | vérifier la cuisson
+`));
+    expect(data.microBatch).toEqual([
+      { jour: 'lundi', quoi: 'doubler le plat', detail: 'cuire 10 min | vérifier la cuisson' },
+    ]);
+  });
+
+  it('réserve : les pipes suivants restent dans la conservation (aucune perte)', () => {
+    const { data } = parseWeeklyFile(md(`### Réserve
+- lundi: Plat | frigo | 2 j max
+`));
+    expect(data.reserve).toEqual([
+      { cle: 'lundi', plat: 'Plat', conservation: 'frigo | 2 j max' },
+    ]);
+  });
+
   it('Réserve : jours, mel, ordre du fichier', () => {
     const { data } = parseWeeklyFile(md(`### Rituel dimanche
 - 0-5 min · Four à 180° — egg muffins

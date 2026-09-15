@@ -354,8 +354,10 @@ function parseMicroBatch(lignes: LigneBatch[], warnings: string[]): MicroBatchJo
       warnings.push(`Ligne ignorée (batch/micro-batch) : « ${preview(line)} »`);
       continue;
     }
-    const [quoi, detail] = m[2].split(/\s*\|\s*/, 2);
-    out.push({ jour: m[1], quoi, ...(detail ? { detail } : {}) });
+    const pipe = m[2].indexOf('|');
+    const gauche = pipe === -1 ? m[2].trim() : m[2].slice(0, pipe).trim();
+    const droite = pipe === -1 ? undefined : m[2].slice(pipe + 1).trim();
+    out.push({ jour: m[1], quoi: gauche, ...(droite ? { detail: droite } : {}) });
   }
   return out;
 }
@@ -373,7 +375,9 @@ function parseReserve(lignes: LigneBatch[], warnings: string[]): ReserveLigne[] 
       continue;
     }
     const [, cle, reste] = m;
-    const [plat, conservation] = reste.split(/\s*\|\s*/, 2);
+    const pipe = reste.indexOf('|');
+    const plat = pipe === -1 ? reste.trim() : reste.slice(0, pipe).trim();
+    const conservation = pipe === -1 ? undefined : reste.slice(pipe + 1).trim();
     if (!JOURS_RESERVE.has(cle)) {
       warnings.push(`Ligne réserve ignorée : clé « ${cle} » inconnue (jour ou mel).`);
       continue;
