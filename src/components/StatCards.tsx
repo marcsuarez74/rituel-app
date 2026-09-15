@@ -33,7 +33,7 @@ export function StatCards({ profile }: { profile: UserProfile }) {
       <div className="stat-card stat-card-hero" role="listitem" aria-label="Poids">
         <div>
           <span className="stat-label">
-            <Icon name="scale" size={13} /> Poids
+            <Icon name="scale" size={14} /> Poids
           </span>
           <span className="stat-value">
             {actuel ? fmtKg(actuel.kg) : '—'}

@@ -1200,7 +1200,7 @@ describe('Icon', () => {
   const NAMES = [
     'cart', 'target', 'chev', 'chev-left', 'chev-right', 'pot', 'scale', 'moon',
     'box', 'snow', 'fish', 'leaf', 'wheat', 'bowl', 'meat', 'check', 'clock',
-    'flame', 'drop', 'plus', 'play',
+    'flame', 'drop', 'plus', 'play', 'pasta',
   ] as const;
 
   it('rend un svg 24×24 stroke currentColor à la taille demandée', () => {
@@ -1218,12 +1218,23 @@ describe('Icon', () => {
     expect(document.querySelector('svg')).toHaveAttribute('stroke-width', '2.5');
   });
 
-  it('couvre les 21 noms du design system sans crash', () => {
+  it('couvre les 22 noms du design system sans crash', () => {
     for (const name of NAMES) {
       const { unmount } = render(<Icon name={name} />);
       expect(document.querySelector('svg')).not.toBeNull();
       unmount();
     }
+  });
+
+  it('trait adaptatif : 2,5 sous 16 px, 2 au-delà — la prop explicite gagne', () => {
+    const { unmount } = render(<Icon name="cart" size={14} />);
+    expect(document.querySelector('svg')).toHaveAttribute('stroke-width', '2.5');
+    unmount();
+    const { unmount: u2 } = render(<Icon name="cart" size={16} />);
+    expect(document.querySelector('svg')).toHaveAttribute('stroke-width', '2');
+    u2();
+    render(<Icon name="check" size={38} strokeWidth={2.5} />);
+    expect(document.querySelector('svg')).toHaveAttribute('stroke-width', '2.5');
   });
 });
 

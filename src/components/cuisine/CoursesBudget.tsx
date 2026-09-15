@@ -41,7 +41,7 @@ export function CoursesBudget({
         <b>Budget courses</b>
         {profile.magasin && (
           <span className="mag">
-            <Icon name="cart" size={11} />
+            <Icon name="cart" size={14} />
             {profile.magasin}
           </span>
         )}
@@ -78,7 +78,7 @@ export function CoursesBudget({
       )}
       <div className="bud-actions">
         <button type="button" className="bsoft" onClick={() => onOuvrirDepenses(true)}>
-          <Icon name="plus" size={13} /> Total payé
+          <Icon name="plus" size={14} /> Total payé
         </button>
         <button type="button" className="blink" onClick={() => onOuvrirDepenses(false)}>
           Voir mes dépenses réelles
@@ -219,7 +219,7 @@ export function DepensesPanel({
             Annuler
           </button>
           <button type="button" className="bgo" onClick={enregistrer}>
-            <Icon name="check" size={13} /> Enregistrer
+            <Icon name="check" size={14} /> Enregistrer
           </button>
         </div>
         {error && (
