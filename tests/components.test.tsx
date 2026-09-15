@@ -1341,12 +1341,12 @@ describe('Icon', () => {
   });
 });
 
-describe('CoursesBudget — carte budget', () => {
+describe('CoursesBudget — carte budget (citron)', () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it('affiche estimé / payé / budget max alignés et le pourcentage', () => {
+  it('affiche le payé en héros, la phrase secondaire (estimé + max) et le pourcentage', () => {
     seedDepenses([{ date: '2026-09-09', magasin: 'Lidl', total: 38.2 }]);
     render(
       <CoursesBudget
@@ -1357,9 +1357,10 @@ describe('CoursesBudget — carte budget', () => {
     );
 
     expect(screen.getByText('Budget courses')).toBeInTheDocument();
-    expect(screen.getByText('≈ 35 €')).toBeInTheDocument();
+    expect(screen.getByText('Payé cette semaine')).toBeInTheDocument();
     expect(screen.getByText('38,20 €')).toBeInTheDocument();
-    expect(screen.getByText('40,00 €')).toBeInTheDocument();
+    expect(screen.getByText(/≈ 35 €/)).toBeInTheDocument();
+    expect(screen.getByText(/40,00 €/)).toBeInTheDocument();
     expect(screen.getByText('96 % du budget')).toBeInTheDocument();
     expect(screen.getByText('Lidl')).toBeInTheDocument(); // pill magasin
   });
@@ -1378,6 +1379,7 @@ describe('CoursesBudget — carte budget', () => {
     expect(screen.getByText('dépassé de 10 %')).toBeInTheDocument();
     expect(document.querySelector('.bud-bar.alerte')).not.toBeNull();
     expect(document.querySelector('.bud-pct.alerte')).not.toBeNull();
+    expect(document.querySelector('.bud-hero.alerte')).not.toBeNull();
   });
 
   it('somme uniquement les dépenses de la semaine affichée', () => {
@@ -1398,29 +1400,28 @@ describe('CoursesBudget — carte budget', () => {
     expect(screen.queryByText('48,20 €')).not.toBeInTheDocument();
   });
 
-  it('sans budget max : grille à 2 colonnes, pas de barre ni de pourcentage', () => {
+  it('sans budget max : phrase sans max, pas de barre ni de pourcentage', () => {
     seedDepenses([{ date: '2026-09-09', magasin: 'Lidl', total: 38.2 }]);
     render(
       <CoursesBudget data={dataAvecBudget('≈ 35 €')} profile={profileV2('marc')} onOuvrirDepenses={() => {}} />,
     );
 
-    expect(document.querySelector('.bud-grid.cols2')).not.toBeNull();
-    expect(screen.queryByText('Budget max')).not.toBeInTheDocument();
+    expect(screen.getByText(/≈ 35 €/)).toBeInTheDocument();
+    expect(screen.queryByText(/max/)).not.toBeInTheDocument();
     expect(document.querySelector('.bud-bar')).toBeNull();
   });
 
-  it('estimé absent du .md : la cellule est masquée, les autres restent', () => {
+  it('estimé absent du .md : la phrase ne porte que le max', () => {
     seedDepenses([{ date: '2026-09-09', magasin: 'Lidl', total: 38.2 }]);
     render(
       <CoursesBudget data={dataAvecBudget()} profile={profileV2('marc', { budgetMax: 40 })} onOuvrirDepenses={() => {}} />,
     );
 
-    expect(screen.queryByText('Estimé menu')).not.toBeInTheDocument();
-    expect(screen.getByText('Payé cette semaine')).toBeInTheDocument();
-    expect(screen.getByText('Budget max')).toBeInTheDocument();
+    expect(screen.getByText(/max/)).toBeInTheDocument();
+    expect(screen.queryByText(/estimés/)).not.toBeInTheDocument();
   });
 
-  it('rien de saisi : « Payé » vaut —', () => {
+  it('rien de saisi : « Payé » vaut —, pas de barre', () => {
     render(
       <CoursesBudget data={dataAvecBudget('≈ 35 €')} profile={profileV2('marc', { budgetMax: 40 })} onOuvrirDepenses={() => {}} />,
     );
@@ -1437,7 +1438,7 @@ describe('CoursesBudget — carte budget', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('le bouton « Total payé » ouvre le panneau dépenses', async () => {
+  it('deux actions en pills : « Total payé » et « Voir mes dépenses réelles »', async () => {
     const onOuvrir = vi.fn();
     const user = userEvent.setup();
     render(
@@ -1448,9 +1449,13 @@ describe('CoursesBudget — carte budget', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: /Total payé/ }));
+    const total = screen.getByRole('button', { name: /Total payé/ });
+    const voir = screen.getByRole('button', { name: /Voir mes dépenses réelles/ });
+    expect(total).toHaveClass('bsoft');
+    expect(voir).toHaveClass('bsoft');
+    await user.click(total);
     expect(onOuvrir).toHaveBeenCalledWith(true);
-    await user.click(screen.getByRole('button', { name: /Voir mes dépenses réelles/ }));
+    await user.click(voir);
     expect(onOuvrir).toHaveBeenCalledWith(false);
   });
 });

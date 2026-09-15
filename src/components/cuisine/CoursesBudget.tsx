@@ -46,26 +46,25 @@ export function CoursesBudget({
           </span>
         )}
       </div>
-      <div className={`bud-grid${max === undefined ? ' cols2' : ''}`}>
-        {data.budget && (
-          <div className="bud-cell">
-            <span className="l">Estimé menu</span>
-            <span className="v">{data.budget}</span>
-          </div>
-        )}
-        <div className="bud-cell">
-          <span className="l">Payé cette semaine</span>
-          <span className={`v${depasse ? ' alerte' : ''}`}>
-            {enSemaine ? formatEuro(paye) : '—'}
-          </span>
-        </div>
-        {max !== undefined && (
-          <div className="bud-cell">
-            <span className="l">Budget max</span>
-            <span className="v">{formatEuro(max)}</span>
-          </div>
-        )}
-      </div>
+      <span className="bud-hero-label">Payé cette semaine</span>
+      <span className={`bud-hero${depasse ? ' alerte' : ''}`}>
+        {enSemaine ? formatEuro(paye) : '—'}
+      </span>
+      {(data.budget || max !== undefined) && (
+        <p className="bud-sub">
+          {data.budget && (
+            <>
+              sur <b>{data.budget}</b> estimés
+            </>
+          )}
+          {data.budget && max !== undefined && ' · '}
+          {max !== undefined && (
+            <>
+              max <b>{formatEuro(max)}</b>
+            </>
+          )}
+        </p>
+      )}
       {maxConnu && (
         <div className="bud-foot">
           <div className={`bud-bar${depasse ? ' alerte' : ''}`}>
@@ -80,7 +79,7 @@ export function CoursesBudget({
         <button type="button" className="bsoft" onClick={() => onOuvrirDepenses(true)}>
           <Icon name="plus" size={14} /> Total payé
         </button>
-        <button type="button" className="blink" onClick={() => onOuvrirDepenses(false)}>
+        <button type="button" className="bsoft bud-lie" onClick={() => onOuvrirDepenses(false)}>
           Voir mes dépenses réelles
         </button>
       </div>

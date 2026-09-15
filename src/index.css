@@ -2126,12 +2126,12 @@ progress {
   font-weight: 700;
 }
 
-/* Carte « Budget courses » (onglet Courses) */
+/* Carte « Budget courses » (onglet Courses) — citron */
 .bud {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--accent-2) 16%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent-2) 55%, var(--border));
   border-radius: var(--radius);
-  padding: 14px 16px 15px;
+  padding: 16px 18px 18px;
 }
 .bud-head {
   display: flex;
@@ -2140,11 +2140,9 @@ progress {
   gap: 8px;
 }
 .bud-head b {
-  font-size: 11px;
+  font-size: 13.5px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
+  color: var(--text);
 }
 .mag {
   display: inline-flex;
@@ -2154,41 +2152,36 @@ progress {
   font-weight: 700;
   border-radius: 999px;
   padding: 3px 9px;
-  background: color-mix(in srgb, var(--accent-2) 60%, var(--surface));
+  background: var(--surface);
   color: var(--text);
 }
-.bud-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 14px;
-  margin-top: 13px;
-}
-.bud-grid.cols2 {
-  grid-template-columns: 1fr 1fr;
-}
-.bud-cell {
-  min-width: 0;
-}
-.bud-cell .l {
+.bud-hero-label {
   display: block;
-  font-size: 9.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--muted) 70%, var(--text));
+  margin-top: 14px;
 }
-.bud-cell .v {
+.bud-hero {
   display: block;
-  font-size: 16.5px;
+  font-size: 27px;
   font-weight: 700;
-  margin-top: 3px;
+  margin-top: 2px;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
-.bud-cell .v.alerte {
+.bud-hero.alerte {
   color: var(--danger);
+}
+.bud-sub {
+  font-size: 12px;
+  color: color-mix(in srgb, var(--muted) 70%, var(--text));
+  margin: 3px 0 0;
+}
+.bud-sub b {
+  color: var(--text);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 .bud-foot {
   display: flex;
@@ -2198,7 +2191,7 @@ progress {
 }
 .bud-bar {
   flex: 1;
-  height: 6px;
+  height: 8px;
   border-radius: 99px;
   background: var(--surface-2);
   overflow: hidden;
@@ -2225,13 +2218,16 @@ progress {
 .bud-actions {
   display: flex;
   align-items: center;
-  gap: 14px;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-top: 13px;
   padding-top: 12px;
-  border-top: 1px dashed var(--border);
+  border-top: 1px dashed color-mix(in srgb, var(--accent-2) 55%, var(--border));
 }
-.bud-actions .blink {
-  margin-left: auto;
+.bud-lie {
+  flex: 1;
+  min-width: 0;
+  justify-content: center;
 }
 
 /* Boutons sobres (écrans maison & courses) — le gros basilic reste réservé
@@ -2240,7 +2236,7 @@ progress {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 40px;
+  min-height: 48px;
   padding: 0 14px;
   border: 1.5px solid color-mix(in srgb, var(--accent) 35%, var(--border));
   background: var(--surface);
@@ -2256,6 +2252,7 @@ progress {
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  min-height: 48px;
   border: 0;
   background: none;
   padding: 0;
