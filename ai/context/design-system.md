@@ -37,7 +37,7 @@ Source de vérité : `src/index.css` (section `:root`). Toute valeur ici doit y 
 | `--radius` | `18px` | cartes |
 | `--shadow` | `0 4px 16px rgb(38 49 43 / 0.08)` | élévation |
 
-Rayons dérivés : boutons et cartes compactes `12px`, pills `999px` (`.menu-pill`, `.mtag`, `.portion-tag`, `.mm`, `.lancer`, `.btn-ghost`).
+Rayons dérivés : boutons et cartes compactes `12px`, pills `999px` (`.menu-pill`, `.mtag`, `.portion-tag`, `.mm`, `.lancer-btn`, `.btn-ghost`).
 
 ---
 
@@ -85,7 +85,7 @@ Rayons dérivés : boutons et cartes compactes `12px`, pills `999px` (`.menu-pil
 | `.batch-banner` | rappel rituel (Courses) / « Ce soir » (Batch) | médaillon + texte centrés verticalement ; fond `--accent` 9% (`color-mix`), icône ronde `.bb-ic`, texte 13px ; version Courses : budget « X estimés. » en fin de phrase |
 | `.course-group-header` + `img` | en-tête de groupe de courses | miniature 72×54 (`object-fit: cover`, radius 10px) via `imagePourRayon` (`src/lib/rayons.ts`), `loading="lazy"`, alt = libellé du rayon |
 | `.rayon-cnt` | compteur d'items d'un rayon | muted 13px/700, collé à droite (`margin-left: auto`) |
-| `.item-rituel` / `.item-note` | marqueurs d'item course | `· rituel` basilic (icône pot 12px, items destinés au batch) ; note fraîcheur 12px mix muted |
+| `.item-rituel` / `.item-note` | marqueurs d'item course | `· rituel` basilic (icône pot 14px, items destinés au batch) ; note fraîcheur 12px mix muted |
 | `.mm` | Mode magasin (Courses) | pill 48px bordure `--border`, `aria-pressed` ; actif = plein `--accent` texte blanc ; masque les items cochés, bouton « Tout revoir » |
 | `.bud` (+ `.bud-head` `.mag` `.bud-hero-label` `.bud-hero` `.bud-sub` `.bud-foot` `.bud-bar` `.bud-pct` `.bud-actions` `.bud-lie`) | carte « Budget courses » au-dessus de la liste (onglet Courses) | carte surbrillance citron (fond `--accent-2` 16 % + bordure 55 %) — « Payé cette semaine » en chiffre héros 27px, phrase secondaire estimé/max (`.bud-sub`), pill magasin ; barre + pourcentage — dépassement = `.alerte` (`--danger`) ; actions = deux pills `.bsoft` 48 px (« Total payé » + « Voir mes dépenses réelles ») ; carte absente si aucune donnée budget |
 | `.bsoft` / `.blink` | boutons sobres des écrans maison & courses (le gros basilic reste réservé au CTA onboarding et aux « Enregistrer » du Profil) | `.bsoft` = pill bordure accent 35 %, texte basilic, 48px ; `.blink` = lien basilic sans bordure |
