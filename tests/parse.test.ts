@@ -1012,3 +1012,128 @@ describe('semaine-exemple.md — la sample réelle (v2, semaine courante)', () =
     expect(ids).toContain('r2-pates-bolognaise-salade');
   });
 });
+
+describe('Batch v3 — production, termine, micro détail, Réserve', () => {
+  const md = (batch: string): string => `---
+semaine: 2026-S38
+menu: B
+du: 2026-09-14
+au: 2026-09-20
+---
+
+## Courses
+### Frais
+- Œufs
+
+## Menu
+### Lundi
+- dejeuner-marc: Boîte
+
+## Batch
+${batch}
+
+## Marc
+### Cibles
+- 2 450 kcal
+### Séances
+- [ ] Lundi — Muscu
+### Rappels
+- Pesée lun
+## Melanie
+### Cibles
+- 1 450 kcal
+### Séances
+- [ ] Lundi — Danse
+### Rappels
+- Jeûne
+`;
+
+  it('parse production et termine (hors étapes, non cochables)', () => {
+    const { data } = parseWeeklyFile(md(`### Rituel dimanche
+- production: 2 boîtes frigo · 6 œufs durs — le riz : 2 jours max au frigo
+- 0-5 min · Four à 180° — egg muffins
+- termine: 4 boîtes prêtes — la semaine est servie.
+`));
+    expect(data.rituel).toHaveLength(1);
+    expect(data.rituelProduction).toBe('2 boîtes frigo · 6 œufs durs — le riz : 2 jours max au frigo');
+    expect(data.rituelTermine).toBe('4 boîtes prêtes — la semaine est servie.');
+  });
+
+  it('sans production/termine : champs absents', () => {
+    const { data } = parseWeeklyFile(md(`### Rituel dimanche
+- 0-5 min · Four à 180° — egg muffins
+`));
+    expect(data.rituelProduction).toBeUndefined();
+    expect(data.rituelTermine).toBeUndefined();
+  });
+
+  it('production/termine vides → warning + ignorés', () => {
+    const { data, warnings } = parseWeeklyFile(md(`### Rituel dimanche
+- production:
+- termine:
+- 0-5 min · Four à 180° — egg muffins
+`));
+    expect(data.rituelProduction).toBeUndefined();
+    expect(data.rituelTermine).toBeUndefined();
+    expect(warnings.some((w) => w.includes('production'))).toBe(true);
+    expect(warnings.some((w) => w.includes('termine'))).toBe(true);
+  });
+
+  it('production dupliquée : la première gagne + warning', () => {
+    const { data, warnings } = parseWeeklyFile(md(`### Rituel dimanche
+- production: première
+- production: seconde
+- 0-5 min · Four à 180° — egg muffins
+`));
+    expect(data.rituelProduction).toBe('première');
+    expect(warnings.some((w) => w.includes('dupliquée'))).toBe(true);
+  });
+
+  it('micro-batch : suffixe | détail, | seul = absent', () => {
+    const { data } = parseWeeklyFile(md(`### Micro-batch
+- lundi: doubler le plat | 10 min · la boîte de mardi passe au frigo
+- mardi: simple sans détail
+- samedi: œufs durs |
+`));
+    expect(data.microBatch).toEqual([
+      { jour: 'lundi', quoi: 'doubler le plat', detail: '10 min · la boîte de mardi passe au frigo' },
+      { jour: 'mardi', quoi: 'simple sans détail' },
+      { jour: 'samedi', quoi: 'œufs durs' },
+    ]);
+  });
+
+  it('Réserve : jours, mel, ordre du fichier', () => {
+    const { data } = parseWeeklyFile(md(`### Rituel dimanche
+- 0-5 min · Four à 180° — egg muffins
+
+### Réserve
+- lundi: Poulet-riz | frigo, 2 j max · réchauffage 2 min bien chaud
+- jeudi: Poulet-riz | congelé dimanche · sortie mercredi soir au frigo
+- mel: Boîte keto saumon-asperges | à part, sans féculent · poisson frais
+`));
+    expect(data.reserve).toEqual([
+      { cle: 'lundi', plat: 'Poulet-riz', conservation: 'frigo, 2 j max · réchauffage 2 min bien chaud' },
+      { cle: 'jeudi', plat: 'Poulet-riz', conservation: 'congelé dimanche · sortie mercredi soir au frigo' },
+      { cle: 'mel', plat: 'Boîte keto saumon-asperges', conservation: 'à part, sans féculent · poisson frais' },
+    ]);
+  });
+
+  it('Réserve mal formée → warnings + lignes ignorées', () => {
+    const { data, warnings } = parseWeeklyFile(md(`### Réserve
+- noclu: Plat | conservation
+- lundi: | conservation seule
+- mardi: Plat sans conservation
+- mercredi: Plat |
+`));
+    expect(data.reserve).toBeUndefined();
+    expect(warnings.filter((w) => w.includes('réserve')).length).toBe(4);
+  });
+
+  it('production/termine hors sous-section Rituel dimanche → warning, pas une tâche batch', () => {
+    const { data, warnings } = parseWeeklyFile(md(`- production: égarée
+- [ ] Egg muffins ×10
+`));
+    expect(data.batch).toHaveLength(1);
+    expect(warnings.some((w) => w.includes('production/termine'))).toBe(true);
+  });
+});
