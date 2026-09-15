@@ -238,16 +238,24 @@ PdT : 1 kg vapeur 20 min + 15 cl lait chaud + 30 g beurre. Chou-fleur (Mél) : v
 
 ## Batch
 ### Rituel dimanche
+- production: 2 boîtes frigo · 1 boîte congélateur · 1 sauce · 6 œufs durs — le riz ne tient pas la semaine : 2 jours au frigo max, le reste congelé.
 - 0-5 min · Four à 180° — egg muffins ×10 lancés, on fait le reste
 - 5-30 min · Cuissons en double — dîner du soir ×2 + féculent ×2 → boîte lundi (+ cuisses de poulet du lundi)
 - 30-35 min · Œufs durs ×6-8 — boxes de la semaine pour Mél
 - 35-50 min · Légumes + vinaigrette — laver, couper, ranger
 - 50-60 min · Montage des boxes — boîte lundi Marc + 1 box keto Mél
+- termine: 4 boîtes prêtes — la semaine est servie. Prochain rituel : dimanche prochain, 13h45.
 
 ### Micro-batch
-- lundi: doubler le plat (boîtes mar/mer)
-- mardi: doubler la sauce + courgettes en julienne (5 min le soir)
-- samedi: œufs durs ×6-8
+- lundi: doubler le plat (boîtes mar/mer) | 10 min · la boîte de mardi passe au frigo
+- mardi: doubler la sauce + courgettes en julienne (5 min le soir) | base sauce pour la semaine
+- samedi: œufs durs ×6-8 | collations prêtes
+
+### Réserve
+- lundi: Boîte dinde-quinoa | frigo, 2 j max · réchauffage bien chaud à cœur
+- mardi: Salade dinde-quinoa | froide · vinaigrette au moment
+- jeudi: Boîte dinde-quinoa | congelée dimanche · sortie mercredi soir au frigo
+- mel: Box keto (œufs durs + crudités) | à monter au rituel · sans féculent
 
 - [ ] Egg muffins ×10
 - [ ] 6-8 œufs durs (boxes keto de Mél)

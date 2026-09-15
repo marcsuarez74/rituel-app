@@ -1011,6 +1011,15 @@ describe('semaine-exemple.md — la sample réelle (v2, semaine courante)', () =
     expect(ids).toContain('r1-cuisses-de-poulet-roties-legumes-riz');
     expect(ids).toContain('r2-pates-bolognaise-salade');
   });
+
+  it('porte les nouveautés batch v3 : production, termine, détails micro, Réserve (0 warning)', () => {
+    const { data, warnings } = parseWeeklyFile(exemple);
+    expect(data.rituelProduction).toBeTruthy();
+    expect(data.rituelTermine).toBeTruthy();
+    expect(data.microBatch?.some((m) => m.detail)).toBe(true);
+    expect(data.reserve?.length).toBeGreaterThanOrEqual(4);
+    expect(warnings).toEqual([]);
+  });
 });
 
 describe('Batch v3 — production, termine, micro détail, Réserve', () => {

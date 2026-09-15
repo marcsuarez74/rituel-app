@@ -82,13 +82,13 @@ Rayons dérivés : boutons et cartes compactes `12px`, pills `999px` (`.menu-pil
 | `.tabbar-segmented` / `.seg-tab` / `.seg-tab-active` | **nav segmented sous la bannière** (2 onglets : Cuisine / Mon suivi) | grid 2 colonnes égales, gap 4px, padding 4px ; fond `--surface-2` + bordure, pill `999px` ; **pilule glissante** = `::before` (fond `--surface` + ombre), `transform: translateX(calc(100% + 4px))` quand `data-active='suivi'`, transition `0.32s cubic-bezier(0.34, 1.56, 0.64, 1)` (rebond élastique) ; **actif** = texte encre + `aria-current="page"` ; **inactif** = muted ; ≥ 48 px |
 | `.cuisine-tabs .tab` | sous-onglets Cuisine (Courses / Menu / Batch) | filets (`border-bottom`), actif = encre + barre basilic 2,5px |
 | `.week-title-row` + `.menu-pill` | bannière semaine : titre + pill du menu courant | row flex wrap (gap 10px) ; pill = fond `--accent`, texte blanc 12px/700, radius 999px, glow `color-mix(--accent 35%)` — visible au-dessus des 3 sous-onglets |
-| `.batch-banner` | rappel rituel (Courses) / « Ce soir » (Batch) | fond `--accent` 9% (`color-mix`), icône ronde `.bb-ic`, texte 13px ; version Courses : budget « X estimés. » en fin de phrase |
+| `.batch-banner` | rappel rituel (Courses) / « Ce soir » (Batch) | médaillon + texte centrés verticalement ; fond `--accent` 9% (`color-mix`), icône ronde `.bb-ic`, texte 13px ; version Courses : budget « X estimés. » en fin de phrase |
 | `.course-group-header` + `img` | en-tête de groupe de courses | miniature 72×54 (`object-fit: cover`, radius 10px) via `imagePourRayon` (`src/lib/rayons.ts`), `loading="lazy"`, alt = libellé du rayon |
 | `.rayon-cnt` | compteur d'items d'un rayon | muted 13px/700, collé à droite (`margin-left: auto`) |
 | `.item-rituel` / `.item-note` | marqueurs d'item course | `· rituel` basilic (icône pot 12px, items destinés au batch) ; note fraîcheur 12px mix muted |
 | `.mm` | Mode magasin (Courses) | pill 48px bordure `--border`, `aria-pressed` ; actif = plein `--accent` texte blanc ; masque les items cochés, bouton « Tout revoir » |
-| `.bud` (+ `.bud-head` `.mag` `.bud-grid` `.bud-cell` `.bud-foot` `.bud-bar` `.bud-pct` `.bud-actions`) | carte « Budget courses » au-dessus de la liste (onglet Courses) | surface + radius tokens ; pill magasin citron 60 % (texte encre) ; grid 3 cellules (estimé menu / payé cette semaine / budget max, `.cols2` si pas de max) ; barre + pourcentage — dépassement = `.alerte` (`--danger`) ; actions = `.bsoft` « Total payé » + `.blink` « Voir mes dépenses réelles » ; carte absente si aucune donnée budget |
-| `.bsoft` / `.blink` | boutons sobres des écrans maison & courses (le gros basilic reste réservé au CTA onboarding et aux « Enregistrer » du Profil) | `.bsoft` = pill bordure accent 35 %, texte basilic, 40px ; `.blink` = lien basilic sans bordure |
+| `.bud` (+ `.bud-head` `.mag` `.bud-hero-label` `.bud-hero` `.bud-sub` `.bud-foot` `.bud-bar` `.bud-pct` `.bud-actions` `.bud-lie`) | carte « Budget courses » au-dessus de la liste (onglet Courses) | carte surbrillance citron (fond `--accent-2` 16 % + bordure 55 %) — « Payé cette semaine » en chiffre héros 27px, phrase secondaire estimé/max (`.bud-sub`), pill magasin ; barre + pourcentage — dépassement = `.alerte` (`--danger`) ; actions = deux pills `.bsoft` 48 px (« Total payé » + « Voir mes dépenses réelles ») ; carte absente si aucune donnée budget |
+| `.bsoft` / `.blink` | boutons sobres des écrans maison & courses (le gros basilic reste réservé au CTA onboarding et aux « Enregistrer » du Profil) | `.bsoft` = pill bordure accent 35 %, texte basilic, 48px ; `.blink` = lien basilic sans bordure |
 | `.dep-panel` (+ `.dep-head` `.dep-back` `.dep-form` `.dep-sec-label` `.dep-sum` `.dep-list` `.dep-hint`) | panneau « Mes dépenses réelles » (écran poussé de l'onglet Courses) | retour muted en tête, h1 20px ; form `.dep-form` (frow 3 colonnes date/magasin/total, total tabulaire aligné droite — frow passe en 1 colonne empilée < 360px), actions « Annuler » + `.bgo` basilic 38px ; résumé « Par magasin » = grid 2 cartes (total + moyenne tabulaires) ; historique = lignes date/magasin/total + suppression ✕ 32px |
 | `.keto-box` / `.keto-title` | encadré keto de Mélanie (rayon `### Keto`) | fond `--accent-2` 12% + bordure 45% (`color-mix`), titre encre 15px/700 (icône leaf basilic) — affiché en dernier |
 | `.profile-icon-btn` | accès écran Profil | 48px, surface-2, icône SVG person `currentColor` |
@@ -108,13 +108,22 @@ Rayons dérivés : boutons et cartes compactes `12px`, pills `999px` (`.menu-pil
 | `.recette-detail` + `.recette-*` | détail déplié dans la carte (séparateur pointillé) | pour, `.recette-bchip` cliquable 48px (état `.on` = bordure accent), `.recette-etapes`, `.recette-mel` / `.recette-bat` pastilles via `color-mix` + `::before` |
 | `.progress` + `progress` | compteurs de progression | texte bold mix muted, barre native `accent-color: --accent` |
 | `.batch-section` / `.batch-section-head` | cartes du Batch (rituel, micro-batch, guidé) | surface + bordure + radius tokens, titre 17px |
-| `.lancer` / `.batch-guide` | mode guidé « Lancer le batch » | pill basilic 48px texte blanc ; guide = étape num basilic, titre 19px, progress, CTA `.btn` + retour `.btn-ghost`, état final `.guide-done-ic` |
+| `.lancer-btn` / `.batch-guide` | mode guidé « Lancer le batch » | bouton `.btn` pleine largeur sous la timeline ; guide = étape num basilic, titre 19px, progress, CTA `.btn` + retour `.btn-ghost`, état final `.guide-done-ic` |
 | `.rituel-timeline` + `.rituel-etape` | timeline cochable du rituel dimanche | rail vertical 2px `--border` + dots 10px `--accent` (done = `--border`), lignes ≥ 48px, créneau muted à droite, done = barré + muted |
+| `.rituel-badge` / `.rituel-production` | badge « ≈ durée » + ligne production du rituel | badge = pointillé basilic sur `--surface-2` (10,5px/700, horloge 14px — durée calculée par l'app depuis les créneaux) ; production = note muted 11px sous le titre |
 | `.micro-batch` + `.micro-jour` | carrousel micro-batch | flex `overflow-x: auto` (scrollbar masquée), cartes fixes 150px surface radius 14px, nom du jour en pill citron |
+| `.micro-jour-detail` | détail sous le micro-batch (suffixe ` | détail` du .md) | muted 11px sous le quoi |
+| `.reserve-*` (`.reserve-list` `.reserve-ligne` `.reserve-ic` `.reserve-corps` `.reserve-nom` `.reserve-cons`) | « La réserve — au frigo cette semaine » (Batch) | tuile icône 34 px fond `--surface-2` + icône 16 px basilic (choisie selon le plat), nom 12,5px/600 + conservation muted 11px, filets `--border` entre lignes |
 | `.error` | message d'erreur | `--danger`, 600, `role="alert"` |
 | `.warn-line` | avis lignes ignorées | ambre `#fbbf24` |
 | `.muted` | texte secondaire / états vides | `--muted` |
 | `.sr-only` | accessible visuellement | pattern standard clip |
+
+---
+
+## Icônes
+
+Jeu SVG maison via `src/components/Icon.tsx` (`<Icon name size strokeWidth?>`) — trait 2 px **sauf sous 16 px : 2,5** (calculé par le composant, les petits tracés tombaient sous ~1 px réel), `currentColor`, viewBox 24, `aria-hidden`. **Plancher 14 px** : aucune icône inline sous 14. Émojis réservés à l'onboarding et aux salutations. Le jeu inclut `pasta` (réserve du batch).
 
 ---
 

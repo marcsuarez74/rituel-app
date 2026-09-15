@@ -35,8 +35,12 @@ Suis EXACTEMENT le process et les règles dures ci-dessous, puis l'auto-contrôl
    Mélanie). Ajoute `→ slug` quand le plat correspond à une recette du fichier.
    Intègre les événements fournis en paramètres (ils PRIMENT sur le carnet).
 4. **Batch** : le rituel générique du carnet (5-6 étapes horodatées, détail
-   ajusté au dîner du dimanche du menu) + le micro-batch du menu (du tableau
-   micro-batches) + 3-5 tâches `- [ ]` du gros batch.
+   ajusté au dîner du dimanche du menu) + une ligne `- production:` (ce que le
+   batch produit + conservation) + une ligne `- termine:` (message de fin du
+   mode guidé) + le micro-batch du menu (du tableau micro-batches, avec le
+   suffixe ` | détail` : durée/conservation) + la sous-section `### Réserve`
+   (une ligne par plat stocké : `- <jour|mel>: <plat> | <conservation>`) +
+   3-5 tâches `- [ ]` du gros batch.
 5. **Recettes** : uniquement celles du menu, titres EXACTS du carnet,
    enrichies : `temps`, `kcal`, `proteines`, `glucides`, `lipides` (estimations
    réalistes par personne), `score` (0-10), `image` (URL Unsplash https),
@@ -67,6 +71,8 @@ Suis EXACTEMENT le process et les règles dures ci-dessous, puis l'auto-contrôl
 - [ ] Recettes partagées entre menus : valeurs identiques
 - [ ] Aucune ligne hors format (pas de gras, pas de tables, pas de sous-listes)
 - [ ] Les blocs Marc/Melanie sont identiques d'une semaine à l'autre
+- [ ] `### Réserve` : clés = jours ou « mel », chaque ligne a plat ET conservation
+- [ ] production/termine/détails/réserve cohérents avec le rituel et le menu
 
 ## Sortie attendue
 
