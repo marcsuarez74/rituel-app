@@ -648,21 +648,21 @@ describe('BatchView v2 — rituel et micro-batch', () => {
     { jour: 'mardi', quoi: 'doubler la sauce' },
   ];
 
-  it('affiche le rituel en timeline avec créneaux, détails et compteur', () => {
+  it('affiche le rituel en timeline avec créneaux, détails et badge de durée', () => {
     render(<BatchView rituel={RITUEL} microBatch={MICRO} semaine="2026-S39" />);
-    expect(screen.getByText(/Rituel du dimanche/)).toBeInTheDocument();
+    expect(screen.getByText('Rituel dimanche')).toBeInTheDocument();
+    expect(screen.getByText('≈ 1 h')).toBeInTheDocument();
     expect(screen.getByText('0-5 min')).toBeInTheDocument();
     expect(screen.getByText('Four à 180°')).toBeInTheDocument();
     expect(screen.getByText('egg muffins ×10 lancés, on fait le reste')).toBeInTheDocument();
     expect(screen.getAllByRole('checkbox')).toHaveLength(5);
-    expect(screen.getByText('0/5')).toBeInTheDocument();
   });
 
   it('affiche le micro-batch en carrousel premium : badge jour + points de pagination', () => {
     const { container } = render(
       <BatchView rituel={RITUEL} microBatch={MICRO} semaine="2026-S39" />,
     );
-    expect(screen.getByText(/Micro-batch de la semaine/)).toBeInTheDocument();
+    expect(screen.getByText('Micro-batch en semaine')).toBeInTheDocument();
     const badge = screen.getByText('Lundi');
     expect(badge).toHaveClass('micro-jour-nom');
     expect(screen.getByText('doubler la sauce')).toBeInTheDocument();
@@ -679,7 +679,6 @@ describe('BatchView v2 — rituel et micro-batch', () => {
     render(<BatchView rituel={RITUEL} microBatch={MICRO} semaine="2026-S39" />);
     await user.click(screen.getByRole('checkbox', { name: 'Four à 180° (0-5 min)' }));
     expect(getChecks('2026-S39')).toEqual({ 'batch:rituel:four-a-180': true });
-    expect(screen.getByText('1/5')).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: 'Four à 180° (0-5 min)' })).toBeChecked();
   });
 
@@ -724,7 +723,7 @@ describe('BatchView v2 — rituel et micro-batch', () => {
     expect(screen.getByText('Batch terminé !')).toBeInTheDocument();
     // présentation pure : aucune coche de timeline posée
     expect(screen.queryByRole('checkbox')).toBeNull();
-    await user.click(screen.getByRole('button', { name: /Revenir à l'aperçu/ }));
+    await user.click(screen.getByRole('button', { name: /Revoir l'aperçu/ }));
     expect(document.querySelector('.rituel-timeline')).not.toBeNull();
     expect(screen.getAllByRole('checkbox').every((c) => !(c as HTMLInputElement).checked)).toBe(true);
   });
@@ -768,10 +767,114 @@ describe('BatchView v2 — rituel et micro-batch', () => {
     setCheck('2026-S39', 'batch:rituel:four-a-180', true);
     rerender(<BatchView rituel={RITUEL} microBatch={MICRO} semaine="2026-S40" />);
 
-    expect(screen.getByText('0/5')).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: 'Four à 180° (0-5 min)' })).not.toBeChecked();
     expect(getChecks('2026-S39')).toEqual({ 'batch:rituel:four-a-180': true });
     expect(getChecks('2026-S40')).toEqual({});
+  });
+
+  it('badge absent si aucun créneau parsable', () => {
+    render(
+      <BatchView
+        rituel={[{ id: 'batch:rituel:x', creneau: 'à définir', label: 'X' }]}
+        microBatch={[]}
+        semaine="2026-S39"
+      />,
+    );
+    expect(document.querySelector('.rituel-badge')).toBeNull();
+  });
+
+  it('affiche la ligne production sous le titre', () => {
+    render(
+      <BatchView
+        rituel={RITUEL}
+        microBatch={[]}
+        production="2 boîtes frigo · 6 œufs durs"
+        semaine="2026-S39"
+      />,
+    );
+    expect(document.querySelector('.rituel-production')).toHaveTextContent('2 boîtes frigo');
+  });
+
+  it('le micro-batch affiche le détail en 3e ligne quand présent', () => {
+    render(
+      <BatchView
+        rituel={RITUEL}
+        microBatch={[{ jour: 'lundi', quoi: 'doubler le plat', detail: '10 min · la boîte de mardi passe au frigo' }]}
+        semaine="2026-S39"
+      />,
+    );
+    expect(document.querySelector('.micro-jour-detail')).toHaveTextContent('10 min');
+  });
+
+  it('affiche la réserve après le micro-batch avec les icônes déduites', () => {
+    const { container } = render(
+      <BatchView
+        rituel={RITUEL}
+        microBatch={MICRO}
+        reserve={[
+          { cle: 'lundi', plat: 'Poulet-riz', conservation: 'frigo, 2 j max' },
+          { cle: 'jeudi', plat: 'Poulet-riz', conservation: 'congelé dimanche · sortie mercredi soir' },
+          { cle: 'mercredi', plat: 'Pâtes-tomate (famille)', conservation: 'cuites le soir' },
+          { cle: 'mel', plat: 'Boîte keto saumon-asperges', conservation: 'à part' },
+        ]}
+        semaine="2026-S39"
+      />,
+    );
+    const reserve = container.querySelector('.reserve-list');
+    expect(reserve).not.toBeNull();
+    expect(reserve!.querySelectorAll('.reserve-ligne')).toHaveLength(4);
+    expect(screen.getByText('Mél — Boîte keto saumon-asperges')).toBeInTheDocument();
+    expect(screen.getByText('Lundi — Poulet-riz')).toBeInTheDocument();
+    // ordre DOM : micro-batch avant la réserve
+    const micro = container.querySelector('.micro-batch');
+    expect(micro!.compareDocumentPosition(reserve!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('l’état final du mode guidé utilise termine et « Revoir l’aperçu »', async () => {
+    const user = userEvent.setup();
+    render(
+      <BatchView
+        rituel={[{ id: 'batch:rituel:x', creneau: '0-5 min', label: 'X' }]}
+        microBatch={[]}
+        termine="4 boîtes prêtes — la semaine est servie."
+        semaine="2026-S39"
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: /Lancer le batch/ }));
+    await user.click(screen.getByRole('button', { name: /Terminer le batch/ }));
+    expect(screen.getByText('4 boîtes prêtes — la semaine est servie.')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Revoir l'aperçu/ }));
+    expect(document.querySelector('.rituel-timeline')).not.toBeNull();
+  });
+
+  it('sans termine : texte par défaut à l’état final', async () => {
+    const user = userEvent.setup();
+    render(<BatchView rituel={[{ id: 'batch:rituel:x', creneau: '0-5 min', label: 'X' }]} microBatch={[]} semaine="2026-S39" />);
+    await user.click(screen.getByRole('button', { name: /Lancer le batch/ }));
+    await user.click(screen.getByRole('button', { name: /Terminer le batch/ }));
+    expect(screen.getByText('Tout est prêt pour la semaine.')).toBeInTheDocument();
+  });
+
+  it('réserve seule (sans rituel ni micro) : la réserve s’affiche, pas de message vide', () => {
+    const { container } = render(
+      <BatchView
+        reserve={[{ cle: 'lundi', plat: 'Poulet-riz', conservation: 'frigo, 2 j max' }]}
+        semaine="2026-S39"
+      />,
+    );
+    expect(container.querySelector('.reserve-list')).not.toBeNull();
+    expect(screen.queryByText('Aucun batch prévu cette semaine.')).toBeNull();
+  });
+
+  it('« Lancer le batch » est un bouton pleine largeur sous la timeline (plus de pilule dans le head)', () => {
+    const { container } = render(<BatchView rituel={RITUEL} microBatch={MICRO} semaine="2026-S39" />);
+    expect(container.querySelector('.lancer-wrap')).toBeNull();
+    const btn = screen.getByRole('button', { name: /Lancer le batch/ });
+    expect(btn).toHaveClass('lancer-btn');
+    const section = container.querySelector('.batch-section')!;
+    expect(section.contains(btn)).toBe(true);
+    const timeline = container.querySelector('.rituel-timeline')!;
+    expect(timeline.compareDocumentPosition(btn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });
 

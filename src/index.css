@@ -397,7 +397,7 @@ p {
 
 .batch-banner {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   padding: 12px 14px;
   border-radius: 14px;
@@ -964,6 +964,59 @@ progress {
   margin-top: 8px;
 }
 
+.micro-jour-detail {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.45;
+  margin-top: 5px;
+}
+
+.reserve-list {
+  margin-top: 4px;
+}
+
+.reserve-ligne {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+
+.reserve-ligne:first-child {
+  border-top: 0;
+}
+
+.reserve-ic {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.reserve-corps {
+  min-width: 0;
+}
+
+.reserve-nom {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.reserve-cons {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.45;
+  margin-top: 1px;
+}
+
 .micro-dots {
   display: flex;
   gap: 4px;
@@ -984,23 +1037,30 @@ progress {
 
 /* ---------- Batch : lancer + mode guidé ---------- */
 
-.lancer-wrap {
+.rituel-badge {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-}
-.lancer {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 0;
-  border-radius: 999px;
-  padding: 8px 14px;
-  min-height: 48px;
-  background: var(--accent);
-  color: #ffffff;
-  font-size: 13px;
+  gap: 4px;
+  font-size: 10.5px;
   font-weight: 700;
+  color: var(--accent);
+  background: var(--surface-2);
+  border: 1px dashed var(--accent);
+  border-radius: 7px;
+  padding: 3px 8px;
+  white-space: nowrap;
+}
+
+.rituel-production {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 6px 0 0;
+}
+
+.lancer-btn {
+  width: 100%;
+  margin-top: 12px;
 }
 .batch-guide {
   display: flex;

@@ -165,7 +165,7 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
     }
     await page.getByRole('button', { name: 'Terminer le batch ✓' }).click();
     await expect(page.getByText('Batch terminé !')).toBeVisible();
-    await page.getByRole('button', { name: "Revenir à l'aperçu" }).click();
+    await page.getByRole('button', { name: "Revoir l'aperçu" }).click();
     await expect(page.locator('.rituel-timeline')).toBeVisible();
     await expect(page.locator('.rituel-etape.done')).toHaveCount(0);
   });
