@@ -4,7 +4,7 @@ Toutes les évolutions notables de l'app sont documentées dans ce fichier.
 
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le versionnement sémantique ([semver](https://semver.org/lang/fr/)) : **majeur** = changement cassant (contrat .md, migration storage), **mineur** = nouvelle fonctionnalité, **correctif** = bugfix. La source de vérité est le champ `version` de `package.json`.
 
-## [Non publié]
+## [1.1.0] - 2026-09-15
 
 ### Ajouté
 
@@ -52,4 +52,6 @@ Première version étiquetée — état de l'app après le redesign Nutrigo et l
 - PWA offline-first installable (service worker autoUpdate, icônes maskable)
 - Semaine d'exemple auto-chargée au premier lancement, hors-ligne dès l'installation
 
+[Unreleased]: https://github.com/marcsuarez74/rituel-app/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/marcsuarez74/rituel-app/releases/tag/v1.1.0
 [1.0.0]: https://github.com/marcsuarez74/rituel-app/releases/tag/v1.0.0
