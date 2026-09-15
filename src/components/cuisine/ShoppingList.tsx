@@ -46,7 +46,7 @@ export function ShoppingList({
         {it.label}
         {it.rituel && (
           <span className="item-rituel">
-            <Icon name="pot" size={12} /> rituel
+            <Icon name="pot" size={14} /> rituel
           </span>
         )}
       </span>
@@ -60,7 +60,7 @@ export function ShoppingList({
           <Icon name="pot" size={16} />
         </span>
         <span>
-          <b>Pensées pour le rituel</b> — les items marqués <Icon name="pot" size={12} />{' '}
+          <b>Pensées pour le rituel</b> — les items marqués <Icon name="pot" size={14} />{' '}
           alimentent le batch de dimanche.
           {budget ? ` ${budget} estimés.` : ''}
         </span>
@@ -73,7 +73,7 @@ export function ShoppingList({
           aria-pressed={magasin}
           onClick={() => setMagasin(!magasin)}
         >
-          <Icon name="cart" size={12} /> {magasin ? 'Tout revoir' : 'Mode magasin'}
+          <Icon name="cart" size={14} /> {magasin ? 'Tout revoir' : 'Mode magasin'}
         </button>
         <progress value={done} max={total} />
       </p>

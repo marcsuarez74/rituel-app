@@ -648,21 +648,21 @@ describe('BatchView v2 — rituel et micro-batch', () => {
     { jour: 'mardi', quoi: 'doubler la sauce' },
   ];
 
-  it('affiche le rituel en timeline avec créneaux, détails et compteur', () => {
+  it('affiche le rituel en timeline avec créneaux, détails et badge de durée', () => {
     render(<BatchView rituel={RITUEL} microBatch={MICRO} semaine="2026-S39" />);
-    expect(screen.getByText(/Rituel du dimanche/)).toBeInTheDocument();
+    expect(screen.getByText('Rituel dimanche')).toBeInTheDocument();
+    expect(screen.getByText('≈ 1 h')).toBeInTheDocument();
     expect(screen.getByText('0-5 min')).toBeInTheDocument();
     expect(screen.getByText('Four à 180°')).toBeInTheDocument();
     expect(screen.getByText('egg muffins ×10 lancés, on fait le reste')).toBeInTheDocument();
     expect(screen.getAllByRole('checkbox')).toHaveLength(5);
-    expect(screen.getByText('0/5')).toBeInTheDocument();
   });
 
   it('affiche le micro-batch en carrousel premium : badge jour + points de pagination', () => {
     const { container } = render(
       <BatchView rituel={RITUEL} microBatch={MICRO} semaine="2026-S39" />,
     );
-    expect(screen.getByText(/Micro-batch de la semaine/)).toBeInTheDocument();
+    expect(screen.getByText('Micro-batch en semaine')).toBeInTheDocument();
     const badge = screen.getByText('Lundi');
     expect(badge).toHaveClass('micro-jour-nom');
     expect(screen.getByText('doubler la sauce')).toBeInTheDocument();
@@ -679,7 +679,6 @@ describe('BatchView v2 — rituel et micro-batch', () => {
     render(<BatchView rituel={RITUEL} microBatch={MICRO} semaine="2026-S39" />);
     await user.click(screen.getByRole('checkbox', { name: 'Four à 180° (0-5 min)' }));
     expect(getChecks('2026-S39')).toEqual({ 'batch:rituel:four-a-180': true });
-    expect(screen.getByText('1/5')).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: 'Four à 180° (0-5 min)' })).toBeChecked();
   });
 
@@ -724,7 +723,7 @@ describe('BatchView v2 — rituel et micro-batch', () => {
     expect(screen.getByText('Batch terminé !')).toBeInTheDocument();
     // présentation pure : aucune coche de timeline posée
     expect(screen.queryByRole('checkbox')).toBeNull();
-    await user.click(screen.getByRole('button', { name: /Revenir à l'aperçu/ }));
+    await user.click(screen.getByRole('button', { name: /Revoir l'aperçu/ }));
     expect(document.querySelector('.rituel-timeline')).not.toBeNull();
     expect(screen.getAllByRole('checkbox').every((c) => !(c as HTMLInputElement).checked)).toBe(true);
   });
@@ -768,10 +767,114 @@ describe('BatchView v2 — rituel et micro-batch', () => {
     setCheck('2026-S39', 'batch:rituel:four-a-180', true);
     rerender(<BatchView rituel={RITUEL} microBatch={MICRO} semaine="2026-S40" />);
 
-    expect(screen.getByText('0/5')).toBeInTheDocument();
     expect(screen.getByRole('checkbox', { name: 'Four à 180° (0-5 min)' })).not.toBeChecked();
     expect(getChecks('2026-S39')).toEqual({ 'batch:rituel:four-a-180': true });
     expect(getChecks('2026-S40')).toEqual({});
+  });
+
+  it('badge absent si aucun créneau parsable', () => {
+    render(
+      <BatchView
+        rituel={[{ id: 'batch:rituel:x', creneau: 'à définir', label: 'X' }]}
+        microBatch={[]}
+        semaine="2026-S39"
+      />,
+    );
+    expect(document.querySelector('.rituel-badge')).toBeNull();
+  });
+
+  it('affiche la ligne production sous le titre', () => {
+    render(
+      <BatchView
+        rituel={RITUEL}
+        microBatch={[]}
+        production="2 boîtes frigo · 6 œufs durs"
+        semaine="2026-S39"
+      />,
+    );
+    expect(document.querySelector('.rituel-production')).toHaveTextContent('2 boîtes frigo');
+  });
+
+  it('le micro-batch affiche le détail en 3e ligne quand présent', () => {
+    render(
+      <BatchView
+        rituel={RITUEL}
+        microBatch={[{ jour: 'lundi', quoi: 'doubler le plat', detail: '10 min · la boîte de mardi passe au frigo' }]}
+        semaine="2026-S39"
+      />,
+    );
+    expect(document.querySelector('.micro-jour-detail')).toHaveTextContent('10 min');
+  });
+
+  it('affiche la réserve après le micro-batch avec les icônes déduites', () => {
+    const { container } = render(
+      <BatchView
+        rituel={RITUEL}
+        microBatch={MICRO}
+        reserve={[
+          { cle: 'lundi', plat: 'Poulet-riz', conservation: 'frigo, 2 j max' },
+          { cle: 'jeudi', plat: 'Poulet-riz', conservation: 'congelé dimanche · sortie mercredi soir' },
+          { cle: 'mercredi', plat: 'Pâtes-tomate (famille)', conservation: 'cuites le soir' },
+          { cle: 'mel', plat: 'Boîte keto saumon-asperges', conservation: 'à part' },
+        ]}
+        semaine="2026-S39"
+      />,
+    );
+    const reserve = container.querySelector('.reserve-list');
+    expect(reserve).not.toBeNull();
+    expect(reserve!.querySelectorAll('.reserve-ligne')).toHaveLength(4);
+    expect(screen.getByText('Mél — Boîte keto saumon-asperges')).toBeInTheDocument();
+    expect(screen.getByText('Lundi — Poulet-riz')).toBeInTheDocument();
+    // ordre DOM : micro-batch avant la réserve
+    const micro = container.querySelector('.micro-batch');
+    expect(micro!.compareDocumentPosition(reserve!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('l’état final du mode guidé utilise termine et « Revoir l’aperçu »', async () => {
+    const user = userEvent.setup();
+    render(
+      <BatchView
+        rituel={[{ id: 'batch:rituel:x', creneau: '0-5 min', label: 'X' }]}
+        microBatch={[]}
+        termine="4 boîtes prêtes — la semaine est servie."
+        semaine="2026-S39"
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: /Lancer le batch/ }));
+    await user.click(screen.getByRole('button', { name: /Terminer le batch/ }));
+    expect(screen.getByText('4 boîtes prêtes — la semaine est servie.')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Revoir l'aperçu/ }));
+    expect(document.querySelector('.rituel-timeline')).not.toBeNull();
+  });
+
+  it('sans termine : texte par défaut à l’état final', async () => {
+    const user = userEvent.setup();
+    render(<BatchView rituel={[{ id: 'batch:rituel:x', creneau: '0-5 min', label: 'X' }]} microBatch={[]} semaine="2026-S39" />);
+    await user.click(screen.getByRole('button', { name: /Lancer le batch/ }));
+    await user.click(screen.getByRole('button', { name: /Terminer le batch/ }));
+    expect(screen.getByText('Tout est prêt pour la semaine.')).toBeInTheDocument();
+  });
+
+  it('réserve seule (sans rituel ni micro) : la réserve s’affiche, pas de message vide', () => {
+    const { container } = render(
+      <BatchView
+        reserve={[{ cle: 'lundi', plat: 'Poulet-riz', conservation: 'frigo, 2 j max' }]}
+        semaine="2026-S39"
+      />,
+    );
+    expect(container.querySelector('.reserve-list')).not.toBeNull();
+    expect(screen.queryByText('Aucun batch prévu cette semaine.')).toBeNull();
+  });
+
+  it('« Lancer le batch » est un bouton pleine largeur sous la timeline (plus de pilule dans le head)', () => {
+    const { container } = render(<BatchView rituel={RITUEL} microBatch={MICRO} semaine="2026-S39" />);
+    expect(container.querySelector('.lancer-wrap')).toBeNull();
+    const btn = screen.getByRole('button', { name: /Lancer le batch/ });
+    expect(btn).toHaveClass('lancer-btn');
+    const section = container.querySelector('.batch-section')!;
+    expect(section.contains(btn)).toBe(true);
+    const timeline = container.querySelector('.rituel-timeline')!;
+    expect(timeline.compareDocumentPosition(btn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });
 
@@ -1200,7 +1303,7 @@ describe('Icon', () => {
   const NAMES = [
     'cart', 'target', 'chev', 'chev-left', 'chev-right', 'pot', 'scale', 'moon',
     'box', 'snow', 'fish', 'leaf', 'wheat', 'bowl', 'meat', 'check', 'clock',
-    'flame', 'drop', 'plus', 'play',
+    'flame', 'drop', 'plus', 'play', 'pasta',
   ] as const;
 
   it('rend un svg 24×24 stroke currentColor à la taille demandée', () => {
@@ -1218,21 +1321,32 @@ describe('Icon', () => {
     expect(document.querySelector('svg')).toHaveAttribute('stroke-width', '2.5');
   });
 
-  it('couvre les 21 noms du design system sans crash', () => {
+  it('couvre les 22 noms du design system sans crash', () => {
     for (const name of NAMES) {
       const { unmount } = render(<Icon name={name} />);
       expect(document.querySelector('svg')).not.toBeNull();
       unmount();
     }
   });
+
+  it('trait adaptatif : 2,5 sous 16 px, 2 au-delà — la prop explicite gagne', () => {
+    const { unmount } = render(<Icon name="cart" size={14} />);
+    expect(document.querySelector('svg')).toHaveAttribute('stroke-width', '2.5');
+    unmount();
+    const { unmount: u2 } = render(<Icon name="cart" size={16} />);
+    expect(document.querySelector('svg')).toHaveAttribute('stroke-width', '2');
+    u2();
+    render(<Icon name="check" size={38} strokeWidth={2.5} />);
+    expect(document.querySelector('svg')).toHaveAttribute('stroke-width', '2.5');
+  });
 });
 
-describe('CoursesBudget — carte budget', () => {
+describe('CoursesBudget — carte budget (citron)', () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it('affiche estimé / payé / budget max alignés et le pourcentage', () => {
+  it('affiche le payé en héros, la phrase secondaire (estimé + max) et le pourcentage', () => {
     seedDepenses([{ date: '2026-09-09', magasin: 'Lidl', total: 38.2 }]);
     render(
       <CoursesBudget
@@ -1243,9 +1357,10 @@ describe('CoursesBudget — carte budget', () => {
     );
 
     expect(screen.getByText('Budget courses')).toBeInTheDocument();
-    expect(screen.getByText('≈ 35 €')).toBeInTheDocument();
+    expect(screen.getByText('Payé cette semaine')).toBeInTheDocument();
     expect(screen.getByText('38,20 €')).toBeInTheDocument();
-    expect(screen.getByText('40,00 €')).toBeInTheDocument();
+    expect(screen.getByText(/≈ 35 €/)).toBeInTheDocument();
+    expect(screen.getByText(/40,00 €/)).toBeInTheDocument();
     expect(screen.getByText('96 % du budget')).toBeInTheDocument();
     expect(screen.getByText('Lidl')).toBeInTheDocument(); // pill magasin
   });
@@ -1264,6 +1379,7 @@ describe('CoursesBudget — carte budget', () => {
     expect(screen.getByText('dépassé de 10 %')).toBeInTheDocument();
     expect(document.querySelector('.bud-bar.alerte')).not.toBeNull();
     expect(document.querySelector('.bud-pct.alerte')).not.toBeNull();
+    expect(document.querySelector('.bud-hero.alerte')).not.toBeNull();
   });
 
   it('somme uniquement les dépenses de la semaine affichée', () => {
@@ -1284,29 +1400,28 @@ describe('CoursesBudget — carte budget', () => {
     expect(screen.queryByText('48,20 €')).not.toBeInTheDocument();
   });
 
-  it('sans budget max : grille à 2 colonnes, pas de barre ni de pourcentage', () => {
+  it('sans budget max : phrase sans max, pas de barre ni de pourcentage', () => {
     seedDepenses([{ date: '2026-09-09', magasin: 'Lidl', total: 38.2 }]);
     render(
       <CoursesBudget data={dataAvecBudget('≈ 35 €')} profile={profileV2('marc')} onOuvrirDepenses={() => {}} />,
     );
 
-    expect(document.querySelector('.bud-grid.cols2')).not.toBeNull();
-    expect(screen.queryByText('Budget max')).not.toBeInTheDocument();
+    expect(screen.getByText(/≈ 35 €/)).toBeInTheDocument();
+    expect(screen.queryByText(/max/)).not.toBeInTheDocument();
     expect(document.querySelector('.bud-bar')).toBeNull();
   });
 
-  it('estimé absent du .md : la cellule est masquée, les autres restent', () => {
+  it('estimé absent du .md : la phrase ne porte que le max', () => {
     seedDepenses([{ date: '2026-09-09', magasin: 'Lidl', total: 38.2 }]);
     render(
       <CoursesBudget data={dataAvecBudget()} profile={profileV2('marc', { budgetMax: 40 })} onOuvrirDepenses={() => {}} />,
     );
 
-    expect(screen.queryByText('Estimé menu')).not.toBeInTheDocument();
-    expect(screen.getByText('Payé cette semaine')).toBeInTheDocument();
-    expect(screen.getByText('Budget max')).toBeInTheDocument();
+    expect(screen.getByText(/max/)).toBeInTheDocument();
+    expect(screen.queryByText(/estimés/)).not.toBeInTheDocument();
   });
 
-  it('rien de saisi : « Payé » vaut —', () => {
+  it('rien de saisi : « Payé » vaut —, pas de barre', () => {
     render(
       <CoursesBudget data={dataAvecBudget('≈ 35 €')} profile={profileV2('marc', { budgetMax: 40 })} onOuvrirDepenses={() => {}} />,
     );
@@ -1323,7 +1438,7 @@ describe('CoursesBudget — carte budget', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('le bouton « Total payé » ouvre le panneau dépenses', async () => {
+  it('deux actions en pills : « Total payé » et « Voir mes dépenses réelles »', async () => {
     const onOuvrir = vi.fn();
     const user = userEvent.setup();
     render(
@@ -1334,9 +1449,13 @@ describe('CoursesBudget — carte budget', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: /Total payé/ }));
+    const total = screen.getByRole('button', { name: /Total payé/ });
+    const voir = screen.getByRole('button', { name: /Voir mes dépenses réelles/ });
+    expect(total).toHaveClass('bsoft');
+    expect(voir).toHaveClass('bsoft');
+    await user.click(total);
     expect(onOuvrir).toHaveBeenCalledWith(true);
-    await user.click(screen.getByRole('button', { name: /Voir mes dépenses réelles/ }));
+    await user.click(voir);
     expect(onOuvrir).toHaveBeenCalledWith(false);
   });
 });

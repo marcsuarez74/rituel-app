@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 // Icônes maison — chemins repris de la maquette Herbes validée.
-// Trait 2 px (2,5 pour le check géant), currentColor, bouts arrondis.
+// Trait adaptatif : 2 px, 2,5 sous 16 px (lisibilité), currentColor, bouts arrondis.
 const ICONS = {
   cart: (
     <>
@@ -62,6 +62,12 @@ const ICONS = {
       <path d="M9.5 12c0-2.2 1.1-3.7 2.5-3.7s2.5 1.5 2.5 3.7" />
     </>
   ),
+  pasta: (
+    <>
+      <path d="M4 12h16a8 8 0 0 1-16 0z" />
+      <path d="M8.5 12V6.5M11.5 12V5.5M14.5 12V5.5M17 12V7" />
+    </>
+  ),
   meat: (
     <>
       <circle cx="13.5" cy="8.5" r="4.7" />
@@ -90,12 +96,15 @@ export type IconName = keyof typeof ICONS;
 export function Icon({
   name,
   size = 16,
-  strokeWidth = 2,
+  strokeWidth,
 }: {
   name: IconName;
   size?: number;
   strokeWidth?: number;
 }) {
+  // Lisibilité : sous 16 px le trait passe à 2,5 (les petits tracés 24-unités
+  // tombaient sous ~1 px réel). La prop explicite reste prioritaire.
+  const trait = strokeWidth ?? (size < 16 ? 2.5 : 2);
   return (
     <svg
       viewBox="0 0 24 24"
@@ -103,7 +112,7 @@ export function Icon({
       height={size}
       fill="none"
       stroke="currentColor"
-      strokeWidth={strokeWidth}
+      strokeWidth={trait}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"

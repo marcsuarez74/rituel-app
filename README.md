@@ -14,7 +14,7 @@ Suivi cuisine / diet / sport pour Marc & Mélanie — PWA installable, livrée a
 
 ## Le fichier .md de la semaine (contrat de référence)
 
-Chaque semaine est décrite par un fichier Markdown avec frontmatter YAML **obligatoire**. Extrait du fichier d'exemple (les blocs `## Recettes`, `## Bases`, `### Keto`, `### Rituel dimanche` et `### Micro-batch` sont optionnels) :
+Chaque semaine est décrite par un fichier Markdown avec frontmatter YAML **obligatoire**. Extrait du fichier d'exemple (les blocs `## Recettes`, `## Bases`, `### Keto`, `### Rituel dimanche`, `### Micro-batch` et `### Réserve` sont optionnels) :
 
 ```markdown
 ---
@@ -65,12 +65,18 @@ image: https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80&auto
 
 ## Batch
 ### Rituel dimanche
+- production: 2 boîtes frigo · 1 boîte congélateur · 1 sauce · 6 œufs durs — le riz : 2 jours au frigo max
 - 0-5 min · Four à 180° — egg muffins ×10 lancés, on fait le reste
 - 5-30 min · Cuissons en double — dîner du soir ×2 + féculent ×2 → boîte lundi
+- termine: 4 boîtes prêtes — la semaine est servie.
 
 ### Micro-batch
-- lundi: doubler le plat (boîtes mar/mer)
+- lundi: doubler le plat (boîtes mar/mer) | 10 min · la boîte de mardi passe au frigo
 - mardi: doubler la sauce + courgettes en julienne (5 min le soir)
+
+### Réserve
+- lundi: Boîte dinde-quinoa | frigo, 2 j max
+- mel: Box keto (œufs durs + crudités) | à monter au rituel
 
 - [ ] Egg muffins ×10
 - [ ] Doubler dinde + quinoa → boîte lundi Marc
@@ -102,7 +108,7 @@ Règles du format :
   - `score:` (optionnel, entier 0-10 — health score en barre segmentée)
   - `image:` (optionnel, URL https — photo du plat, mise en cache PWA après 1ʳᵉ vue)
 - `## Bases` (optionnel) : une `### B4 · Nom` par base + un texte court (technique réutilisable).
-- `## Batch` : la checklist `- [ ]`, plus deux blocs optionnels — `### Rituel dimanche` (étapes `- <créneau> · <label> — <détail>`, cochables en timeline) et `### Micro-batch` (`- jour: quoi`, carrousel horizontal).
+- `## Batch` : la checklist `- [ ]`, plus trois blocs optionnels — `### Rituel dimanche` (étapes `- <créneau> · <label> — <détail>`, cochables en timeline, plus les lignes-clés `- production:` et `- termine:` — badge de durée calculé par l'app), `### Micro-batch` (`- jour: quoi` avec suffixe optionnel ` | détail`, carrousel horizontal) et `### Réserve` (`- <jour|mel>: <plat> | <conservation>`, liste des plats stockés).
 - Puis `## Marc` et `## Melanie` (accents acceptés — `Mélanie` == `Melanie`), chacune avec les sous-sections `### Cibles`, `### Séances`, `### Rappels`.
 - Les items `- [ ]` (batch, rituel, séances) sont cochables dans l'app.
 - **Ids de coches stables**, dérivés du contenu : `courses:…`, `batch:…`, `batch:rituel:…`, `seances:…` — renommer un item = perdre son état coché.

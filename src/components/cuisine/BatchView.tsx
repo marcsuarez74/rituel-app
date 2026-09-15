@@ -1,17 +1,24 @@
 import { useRef, useState } from 'react';
-import type { MicroBatchJour, RituelEtape } from '../../lib/model';
+import type { MicroBatchJour, ReserveLigne, RituelEtape } from '../../lib/model';
 import { getChecks, setCheck } from '../../lib/storage';
 import { todayKey } from '../../lib/dates';
 import { capitalize } from '../../lib/text';
+import { dureeRituel, iconeReserve } from '../../lib/batch';
 import { Icon } from '../Icon';
 
 export function BatchView({
   rituel,
   microBatch,
+  reserve,
+  production,
+  termine,
   semaine,
 }: {
   rituel?: RituelEtape[];
   microBatch?: MicroBatchJour[];
+  reserve?: ReserveLigne[];
+  production?: string;
+  termine?: string;
   semaine: string;
 }) {
   const [mode, setMode] = useState<'apercu' | 'run' | 'fini'>('apercu');
@@ -25,6 +32,7 @@ export function BatchView({
   }
   const hasRituel = !!rituel?.length;
   const hasMicro = !!microBatch?.length;
+  const hasReserve = !!reserve?.length;
   const ceSoir = microBatch?.find((m) => m.jour === todayKey());
 
   return (
@@ -42,6 +50,7 @@ export function BatchView({
       {hasRituel && rituel && mode === 'apercu' && (
         <RituelTimeline
           etapes={rituel}
+          production={production}
           semaine={semaine}
           onLancer={() => {
             setMode('run');
@@ -79,17 +88,18 @@ export function BatchView({
       {hasRituel && mode === 'fini' && (
         <section className="batch-section batch-guide" aria-live="polite">
           <span className="guide-done-ic">
-            <Icon name="check" size={28} strokeWidth={2.5} />
+            <Icon name="check" size={38} strokeWidth={2.5} />
           </span>
           <h3 className="guide-titre">Batch terminé !</h3>
-          <p className="guide-detail">Tout est prêt pour la semaine.</p>
+          <p className="guide-detail">{termine ?? 'Tout est prêt pour la semaine.'}</p>
           <button type="button" className="btn-ghost" onClick={() => setMode('apercu')}>
-            Revenir à l'aperçu
+            Revoir l'aperçu
           </button>
         </section>
       )}
       {hasMicro && mode === 'apercu' && microBatch && <MicroBatch jours={microBatch} />}
-      {!hasRituel && !hasMicro && <p className="muted">Aucun batch prévu cette semaine.</p>}
+      {mode === 'apercu' && hasReserve && reserve && <Reserve lignes={reserve} />}
+      {!hasRituel && !hasMicro && !hasReserve && <p className="muted">Aucun batch prévu cette semaine.</p>}
     </>
   );
 }
@@ -106,12 +116,13 @@ function MicroBatch({ jours }: { jours: MicroBatchJour[] }) {
   };
   return (
     <section className="batch-section">
-      <h3>⚡ Micro-batch de la semaine</h3>
+      <h3>Micro-batch en semaine</h3>
       <div className="micro-batch" ref={ref} onScroll={auScroll}>
         {jours.map((m) => (
           <div className="micro-jour" key={m.jour}>
             <div className="micro-jour-nom">{capitalize(m.jour)}</div>
             <div className="micro-jour-quoi">{m.quoi}</div>
+            {m.detail && <div className="micro-jour-detail">{m.detail}</div>}
           </div>
         ))}
       </div>
@@ -124,12 +135,37 @@ function MicroBatch({ jours }: { jours: MicroBatchJour[] }) {
   );
 }
 
+function Reserve({ lignes }: { lignes: ReserveLigne[] }) {
+  return (
+    <section className="batch-section">
+      <h3>La réserve — au frigo cette semaine</h3>
+      <div className="reserve-list">
+        {lignes.map((l, i) => (
+          <div className="reserve-ligne" key={`${l.cle}-${i}`}>
+            <span className="reserve-ic">
+              <Icon name={iconeReserve(l)} size={16} />
+            </span>
+            <span className="reserve-corps">
+              <span className="reserve-nom">
+                {l.cle === 'mel' ? 'Mél' : capitalize(l.cle)} — {l.plat}
+              </span>
+              <span className="reserve-cons">{l.conservation}</span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function RituelTimeline({
   etapes,
+  production,
   semaine,
   onLancer,
 }: {
   etapes: RituelEtape[];
+  production?: string;
   semaine: string;
   onLancer: () => void;
 }) {
@@ -139,7 +175,7 @@ function RituelTimeline({
     setSyncedSemaine(semaine);
     setChecks(getChecks(semaine));
   }
-  const done = etapes.filter((e) => checks[e.id]).length;
+  const duree = dureeRituel(etapes);
   const toggle = (id: string) => {
     const next = !checks[id];
     setCheck(semaine, id, next);
@@ -148,16 +184,15 @@ function RituelTimeline({
   return (
     <section className="batch-section">
       <div className="batch-section-head">
-        <h3>🕐 Rituel du dimanche · 45-60 min</h3>
-        <span className="lancer-wrap">
-          <button type="button" className="lancer" onClick={onLancer}>
-            <Icon name="play" size={12} /> Lancer le batch
-          </button>
-          <span className="rayon-cnt">
-            {done}/{etapes.length}
+        <h3>Rituel dimanche</h3>
+        {duree && (
+          <span className="rituel-badge">
+            <Icon name="clock" size={14} />
+            {duree}
           </span>
-        </span>
+        )}
       </div>
+      {production && <p className="rituel-production">{production}</p>}
       <ol className="rituel-timeline">
         {etapes.map((e) => (
           <li className={checks[e.id] ? 'rituel-etape done' : 'rituel-etape'} key={e.id}>
@@ -179,6 +214,9 @@ function RituelTimeline({
           </li>
         ))}
       </ol>
+      <button type="button" className="btn lancer-btn" onClick={onLancer}>
+        <Icon name="play" size={14} /> Lancer le batch
+      </button>
     </section>
   );
 }

@@ -47,12 +47,12 @@ export function ObjectifBloc({ profile }: { profile: UserProfile }) {
     <section className="obj-bloc" aria-label="Mon objectif">
       <div className="obj-pills">
         <span className="obj-pill-type">
-          <Icon name={type.icone} size={11} />
+          <Icon name={type.icone} size={14} />
           {type.nom}
         </span>
         {profile.regime !== 'aucun' && (
           <span className="obj-pill-reg">
-            <Icon name="leaf" size={11} />
+            <Icon name="leaf" size={14} />
             {regime.nom}
           </span>
         )}
@@ -60,7 +60,7 @@ export function ObjectifBloc({ profile }: { profile: UserProfile }) {
 
       {echeance && restants != null && (
         <p className={`obj-echeance${restants < 0 ? ' late' : ''}`}>
-          <Icon name="clock" size={12} />
+          <Icon name="clock" size={14} />
           Échéance : <b>{formatJourMoisCourt(echeance)}</b> ·{' '}
           <b>
             {restants > 0 ? `dans ${restants} jours` : restants === 0 ? "aujourd'hui" : 'dépassée'}
@@ -85,7 +85,7 @@ export function ObjectifBloc({ profile }: { profile: UserProfile }) {
       ) : (
         actuel && (
           <p className="obj-plain">
-            <Icon name="scale" size={13} />
+            <Icon name="scale" size={14} />
             Poids actuel <b>{fmtKg(actuel.kg)} kg</b>
             {cible != null && (
               <>

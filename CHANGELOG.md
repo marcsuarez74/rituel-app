@@ -4,7 +4,7 @@ Toutes les évolutions notables de l'app sont documentées dans ce fichier.
 
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le versionnement sémantique ([semver](https://semver.org/lang/fr/)) : **majeur** = changement cassant (contrat .md, migration storage), **mineur** = nouvelle fonctionnalité, **correctif** = bugfix. La source de vérité est le champ `version` de `package.json`.
 
-## [Non publié]
+## [1.1.0] - 2026-09-15
 
 ### Ajouté
 
@@ -15,6 +15,8 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 - Maison & courses : magasin habituel, budget courses (estimé du menu vs payé réel vs max hebdo), dépenses réelles avec historique et comparatif par magasin, préférences de plats, taille du foyer (personnes, repas/jour) — collectés à l'onboarding (5e étape), modifiables au Profil
 - Carte « Budget courses » dans l'onglet Courses (estimé ≈ / payé cette semaine / budget max, barre et alerte de dépassement)
 - « Copier les paramètres IA » : le bloc Paramètres du prompt de génération se copie d'un geste
+- Batch : badge « ≈ durée » du rituel (calculé des créneaux), ligne production/conservation, section « La réserve — au frigo cette semaine », détails sur les cartes micro-batch, message de fin du mode guidé personnalisable (`- termine:`) — nouveaux champs optionnels du contrat .md (rétrocompatibles)
+- Icône `pasta` du jeu SVG
 
 ### Modifié
 
@@ -25,6 +27,9 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 - Stat-cards réduites à la carte Poids (variation en kg vs 7 jours)
 - Séances en liste libre : le jour n'est plus qu'une recommandation (« conseillé lun. »)
 - Écran Profil réorganisé : Mes infos, Objectif, Compléments, Régime
+- Carte « Budget courses » : habillage citron, « Payé cette semaine » en chiffre héros, estimé/max en phrase secondaire, actions en deux pills 48 px
+- Icônes : taille plancher 14 px et trait renforcé (2,5 sous 16 px) — lisibilité en cuisine
+- Batch : « Lancer le batch » devient un bouton pleine largeur sous la timeline ; titres « Rituel dimanche » / « Micro-batch en semaine » sans émoji ; bannières rituel/Ce soir centrées verticalement
 
 ### Retiré
 
@@ -47,4 +52,6 @@ Première version étiquetée — état de l'app après le redesign Nutrigo et l
 - PWA offline-first installable (service worker autoUpdate, icônes maskable)
 - Semaine d'exemple auto-chargée au premier lancement, hors-ligne dès l'installation
 
+[Unreleased]: https://github.com/marcsuarez74/rituel-app/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/marcsuarez74/rituel-app/releases/tag/v1.1.0
 [1.0.0]: https://github.com/marcsuarez74/rituel-app/releases/tag/v1.0.0

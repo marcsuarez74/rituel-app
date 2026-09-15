@@ -89,7 +89,7 @@ export function MenuView({
           Pas de jour imposé — ordre conseillé : batch/frigo d'abord, frais en dernier.
         </p>
         <p className="progress">
-          <Icon name="check" size={13} /> <b>{faites}/{occurrences.length}</b> faits
+          <Icon name="check" size={14} /> <b>{faites}/{occurrences.length}</b> faits
           <progress value={faites} max={occurrences.length} />
         </p>
       </div>
@@ -139,7 +139,7 @@ function MealCard({
             aria-label={`${occ.jour} — ${occ.texte} — marquer comme fait`}
           />
           <span className="menu-coche-box">
-            <Icon name="check" size={14} strokeWidth={2.5} />
+            <Icon name="check" size={14} />
           </span>
         </label>
         <div className="mtile">
@@ -152,12 +152,12 @@ function MealCard({
             <div className="mmeta">
               {tempsCourt && (
                 <span>
-                  <Icon name="clock" size={11} /> {tempsCourt}
+                  <Icon name="clock" size={14} /> {tempsCourt}
                 </span>
               )}
               {r?.kcal != null && (
                 <span>
-                  <Icon name="flame" size={11} /> {r.kcal} kcal
+                  <Icon name="flame" size={14} /> {r.kcal} kcal
                 </span>
               )}
             </div>
@@ -177,7 +177,7 @@ function MealCard({
           )}
           {r?.fraicheur && (
             <div className="mh">
-              <Icon name="box" size={11} /> {r.fraicheur}
+              <Icon name="box" size={14} /> {r.fraicheur}
             </div>
           )}
         </div>
@@ -201,7 +201,7 @@ function MealCard({
         <button type="button" className="rtoggle" aria-expanded={open} onClick={() => setOpen(!open)}>
           <span>Voir la recette</span>
           <span className={open ? 'chev up' : 'chev'}>
-            <Icon name="chev" size={12} />
+            <Icon name="chev" size={14} />
           </span>
         </button>
       )}
@@ -223,22 +223,22 @@ function RecetteDetail({ recette, bases }: { recette: Recette; bases?: BaseCuisi
         <div className="recette-nutri">
           {recette.kcal != null && (
             <span>
-              <Icon name="flame" size={11} /> {recette.kcal} kcal
+              <Icon name="flame" size={14} /> {recette.kcal} kcal
             </span>
           )}
           {recette.glucides != null && (
             <span>
-              <Icon name="wheat" size={11} /> {recette.glucides}g C
+              <Icon name="wheat" size={14} /> {recette.glucides}g C
             </span>
           )}
           {recette.proteines != null && (
             <span>
-              <Icon name="meat" size={11} /> {recette.proteines}g P
+              <Icon name="meat" size={14} /> {recette.proteines}g P
             </span>
           )}
           {recette.lipides != null && (
             <span>
-              <Icon name="drop" size={11} /> {recette.lipides}g F
+              <Icon name="drop" size={14} /> {recette.lipides}g F
             </span>
           )}
         </div>
