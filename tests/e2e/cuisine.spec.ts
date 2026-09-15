@@ -120,6 +120,10 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
 
     await page.getByRole('button', { name: /Total payé/ }).click();
     await expect(page.getByRole('heading', { name: /Mes dépenses réelles/ })).toBeVisible();
+    // Date épinglée dans S37 : le champ part de « aujourd'hui », qui dérive du
+    // calendrier réel — sans épinglage, la session saisie sort de la semaine
+    // affichée et le payé de la carte ne la compte pas.
+    await page.getByLabel('Date').fill('2026-09-10');
     await page.getByLabel('Total (€)').fill('35,10');
     await page.getByLabel('Magasin').fill('Carrefour');
     await page.getByRole('button', { name: /Enregistrer/ }).click();
