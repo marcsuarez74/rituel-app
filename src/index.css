@@ -2208,7 +2208,7 @@ progress {
 .bud-pct {
   font-size: 10.5px;
   font-weight: 700;
-  color: var(--muted);
+  color: color-mix(in srgb, var(--muted) 70%, var(--text));
   flex-shrink: 0;
   font-variant-numeric: tabular-nums;
 }
