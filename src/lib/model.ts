@@ -68,6 +68,12 @@ export interface MicroBatchJour {
   quoi: string;
 }
 
+export interface ReserveLigne {
+  cle: string; // jour (lundi..dimanche) ou « mel »
+  plat: string;
+  conservation: string;
+}
+
 export type MealKey = 'dejeunerMarc' | 'dejeunerMelanie' | 'dinerFamille' | 'dinerMelanie' | 'batch';
 
 export interface ProfileData {
