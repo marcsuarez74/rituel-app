@@ -9,6 +9,7 @@ import { expect, test } from '@playwright/test';
 // fiche recette s'y accroche. Les coches menu partent d'un storageState vierge.
 // Le test dépenses sème aussi une dépense datée 2026-09-09 (∈ S37) et épingle
 // le total « Payé cette semaine » à 73,30 € — déplacer les deux au refresh.
+// La saisie du formulaire épingle en plus la « Date » à 2026-09-10 (∈ S37) — au refresh, déplacer les trois.
 const ORIGIN = process.env.E2E_PREVIEW ? 'http://localhost:4173' : 'http://localhost:5173';
 
 // Jours en français, lundi premier (getDay() est dimanche premier → rotation).
@@ -121,11 +122,12 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
     await page.getByRole('button', { name: /Total payé/ }).click();
     await expect(page.getByRole('heading', { name: /Mes dépenses réelles/ })).toBeVisible();
     await page.getByLabel('Total (€)').fill('35,10');
+    await page.getByLabel('Date').fill('2026-09-10'); // ∈ S37 : la date du jour sortirait de [du..au] dès que la semaine d'exemple expire
     await page.getByLabel('Magasin').fill('Carrefour');
     await page.getByRole('button', { name: /Enregistrer/ }).click();
     await expect(page.getByText('Enregistré ✓')).toBeVisible();
-    // Deux magasins → deux lignes, aucun upsert croisé (même si la date du jour
-    // coïncide avec le seed) :
+    // Deux magasins → deux lignes, aucun upsert croisé. La date est épinglée
+    // dans la semaine d'exemple : le test reste stable toute l'année.
     await expect(page.locator('.dep')).toHaveCount(2);
     await page.getByRole('button', { name: /Retour/ }).first().click();
     // De retour sur la carte, le payé additionne les deux sessions de la semaine.
