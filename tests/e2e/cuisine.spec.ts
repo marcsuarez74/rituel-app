@@ -9,6 +9,7 @@ import { expect, test } from '@playwright/test';
 // noms courts des recettes (préfixe de ref « R# · » retiré par nomCourt, coupe
 // de labelCourt) : la pill « Cuisses de poulet… » (lundi) sert d'ancrage aux
 // tests fiche + coche, la note de verrouillage cite « Pâtes bolognaise ».
+// Le clic « Boxes faites » vise la 1ʳᵉ paire prête (mardi, ← R1) — ordre du fichier.
 // Les coches menu partent d'un storageState vierge.
 // Le test dépenses sème aussi une dépense datée 2026-09-09 (∈ S37) et épingle
 // le total « Payé cette semaine » à 73,30 € — déplacer les deux au refresh.
@@ -74,6 +75,8 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
     await expect(page.getByText('Semaine 2026-S37')).toBeVisible();
     await page.getByRole('button', { name: 'Menu' }).click();
     await expect(page.locator('.rtab')).toHaveCount(8); // 7 dîners + 🍱 Déjeuners
+    // Les pills n'affichent aucun jour : pas de « lundi » ni équivalent.
+    await expect(page.locator('.rtab').first()).not.toContainText(/lundi/i);
     await expect(page.locator('.menu-progress')).toContainText('Dîners 0/7');
     await expect(page.locator('.menu-progress')).toContainText('Boxes 0/7');
 
@@ -82,6 +85,10 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
     const ongletLundi = page.getByRole('tab', { name: 'Cuisses de poulet…' });
     await ongletLundi.click();
     await expect(page.locator('.recette-etapes li').first()).toBeVisible();
+    // Fiche complète : qui mange quoi, portions maison (R1) et préparation.
+    await expect(page.getByText('Qui mange quoi')).toBeVisible();
+    await expect(page.getByText(/1 poignée de riz/)).toBeVisible();
+    await expect(page.getByText('Préparation')).toBeVisible();
 
     // Coche « C'est fait » → pill grisée + progression, persistée au rechargement.
     await page.getByRole('button', { name: /C'est fait/ }).click();
@@ -109,6 +116,19 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
     await page.getByRole('tab', { name: '🍱 Déjeuners' }).click();
     await expect(page.locator('.box-pair.locked')).toHaveCount(2);
     await expect(page.locator('.menu-progress')).toContainText('Dîners 2/7');
+
+    // « Boxes faites » : la 1ʳᵉ paire prête dans l'ordre du fichier = mardi
+    // (← R1, cochée plus haut). Plusieurs paires prêtes → .first() obligatoire.
+    await page.getByRole('button', { name: /Boxes faites/ }).first().click();
+    await expect(page.getByText('Mangées')).toBeVisible();
+
+    // Les coches tombent dans le storage de la semaine (contrat ids stables).
+    const checks = await page.evaluate(() =>
+      JSON.parse(localStorage.getItem('sportapp:checks:2026-S37')!),
+    );
+    expect(checks['menu:lundi:dinerFamille']).toBe(true);
+    expect(checks['menu:mardi:dejeunerMarc']).toBe(true);
+    expect(checks['menu:mardi:dejeunerMelanie']).toBe(true);
   });
 
   test('courses : compteurs par rayon et encadré keto en dernier', async ({ page }) => {
