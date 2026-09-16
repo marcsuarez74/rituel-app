@@ -1392,16 +1392,25 @@ const postConnexion = async (): Promise<void> => {
   await flush();
 };
 
+// NOTE (déviation T8 acceptée) : les écritures du merge NE re-empilent PAS
+// dans l'outbox — `appliquerRemote` suspend l'empilement autour d'un corps
+// sync (`appliquerRemoteSync`) pour éviter tout écho vers le serveur, et la
+// suspension ne s'étend jamais sur un await (aucune mutation utilisateur ne
+// peut être perdue entre deux ops).
+
 // Installe le client + le realtime (idempotent).
 const connecter = async (): Promise<void> => {
-  if (client) return;
-  client = await creerClient();
-  desabonner = client.abonner(() => {
-    if (pullTimer) clearTimeout(pullTimer);
-    pullTimer = setTimeout(() => {
-      void pull();
-    }, 500);
-  });
+  // Client pré-injecté (tests) ou déjà connecté : ne pas re-installer,
+  // mais postConnexion doit TOUJOURS tourner (push/pull initial).
+  if (!client) {
+    client = await creerClient();
+    desabonner = client.abonner(() => {
+      if (pullTimer) clearTimeout(pullTimer);
+      pullTimer = setTimeout(() => {
+        void pull();
+      }, 500);
+    });
+  }
   await postConnexion();
 };
 
