@@ -13,6 +13,7 @@ import { parseEuro } from '../../lib/prix';
 import { addWeight, getWeights, saveProfile } from '../../lib/storage';
 import { syncActif } from '../../lib/sync/config';
 import { connecterFoyer } from '../../lib/sync/engine';
+import { messageConnexion } from '../../lib/sync/messages';
 import { lireSession } from '../../lib/sync/session';
 import { Icon } from '../Icon';
 
@@ -245,8 +246,8 @@ export function Onboarding({
     try {
       await connecterFoyer(code);
       onDone(profileFinal);
-    } catch {
-      setError('Code de foyer refusé — vérifie la saisie.');
+    } catch (e) {
+      setError(messageConnexion(e));
     } finally {
       setSyncOccupe(false);
     }

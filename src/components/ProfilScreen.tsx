@@ -11,6 +11,7 @@ import {
   purgerFoyer,
 } from '../lib/sync/engine';
 import type { SyncEtat } from '../lib/sync/engine';
+import { messageConnexion } from '../lib/sync/messages';
 import { ImportButton } from './ImportButton';
 import { Icon } from './Icon';
 
@@ -24,12 +25,6 @@ const ETAT_SYNC: Record<Exclude<SyncEtat, 'off'>, string> = {
   sync: 'Synchronisé.',
   erreur: 'Synchronisation : erreur.',
 };
-
-// L'engine distingue code refusé / indisponible — l'UI parle utilisateur.
-const messageConnexion = (e: unknown): string =>
-  e instanceof Error && e.message === 'code-refuse'
-    ? 'Code de foyer refusé.'
-    : 'Connexion impossible pour le moment. Réessaie plus tard.';
 
 // Bloc « Paramètres » recopié dans le prompt de génération de cycle.
 // Une ligne par donnée présente ; régime omis si aucun ; null si rien.
