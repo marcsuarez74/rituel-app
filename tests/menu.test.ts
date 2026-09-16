@@ -11,6 +11,8 @@ import {
   pairePrete,
   selectionInitiale,
 } from '../src/lib/menu';
+import { parseWeeklyFile } from '../src/lib/parse';
+import semaineExempleRaw from '../src/assets/semaine-exemple.md?raw';
 
 const RECETTE: Recette = {
   id: 'r1',
@@ -186,5 +188,39 @@ describe('menu — selectionInitiale', () => {
 
   it('onglets vides : retombe sur 0 (l appelant doit garder)', () => {
     expect(selectionInitiale([], [], {})).toBe(0);
+  });
+});
+
+describe('menu — semaine d exemple (intégration)', () => {
+  const semaine = parseWeeklyFile(semaineExempleRaw).data;
+
+  it('les déjeuners portent les refs de leur recette source', () => {
+    expect(semaine.menu[0].recetteRefs?.dejeunerMarc).toBe('R7'); // boîte du batch dimanche
+    expect(semaine.menu[0].recetteRefs?.dejeunerMelanie).toBe('R7');
+    expect(semaine.menu[1].recetteRefs?.dejeunerMarc).toBe('R1'); // boîte poulet-riz (lun)
+    expect(semaine.menu[2].recetteRefs?.dejeunerMarc).toBe('R2'); // boîte bolo
+    expect(semaine.menu[2].recetteRefs?.dejeunerMelanie).toBe('R2');
+    expect(semaine.menu[3].recetteRefs?.dejeunerMelanie).toBe('R3'); // restes omelette
+    // Vendredi (restes/wrap) et samedi : pas de source claire → pas de ref.
+    expect(semaine.menu[4].recetteRefs?.dejeunerMarc).toBeUndefined();
+  });
+
+  it('7 onglets + 7 paires ; mardi se débloque avec R1, mercredi avec R2', () => {
+    const onglets = construireOnglets(semaine.menu, semaine.recettes ?? []);
+    const paires = construirePaires(semaine.menu, semaine.recettes ?? []);
+    expect(onglets).toHaveLength(7);
+    expect(paires).toHaveLength(7);
+    const faits = faitsParRecette(semaine.menu);
+    expect(pairePrete(paires[1], {}, faits)).toBe(false);
+    expect(pairePrete(paires[1], { 'menu:lundi:dinerFamille': true }, faits)).toBe(true);
+    expect(pairePrete(paires[2], { 'menu:mardi:dinerFamille': true }, faits)).toBe(true);
+  });
+
+  it('portions en mesures maison : jamais une portion qui oblige à peser en premier', () => {
+    const r1 = semaine.recettes?.find((r) => r.id.startsWith('r1-'));
+    expect(r1?.portions?.marc).toContain('poignée de riz');
+    expect(r1?.portions?.marc).toMatch(/\(~150 g cuit\)/);
+    const r4 = semaine.recettes?.find((r) => r.id.startsWith('r4-'));
+    expect(r4?.portions?.marc).toContain('paume de poulet');
   });
 });

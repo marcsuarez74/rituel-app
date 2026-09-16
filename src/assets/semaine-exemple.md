@@ -57,26 +57,26 @@ au: 2026-09-13
 
 ## Menu
 ### Lundi
-- dejeuner-marc: Boîte dinde-quinoa (batch dim) + légumes
-- dejeuner-melanie: Restes dinde + gratin courgettes + ½ avocat
+- dejeuner-marc: Boîte dinde-quinoa (batch dim) + légumes → R7
+- dejeuner-melanie: Restes dinde + gratin courgettes + ½ avocat → R7
 - diner-famille: Cuisses poulet rôties + carottes/patates douces + riz → R1
 - diner-melanie: Poulet + légumes rôtis + filet huile d'olive (sans riz/patate douce)
 - batch: Double riz + légumes rôtis → boîte mardi Marc
 ### Mardi
-- dejeuner-marc: Boîte poulet-riz (lun)
-- dejeuner-melanie: Restes poulet + œuf dur + crudités
+- dejeuner-marc: Boîte poulet-riz (lun) → R1
+- dejeuner-melanie: Restes poulet + œuf dur + crudités → R1
 - diner-famille: Pâtes bolognaise (haché 5 %) + salade → R2
 - diner-melanie: Bolo sur courgettes spaghetti + parmesan
 - batch: Double sauce bolo → boîte mer + 1 congel · courgettes en spaghetti à la mandoline (5 min)
 ### Mercredi
 - dejeuner-marc: Boîte bolo → R2
-- dejeuner-melanie: Bolo sur courgettes (restes)
+- dejeuner-melanie: Bolo sur courgettes (restes) → R2
 - diner-famille: Omelette fromage-herbes (ta part : 4 œufs + jambon) + pommes vapeur + salade → R3
 - diner-melanie: Omelette + salade + avocat (sans pommes)
 - batch: Zéro prep — soirée danse Maëlle 16h
 ### Jeudi
-- dejeuner-marc: Boîte bolo
-- dejeuner-melanie: Box thon-avocat ou restes omelette + salade
+- dejeuner-marc: Boîte bolo → R2
+- dejeuner-melanie: Box thon-avocat ou restes omelette + salade → R3
 - diner-famille: Wok poulet + légumes surgelés + riz (reste lun) → R4
 - diner-melanie: Wok sans riz + légumes verts + sauce soja-sésame
 ### Vendredi
@@ -106,7 +106,7 @@ glucides: 45
 lipides: 28
 score: 7
 fraicheur: batch dimanche → boîte frigo
-- portions marc: riz 150 g cuit · 2 cuisses + légumes rôtis
+- portions marc: 1 poignée de riz (~150 g cuit) · 2 cuisses + légumes rôtis
 - portions melanie: poulet + légumes rôtis ×2 (sans riz ni patate douce)
 image: https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80&auto=format&fit=crop
 - pour 4: 6-8 cuisses · 600 g carottes · 600 g patates douces · 250 g riz · huile, paprika, thym
@@ -124,7 +124,7 @@ glucides: 68
 lipides: 18
 score: 6
 fraicheur: sauce batchée mercredi → frigo 3 j
-- portions marc: pâtes 120 g cuites + bolo
+- portions marc: 1 grosse poignée de pâtes (~120 g cuites) + bolo
 - portions melanie: bolo sur courgettes spaghetti (sans pâtes)
 image: https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80&auto=format&fit=crop
 bases: B4, B6
@@ -143,7 +143,7 @@ glucides: 38
 lipides: 24
 score: 7
 fraicheur: cuisson du jour
-- portions marc: 4 œufs + jambon + pommes vapeur
+- portions marc: 4 œufs + jambon · 1 poignée de pommes vapeur (~200 g)
 - portions melanie: 2 œufs + salade + ½ avocat (sans pommes)
 image: https://images.unsplash.com/photo-1510693206972-df098062cb71?w=800&q=80&auto=format&fit=crop
 - pour 4: 10 œufs · 4 tranches jambon · 80 g râpé · 700 g pommes de terre · salade
@@ -160,7 +160,7 @@ glucides: 62
 lipides: 18
 score: 7
 fraicheur: riz batché lundi → frigo
-- portions marc: poulet 180 g + riz 150 g
+- portions marc: 1 paume de poulet (~180 g) · 1 poignée de riz (~150 g)
 - portions melanie: poulet + légumes verts ×2 (sans riz)
 image: https://images.unsplash.com/photo-1512058564366-18510be2db19?w=800&q=80&auto=format&fit=crop
 - pour 4: 600 g escalopes de poulet · 800 g légumes wok surgelés · riz restant (lun) · sauce soja + sésame
@@ -194,8 +194,8 @@ glucides: 54
 lipides: 16
 score: 8
 fraicheur: œufs durs du batch → frigo
-- portions marc: 2 tartines + 2 œufs + soupe
-- portions melanie: soupe réduite + 2 œufs (sans tartines)
+- portions marc: 2 tartines + 2 œufs + 1 louche de soupe
+- portions melanie: 1 louche de soupe (portion réduite) + 2 œufs (sans tartines)
 image: https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&q=80&auto=format&fit=crop
 bases: B3
 - pour 4: 1 butternut · 4 carottes · 1 oignon · 1 l bouillon · filet crème · pain complet · 6 œufs durs · comté
@@ -213,7 +213,7 @@ glucides: 52
 lipides: 24
 score: 8
 fraicheur: GROS BATCH dimanche → boîte lundi
-- portions marc: quinoa 150 g + dinde 180 g
+- portions marc: 1 poignée de quinoa (~150 g) + 1 paume de dinde (~180 g)
 - portions melanie: dinde + gratin ×2 (sans quinoa)
 image: https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=80&auto=format&fit=crop
 - pour 4: rôti de dinde ~800 g (en prévoir 2) · 4 courgettes · 15 cl crème + 80 g fromage râpé · 300 g quinoa
