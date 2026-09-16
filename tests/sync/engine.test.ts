@@ -21,7 +21,7 @@ import {
   reinitialiser,
 } from '../../src/lib/sync/engine';
 import { definirSession, effacerSession, lireSession } from '../../src/lib/sync/session';
-import { lireOutbox, viderOutbox } from '../../src/lib/sync/outbox';
+import { empiler, lireOutbox, viderOutbox } from '../../src/lib/sync/outbox';
 import { parseWeeklyFile } from '../../src/lib/parse';
 import {
   addWeight,
@@ -33,6 +33,7 @@ import {
   saveDepense,
   saveProfile,
   setCheck,
+  upsertWeek,
 } from '../../src/lib/storage';
 import type { ImportedWeek, UserProfile } from '../../src/lib/model';
 
@@ -43,6 +44,7 @@ interface FauxClient extends SyncClient {
   echecApres: number;
   echouerLectures: boolean; // pull : échec des lectures (toutLire) — flush a déjà echecApres
   lues: Record<string, RowSync[]>;
+  lectures: TableSync[]; // trace des toutLire (ordre des tables lues)
   purgees: boolean;
   echouer: (apres: 'aucun' | number) => void;
 }
@@ -61,6 +63,7 @@ const fauxClient = (): FauxClient => {
       c.suppressions.push({ table, clefs });
     },
     async toutLire(table: TableSync) {
+      c.lectures.push(table);
       if (c.echouerLectures) throw new Error('reseau');
       return c.lues[table] ?? [];
     },
@@ -69,6 +72,7 @@ const fauxClient = (): FauxClient => {
     },
     abonner: () => () => {},
     lues: {},
+    lectures: [],
     purgees: false,
     echouer: (apres) => {
       c.echecApres = apres === 'aucun' ? Infinity : apres;
@@ -85,6 +89,13 @@ const profilMarc = (): UserProfile => ({
   complements: [],
   regime: 'aucun',
 });
+
+// Semaine complète (ImportedWeek) pour tester le format wire jsonb.
+const semaineFictive = (): ImportedWeek => {
+  const raw = '---\nsemaine: 2026-S39\nmenu: A\ndu: 2026-09-21\nau: 2026-09-27\n---\n';
+  const { data } = parseWeeklyFile(raw);
+  return { raw, data, importedAt: '2026-09-16T08:00:00.000Z' };
+};
 
 describe('sync: flush', () => {
   let client: FauxClient;
@@ -137,6 +148,25 @@ describe('sync: flush', () => {
     ]);
     expect(lireOutbox()).toEqual([]);
     expect(etatSync()).toBe('sync');
+  });
+
+  it('flush weeks : payload enveloppé (colonne jsonb serveur), jamais de champs plats', async () => {
+    empiler({
+      op: 'upsert',
+      table: 'weeks',
+      key: { semaine: '2026-S39' },
+      payload: { ...semaineFictive() },
+    });
+    await flush();
+    expect(client.upserts).toHaveLength(1);
+    const ligne = client.upserts[0].rows[0];
+    expect(ligne).toMatchObject({
+      semaine: '2026-S39',
+      payload: semaineFictive(),
+      household_id: '11111111-2222-3333-4444-555555555555',
+    });
+    expect('raw' in ligne).toBe(false);
+    expect('data' in ligne).toBe(false);
   });
 
   it('flush envoie les deletes (op delete → client.supprimer)', async () => {
@@ -404,6 +434,7 @@ describe('sync: connexion foyer', () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   it('foyer vide → push complet de l\'état local', async () => {
@@ -418,10 +449,12 @@ describe('sync: connexion foyer', () => {
     const weights = client.upserts.find((u) => u.table === 'weights');
     expect(weights?.rows[0]).toMatchObject({ profil: 'marc', date_: '2026-09-21', kg: 82.4 });
     expect(etatSync()).toBe('sync');
-    vi.unstubAllGlobals();
+    // fusion union : le merge (lectures de toutes les tables) a bien eu lieu
+    expect(client.lectures).toContain('weeks');
   });
 
-  it('foyer déjà alimenté → pull (pas de push)', async () => {
+  it('foyer alimenté → fusion : l\'état local part, le remote s\'applique', async () => {
+    addWeight('marc', '2026-09-21', 82.4);
     client.lues.checks = [
       { household_id: 'f', semaine: '2026-S39', check_id: 'b1', done: true },
     ];
@@ -430,9 +463,31 @@ describe('sync: connexion foyer', () => {
       vi.fn(async () => new Response(JSON.stringify({ token: 'tok', foyer: 'foyer-1' }), { status: 200 })),
     );
     await connecterFoyer('code');
-    expect(client.upserts).toEqual([]);
-    expect(getChecks('2026-S39')['b1']).toBe(true);
-    vi.unstubAllGlobals();
+    expect(client.upserts).not.toEqual([]); // le local est parti
+    expect(getChecks('2026-S39')['b1']).toBe(true); // le remote s'est appliqué
+    expect(getWeights('marc')).toEqual([{ date: '2026-09-21', kg: 82.4 }]); // local intact
+  });
+
+  it('conflit à la connexion : le local gagne (outbox-prime) et repart vers le serveur', async () => {
+    const s = semaineFictive();
+    upsertWeek(s.raw, s.data); // la coche appartient à une semaine chargée
+    setCheck('2026-S39', 'b1', false); // local : b1 décoché
+    client.lues.checks = [
+      { household_id: 'f', semaine: '2026-S39', check_id: 'b1', done: true },
+    ];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ token: 'tok', foyer: 'foyer-1' }), { status: 200 })),
+    );
+    await connecterFoyer('code');
+    expect(getChecks('2026-S39')['b1']).toBe(false); // outbox-prime : remote skippé
+    const checks = client.upserts.find((u) => u.table === 'checks');
+    expect(checks?.rows[0]).toMatchObject({
+      semaine: '2026-S39',
+      check_id: 'b1',
+      done: false,
+      household_id: 'foyer-1',
+    });
   });
 
   it('code refusé → erreur, pas de session', async () => {
@@ -442,7 +497,6 @@ describe('sync: connexion foyer', () => {
     );
     await expect(connecterFoyer('mauvais')).rejects.toThrow('code-refuse');
     expect(lireSession()).toBeNull();
-    vi.unstubAllGlobals();
   });
 
   it('deconnecterFoyer nettoie session + outbox', async () => {

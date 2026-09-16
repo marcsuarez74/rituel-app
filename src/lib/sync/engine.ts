@@ -99,7 +99,11 @@ export const flush = async (): Promise<void> => {
         .filter((m) => m.op === 'upsert' && m.payload)
         .map<RowSync>((m) => ({
           ...m.key,
-          ...m.payload,
+          // weeks et profiles : payload enveloppé (colonne jsonb serveur) —
+          // checks/weights/depenses : colonnes scalaires (spread).
+          ...(t === 'weeks' || t === 'profiles'
+            ? { payload: m.payload }
+            : { ...m.payload }),
           household_id: foyerId,
           updated_at: new Date().toISOString(),
         }));
@@ -107,6 +111,9 @@ export const flush = async (): Promise<void> => {
       const clefs = finales.filter((m) => m.op === 'delete').map((m) => m.key);
       if (clefs.length > 0) await client.supprimer(t, clefs);
     }
+    // Déconnexion pendant la flush en vol : pas d'état 'sync' fantôme,
+    // l'outbox reste en place pour un retry.
+    if (!client || !lireSession()) return;
     for (const m of outbox) retirer(m);
     definirEtat('sync');
   } catch {
@@ -261,7 +268,8 @@ export const pull = async (): Promise<void> => {
   }
 };
 
-// Empile TOUT l'état local — premier appareil d'un foyer neuf. Passe par
+// Empile TOUT l'état local à la connexion — fusion union : le local gagne
+// via outbox-prime pendant le merge, puis flush pousse l'union. Passe par
 // `empiler` directement (bypass de la gate de empilerMutation) : on est
 // connecté à ce moment, c'est voulu.
 const pousserTout = (): void => {
@@ -269,7 +277,12 @@ const pousserTout = (): void => {
   for (const [semaine, w] of Object.entries(semaines)) {
     empiler({ op: 'upsert', table: 'weeks', key: { semaine }, payload: { ...w } });
     for (const [check_id, done] of Object.entries(getChecks(semaine))) {
-      empiler({ op: 'upsert', table: 'checks', key: { semaine, check_id }, payload: { done } });
+      empiler({
+        op: 'upsert',
+        table: 'checks',
+        key: { semaine, check_id },
+        payload: { done: done === true }, // valeur corrompue → jamais envoyée telle quelle
+      });
     }
   }
   for (const p of ['marc', 'melanie'] as const) {
@@ -296,19 +309,16 @@ const pousserTout = (): void => {
   }
 };
 
-// Premier appareil : foyer vide → push complet. Second appareil : pull/merge.
-// Flushe toujours après — l'outbox peut contenir des mutations pré-connexion.
+// Fusion union à la connexion : l'état local part d'abord (pousserTout →
+// outbox), puis le remote est fusionné avec la règle outbox-prime (les clés
+// locales gagnent), puis flush envoie l'union. Pas de branche vide/non-vide.
 const postConnexion = async (): Promise<void> => {
   if (!client || !lireSession()) return;
   definirEtat('attente');
+  pousserTout();
   const rows = {} as Record<TableSync, RowSync[]>;
   for (const t of TABLES) rows[t] = await client.toutLire(t);
-  const vide = TABLES.every((t) => rows[t].length === 0);
-  if (vide) {
-    pousserTout();
-  } else {
-    if (await appliquerRemote(rows)) onRemote?.();
-  }
+  if (await appliquerRemote(rows)) onRemote?.();
   await flush();
 };
 
@@ -339,6 +349,10 @@ export const deconnecterFoyer = (): void => {
   desabonner?.();
   desabonner = null;
   client = null;
+  if (flushTimer) clearTimeout(flushTimer);
+  flushTimer = null;
+  if (pullTimer) clearTimeout(pullTimer);
+  pullTimer = null;
   viderOutbox();
   effacerSession();
   definirEtat('off');
