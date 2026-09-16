@@ -1824,7 +1824,7 @@ if (synced.semaine !== semaine || synced.version !== syncVersion) {
 ```
 et passer `dataVersion={syncVersion}` aux deux `<Checklist ...>`.
 
-`BatchView.tsx` (composant `RituelTimeline` ET le composant parent qui rend la checklist batch — mêmes lignes que ShoppingList, cf. lignes 136-141) : même extension du reset + `dataVersion={syncVersion}` sur les `<Checklist>`.
+`BatchView.tsx` (composant `RituelTimeline` — il possède ses coches + reset ; la checklist batch parente du plan initial n'existe plus) : extension du reset + `dataVersion={syncVersion}` sur ses `<Checklist>`.
 
 `MenuView.tsx` : prop `syncVersion?: number` ; étendre le reset existant (lignes 37-44) :
 ```tsx
