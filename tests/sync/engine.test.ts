@@ -11,6 +11,7 @@ vi.mock('../../src/lib/sync/config', () => ({
 import {
   etatSync,
   flush,
+  flushDiffere,
   injecterClient,
   reinitialiser,
 } from '../../src/lib/sync/engine';
@@ -134,5 +135,91 @@ describe('sync: flush', () => {
     await flush();
     expect(etatSync()).toBe('erreur');
     expect(lireOutbox()).toHaveLength(1);
+  });
+
+  it('même clé : le dernier op gagne (delete→upsert ⇒ upsert seul, upsert→delete ⇒ delete seul)', async () => {
+    localStorage.setItem(
+      'sportapp:sync:outbox',
+      JSON.stringify([
+        { op: 'delete', table: 'depenses', key: { date_: '2026-09-21', magasin_key: 'lidl' } },
+        {
+          op: 'upsert',
+          table: 'depenses',
+          key: { date_: '2026-09-21', magasin_key: 'lidl' },
+          payload: { total: 12.5 },
+        },
+        {
+          op: 'upsert',
+          table: 'depenses',
+          key: { date_: '2026-09-22', magasin_key: 'aldi' },
+          payload: { total: 5 },
+        },
+        { op: 'delete', table: 'depenses', key: { date_: '2026-09-22', magasin_key: 'aldi' } },
+      ] satisfies MutationSync[]),
+    );
+    await flush();
+    expect(client.upserts).toEqual([
+      {
+        table: 'depenses',
+        rows: [
+          {
+            date_: '2026-09-21',
+            magasin_key: 'lidl',
+            total: 12.5,
+            household_id: '11111111-2222-3333-4444-555555555555',
+            updated_at: expect.any(String),
+          },
+        ],
+      },
+    ]);
+    expect(client.suppressions).toEqual([
+      { table: 'depenses', clefs: [{ date_: '2026-09-22', magasin_key: 'aldi' }] },
+    ]);
+    expect(lireOutbox()).toEqual([]);
+    expect(etatSync()).toBe('sync');
+  });
+
+  it('échec après tables réussies : toutes les entrées sont conservées, etat erreur', async () => {
+    localStorage.setItem(
+      'sportapp:sync:outbox',
+      JSON.stringify([
+        {
+          op: 'upsert',
+          table: 'checks',
+          key: { semaine: '2026-S39', check_id: 'b1' },
+          payload: { done: true },
+        },
+        { op: 'delete', table: 'depenses', key: { date_: '2026-09-21', magasin_key: 'lidl' } },
+        {
+          op: 'upsert',
+          table: 'profiles',
+          key: { profil: 'marc' },
+          payload: { poidsObjectif: 75 },
+        },
+      ] satisfies MutationSync[]),
+    );
+    // Ordre TABLES : checks (upsert n°1, réussit) → depenses (delete, réussit) →
+    // profiles (upsert n°2, échoue). Point clé : AUCUNE entrée n'est retirée,
+    // même celles des tables déjà envoyées avec succès.
+    client.echouer(1);
+    await flush();
+    expect(client.upserts).toHaveLength(1);
+    expect(client.suppressions).toHaveLength(1);
+    expect(etatSync()).toBe('erreur');
+    expect(lireOutbox()).toHaveLength(3);
+  });
+
+  it('flushDiffere debounce : une seule flush après 2s, reset du timer', async () => {
+    vi.useFakeTimers();
+    setCheck('2026-S39', 'b1', true);
+    setCheck('2026-S39', 'b2', true);
+    flushDiffere();
+    await vi.advanceTimersByTimeAsync(1500);
+    flushDiffere(); // reset : le premier timer (1500 ms déjà écoulés) est annulé
+    await vi.advanceTimersByTimeAsync(1999);
+    expect(client.upserts).toEqual([]); // 1500 + 1999 > 2000 : sans reset, la flush serait déjà passée
+    await vi.advanceTimersByTimeAsync(10);
+    expect(client.upserts).toHaveLength(1);
+    expect(client.upserts[0]?.rows).toHaveLength(2); // les deux coches, groupées
   });
 });
