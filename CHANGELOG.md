@@ -4,6 +4,17 @@ Toutes les évolutions notables de l'app sont documentées dans ce fichier.
 
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le versionnement sémantique ([semver](https://semver.org/lang/fr/)) : **majeur** = changement cassant (contrat .md, migration storage), **mineur** = nouvelle fonctionnalité, **correctif** = bugfix. La source de vérité est le champ `version` de `package.json`.
 
+## [1.2.0] - 2026-09-16
+
+### Modifié
+
+- Menu v3 : navigation par onglets de **recettes** (7 dîners + 🍱 Déjeuners, aucun jour affiché), fiche recette complète dans l'onglet, coche unique « C'est fait » par dîner (onglet grisé), file de déjeuners dynamique (les boxes se débloquent quand leur recette est faite), progression « Dîners X/N · Boxes X/N »
+- Portions en mesures maison (pièces, poignées, c. à soupe, louches) — les grammes entre parenthèses ne servent qu'à caler l'œil (semaine d'exemple, template, prompt IA)
+
+### Corrigé
+
+- Champs de l'onboarding (5ᵉ étape) et du profil rendus dans le style de l'app (hauteur, fond, arrondis) au lieu du rendu natif
+
 ## [1.1.0] - 2026-09-15
 
 ### Ajouté
@@ -22,8 +33,6 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 - Thème clair « Herbes » (sauge/basilic/citron) — le dark mode est retiré
 - Navigation segmented sous la bannière (le dock flottant disparaît)
-- Menu v3 : navigation par onglets de **recettes** (7 dîners + 🍱 Déjeuners, aucun jour affiché), fiche recette complète dans l'onglet, coche unique « C'est fait » par dîner (onglet grisé), file de déjeuners dynamique (les boxes se débloquent quand leur recette est faite), progression « Dîners X/N · Boxes X/N »
-- Portions en mesures maison (pièces, poignées, c. à soupe, louches) — les grammes entre parenthèses ne servent qu'à caler l'œil (semaine d'exemple, template, prompt IA)
 - Format .md v2 (rétrocompatible) : `- budget:`, suffixes ` · rituel` / ` | note`, `fraicheur:`, `- portions marc/melanie:`
 - Stat-cards réduites à la carte Poids (variation en kg vs 7 jours)
 - Séances en liste libre : le jour n'est plus qu'une recommandation (« conseillé lun. »)
@@ -54,5 +63,6 @@ Première version étiquetée — état de l'app après le redesign Nutrigo et l
 - Semaine d'exemple auto-chargée au premier lancement, hors-ligne dès l'installation
 
 [Unreleased]: https://github.com/marcsuarez74/rituel-app/compare/v1.1.0...HEAD
+[1.2.0]: https://github.com/marcsuarez74/rituel-app/releases/tag/v1.2.0
 [1.1.0]: https://github.com/marcsuarez74/rituel-app/releases/tag/v1.1.0
 [1.0.0]: https://github.com/marcsuarez74/rituel-app/releases/tag/v1.0.0
