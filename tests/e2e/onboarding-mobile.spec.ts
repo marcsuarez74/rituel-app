@@ -11,6 +11,24 @@ async function assertPasDeDebordement(page: import('@playwright/test').Page) {
   expect(overflow, 'la page ne doit pas scroller horizontalement').toBeLessThanOrEqual(OVERFLOW_TOLERANCE);
 }
 
+// Guideline (ui-guideline.md « Ultra visible » + design-system.md « Champs ») :
+// cible tactile ≥ 48px, fond surface-2 (#e7eae0), rayon token 12px — pas le rendu natif.
+const SURFACE_2 = 'rgb(231, 234, 224)'; // var(--surface-2) résolue
+
+async function assertStyleGuideline(page: import('@playwright/test').Page, label: string) {
+  const champ = page.getByLabel(label);
+  await expect(champ).toBeVisible();
+  await champ.scrollIntoViewIfNeeded();
+  const box = (await champ.boundingBox())!;
+  expect(box.height, `${label} : cible tactile ≥ 48px`).toBeGreaterThanOrEqual(48);
+  const style = await champ.evaluate((el) => {
+    const s = getComputedStyle(el);
+    return { fond: s.backgroundColor, rayon: s.borderRadius };
+  });
+  expect(style.fond, `${label} : fond tokens Herbes (surface-2)`).toBe(SURFACE_2);
+  expect(style.rayon, `${label} : rayon token 12px`).toBe('12px');
+}
+
 test.describe('Onboarding 5 étapes — mobile', () => {
   test('étape 2 : aucun débordement horizontal et champs dans le viewport', async ({ page }) => {
     const largeur = page.viewportSize()!.width;
@@ -31,6 +49,31 @@ test.describe('Onboarding 5 étapes — mobile', () => {
         box.x + box.width,
         `${label} tient entièrement dans le viewport`,
       ).toBeLessThanOrEqual(largeur + OVERFLOW_TOLERANCE);
+    }
+  });
+
+  test('étape 5 : les champs maison & courses suivent le style guideline', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => document.fonts.ready);
+    await page.getByRole('button', { name: /Mélanie/ }).click();
+
+    await page.getByLabel('Poids (kg)').fill('62.4');
+    await page.getByLabel('Date de naissance').fill('1987-03-02');
+    await page.getByLabel('Taille (cm)').fill('165');
+    await page.getByRole('button', { name: /Continuer/ }).click();
+    await page.getByRole('radio', { name: /Affiner/ }).click();
+    await page.getByRole('button', { name: /Continuer/ }).click();
+    await page.getByRole('button', { name: /Continuer/ }).click();
+
+    await expect(page.getByRole('heading', { name: /Maison & courses/ })).toBeVisible();
+    await assertPasDeDebordement(page);
+    for (const label of [
+      'Magasin habituel',
+      'Budget max courses / semaine',
+      'Personnes à table',
+      'Repas par jour',
+    ]) {
+      await assertStyleGuideline(page, label);
     }
   });
 
@@ -147,5 +190,20 @@ test.describe('Écran Profil — mobile', () => {
     await expect(page.getByRole('heading', { name: 'Compléments', level: 3 })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Régime', level: 3 })).toBeVisible();
     await assertPasDeDebordement(page);
+  });
+
+  test('profil : les champs maison & courses suivent le style guideline', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Mon profil' }).click();
+
+    await expect(page.getByRole('heading', { name: 'Profil' })).toBeVisible();
+    for (const label of [
+      'Magasin habituel',
+      'Budget max courses / semaine',
+      'Personnes à table',
+      'Repas par jour',
+    ]) {
+      await assertStyleGuideline(page, label);
+    }
   });
 });

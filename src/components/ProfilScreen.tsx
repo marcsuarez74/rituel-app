@@ -395,6 +395,7 @@ export function ProfilScreen({
           <label htmlFor="pf-magasin">Magasin habituel</label>
           <input
             id="pf-magasin"
+            type="text"
             list="pf-magasins"
             placeholder="Lidl, Intermarché…"
             value={magasin}
@@ -415,6 +416,7 @@ export function ProfilScreen({
           <label htmlFor="pf-budget">Budget max courses / semaine (€)</label>
           <input
             id="pf-budget"
+            type="text"
             inputMode="decimal"
             value={budgetMax}
             onChange={(e) => {
@@ -430,6 +432,7 @@ export function ProfilScreen({
             <label htmlFor="pf-personnes">Personnes à table</label>
             <input
               id="pf-personnes"
+              type="text"
               inputMode="numeric"
               value={personnes}
               onChange={(e) => {
@@ -444,6 +447,7 @@ export function ProfilScreen({
             <label htmlFor="pf-repas">Repas par jour</label>
             <input
               id="pf-repas"
+              type="text"
               inputMode="numeric"
               value={repasJour}
               onChange={(e) => {

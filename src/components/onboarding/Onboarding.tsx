@@ -562,6 +562,7 @@ export function Onboarding({
                 <label htmlFor="ob-magasin">Magasin habituel</label>
                 <input
                   id="ob-magasin"
+                  type="text"
                   list="ob-magasins"
                   placeholder="Lidl, Intermarché…"
                   value={magasin}
@@ -580,6 +581,7 @@ export function Onboarding({
                 <label htmlFor="ob-budget">Budget max courses / semaine (€, optionnel)</label>
                 <input
                   id="ob-budget"
+                  type="text"
                   inputMode="decimal"
                   value={budgetMax}
                   onChange={(e) => {
@@ -596,6 +598,7 @@ export function Onboarding({
                   <label htmlFor="ob-personnes">Personnes à table</label>
                   <input
                     id="ob-personnes"
+                    type="text"
                     inputMode="numeric"
                     value={personnes}
                     onChange={(e) => {
@@ -608,6 +611,7 @@ export function Onboarding({
                   <label htmlFor="ob-repas">Repas par jour</label>
                   <input
                     id="ob-repas"
+                    type="text"
                     inputMode="numeric"
                     value={repasJour}
                     onChange={(e) => {
