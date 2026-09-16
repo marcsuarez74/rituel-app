@@ -13,9 +13,20 @@ import {
   setCheck,
   upsertWeek,
 } from '../storage';
-import type { RowSync, SyncClient } from './client';
-import { TABLES, lireOutbox, retirer, type MutationSync, type TableSync } from './outbox';
-import { lireSession } from './session';
+import { creerClient, type RowSync, type SyncClient } from './client';
+import { syncActif } from './config';
+import {
+  TABLES,
+  empiler,
+  lireOutbox,
+  retirer,
+  reprendreEmpilement,
+  suspendreEmpilement,
+  viderOutbox,
+  type MutationSync,
+  type TableSync,
+} from './outbox';
+import { demanderSession, definirSession, effacerSession, lireSession } from './session';
 
 export type SyncEtat = 'off' | 'attente' | 'sync' | 'erreur';
 
@@ -25,6 +36,10 @@ let onEtatCb: ((e: SyncEtat) => void) | null = null;
 // Enregistré par initSync : callback UI après application du remote (re-rendu).
 let onRemote: (() => void) | null = null;
 let flushTimer: ReturnType<typeof setTimeout> | null = null;
+// Debounce du realtime : rafale d'événements → un seul pull après 500 ms.
+let pullTimer: ReturnType<typeof setTimeout> | null = null;
+// Désabonnement realtime (posé par connecter, retiré par deconnecterFoyer).
+let desabonner: (() => void) | null = null;
 // Single-flight : les déclencheurs (mutations, realtime, réseau) peuvent se
 // rafaler — une seule flush à la fois.
 let flushEnCours = false;
@@ -42,6 +57,8 @@ export const injecterClient = (c: SyncClient | null): void => {
 };
 
 export const reinitialiser = (): void => {
+  desabonner?.();
+  desabonner = null;
   client = null;
   etat = 'off';
   onEtatCb = null;
@@ -49,6 +66,8 @@ export const reinitialiser = (): void => {
   flushEnCours = false;
   if (flushTimer) clearTimeout(flushTimer);
   flushTimer = null;
+  if (pullTimer) clearTimeout(pullTimer);
+  pullTimer = null;
 };
 
 export const flush = async (): Promise<void> => {
@@ -156,10 +175,9 @@ const reconstruireDepenses = (remoteRows: RowSync[]): boolean => {
   return change;
 };
 
-// Applique les lignes remote au localStorage — règle « outbox locale prime » :
-// une clé en attente d'envoi ne reçoit PAS le remote (elle flushera sa valeur).
-// Retourne true si au moins une écriture a eu lieu (pour ne re-rendre que là).
-export const appliquerRemote = async (rows: Record<TableSync, RowSync[]>): Promise<boolean> => {
+// Corps synchrone : garantit que la suspension d'empilement ne peut pas
+// fuiter entre deux opérations entrelacées.
+const appliquerRemoteSync = (rows: Record<TableSync, RowSync[]>): boolean => {
   const attente = clesOutbox();
   let change = false;
 
@@ -218,6 +236,19 @@ export const appliquerRemote = async (rows: Record<TableSync, RowSync[]>): Promi
   return change;
 };
 
+// Applique les lignes remote au localStorage — règle « outbox locale prime » :
+// une clé en attente d'envoi ne reçoit PAS le remote (elle flushera sa valeur).
+// L'empilement est suspendu : ce qui vient du serveur ne repart pas vers lui.
+// Retourne true si au moins une écriture a eu lieu (pour ne re-rendre que là).
+export const appliquerRemote = async (rows: Record<TableSync, RowSync[]>): Promise<boolean> => {
+  suspendreEmpilement();
+  try {
+    return appliquerRemoteSync(rows);
+  } finally {
+    reprendreEmpilement();
+  }
+};
+
 export const pull = async (): Promise<void> => {
   if (!client) return;
   try {
@@ -229,3 +260,90 @@ export const pull = async (): Promise<void> => {
     definirEtat('erreur'); // symétrique de la flush : retry au prochain déclencheur
   }
 };
+
+// Empile TOUT l'état local — premier appareil d'un foyer neuf. Passe par
+// `empiler` directement (bypass de la gate de empilerMutation) : on est
+// connecté à ce moment, c'est voulu.
+const pousserTout = (): void => {
+  const semaines = loadWeeks();
+  for (const [semaine, w] of Object.entries(semaines)) {
+    empiler({ op: 'upsert', table: 'weeks', key: { semaine }, payload: { ...w } });
+    for (const [check_id, done] of Object.entries(getChecks(semaine))) {
+      empiler({ op: 'upsert', table: 'checks', key: { semaine, check_id }, payload: { done } });
+    }
+  }
+  for (const p of ['marc', 'melanie'] as const) {
+    for (const w of getWeights(p)) {
+      empiler({
+        op: 'upsert',
+        table: 'weights',
+        key: { profil: p, date_: w.date },
+        payload: { kg: w.kg },
+      });
+    }
+  }
+  for (const d of getDepenses()) {
+    empiler({
+      op: 'upsert',
+      table: 'depenses',
+      key: { date_: d.date, magasin_key: d.magasin.toLowerCase() },
+      payload: { magasin: d.magasin, total: d.total },
+    });
+  }
+  const profil = loadProfile();
+  if (profil) {
+    empiler({ op: 'upsert', table: 'profiles', key: { profil: profil.id }, payload: { ...profil } });
+  }
+};
+
+// Premier appareil : foyer vide → push complet. Second appareil : pull/merge.
+// Flushe toujours après — l'outbox peut contenir des mutations pré-connexion.
+const postConnexion = async (): Promise<void> => {
+  if (!client || !lireSession()) return;
+  definirEtat('attente');
+  const rows = {} as Record<TableSync, RowSync[]>;
+  for (const t of TABLES) rows[t] = await client.toutLire(t);
+  const vide = TABLES.every((t) => rows[t].length === 0);
+  if (vide) {
+    pousserTout();
+  } else {
+    if (await appliquerRemote(rows)) onRemote?.();
+  }
+  await flush();
+};
+
+// Installe le client + le realtime (idempotent) puis déclenche la
+// post-connexion. Si un client est déjà posé (tests, reconnexion), on ne
+// recrée rien — mais la post-connexion doit avoir lieu.
+const connecter = async (): Promise<void> => {
+  if (!client) {
+    client = await creerClient();
+    desabonner = client.abonner(() => {
+      if (pullTimer) clearTimeout(pullTimer);
+      pullTimer = setTimeout(() => {
+        void pull();
+      }, 500);
+    });
+  }
+  await postConnexion();
+};
+
+export const connecterFoyer = async (code: string): Promise<void> => {
+  if (!syncActif()) throw new Error('sync-inactive');
+  const session = await demanderSession(code.trim());
+  definirSession(session.token, session.foyerId);
+  await connecter();
+};
+
+export const deconnecterFoyer = (): void => {
+  desabonner?.();
+  desabonner = null;
+  client = null;
+  viderOutbox();
+  effacerSession();
+  definirEtat('off');
+};
+
+// Ré-export pour l'UI (ProfilScreen) sans import direct de session —
+// le engine reste le point d'entrée unique de la sync.
+export const lireSessionPub = lireSession;

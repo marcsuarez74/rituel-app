@@ -10,17 +10,21 @@ vi.mock('../../src/lib/sync/config', () => ({
 
 import {
   appliquerRemote,
+  connecterFoyer,
+  deconnecterFoyer,
   etatSync,
   flush,
   flushDiffere,
   injecterClient,
+  lireSessionPub,
   pull,
   reinitialiser,
 } from '../../src/lib/sync/engine';
-import { definirSession, effacerSession } from '../../src/lib/sync/session';
+import { definirSession, effacerSession, lireSession } from '../../src/lib/sync/session';
 import { lireOutbox, viderOutbox } from '../../src/lib/sync/outbox';
 import { parseWeeklyFile } from '../../src/lib/parse';
 import {
+  addWeight,
   getChecks,
   getDepenses,
   getWeights,
@@ -382,5 +386,76 @@ describe('sync: pull / merge (outbox prime)', () => {
     client.echouerLectures = true;
     await pull();
     expect(etatSync()).toBe('erreur');
+  });
+});
+
+describe('sync: connexion foyer', () => {
+  let client: FauxClient;
+
+  beforeEach(() => {
+    vi.setSystemTime(new Date('2026-09-16T10:00:00'));
+    localStorage.clear();
+    viderOutbox();
+    effacerSession();
+    reinitialiser();
+    client = fauxClient();
+    injecterClient(client);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('foyer vide → push complet de l\'état local', async () => {
+    addWeight('marc', '2026-09-21', 82.4);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ token: 'tok', foyer: 'foyer-1' }), { status: 200 })),
+    );
+    await connecterFoyer(' rituel-2026 ');
+    expect(lireSession()).toEqual({ token: 'tok', foyerId: 'foyer-1' });
+    // push : la pesée locale est partie vers le serveur
+    const weights = client.upserts.find((u) => u.table === 'weights');
+    expect(weights?.rows[0]).toMatchObject({ profil: 'marc', date_: '2026-09-21', kg: 82.4 });
+    expect(etatSync()).toBe('sync');
+    vi.unstubAllGlobals();
+  });
+
+  it('foyer déjà alimenté → pull (pas de push)', async () => {
+    client.lues.checks = [
+      { household_id: 'f', semaine: '2026-S39', check_id: 'b1', done: true },
+    ];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ token: 'tok', foyer: 'foyer-1' }), { status: 200 })),
+    );
+    await connecterFoyer('code');
+    expect(client.upserts).toEqual([]);
+    expect(getChecks('2026-S39')['b1']).toBe(true);
+    vi.unstubAllGlobals();
+  });
+
+  it('code refusé → erreur, pas de session', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('{"error":"code-refuse"}', { status: 401 })),
+    );
+    await expect(connecterFoyer('mauvais')).rejects.toThrow('code-refuse');
+    expect(lireSession()).toBeNull();
+    vi.unstubAllGlobals();
+  });
+
+  it('deconnecterFoyer nettoie session + outbox', async () => {
+    definirSession('t', 'f');
+    setCheck('2026-S39', 'b1', true);
+    deconnecterFoyer();
+    expect(lireSession()).toBeNull();
+    expect(lireOutbox()).toEqual([]);
+    expect(etatSync()).toBe('off');
+  });
+
+  it('lireSessionPub expose la session (usage UI)', () => {
+    definirSession('t', 'f');
+    expect(lireSessionPub()).toEqual({ token: 't', foyerId: 'f' });
   });
 });

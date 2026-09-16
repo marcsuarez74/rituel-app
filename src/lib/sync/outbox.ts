@@ -85,11 +85,24 @@ export const surEmpile = (cb: (() => void) | null): void => {
   auMoinsUneEmpile = cb;
 };
 
+// Écho : appliquer l'état distant (appliquerRemote) ne doit pas ré-empiler ce
+// qui vient justement du serveur. Suspension manuelle — le corps
+// d'appliquerRemote est synchrone (suspendre → appliquer → reprendre).
+let empilementSuspendu = false;
+
+export const suspendreEmpilement = (): void => {
+  empilementSuspendu = true;
+};
+
+export const reprendreEmpilement = (): void => {
+  empilementSuspendu = false;
+};
+
 // Point d'entrée unique pour storage.ts : no-op tant que la sync n'est pas
 // configurée (env absente) ou connectée (pas de token). L'app sans backend
 // n'écrit JAMAIS d'outbox — zéro impact sur le comportement actuel.
 export const empilerMutation = (m: MutationSync): void => {
-  if (!syncActif() || !lireSession()) return;
+  if (empilementSuspendu || !syncActif() || !lireSession()) return;
   empiler(m);
   auMoinsUneEmpile?.();
 };
