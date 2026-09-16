@@ -37,10 +37,10 @@ Décisions validées :
 La fiche recette devient le cœur de l'onglet (plus de toggle « Voir la recette ») :
 
 1. **Carte meta** : `temps` · `kcal` · score (barre 10 segments) + `fraicheur` — masqués si absents
-2. **Qui mange quoi** : ligne **Marc** = texte du dîner (`dinerFamille`), ligne **Mél · keto** = `dinerMelanie` (menu) sinon `- mel:` (recette). Tags existants (Marc basilic / Mél citron). Pas de ligne si la clé est absente
+2. **Qui mange quoi** : ligne **Marc** = texte du dîner (`dinerFamille`), ligne **Mél · keto** = `dinerMelanie` (menu). Tags existants (Marc basilic / Mél citron). Pas de ligne si la clé est absente — le repli sur `- mel:` (recette) est volontairement écarté : le menu du jour est la seule source (anti-duplication, cf. règle ci-dessous)
 3. **Portions — par personne** : `portions marc:` / `portions melanie:` de la recette (masqué si absentes). Nouvelle convention de contenu (§5)
 4. **Préparation — pour N** : `- pour 4:` + étapes numérotées + chips de bases (dépliables, comme aujourd'hui)
-5. **Batch associé** : ligne `batch:` du jour (menu) sinon `- batch:` de la recette — **info non cochable** (les coches batch restent dans l'onglet Batch)
+5. **Batch associé** : ligne `batch:` du jour (menu) — **info non cochable** (les coches batch restent dans l'onglet Batch). Repli sur `- batch:` de la recette écarté pour la même raison
 6. **CTA « C'est fait — dîner fini »** : pill basilic 48 px ; coché → carte entière grisée (barré + opacité) et CTA devient « Dîner fait ✓ — annuler »
 
 Règle anti-duplication : le menu (les lignes du jour) est prioritaire sur les lignes de recette (`mel:`, `batch:`) — on n'affiche jamais les deux.
