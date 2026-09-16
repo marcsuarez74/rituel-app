@@ -415,13 +415,15 @@ describe("Semaine d'exemple — contenu réel (Menu A, S37)", () => {
     const { data, warnings } = parseWeeklyFile(sampleRaw);
 
     expect(warnings).toEqual([]);
-    // R1-R7 : 7 recettes, chaque jour a son diner-famille lié + mercredi aussi le déjeuner Marc
+    // R1-R7 : 7 recettes, chaque jour a son diner-famille lié + les déjeuners
+    // liés à leur recette source (mercredi : Marc + Mél sur les restes bolo).
     expect(data.recettes).toHaveLength(7);
     for (const day of data.menu) {
       expect(Object.keys(day.recetteRefs ?? {})).toContain('dinerFamille');
     }
     expect(data.menu.find((d) => d.jour === 'Mercredi')?.recetteRefs).toEqual({
       dejeunerMarc: expect.any(String),
+      dejeunerMelanie: expect.any(String),
       dinerFamille: expect.any(String),
     });
     // toutes les recettes liées portent kcal + étapes (contrat e2e « fiche recette »)

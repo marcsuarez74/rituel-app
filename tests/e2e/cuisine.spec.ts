@@ -92,15 +92,22 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
     await page.getByRole('button', { name: 'Menu' }).click();
     await expect(page.getByRole('tab', { name: 'Cuisses de poulet…' })).toHaveClass(/fait/);
 
-    // File de déjeuners : la box du mercredi attend le dîner de mardi (R2)…
+    // File de déjeuners : 3 paires verrouillées — lundi (← R7), mercredi (← R2)
+    // et jeudi (← R2 + R3). Mardi (← R1) est déjà prête : le dîner de lundi
+    // (R1) a été coché plus haut dans ce test.
     await page.getByRole('tab', { name: '🍱 Déjeuners' }).click();
-    await expect(page.locator('.box-pair.locked')).toHaveCount(1);
-    await expect(page.locator('.lock-note')).toContainText('Pâtes bolognaise');
-    // … puis se débloque quand la pill « Pâtes bolognaise » est cochée.
+    await expect(page.locator('.box-pair.locked')).toHaveCount(3);
+    // La 2e verrouillée (ordre du fichier) est celle du mercredi : elle attend
+    // le dîner de mardi (R2), sa note cite « Pâtes bolognaise ».
+    await expect(page.locator('.box-pair.locked').nth(1).locator('.lock-note')).toContainText(
+      'Pâtes bolognaise',
+    );
+    // … puis se débloque quand la pill « Pâtes bolognaise » est cochée
+    // (restent verrouillées : lundi ← R7, jeudi ← R3).
     await page.getByRole('tab', { name: 'Pâtes bolognaise' }).click();
     await page.getByRole('button', { name: /C'est fait/ }).click();
     await page.getByRole('tab', { name: '🍱 Déjeuners' }).click();
-    await expect(page.locator('.box-pair.locked')).toHaveCount(0);
+    await expect(page.locator('.box-pair.locked')).toHaveCount(2);
     await expect(page.locator('.menu-progress')).toContainText('Dîners 2/7');
   });
 
