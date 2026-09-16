@@ -159,8 +159,8 @@ function App() {
         {tab === 'suivi' && (
           <>
             <p className="greeting">Salut {PRENOMS[profile.id]} 👋</p>
-            <ObjectifBloc key={`obj-${weightsBump}`} profile={profile} />
-            <StatCards key={weightsBump} profile={profile} />
+            <ObjectifBloc key={`obj-${weightsBump}-${syncVersion}`} profile={profile} />
+            <StatCards key={weightsBump + syncVersion} profile={profile} />
             <ProfileView
               profile={profile}
               data={affichee.data.profiles[profile.id]}
