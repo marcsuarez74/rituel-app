@@ -6,6 +6,7 @@ import {
   debloquePar,
   faitsParRecette,
   labelCourt,
+  nomCourt,
   paireFaite,
   pairePrete,
   selectionInitiale,
@@ -51,6 +52,13 @@ describe('menu — labelCourt', () => {
     expect(labelCourt('Omelette fromage-jambon + pommes vapeur')).toBe('Omelette fromage…');
     expect(labelCourt('Soupe butternut-carotte + tartines')).toBe('Soupe butternut…');
   });
+
+  it('nomCourt : retire un préfixe de ref (R1 · ) avant labelCourt', () => {
+    expect(nomCourt('R1 · Cuisses de poulet rôties + légumes + riz')).toBe('Cuisses de poulet…');
+    expect(nomCourt('R12 · Pâtes bolognaise (haché 5 %) + salade')).toBe('Pâtes bolognaise…');
+    expect(nomCourt('Tartare · citron + pain')).toBe('Tartare'); // pas un préfixe de ref
+    expect(nomCourt('Poulet au four + riz')).toBe('Poulet au four'); // sans préfixe
+  });
 });
 
 describe('menu — construireOnglets', () => {
@@ -82,6 +90,12 @@ describe('menu — construireOnglets', () => {
     );
     expect(repli[0].cleCoche).toBe('menu:vendredi:dinerMelanie');
     expect(repli[0].label).toBe('Bowl saumon');
+  });
+
+  it('recette à nom préfixé (R1 · …) : label lisible', () => {
+    const rec: Recette = { ...RECETTE, nom: 'R1 · Poulet au four + riz' };
+    const [lundi] = construireOnglets(MENU, [rec]);
+    expect(lundi.label).toBe('Poulet au four');
   });
 });
 
@@ -120,6 +134,16 @@ describe('menu — paires de déjeuners', () => {
     expect(debloquePar(paires[0], {}, faits)).toBe('Poulet au four');
     expect(debloquePar(paires[0], { 'menu:lundi:dinerFamille': true }, faits)).toBeNull();
     expect(debloquePar(paires[2], {}, faits)).toBeNull();
+  });
+
+  it('debloquePar avec nom préfixé : nom lisible, pas la ref', () => {
+    const rec: Recette = { ...RECETTE, nom: 'R1 · Poulet au four + riz' };
+    const menuRef: MenuDay[] = [
+      { jour: 'Lundi', dejeunerMarc: 'Boîte', recetteRefs: { dejeunerMarc: 'R1', dinerFamille: 'R1' } },
+    ];
+    expect(debloquePar(construirePaires(menuRef, [rec])[0], {}, faitsParRecette(menuRef))).toBe(
+      'Poulet au four',
+    );
   });
 
   it('ref cassée : la note retombe sur la ref brute (jamais de crash)', () => {

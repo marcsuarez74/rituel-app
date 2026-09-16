@@ -6,9 +6,10 @@ import { expect, test } from '@playwright/test';
 // les tests unitaires). Hypothèses à préserver aussi : le frontmatter garde
 // `menu: A` (pill assertée), le menu compte 33 lignes repas (5+5+5+4+4+5+5) —
 // soit 7 dîners + 7 paires de déjeuners côté Menu v3. Les pills reprennent les
-// refs des recettes (« R1 »… « R7 », coupe de labelCourt sur « · ») : la pill
-// R1 (lundi) sert d'ancrage aux tests fiche + coche. Les coches menu partent
-// d'un storageState vierge.
+// noms courts des recettes (préfixe de ref « R# · » retiré par nomCourt, coupe
+// de labelCourt) : la pill « Cuisses de poulet… » (lundi) sert d'ancrage aux
+// tests fiche + coche, la note de verrouillage cite « Pâtes bolognaise ».
+// Les coches menu partent d'un storageState vierge.
 // Le test dépenses sème aussi une dépense datée 2026-09-09 (∈ S37) et épingle
 // le total « Payé cette semaine » à 73,30 € — déplacer les deux au refresh.
 // La saisie du formulaire épingle en plus la « Date » à 2026-09-10 (∈ S37) — au refresh, déplacer les trois.
@@ -76,26 +77,27 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
     await expect(page.locator('.menu-progress')).toContainText('Dîners 0/7');
     await expect(page.locator('.menu-progress')).toContainText('Boxes 0/7');
 
-    // Fiche recette complète dans l'onglet R1 (lundi) : étapes visibles sans dépliage.
-    const r1 = page.getByRole('tab', { name: /^R1/ });
-    await r1.click();
+    // Fiche recette complète dans l'onglet « Cuisses de poulet… » (lundi, R1) :
+    // étapes visibles sans dépliage.
+    const ongletLundi = page.getByRole('tab', { name: 'Cuisses de poulet…' });
+    await ongletLundi.click();
     await expect(page.locator('.recette-etapes li').first()).toBeVisible();
 
     // Coche « C'est fait » → pill grisée + progression, persistée au rechargement.
     await page.getByRole('button', { name: /C'est fait/ }).click();
-    await expect(r1).toHaveClass(/fait/);
+    await expect(ongletLundi).toHaveClass(/fait/);
     await expect(page.locator('.menu-progress')).toContainText('Dîners 1/7');
     await page.reload();
     // le rechargement remet l'app sur l'onglet Courses : rouvrir Menu avant l'assertion
     await page.getByRole('button', { name: 'Menu' }).click();
-    await expect(page.getByRole('tab', { name: /^R1/ })).toHaveClass(/fait/);
+    await expect(page.getByRole('tab', { name: 'Cuisses de poulet…' })).toHaveClass(/fait/);
 
-    // File de déjeuners : la box du mercredi attend le dîner R2 (mardi)…
+    // File de déjeuners : la box du mercredi attend le dîner de mardi (R2)…
     await page.getByRole('tab', { name: '🍱 Déjeuners' }).click();
     await expect(page.locator('.box-pair.locked')).toHaveCount(1);
-    await expect(page.locator('.lock-note')).toContainText('R2');
-    // … puis se débloque quand R2 est cochée.
-    await page.getByRole('tab', { name: /^R2/ }).click();
+    await expect(page.locator('.lock-note')).toContainText('Pâtes bolognaise');
+    // … puis se débloque quand la pill « Pâtes bolognaise » est cochée.
+    await page.getByRole('tab', { name: 'Pâtes bolognaise' }).click();
     await page.getByRole('button', { name: /C'est fait/ }).click();
     await page.getByRole('tab', { name: '🍱 Déjeuners' }).click();
     await expect(page.locator('.box-pair.locked')).toHaveCount(0);

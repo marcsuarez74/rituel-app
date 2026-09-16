@@ -42,6 +42,11 @@ const occurrence = (day: MenuDay, cle: MealKey, recettes: Recette[]): Occurrence
   };
 };
 
+// Convention .md : les titres de recettes embarquent leur ref (« R1 · Nom »).
+// On la retire avant labelCourt pour que les pills restent lisibles.
+export const nomCourt = (nom: string): string =>
+  labelCourt(nom.replace(/^[A-Za-z]{1,3}\d{1,3}\s*·\s*/, ''));
+
 // Nom court pour une pill : premier segment avant [+·—], tronqué sur une borne
 // de mot (espace ou tiret) à ~18 caractères.
 export const labelCourt = (texte: string): string => {
@@ -74,7 +79,7 @@ export function construireOnglets(menu: MenuDay[], recettes: Recette[]): OngletD
     onglets.push({
       jour: day.jour,
       cleCoche: base.id,
-      label: labelCourt(recette?.nom ?? base.texte),
+      label: recette ? nomCourt(recette.nom) : labelCourt(base.texte),
       ...(diner && { diner }),
       ...(mel && { mel }),
       ...(batch && { batch }),
@@ -137,7 +142,7 @@ export const debloquePar = (
     (l) => l.ref && !(faits[l.ref] ?? []).some((id) => checks[id]),
   );
   if (!bloque?.ref) return null;
-  return bloque.recette ? labelCourt(bloque.recette.nom) : bloque.ref;
+  return bloque.recette ? nomCourt(bloque.recette.nom) : bloque.ref;
 };
 
 // Onglet ouvert à l'arrivée : celui du jour courant (le jour n'est jamais

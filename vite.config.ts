@@ -74,7 +74,8 @@ export default defineConfig({
     environment: 'happy-dom',
     globals: true,
     setupFiles: './tests/setup.ts',
-    // tests/e2e = Playwright (navigateur réel), pas du vitest
-    exclude: ['**/node_modules/**', 'tests/e2e/**'],
+    // tests/e2e = Playwright (navigateur réel), pas du vitest ;
+    // .worktrees = worktrees git locaux (leur propre node_modules, pas notre code)
+    exclude: ['**/node_modules/**', 'tests/e2e/**', '.worktrees/**'],
   },
 })
