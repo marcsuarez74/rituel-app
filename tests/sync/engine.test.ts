@@ -554,6 +554,7 @@ describe('sync: purge + init', () => {
         throw new Error('reseau');
       },
     });
+    client.echouer(0); // la flush fence échoue aussi (réseau) : l'outbox reste en place
     await expect(purgerFoyer()).rejects.toThrow('reseau');
     expect(lireSession()).toEqual({ token: 't', foyerId: 'f' });
     expect(lireOutbox()).toHaveLength(1);
@@ -587,5 +588,35 @@ describe('sync: purge + init', () => {
     ressynchroniser();
     await vi.waitFor(() => expect(client.upserts.length).toBe(1));
     expect(etatSync()).toBe('sync');
+  });
+
+  it('purgerFoyer fence : la flush part avant la purge serveur', async () => {
+    definirSession('t', 'f');
+    setCheck('2026-S39', 'b1', true);
+    await purgerFoyer(); // pas de flush manuelle avant : la fence s'en charge
+    expect(client.upserts.length).toBe(1); // le upsert est bien parti d'abord
+    expect(client.purgees).toBe(true);
+    expect(lireSession()).toBeNull();
+    expect(lireOutbox()).toEqual([]);
+  });
+
+  it('pull interrompu par une déconnexion → n\'écrit rien, pas d\'état fantôme', async () => {
+    definirSession('t', 'f');
+    setCheck('2026-S39', 'b1', false);
+    let resoudreLecture: (rows?: RowSync[]) => void = () => {};
+    injecterClient({
+      ...client,
+      toutLire: () =>
+        new Promise((r) => {
+          resoudreLecture = () =>
+            r([{ household_id: 'f', semaine: '2026-S39', check_id: 'b1', done: true }]);
+        }),
+    });
+    const p = pull();
+    deconnecterFoyer();
+    resoudreLecture();
+    await p;
+    expect(getChecks('2026-S39')['b1']).toBe(false); // le remote n'a PAS été appliqué
+    expect(etatSync()).toBe('off');
   });
 });

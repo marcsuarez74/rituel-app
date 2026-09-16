@@ -41,9 +41,16 @@ let flushTimer: ReturnType<typeof setTimeout> | null = null;
 let pullTimer: ReturnType<typeof setTimeout> | null = null;
 // Désabonnement realtime (posé par connecter, retiré par deconnecterFoyer).
 let desabonner: (() => void) | null = null;
-// Single-flight : les déclencheurs (mutations, realtime, réseau) peuvent se
-// rafaler — une seule flush à la fois.
-let flushEnCours = false;
+// Fencing : une seule flush en vol, représentée par sa promesse partagée —
+// les déclencheurs (mutations, realtime, réseau) peuvent se rafaler, les
+// demandes concurrentes reçoivent la même promesse et re-programment un tour.
+let flushPromise: Promise<void> | null = null;
+
+// Retour du réseau : rafale immédiate de ce qui s'est empilé offline.
+// Ref module : reinitialiser doit pouvoir se désabonner.
+const surEnLigne = (): void => {
+  void flush();
+};
 
 const definirEtat = (e: SyncEtat): void => {
   etat = e;
@@ -60,69 +67,81 @@ export const injecterClient = (c: SyncClient | null): void => {
 export const reinitialiser = (): void => {
   desabonner?.();
   desabonner = null;
+  window.removeEventListener('online', surEnLigne);
   client = null;
   etat = 'off';
   onEtatCb = null;
   onRemote = null;
-  flushEnCours = false;
   if (flushTimer) clearTimeout(flushTimer);
   flushTimer = null;
   if (pullTimer) clearTimeout(pullTimer);
   pullTimer = null;
+  flushPromise = null;
+  surEmpile(null);
   inited = false; // reset test : initSync rejouable
 };
 
-export const flush = async (): Promise<void> => {
-  if (flushEnCours) return;
-  flushEnCours = true;
-  try {
-    if (flushTimer) {
-      clearTimeout(flushTimer);
-      flushTimer = null;
-    }
-    const session = lireSession();
-    if (!client || !session) return;
-    const outbox = lireOutbox();
-    if (outbox.length === 0) {
-      definirEtat('sync');
-      return;
-    }
-    const { foyerId } = session;
-    for (const t of TABLES) {
-      // Dernier op gagne par clé : un delete suivi d'une re-création hors
-      // ligne ne doit pas finir supprimé côté serveur (et inversement).
-      const derniereParCle = new Map<string, MutationSync>();
-      for (const m of outbox) {
-        if (m.table !== t) continue;
-        derniereParCle.set(JSON.stringify(m.key), m);
-      }
-      const finales = [...derniereParCle.values()];
-      const rows = finales
-        .filter((m) => m.op === 'upsert' && m.payload)
-        .map<RowSync>((m) => ({
-          ...m.key,
-          // weeks et profiles : payload enveloppé (colonne jsonb serveur) —
-          // checks/weights/depenses : colonnes scalaires (spread).
-          ...(t === 'weeks' || t === 'profiles'
-            ? { payload: m.payload }
-            : { ...m.payload }),
-          household_id: foyerId,
-          updated_at: new Date().toISOString(),
-        }));
-      if (rows.length > 0) await client.upsert(t, rows);
-      const clefs = finales.filter((m) => m.op === 'delete').map((m) => m.key);
-      if (clefs.length > 0) await client.supprimer(t, clefs);
-    }
-    // Déconnexion pendant la flush en vol : pas d'état 'sync' fantôme,
-    // l'outbox reste en place pour un retry.
-    if (!client || !lireSession()) return;
-    for (const m of outbox) retirer(m);
-    definirEtat('sync');
-  } catch {
-    definirEtat('erreur'); // outbox conservée — retry au prochain déclencheur
-  } finally {
-    flushEnCours = false;
+export const flush = (): Promise<void> => {
+  if (flushPromise) {
+    flushDiffere(); // demande pendant l'envol : re-programmer (retry avalé sinon)
+    return flushPromise;
   }
+  flushPromise = (async () => {
+    let ok = false;
+    try {
+      if (flushTimer) {
+        clearTimeout(flushTimer);
+        flushTimer = null;
+      }
+      const session = lireSession();
+      if (!client || !session) return;
+      const outbox = lireOutbox();
+      if (outbox.length === 0) {
+        definirEtat('sync');
+        return;
+      }
+      const { foyerId } = session;
+      for (const t of TABLES) {
+        // Dernier op gagne par clé : un delete suivi d'une re-création hors
+        // ligne ne doit pas finir supprimé côté serveur (et inversement).
+        const derniereParCle = new Map<string, MutationSync>();
+        for (const m of outbox) {
+          if (m.table !== t) continue;
+          derniereParCle.set(JSON.stringify(m.key), m);
+        }
+        const finales = [...derniereParCle.values()];
+        const rows = finales
+          .filter((m) => m.op === 'upsert' && m.payload)
+          .map<RowSync>((m) => ({
+            ...m.key,
+            // weeks et profiles : payload enveloppé (colonne jsonb serveur) —
+            // checks/weights/depenses : colonnes scalaires (spread).
+            ...(t === 'weeks' || t === 'profiles'
+              ? { payload: m.payload }
+              : { ...m.payload }),
+            household_id: foyerId,
+            updated_at: new Date().toISOString(),
+          }));
+        if (rows.length > 0) await client.upsert(t, rows);
+        const clefs = finales.filter((m) => m.op === 'delete').map((m) => m.key);
+        if (clefs.length > 0) await client.supprimer(t, clefs);
+      }
+      // Déconnexion pendant la flush en vol : pas d'état 'sync' fantôme,
+      // l'outbox reste en place pour un retry.
+      if (!client || !lireSession()) return;
+      for (const m of outbox) retirer(m);
+      definirEtat('sync');
+      ok = true;
+    } catch {
+      definirEtat('erreur'); // outbox conservée — retry au prochain déclencheur
+    } finally {
+      flushPromise = null;
+      // Mutations empilées pendant l'envol (corps sans exception) : partent
+      // au tour suivant. En échec, on reste sur les déclencheurs existants.
+      if (ok && lireOutbox().length > 0) flushDiffere();
+    }
+  })();
+  return flushPromise;
 };
 
 export const flushDiffere = (): void => {
@@ -262,7 +281,11 @@ export const pull = async (): Promise<void> => {
   if (!client) return;
   try {
     const rows = {} as Record<TableSync, RowSync[]>;
-    for (const t of TABLES) rows[t] = await client.toutLire(t);
+    for (const t of TABLES) {
+      if (!client || !lireSession()) return; // déconnexion pendant les lectures
+      rows[t] = await client.toutLire(t);
+    }
+    if (!client || !lireSession()) return; // déconnexion pendant les lectures → n'écrit rien
     if (await appliquerRemote(rows)) onRemote?.();
     definirEtat('sync');
   } catch {
@@ -366,6 +389,8 @@ export const deconnecterFoyer = (): void => {
 export const purgerFoyer = async (): Promise<void> => {
   if (!client) throw new Error('pas-connecte');
   definirEtat('attente'); // purge engagée : plus 'off', même en cas d'échec
+  await flush(); // fence : les upserts en attente partent avant les deletes
+  if (!client) return; // déconnexion pendant la flush → plus rien à purger
   await client.purger(); // serveur d'abord — jamais de données orphelines
   deconnecterFoyer();
 };
@@ -387,10 +412,7 @@ export const initSync = (
     definirEtat('off');
     return;
   }
-  // Retour du réseau : on rafale immédiatement ce qui s'est empilé offline.
-  window.addEventListener('online', () => {
-    void flush();
-  });
+  window.addEventListener('online', surEnLigne);
   const demarrer = async (): Promise<void> => {
     if (!lireSession()) {
       definirEtat('attente'); // sync prête, en attente d'appairage foyer
@@ -406,10 +428,13 @@ export const initSync = (
   void demarrer();
 };
 
-// Tap sur l'indicateur de la bannière : re-sync manuelle immédiate.
+// Tap sur l'indicateur de la bannière : re-sync manuelle séquentielle
+// (flush puis pull — jamais en parallèle).
 export const ressynchroniser = (): void => {
-  void flush();
-  if (client) void pull();
+  void (async () => {
+    await flush();
+    if (client) await pull();
+  })();
 };
 
 // Ré-export pour l'UI (ProfilScreen) sans import direct de session —
