@@ -32,9 +32,9 @@ Suis EXACTEMENT le process et les règles dures ci-dessous, puis l'auto-contrôl
    (`dejeuner-marc`, `dejeuner-melanie`, `diner-famille`, `diner-melanie`,
    `batch`). Les dîners = les recettes du menu du carnet ; les déjeuners
    suivent la logique boxes (boîte du batch pour Marc, restes/box keto pour
-   Mélanie). OBLIGATOIRE pour les déjeuners : une box de midi porte toujours
-   `→ slug` vers la recette qui la produit (batch ou dîner de la veille) —
-   sans ref, l'app la considère « toujours prête ». Les portions
+   Mélanie). OBLIGATOIRE pour les déjeuners : une box issue d'un batch/dîner
+   porte toujours `→ slug` vers la recette qui la produit (batch ou dîner de
+   la veille) — sans ref, l'app la considère « toujours prête ». Les portions
    (`- portions marc/melanie:` des recettes) sont en MESURES MAISON :
    pièces, poignées, c. à soupe, louches — grammes entre parenthèses
    uniquement pour caler l'œil. Jamais de portion qui exige une balance.

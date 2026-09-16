@@ -57,7 +57,7 @@ au: {{AAAA-MM-JJ, dimanche}}
 ## Menu
 
 ### Lundi
-- dejeuner-marc: {{boîte du batch ou repas}} → {{slug-recette-source}}
+- dejeuner-marc: {{boîte du batch ou repas}} → {{slug-recette-source si ref}}
 - dejeuner-melanie: {{assiette keto ou box}} → {{slug-recette-source si ref}}
 - diner-famille: {{dîner}} → {{slug-recette}}
 - diner-melanie: {{dîner version keto}}

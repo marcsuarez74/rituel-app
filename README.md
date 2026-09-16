@@ -37,8 +37,8 @@ au: 2026-09-13
 
 ## Menu
 ### Lundi
-- dejeuner-marc: Boîte dinde-quinoa (batch dim) + légumes
-- dejeuner-melanie: Restes dinde + gratin courgettes + ½ avocat
+- dejeuner-marc: Boîte dinde-quinoa (batch dim) + légumes → R7
+- dejeuner-melanie: Restes dinde + gratin courgettes + ½ avocat → R7
 - diner-famille: Cuisses poulet rôties + carottes/patates douces + riz → R1
 - diner-melanie: Poulet + légumes rôtis + filet huile d'olive (sans riz/patate douce)
 - batch: Double riz + légumes rôtis → boîte mardi Marc
@@ -96,10 +96,10 @@ Règles du format :
 
 - **Frontmatter requis** : `semaine`, `menu`, `du`, `au` (le `titre` est optionnel).
 - `## Courses` : une `### Rayon` par sous-section, les items sont des listes `-` ; un rayon `### Keto` est rendu en **encadré dédié** (en fin de liste).
-- `## Menu` : une `### Jour` par jour, chaque repas est une ligne `- clé: texte` avec exactement **5 clés valides** : `dejeuner-marc`, `dejeuner-melanie`, `diner-famille`, `diner-melanie`, `batch`. Une clé inconnue génère un avertissement (non bloquant). Une référence `→ R1` en fin de ligne lie le repas à une recette de `## Recettes` (fiche dépliable dans l'app).
-- `## Recettes` (optionnel) : une `### R1 · Nom` par recette, avec `temps:`, `kcal:`, `proteines:`, `bases: B4, B6` (renvois vers `## Bases`), la liste d'ingrédients `- pour 4: …`, les étapes numérotées `1. …` et les adaptations `- mel: …` / `- batch: …`.
+- `## Menu` : une `### Jour` par jour, chaque repas est une ligne `- clé: texte` avec exactement **5 clés valides** : `dejeuner-marc`, `dejeuner-melanie`, `diner-famille`, `diner-melanie`, `batch`. Une clé inconnue génère un avertissement (non bloquant). Une référence `→ R1` en fin de ligne lie le repas à une recette de `## Recettes`.
+- `## Recettes` (optionnel) : une `### R1 · Nom` par recette, avec `temps:`, `kcal:`, `proteines:`, `bases: B4, B6` (renvois vers `## Bases`), les portions par personne `- portions marc:` / `- portions melanie:` (mesures maison), la liste d'ingrédients `- pour 4: …`, les étapes numérotées `1. …` et les adaptations `- mel: …` / `- batch: …`.
   - `glucides:` / `lipides:` (optionnels, g par personne — chips 🌾 C / 💧 F de la fiche)
-  - `score:` (optionnel, entier 0-10 — health score en barre segmentée)
+  - `score:` (optionnel, entier 0-10 — Score n/10 en barre segmentée)
   - `image:` (optionnel, URL https — photo du plat, mise en cache PWA après 1ʳᵉ vue)
 - `## Bases` (optionnel) : une `### B4 · Nom` par base + un texte court (technique réutilisable).
 - `## Batch` : la checklist `- [ ]`, plus deux blocs optionnels — `### Rituel dimanche` (étapes `- <créneau> · <label> — <détail>`, cochables en timeline) et `### Micro-batch` (`- jour: quoi`, carrousel horizontal).
@@ -138,7 +138,7 @@ Trois sous-onglets partagés (Courses · Menu · Batch), en segmented control (o
 
 - **Bannière** : le menu courant (« Menu A ») reste visible en pill à côté du titre de semaine.
 - **Menu** : une barre d'onglets par **recette** (les 7 dîners du fichier + 🍱 Déjeuners) — aucun jour affiché, l'ordre du fichier est l'ordre conseillé (batch/frigo d'abord, frais ensuite) ; l'onglet du jour courant est présélectionné. La progression lit « Dîners X/N · Boxes X/N ».
-- **Onglet recette** : la fiche complète d'un bloc (temps, kcal, health score, fraîcheur), « Qui mange quoi » (dîner famille + adaptation keto de Mél), « Portions — par personne » en **mesures maison** (pièces, poignées, c. à soupe, louches — les grammes entre parenthèses ne servent qu'à caler l'œil), la préparation (ingrédients « pour 4 », étapes, bases cliquables), le batch du jour en info, et la coche unique « C'est fait — dîner fini » (l'onglet se grise, nom barré + ✓).
+- **Onglet recette** : la fiche complète d'un bloc (temps, kcal, Score n/10, fraîcheur), « Qui mange quoi » (dîner famille + adaptation keto de Mél), « Portions — par personne » en **mesures maison** (pièces, poignées, c. à soupe, louches — les grammes entre parenthèses ne servent qu'à caler l'œil), la préparation (ingrédients « pour 4 », étapes, bases cliquables), le batch du jour en info, et la coche unique « C'est fait — dîner fini » (l'onglet se grise, nom barré + ✓).
 - **Déjeuners dynamiques** : une paire de boxes devient « prête » quand la recette qui la produit (`→ R#` sur la ligne déjeuner) est cochée ; verrouillée sinon (« débloquée quand … est fait ») ; une box sans ref est toujours disponible. Une coche par paire (« Boxes faites ») coche les lignes Marc + Mél du jour.
 - **Courses** : compteurs d'items par rayon, et le rayon `### Keto` devient un encadré dédié en fin de liste.
 - **Batch** : le rituel du dimanche s'affiche en **timeline cochable**, le micro-batch en **carrousel** horizontal par jour.
