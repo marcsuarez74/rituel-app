@@ -1056,6 +1056,7 @@ describe('sync: pull / merge (outbox prime)', () => {
 
   it('les dépenses sont reconstruites depuis le serveur (delete inclus)', async () => {
     saveDepense('2026-09-20', 'Lidl', 10);
+    viderOutbox(); // scénario « Lidl supprimée sur un autre téléphone » : rien d'en attente localement
     client.lues.depenses = [
       { household_id: 'f', date_: '2026-09-21', magasin_key: 'carrefour', magasin: 'Carrefour', total: 55 },
     ];
