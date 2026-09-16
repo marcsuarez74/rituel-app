@@ -1,58 +1,22 @@
 import { useState } from 'react';
-import type { BaseCuisine, MealKey, MenuDay, Recette } from '../../lib/model';
-import { recetteParRef } from '../../lib/stats';
+import type { KeyboardEvent } from 'react';
+import type { BaseCuisine, MenuDay, Recette } from '../../lib/model';
+import {
+  construireOnglets,
+  construirePaires,
+  debloquePar,
+  faitsParRecette,
+  paireFaite,
+  pairePrete,
+  selectionInitiale,
+} from '../../lib/menu';
+import type { OngletDiner, PaireDejeuners } from '../../lib/menu';
 import { getChecks, setCheck } from '../../lib/storage';
 import { Icon } from '../Icon';
 
-const MEALS: Array<[MealKey, string, string]> = [
-  ['dejeunerMarc', 'Marc', 'tag-marc'],
-  ['dejeunerMelanie', 'Mél', 'tag-mel'],
-  ['dinerFamille', 'Famille', 'tag-fam'],
-  ['dinerMelanie', 'Mél', 'tag-mel'],
-  ['batch', 'Batch', 'tag-bat'],
-];
-
-const ICONES_REPAS: Record<MealKey, 'bowl' | 'meat' | 'pot'> = {
-  dejeunerMarc: 'bowl',
-  dejeunerMelanie: 'bowl',
-  dinerFamille: 'meat',
-  dinerMelanie: 'bowl',
-  batch: 'pot',
-};
-
-export interface Occurrence {
-  id: string;
-  jour: string;
-  cle: MealKey;
-  tag: string;
-  tagClass: string;
-  texte: string;
-  recette?: Recette;
-}
-
-// Menu v2 : 1 ligne repas = 1 occurrence indépendante (aucun jour imposé).
-// L'ordre est chronologique — les .md bien rédigés placent batch/frigo d'abord.
-function construireOccurrences(menu: MenuDay[], recettes: Recette[]): Occurrence[] {
-  const out: Occurrence[] = [];
-  for (const day of menu) {
-    for (const [cle, tag, tagClass] of MEALS) {
-      const texte = day[cle];
-      if (!texte) continue;
-      const ref = day.recetteRefs?.[cle];
-      out.push({
-        id: `menu:${day.jour.trim().toLowerCase()}:${cle}`,
-        jour: day.jour,
-        cle,
-        tag,
-        tagClass,
-        texte,
-        ...(ref ? { recette: recetteParRef(ref, recettes) } : {}),
-      });
-    }
-  }
-  return out;
-}
-
+// Menu v3 : 1 onglet par recette/dîner + 🍱 Déjeuners (file dynamique).
+// Aucun jour affiché — l'ordre du fichier est l'ordre conseillé
+// (batch/frigo d'abord, frais ensuite). Logique dans src/lib/menu.ts.
 export function MenuView({
   menu,
   recettes = [],
@@ -65,236 +29,357 @@ export function MenuView({
   semaine: string;
 }) {
   const [checks, setChecks] = useState<Record<string, boolean>>(() => getChecks(semaine));
+  const onglets = construireOnglets(menu, recettes);
+  const paires = construirePaires(menu, recettes);
+  const faits = faitsParRecette(menu);
+
+  // Pattern render-phase reset (syncedSemaine) — cf. Checklist.tsx.
   const [syncedSemaine, setSyncedSemaine] = useState(semaine);
+  const [actif, setActif] = useState(() => selectionInitiale(onglets, menu, checks));
   if (syncedSemaine !== semaine) {
     setSyncedSemaine(semaine);
-    setChecks(getChecks(semaine));
+    const fresh = getChecks(semaine);
+    setChecks(fresh);
+    setActif(Math.min(selectionInitiale(onglets, menu, fresh), onglets.length));
   }
 
-  const occurrences = construireOccurrences(menu, recettes);
-  if (occurrences.length === 0) {
+  if (onglets.length === 0 && paires.length === 0) {
     return <p className="muted">Aucun menu pour cette semaine.</p>;
   }
-  const faites = occurrences.filter((o) => checks[o.id]).length;
-  const toggle = (id: string) => {
-    const next = !checks[id];
-    setCheck(semaine, id, next);
-    setChecks((prev) => ({ ...prev, [id]: next }));
+
+  const basculerDiner = (onglet: OngletDiner) => {
+    const next = !checks[onglet.cleCoche];
+    setCheck(semaine, onglet.cleCoche, next);
+    setChecks((prev) => ({ ...prev, [onglet.cleCoche]: next }));
+  };
+
+  // Une action par paire : coche toutes les clés déjeuner présentes ce jour-là.
+  const basculerPaire = (paire: PaireDejeuners) => {
+    const cible = !paireFaite(paire, checks);
+    const next = { ...checks };
+    for (const id of paire.ids) {
+      setCheck(semaine, id, cible);
+      next[id] = cible;
+    }
+    setChecks(next);
+  };
+
+  const dFaites = onglets.filter((o) => checks[o.cleCoche]).length;
+  const bFaites = paires.filter((p) => paireFaite(p, checks)).length;
+  const pct = (n: number, total: number) => (total > 0 ? `${Math.round((n / total) * 100)}%` : '0%');
+
+  // Navigation clavier du pattern ARIA tabs — activation suit le focus.
+  const onKeyDownTablist = (event: KeyboardEvent<HTMLDivElement>) => {
+    const tabs = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+    const base = Math.max(0, tabs.findIndex((b) => b === document.activeElement));
+    const t =
+      event.key === 'ArrowRight' ? (base + 1) % tabs.length :
+      event.key === 'ArrowLeft' ? (base - 1 + tabs.length) % tabs.length :
+      event.key === 'Home' ? 0 :
+      event.key === 'End' ? tabs.length - 1 : -1;
+    if (t < 0) return;
+    event.preventDefault();
+    setActif(t);
+    tabs[t]?.focus();
   };
 
   return (
-    <div className="menu-reserve">
-      <div className="menu-reserve-head">
-        <p className="menu-reserve-note">
-          Pas de jour imposé — ordre conseillé : batch/frigo d'abord, frais en dernier.
-        </p>
-        <p className="progress">
-          <Icon name="check" size={13} /> <b>{faites}/{occurrences.length}</b> faits
-          <progress value={faites} max={occurrences.length} />
+    <div className="menu-recettes">
+      <div className="menu-head">
+        <p className="menu-progress">
+          Dîners {dFaites}/{onglets.length}{' '}
+          <span className="bar">
+            <i style={{ width: pct(dFaites, onglets.length) }} />
+          </span>
+          <span>
+            · Boxes {bFaites}/{paires.length}{' '}
+            <span className="bar">
+              <i style={{ width: pct(bFaites, paires.length) }} />
+            </span>
+          </span>
         </p>
       </div>
-      {occurrences.map((o) => (
-        <MealCard
-          key={o.id}
-          occ={o}
-          bases={bases}
-          fait={!!checks[o.id]}
-          onToggle={() => toggle(o.id)}
-        />
-      ))}
+      <div
+        className="rtabs"
+        role="tablist"
+        aria-label="Recettes du menu"
+        onKeyDown={onKeyDownTablist}
+      >
+        {onglets.map((o, i) => (
+          <button
+            key={o.cleCoche}
+            type="button"
+            role="tab"
+            id={`rtab-${o.cleCoche}`}
+            aria-selected={i === actif}
+            aria-controls="rpanel-actif"
+            aria-label={`${o.label}${checks[o.cleCoche] ? ' (fait)' : ''}`}
+            className={`rtab${i === actif ? ' active' : ''}${checks[o.cleCoche] ? ' fait' : ''}`}
+            onClick={() => setActif(i)}
+          >
+            {checks[o.cleCoche] && (
+              <span className="tick" aria-hidden="true">
+                <Icon name="check" size={12} strokeWidth={3} />
+              </span>
+            )}
+            <span className="rn">{o.label}</span>
+          </button>
+        ))}
+        <button
+          type="button"
+          role="tab"
+          id="rtab-dejeuners"
+          aria-selected={actif === onglets.length}
+          aria-controls="rpanel-actif"
+          className={`rtab${actif === onglets.length ? ' active' : ''}`}
+          onClick={() => setActif(onglets.length)}
+        >
+          <span className="rn">🍱 Déjeuners</span>
+        </button>
+      </div>
+      {actif === onglets.length ? (
+        <div role="tabpanel" id="rpanel-actif" aria-labelledby="rtab-dejeuners">
+          <FileDejeuners paires={paires} checks={checks} faits={faits} onBasculer={basculerPaire} />
+        </div>
+      ) : onglets[actif] ? (
+        <div
+          role="tabpanel"
+          id="rpanel-actif"
+          aria-labelledby={`rtab-${onglets[actif].cleCoche}`}
+        >
+          <OngletRecette
+            onglet={onglets[actif]}
+            bases={bases}
+            fait={!!checks[onglets[actif].cleCoche]}
+            onBasculer={() => basculerDiner(onglets[actif])}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }
 
-function MealCard({
-  occ,
+function OngletRecette({
+  onglet,
   bases,
   fait,
-  onToggle,
+  onBasculer,
 }: {
-  occ: Occurrence;
+  onglet: OngletDiner;
   bases?: BaseCuisine[];
   fait: boolean;
-  onToggle: () => void;
+  onBasculer: () => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const r = occ.recette;
-  const tempsCourt = r?.temps?.split('·')[0]?.trim();
-  const chips = r
-    ? r.bases?.length
-      ? r.bases.map((b) => trouverBase(b, bases)).filter((b): b is BaseCuisine => !!b)
-      : [{ id: 'cuisson-du-jour', nom: 'Cuisson du jour', texte: '' }]
-    : [];
+  const r = onglet.recette;
   return (
-    <article
-      className={fait ? 'menu-card fait' : 'menu-card'}
-      aria-label={`${occ.jour} — ${occ.texte}`}
-    >
-      <div className="menu-card-top">
-        <label className="menu-coche">
-          <input
-            type="checkbox"
-            checked={fait}
-            onChange={onToggle}
-            aria-label={`${occ.jour} — ${occ.texte} — marquer comme fait`}
-          />
-          <span className="menu-coche-box">
-            <Icon name="check" size={14} strokeWidth={2.5} />
-          </span>
-        </label>
-        <div className="mtile">
-          <Icon name={ICONES_REPAS[occ.cle]} size={20} />
-        </div>
-        <div className="mt">
-          <span className={`mtag ${occ.tagClass}`}>{occ.tag}</span>
-          <div className="mname">{occ.texte}</div>
-          {(tempsCourt || r?.kcal != null) && (
-            <div className="mmeta">
-              {tempsCourt && (
-                <span>
-                  <Icon name="clock" size={11} /> {tempsCourt}
+    <article className={fait ? 'onglet-recette fait' : 'onglet-recette'} aria-label={onglet.label}>
+      {r && (
+        <div className="onglet-meta">
+          <div className="meta-row">
+            {r.temps && (
+              <span className="meta-pill">
+                <Icon name="clock" size={12} /> {r.temps.split('·')[0]?.trim()}
+              </span>
+            )}
+            {r.kcal != null && (
+              <span className="meta-pill">
+                <Icon name="flame" size={12} /> {r.kcal} kcal
+              </span>
+            )}
+            {r.score != null && (
+              <span className="meta-pill">
+                Score {r.score}/10
+                <span className="score-bar">
+                  {Array.from({ length: 10 }, (_, i) => (
+                    <span key={i} className={i < r.score! ? 'score-seg on' : 'score-seg'} />
+                  ))}
                 </span>
-              )}
-              {r?.kcal != null && (
-                <span>
-                  <Icon name="flame" size={11} /> {r.kcal} kcal
-                </span>
-              )}
-            </div>
+              </span>
+            )}
+          </div>
+          {r.fraicheur && (
+            <p className="fraicheur">
+              <Icon name="box" size={12} /> {r.fraicheur}
+            </p>
           )}
         </div>
-      </div>
-      {(chips.length > 0 || r?.fraicheur) && (
-        <div className="menu-card-meta">
-          {chips.length > 0 && (
-            <div className="mchips">
-              {chips.map((b) => (
-                <span className="mchip" key={b.id}>
-                  {b.nom}
-                </span>
-              ))}
-            </div>
+      )}
+      {(onglet.diner || onglet.mel) && (
+        <div className="qui">
+          <p className="qui-titre">Qui mange quoi</p>
+          {onglet.diner && (
+            <p>
+              <span className={`mtag ${onglet.diner.tagClass}`}>{onglet.diner.tag}</span>{' '}
+              {onglet.diner.texte}
+            </p>
           )}
-          {r?.fraicheur && (
-            <div className="mh">
-              <Icon name="box" size={11} /> {r.fraicheur}
-            </div>
+          {onglet.mel && (
+            <p>
+              <span className={`mtag ${onglet.mel.tagClass}`}>{onglet.mel.tag}</span>{' '}
+              {onglet.mel.texte}
+            </p>
           )}
         </div>
       )}
       {r?.portions && (r.portions.marc || r.portions.melanie) && (
-        <div className="portions-box">
-          <div className="portions-title">Portions</div>
+        <div className="portions">
+          <p className="portions-titre">Portions — par personne</p>
           {r.portions.marc && (
             <p>
-              <span className="portion-tag">Marc</span> {r.portions.marc}
+              <span className="mtag tag-marc">Marc</span> {r.portions.marc}
             </p>
           )}
           {r.portions.melanie && (
             <p>
-              <span className="portion-tag keto">Mél</span> {r.portions.melanie}
+              <span className="mtag tag-mel">Mél</span> {r.portions.melanie}
             </p>
           )}
         </div>
       )}
-      {r && (
-        <button type="button" className="rtoggle" aria-expanded={open} onClick={() => setOpen(!open)}>
-          <span>Voir la recette</span>
-          <span className={open ? 'chev up' : 'chev'}>
-            <Icon name="chev" size={12} />
-          </span>
-        </button>
+      {r && (r.pour || (r.etapes && r.etapes.length > 0)) && (
+        <div className="onglet-prepa">
+          <h4>Préparation</h4>
+          {r.pour && <p className="recette-pour">{r.pour}</p>}
+          {r.bases && r.bases.length > 0 && <BasesChips refs={r.bases} bases={bases} />}
+          {r.etapes && r.etapes.length > 0 && (
+            <ol className="recette-etapes">
+              {r.etapes.map((e, i) => (
+                <li key={i}>{e}</li>
+              ))}
+            </ol>
+          )}
+        </div>
       )}
-      {open && r && <RecetteDetail recette={r} bases={bases} />}
+      {onglet.batch && (
+        <div className="onglet-batch">
+          <h4>Batch associé</h4>
+          <div className="bat">
+            <span className="mtag tag-bat">Batch</span>
+            <span>{onglet.batch.texte}</span>
+          </div>
+        </div>
+      )}
+      <button
+        type="button"
+        className={fait ? 'cta done' : 'cta'}
+        aria-pressed={fait}
+        onClick={onBasculer}
+      >
+        {fait ? (
+          <>Dîner fait ✓ — annuler</>
+        ) : (
+          <>
+            <Icon name="check" size={15} strokeWidth={2.5} /> C'est fait — dîner fini
+          </>
+        )}
+      </button>
     </article>
   );
 }
 
-function RecetteDetail({ recette, bases }: { recette: Recette; bases?: BaseCuisine[] }) {
-  const [baseOuverte, setBaseOuverte] = useState<string | null>(null);
-  const aMacros =
-    recette.kcal != null ||
-    recette.proteines != null ||
-    recette.glucides != null ||
-    recette.lipides != null;
+function BasesChips({ refs, bases }: { refs: string[]; bases?: BaseCuisine[] }) {
+  const [ouverte, setOuverte] = useState<string | null>(null);
+  const liste = refs.map((ref) => trouverBase(ref, bases)).filter((b): b is BaseCuisine => !!b);
+  const affichees =
+    liste.length > 0 ? liste : [{ id: 'cuisson-du-jour', nom: 'Cuisson du jour', texte: '' }];
   return (
-    <div className="recette-detail">
-      {aMacros && (
-        <div className="recette-nutri">
-          {recette.kcal != null && (
-            <span>
-              <Icon name="flame" size={11} /> {recette.kcal} kcal
-            </span>
-          )}
-          {recette.glucides != null && (
-            <span>
-              <Icon name="wheat" size={11} /> {recette.glucides}g C
-            </span>
-          )}
-          {recette.proteines != null && (
-            <span>
-              <Icon name="meat" size={11} /> {recette.proteines}g P
-            </span>
-          )}
-          {recette.lipides != null && (
-            <span>
-              <Icon name="drop" size={11} /> {recette.lipides}g F
-            </span>
-          )}
-        </div>
-      )}
-      {recette.score != null && (
-        <div className="recette-score">
-          <div className="recette-score-head">
-            <span className="stat-label">Health score :</span>
-            <span className="recette-score-value">
-              {recette.score}
-              <small>/10</small>
-            </span>
-          </div>
-          <div className="score-bar">
-            {Array.from({ length: 10 }, (_, i) => (
-              <span key={i} className={i < recette.score! ? 'score-seg on' : 'score-seg'} />
-            ))}
-          </div>
-        </div>
-      )}
-      {recette.pour && <p className="recette-pour">{recette.pour}</p>}
-      {recette.bases && recette.bases.length > 0 && (
-        <div className="recette-bases">
-          {recette.bases.map((b) => {
-            const base = trouverBase(b, bases);
-            return base ? (
-              <button
-                type="button"
-                key={base.id}
-                className={baseOuverte === base.id ? 'recette-bchip on' : 'recette-bchip'}
-                aria-expanded={baseOuverte === base.id}
-                onClick={() => setBaseOuverte(baseOuverte === base.id ? null : base.id)}
-              >
-                🧂 {base.nom}
-              </button>
-            ) : null;
-          })}
-        </div>
-      )}
-      {baseOuverte &&
-        bases
-          ?.filter((b) => b.id === baseOuverte)
+    <div className="recette-bases">
+      {affichees.map((b) => (
+        <button
+          type="button"
+          key={b.id}
+          className={ouverte === b.id ? 'recette-bchip on' : 'recette-bchip'}
+          aria-expanded={ouverte === b.id}
+          onClick={() => setOuverte(ouverte === b.id ? null : b.id)}
+        >
+          🧂 {b.nom}
+        </button>
+      ))}
+      {ouverte &&
+        affichees
+          .filter((b) => b.id === ouverte && b.texte)
           .map((b) => (
             <p className="recette-bdesc" key={b.id}>
               🧂 {b.nom} : {b.texte}
             </p>
           ))}
-      {recette.etapes && recette.etapes.length > 0 && (
-        <ol className="recette-etapes">
-          {recette.etapes.map((e, i) => (
-            <li key={i}>{e}</li>
+    </div>
+  );
+}
+
+function FileDejeuners({
+  paires,
+  checks,
+  faits,
+  onBasculer,
+}: {
+  paires: PaireDejeuners[];
+  checks: Record<string, boolean>;
+  faits: Record<string, string[]>;
+  onBasculer: (paire: PaireDejeuners) => void;
+}) {
+  if (paires.length === 0) {
+    return <p className="muted">Aucun déjeuner dans cette semaine.</p>;
+  }
+  const pretes = paires.filter((p) => !paireFaite(p, checks) && pairePrete(p, checks, faits));
+  const aVenir = paires.filter((p) => !paireFaite(p, checks) && !pairePrete(p, checks, faits));
+  const mangees = paires.filter((p) => paireFaite(p, checks));
+  return (
+    <div className="file-dejeuners">
+      {pretes.length > 0 && (
+        <>
+          <p className="fhead">Prêtes à emporter</p>
+          {pretes.map((p) => (
+            <div className="box-pair" key={p.jour}>
+              {p.lignes.map((l) => (
+                <p key={l.id}>
+                  <span className={`mtag ${l.tagClass}`}>{l.tag}</span> {l.texte}
+                </p>
+              ))}
+              <button type="button" className="mini-cta" onClick={() => onBasculer(p)}>
+                <Icon name="check" size={13} strokeWidth={2.5} /> Boxes faites
+              </button>
+            </div>
           ))}
-        </ol>
+        </>
       )}
-      {recette.mel && <p className="recette-ligne recette-mel">{recette.mel}</p>}
-      {recette.batch && <p className="recette-ligne recette-bat">{recette.batch}</p>}
+      {aVenir.length > 0 && (
+        <>
+          <p className="fhead">À venir</p>
+          {aVenir.map((p) => {
+            const manque = debloquePar(p, checks, faits);
+            return (
+              <div className="box-pair locked" key={p.jour}>
+                {p.lignes.map((l) => (
+                  <p key={l.id}>
+                    <span className={`mtag ${l.tagClass}`}>{l.tag}</span> {l.texte}
+                  </p>
+                ))}
+                {manque && (
+                  <p className="lock-note">
+                    <Icon name="lock" size={11} /> débloquée quand <b>&nbsp;{manque}&nbsp;</b> est
+                    fait
+                  </p>
+                )}
+              </div>
+            );
+          })}
+        </>
+      )}
+      {mangees.length > 0 && (
+        <>
+          <p className="fhead">Mangées</p>
+          {mangees.map((p) => (
+            <div className="box-pair mangees" key={p.jour}>
+              {p.lignes.map((l) => (
+                <p key={l.id}>
+                  <span className={`mtag ${l.tagClass}`}>{l.tag}</span> {l.texte}
+                </p>
+              ))}
+            </div>
+          ))}
+        </>
+      )}
     </div>
   );
 }

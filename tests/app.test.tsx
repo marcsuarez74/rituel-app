@@ -202,8 +202,8 @@ describe('App shell', () => {
     expect(screen.getByText('Carottes')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Menu' }));
-    expect(document.querySelector('.menu-card')).not.toBeNull();
-    expect(screen.getByText('Poulet rôti')).toBeInTheDocument(); // diner-famille lundi en carte v2
+    expect(document.querySelector('.rtab')).not.toBeNull();
+    expect(screen.getByRole('tab', { selected: true })).toHaveTextContent('Poulet rôti');
 
     await user.click(screen.getByRole('button', { name: 'Batch' }));
     expect(screen.getByText(/muffins/i)).toBeInTheDocument();

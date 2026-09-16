@@ -4,14 +4,15 @@ import type {
   ChecklistItem,
   CourseItem,
   DepenseEntry,
+  MenuDay,
   ProfileData,
+  Recette,
   UserProfile,
   WeeklyData,
 } from '../src/lib/model';
 import { addWeight, getChecks, getDepenses, getWeights, loadWeeks, setCheck, upsertWeek } from '../src/lib/storage';
 import { todayISO } from '../src/lib/dates';
 import { parseWeeklyFile } from '../src/lib/parse';
-import semaineExempleRaw from '../src/assets/semaine-exemple.md?raw';
 import { ImportButton } from '../src/components/ImportButton';
 import { Checklist } from '../src/components/Checklist';
 import { StatCards } from '../src/components/StatCards';
@@ -539,8 +540,35 @@ describe('CuisineView — sous-onglets', () => {
   });
 });
 
-describe('MenuView v2 — réserve de recettes', () => {
-  const semaine37 = parseWeeklyFile(semaineExempleRaw).data;
+describe('MenuView v3 — onglets par recette', () => {
+  const RECETTE: Recette = {
+    id: 'r1',
+    nom: 'Poulet au four + riz',
+    temps: '45 min · four 200°',
+    kcal: 680,
+    score: 7,
+    fraicheur: 'batch dimanche → boîte frigo',
+    pour: '6-8 cuisses · 250 g riz',
+    bases: ['b4'],
+    etapes: ['Four 200°.', 'Rôtir 40 min.'],
+    portions: { marc: '1 poignée de riz (~150 g) · 2 cuisses', melanie: 'poulet ×2 (sans riz)' },
+    mel: 'KETO-RECETTE-INFO',
+    batch: 'BATCH-RECETTE-INFO',
+  };
+  const MENU: MenuDay[] = [
+    {
+      jour: 'Lundi',
+      dejeunerMarc: 'Boîte poulet-riz',
+      dejeunerMelanie: 'Restes poulet',
+      dinerFamille: 'Poulet au four + riz',
+      dinerMelanie: 'Poulet + légumes (sans riz)',
+      batch: 'Double riz → boîte mardi',
+      recetteRefs: { dinerFamille: 'R1', dejeunerMarc: 'R1', dejeunerMelanie: 'R1' },
+    },
+    { jour: 'Mardi', dejeunerMarc: 'Boîte poulet-riz (lun)', recetteRefs: { dejeunerMarc: 'R1' } },
+    { jour: 'Mercredi', dinerFamille: 'Omelette + salade' },
+    { jour: 'Jeudi', dejeunerMarc: 'Restes ou wrap' },
+  ];
 
   beforeEach(() => {
     localStorage.clear();
@@ -550,83 +578,118 @@ describe('MenuView v2 — réserve de recettes', () => {
     vi.useRealTimers();
   });
 
-  it('une carte par ligne repas, ordre chronologique lundi → dimanche, pas de badge Aujourd’hui', () => {
+  it('barre : pills de recettes sans jours + onglet Déjeuners, actif = jour courant, progression Dîners/Boxes', () => {
     vi.setSystemTime(new Date('2026-09-09T10:00:00')); // mercredi
-    render(
-      <MenuView
-        menu={semaine37.menu}
-        recettes={semaine37.recettes}
-        bases={semaine37.bases}
-        semaine={semaine37.meta.semaine}
-      />,
+    const { container } = render(
+      <MenuView menu={MENU} recettes={[RECETTE]} bases={[]} semaine="2026-S40" />,
     );
-    const cartes = screen.getAllByRole('article');
-    expect(cartes.length).toBe(33);
-    expect(cartes[0]).toHaveTextContent('Boîte dinde-quinoa (batch dim) + légumes'); // lundi d'abord
-    expect(document.querySelector('.today-badge')).toBeNull();
+    const pills = container.querySelectorAll('.rtab');
+    expect(pills).toHaveLength(3); // 2 recettes (mardi/jeudi sans dîner) + 🍱 Déjeuners
+    expect(pills[0].textContent).toContain('Poulet au four');
+    expect(pills[0].textContent).not.toMatch(/lundi/i);
+    expect(pills[2].textContent).toContain('Déjeuners');
+    expect(container.querySelector('.rtab.active')).toHaveTextContent('Omelette');
+    expect(document.querySelector('.menu-progress')).toHaveTextContent('Dîners 0/2');
+    expect(document.querySelector('.menu-progress')).toHaveTextContent('Boxes 0/3');
   });
 
-  it('la coche « c’est fait » coche la carte seule et persiste dans sportapp:checks', async () => {
+  it('onglet recette : meta, qui mange quoi, portions, préparation, batch associé — sans duplication recette', async () => {
     const user = userEvent.setup();
-    render(<MenuView menu={semaine37.menu} recettes={semaine37.recettes} semaine={semaine37.meta.semaine} />);
-    const premiere = screen.getAllByRole('article')[0];
-    await user.click(within(premiere).getByRole('checkbox'));
-    expect(premiere).toHaveClass('fait');
-    expect(JSON.parse(localStorage.getItem('sportapp:checks:2026-S37')!)['menu:lundi:dejeunerMarc']).toBe(true);
-  });
-
-  it('compteur N/M faits + barre de progression', async () => {
-    const user = userEvent.setup();
-    render(<MenuView menu={semaine37.menu} recettes={semaine37.recettes} semaine={semaine37.meta.semaine} />);
-    expect(document.querySelector('.menu-reserve-head')).toHaveTextContent('0/33 faits');
-    await user.click(screen.getAllByRole('article')[0].querySelector('input[type="checkbox"]')!);
-    expect(document.querySelector('.menu-reserve-head')).toHaveTextContent('1/33 faits');
-  });
-
-  it('carte avec recette : temps + kcal + portions + fraîcheur + fiche dépliable', async () => {
-    const user = userEvent.setup();
-    render(
-      <MenuView
-        menu={semaine37.menu}
-        recettes={semaine37.recettes}
-        bases={semaine37.bases}
-        semaine={semaine37.meta.semaine}
-      />,
+    vi.setSystemTime(new Date('2026-09-09T10:00:00'));
+    const { container } = render(
+      <MenuView menu={MENU} recettes={[RECETTE]} bases={[]} semaine="2026-S40" />,
     );
-    const carte = screen.getAllByRole('article')[2]; // lundi diner-famille → R1
-    expect(within(carte).getByText('45 min')).toBeInTheDocument();
-    expect(within(carte).getByText('680 kcal')).toBeInTheDocument();
-    const portions = carte.querySelector('.portions-box');
-    expect(portions).toHaveTextContent('riz 150 g cuit');
-    expect(portions).toHaveTextContent('sans riz ni patate douce');
-    expect(within(carte).getByText(/batch dimanche/)).toBeInTheDocument(); // fraîcheur
-    expect(carte.querySelector('.recette-etapes')).toBeNull(); // repliée
-    await user.click(within(carte).getByRole('button', { name: /Voir la recette/ }));
-    expect(carte.querySelector('.recette-etapes li')).not.toBeNull();
-    const nutri = carte.querySelector('.recette-nutri'); // n'existe que déplié
-    expect(nutri).not.toBeNull();
-    expect(within(nutri as HTMLElement).getAllByText(/48/).length).toBeGreaterThan(0); // macros protéines dans le déplié
+    await user.click(screen.getByRole('tab', { name: /Poulet au four/ }));
+    expect(screen.getByText('Qui mange quoi')).toBeInTheDocument();
+    expect(screen.getByText('Poulet + légumes (sans riz)')).toBeInTheDocument();
+    expect(screen.getByText('Portions — par personne')).toBeInTheDocument();
+    expect(screen.getByText(/1 poignée de riz \(~150 g\) · 2 cuisses/)).toBeInTheDocument();
+    expect(screen.getByText('Préparation')).toBeInTheDocument();
+    expect(screen.getByText('Four 200°.')).toBeInTheDocument();
+    expect(screen.getByText('Batch associé')).toBeInTheDocument();
+    expect(screen.getByText('Double riz → boîte mardi')).toBeInTheDocument();
+    expect(screen.getByText('45 min')).toBeInTheDocument();
+    expect(screen.getByText('680 kcal')).toBeInTheDocument();
+    expect(screen.getByText(/Score 7\/10/)).toBeInTheDocument();
+    expect(screen.getByText(/batch dimanche → boîte frigo/)).toBeInTheDocument();
+    // Anti-duplication : les lignes mel:/batch: de la recette sont masquées
+    // (le menu du jour est prioritaire).
+    expect(screen.queryByText('KETO-RECETTE-INFO')).not.toBeInTheDocument();
+    expect(screen.queryByText('BATCH-RECETTE-INFO')).not.toBeInTheDocument();
+    expect(container.querySelectorAll('.rtab')[0].textContent).not.toMatch(/lundi/i);
   });
 
-  it('les cartes sans recette restent simples (pas de bouton)', () => {
-    render(<MenuView menu={semaine37.menu} recettes={semaine37.recettes} semaine={semaine37.meta.semaine} />);
-    const premiere = screen.getAllByRole('article')[0];
-    expect(within(premiere).queryByRole('button', { name: /Voir la recette/ })).toBeNull();
-  });
-
-  it('les chips batch affichent les bases de la recette', () => {
-    render(
-      <MenuView
-        menu={semaine37.menu}
-        recettes={semaine37.recettes}
-        bases={semaine37.bases}
-        semaine={semaine37.meta.semaine}
-      />,
+  it('coche unique du dîner : CTA, pill grisée barrée, persistance, annulable', async () => {
+    const user = userEvent.setup();
+    vi.setSystemTime(new Date('2026-09-09T10:00:00'));
+    const { container } = render(
+      <MenuView menu={MENU} recettes={[RECETTE]} bases={[]} semaine="2026-S40" />,
     );
-    const carteR2 = screen
-      .getAllByRole('article')
-      .find((c) => c.textContent?.includes('Pâtes bolognaise'))!;
-    expect(carteR2.querySelector('.mchips')).toHaveTextContent('Vinaigrette minute');
+    await user.click(screen.getByRole('tab', { name: /Poulet au four/ }));
+    await user.click(screen.getByRole('button', { name: /C'est fait — dîner fini/ }));
+    expect(
+      JSON.parse(localStorage.getItem('sportapp:checks:2026-S40')!)['menu:lundi:dinerFamille'],
+    ).toBe(true);
+    expect(container.querySelectorAll('.rtab')[0]).toHaveClass('fait');
+    const onglet = document.querySelector('.onglet-recette');
+    expect(onglet).toHaveClass('fait');
+    await user.click(screen.getByRole('button', { name: /Dîner fait ✓ — annuler/ }));
+    expect(onglet).not.toHaveClass('fait');
+    expect(container.querySelectorAll('.rtab')[0]).not.toHaveClass('fait');
+    expect(
+      JSON.parse(localStorage.getItem('sportapp:checks:2026-S40')!)['menu:lundi:dinerFamille'],
+    ).toBe(false);
+  });
+
+  it('file déjeuners : verrouillée avec note, prête après le dîner, coche paire = 2 ids, mangées barrées', async () => {
+    const user = userEvent.setup();
+    vi.setSystemTime(new Date('2026-09-09T10:00:00'));
+    render(<MenuView menu={MENU} recettes={[RECETTE]} bases={[]} semaine="2026-S40" />);
+    await user.click(screen.getByRole('tab', { name: /Déjeuners/ }));
+
+    // R1 pas fait : lundi + mardi verrouillées, jeudi (sans ref) prête.
+    expect(screen.getByText('À venir')).toBeInTheDocument();
+    // La note est segmentée par le <b> de la recette + espaces insécables :
+    // matcher fonctionnel sur les .lock-note (textContent complet).
+    expect(
+      screen.getAllByText((_, el) =>
+        el?.classList.contains('lock-note') === true &&
+        /débloquée quand\s+Poulet au four\s+est fait/.test(el.textContent ?? ''),
+      ),
+    ).toHaveLength(2);
+    expect(screen.getByText('Prêtes à emporter')).toBeInTheDocument();
+    expect(screen.getByText('Restes ou wrap')).toBeInTheDocument();
+
+    // On coche le dîner R1 → les paires lundi/mardi deviennent prêtes.
+    await user.click(screen.getByRole('tab', { name: /Poulet au four/ }));
+    await user.click(screen.getByRole('button', { name: /C'est fait — dîner fini/ }));
+    await user.click(screen.getByRole('tab', { name: /Déjeuners/ }));
+    expect(screen.queryAllByText(/débloquée quand/)).toHaveLength(0);
+
+    // Coche de la première paire prête (lundi) : les 2 ids partent en storage.
+    await user.click(screen.getAllByRole('button', { name: /Boxes faites/ })[0]);
+    const checks = JSON.parse(localStorage.getItem('sportapp:checks:2026-S40')!);
+    expect(checks['menu:lundi:dejeunerMarc']).toBe(true);
+    expect(checks['menu:lundi:dejeunerMelanie']).toBe(true);
+    expect(checks['menu:mardi:dejeunerMarc']).toBeUndefined();
+    expect(document.querySelector('.menu-progress')).toHaveTextContent('Boxes 1/3');
+    expect(screen.getByText('Mangées')).toBeInTheDocument();
+    expect(document.querySelector('.box-pair.mangees')).not.toBeNull();
+  });
+
+  it('paire sans ref jamais verrouillée, paire à une ligne cochable seule', async () => {
+    const user = userEvent.setup();
+    render(<MenuView menu={MENU} recettes={[RECETTE]} bases={[]} semaine="2026-S40" />);
+    await user.click(screen.getByRole('tab', { name: /Déjeuners/ }));
+    expect(screen.getByText('Restes ou wrap')).toBeInTheDocument(); // jeudi : prête d'emblée
+    await user.click(screen.getByRole('button', { name: /Boxes faites/ }));
+    const checks = JSON.parse(localStorage.getItem('sportapp:checks:2026-S40')!);
+    expect(checks['menu:jeudi:dejeunerMarc']).toBe(true); // coche seule, pas de melanie
+  });
+
+  it('menu vide : état vide', () => {
+    render(<MenuView menu={[]} recettes={[]} semaine="2026-S40" />);
+    expect(screen.getByText('Aucun menu pour cette semaine.')).toBeInTheDocument();
   });
 });
 
