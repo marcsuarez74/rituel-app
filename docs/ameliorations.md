@@ -36,6 +36,12 @@ Ressenti initial noté pour mémoire :
   actuel vs une palette plus lumineuse — à challenger sans casser le design
   system existant : tokens sur `:root`, un seul `index.css`)
 
+→ **TODO — Menu v3 × plancher d'icônes** : le chantier polish (v1.1.0) a fixé
+un plancher de 14 px aux appels d'icônes ; le Menu v3 (v1.2.0, écrit en
+parallèle) en a encore à 11-12 px (tick des pills `.rtab`, note de
+déblocage `.lock-note`, meta-pills). À harmoniser lors d'une prochaine passe
+design — les maquettes v3 validées utilisaient ces tailles, à arbitrer.
+
 ## 2. Onboarding enrichi (process au chargement de l'app)
 
 → **Livré** (chantier 3, profil v2.1) :
