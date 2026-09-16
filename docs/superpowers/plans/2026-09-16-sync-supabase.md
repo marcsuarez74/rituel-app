@@ -158,9 +158,12 @@ export const demanderSession = async (code: string): Promise<SessionFoyer> => {
   if (!res.ok) throw new Error('code-refuse');
   const { token, foyer } = (await res.json()) as { token?: string; foyer?: string };
   if (!token || !foyer) throw new Error('reponse-invalide');
-  return { token, foyer };
+  // l'edge renvoie `foyer` — mappé vers SessionFoyer.foyerId
+  return { token, foyerId: foyer };
 };
 ```
+
+> Ajustement Task 2 : la version initiale du plan retournait `{ token, foyer }` (hors type `SessionFoyer`) — corrigé en `{ token, foyerId: foyer }`.
 
 - [ ] **Step 4: Vérifier le vert**
 
