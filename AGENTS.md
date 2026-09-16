@@ -46,7 +46,7 @@ Un changement d'UI responsive → `npm run e2e` doit passer aussi (zéro débord
 src/lib/          # cœur logique, zéro React : model.ts (types), parse.ts (.md → WeeklyData),
                   # storage.ts (localStorage), dates.ts (jours FR), rayons.ts (images de rayons),
                   # text.ts (capitalize mutualisé)
-src/lib/sync/     # sync optionnelle Supabase : config/session/outbox/client/engine
+src/lib/sync/     # sync optionnelle Supabase : config/session/outbox/client/engine/messages
 src/components/   # composants UI ; cuisine/ pour l'onglet Cuisine ; onboarding/ pour le premier lancement
 src/assets/       # semaine-exemple.md (référence du format) + rayons/ (miniatures jpg des rayons)
 tests/            # miroir de src/, vitest + Testing Library, environnement happy-dom
