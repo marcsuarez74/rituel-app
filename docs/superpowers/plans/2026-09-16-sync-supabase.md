@@ -47,11 +47,16 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_ANON_KEY?: string;
 }
 
-export const SUPABASE_URL: string | undefined = import.meta.env.VITE_SUPABASE_URL;
-export const SUPABASE_ANON_KEY: string | undefined = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// `noUnusedLocals` exige que l'interface serve : cast de garde de forme.
+const env = import.meta.env as ImportMetaEnv;
+
+export const SUPABASE_URL: string | undefined = env.VITE_SUPABASE_URL;
+export const SUPABASE_ANON_KEY: string | undefined = env.VITE_SUPABASE_ANON_KEY;
 
 export const syncActif = (): boolean => !!SUPABASE_URL && !!SUPABASE_ANON_KEY;
 ```
+
+> Ajustement Task 1 : le code initial (lecture directe `import.meta.env.VITE_*`) échouait au typecheck (`noUnusedLocals` sur l'interface) — la forme ci-dessus est la version livrée.
 
 - [ ] **Step 3: Vérifier**
 
