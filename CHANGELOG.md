@@ -20,7 +20,8 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 - Thème clair « Herbes » (sauge/basilic/citron) — le dark mode est retiré
 - Navigation segmented sous la bannière (le dock flottant disparaît)
-- Menu : réserve de recettes en cartes (coche « c'est fait », plus aucun jour imposé)
+- Menu v3 : navigation par onglets de **recettes** (7 dîners + 🍱 Déjeuners, aucun jour affiché), fiche recette complète dans l'onglet, coche unique « C'est fait » par dîner (onglet grisé), file de déjeuners dynamique (les boxes se débloquent quand leur recette est faite), progression « Dîners X/N · Boxes X/N »
+- Portions en mesures maison (pièces, poignées, c. à soupe, louches) — les grammes entre parenthèses ne servent qu'à caler l'œil (semaine d'exemple, template, prompt IA)
 - Format .md v2 (rétrocompatible) : `- budget:`, suffixes ` · rituel` / ` | note`, `fraicheur:`, `- portions marc/melanie:`
 - Stat-cards réduites à la carte Poids (variation en kg vs 7 jours)
 - Séances en liste libre : le jour n'est plus qu'une recommandation (« conseillé lun. »)

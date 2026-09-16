@@ -4,9 +4,11 @@ import { expect, test } from '@playwright/test';
 // doit couvrir la semaine courante. Quand on la rafraîchit, mettre à jour
 // « Semaine 2026-S37 » et les compteurs exacts ci-dessous (même contrat que
 // les tests unitaires). Hypothèses à préserver aussi : le frontmatter garde
-// `menu: A` (pill assertée), le menu compte 33 lignes repas (5+5+5+4+4+5+5)
-// et la 3ᵉ carte (nth(2)) = lundi diner-famille → R1 (kcal/étapes) — le test
-// fiche recette s'y accroche. Les coches menu partent d'un storageState vierge.
+// `menu: A` (pill assertée), le menu compte 33 lignes repas (5+5+5+4+4+5+5) —
+// soit 7 dîners + 7 paires de déjeuners côté Menu v3. Les pills reprennent les
+// refs des recettes (« R1 »… « R7 », coupe de labelCourt sur « · ») : la pill
+// R1 (lundi) sert d'ancrage aux tests fiche + coche. Les coches menu partent
+// d'un storageState vierge.
 // Le test dépenses sème aussi une dépense datée 2026-09-09 (∈ S37) et épingle
 // le total « Payé cette semaine » à 73,30 € — déplacer les deux au refresh.
 // La saisie du formulaire épingle en plus la « Date » à 2026-09-10 (∈ S37) — au refresh, déplacer les trois.
@@ -66,27 +68,38 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
     await expect(page.locator('.menu-pill')).toHaveText('Menu A');
   });
 
-  test('menu : réserve de recettes — 33 cartes, coche persistée, fiche dépliable', async ({ page }) => {
+  test('menu v3 : onglets par recette, coche dîner persistée, file de déjeuners', async ({ page }) => {
     await page.goto(ORIGIN);
     await expect(page.getByText('Semaine 2026-S37')).toBeVisible();
     await page.getByRole('button', { name: 'Menu' }).click();
-    await expect(page.locator('.menu-card')).toHaveCount(33);
-    await expect(page.locator('.menu-reserve-head')).toContainText('0/33 faits');
+    await expect(page.locator('.rtab')).toHaveCount(8); // 7 dîners + 🍱 Déjeuners
+    await expect(page.locator('.menu-progress')).toContainText('Dîners 0/7');
+    await expect(page.locator('.menu-progress')).toContainText('Boxes 0/7');
 
-    const carte = page.locator('.menu-card').nth(2); // lundi diner-famille → R1
-    await carte.locator('input[type="checkbox"]').check();
-    await expect(carte).toHaveClass(/fait/);
+    // Fiche recette complète dans l'onglet R1 (lundi) : étapes visibles sans dépliage.
+    const r1 = page.getByRole('tab', { name: /^R1/ });
+    await r1.click();
+    await expect(page.locator('.recette-etapes li').first()).toBeVisible();
+
+    // Coche « C'est fait » → pill grisée + progression, persistée au rechargement.
+    await page.getByRole('button', { name: /C'est fait/ }).click();
+    await expect(r1).toHaveClass(/fait/);
+    await expect(page.locator('.menu-progress')).toContainText('Dîners 1/7');
     await page.reload();
     // le rechargement remet l'app sur l'onglet Courses : rouvrir Menu avant l'assertion
     await page.getByRole('button', { name: 'Menu' }).click();
-    await expect(page.locator('.menu-card').nth(2)).toHaveClass(/fait/);
+    await expect(page.getByRole('tab', { name: /^R1/ })).toHaveClass(/fait/);
 
-    await expect(carte.locator('.recette-etapes')).toHaveCount(0);
-    await carte.locator('.rtoggle').click();
-    await expect(carte.locator('.recette-etapes li').first()).toBeVisible();
-    await expect(carte.locator('.rtoggle')).toHaveAttribute('aria-expanded', 'true');
-    await carte.locator('.rtoggle').click();
-    await expect(carte.locator('.recette-etapes')).toHaveCount(0);
+    // File de déjeuners : la box du mercredi attend le dîner R2 (mardi)…
+    await page.getByRole('tab', { name: '🍱 Déjeuners' }).click();
+    await expect(page.locator('.box-pair.locked')).toHaveCount(1);
+    await expect(page.locator('.lock-note')).toContainText('R2');
+    // … puis se débloque quand R2 est cochée.
+    await page.getByRole('tab', { name: /^R2/ }).click();
+    await page.getByRole('button', { name: /C'est fait/ }).click();
+    await page.getByRole('tab', { name: '🍱 Déjeuners' }).click();
+    await expect(page.locator('.box-pair.locked')).toHaveCount(0);
+    await expect(page.locator('.menu-progress')).toContainText('Dîners 2/7');
   });
 
   test('courses : compteurs par rayon et encadré keto en dernier', async ({ page }) => {

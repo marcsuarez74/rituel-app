@@ -17,8 +17,8 @@ Source de vérité : `src/index.css` (section `:root`). Toute valeur ici doit y 
 | Token | Valeur | Usage |
 |---|---|---|
 | `--bg` | `#f0f2eb` | fond de page (sauge clair) |
-| `--surface` | `#fcfdf9` | cartes (`.week-banner`, `.course-group`, `.profile-section`, `.menu-card`, `.batch-section`) |
-| `--surface-2` | `#e7eae0` | surfaces secondaires (`.banner-nav`, inputs, `.weight-chip`, `.mchip`, `.recette-bchip`) |
+| `--surface` | `#fcfdf9` | cartes (`.week-banner`, `.course-group`, `.profile-section`, `.batch-section`) et blocs Menu v3 (`.onglet-prepa`, `.file-dejeuners`) |
+| `--surface-2` | `#e7eae0` | surfaces secondaires (`.banner-nav`, inputs, `.weight-chip`, `.meta-pill`, `.recette-bchip`) |
 | `--border` | `#e1e6da` | bordures de cartes, rail timeline, dots inactifs |
 | `--text` | `#26312b` | texte principal — encre (≈ 13,2:1 sur surface) |
 | `--muted` | `#6e7a6c` | texte secondaire (≈ 4,4:1 sur surface, ≈ 3,99:1 sur bg — les compteurs/notes principales utilisent `color-mix(in srgb, var(--muted) 70%, var(--text))`) |
@@ -37,7 +37,7 @@ Source de vérité : `src/index.css` (section `:root`). Toute valeur ici doit y 
 | `--radius` | `18px` | cartes |
 | `--shadow` | `0 4px 16px rgb(38 49 43 / 0.08)` | élévation |
 
-Rayons dérivés : boutons et cartes compactes `12px`, pills `999px` (`.menu-pill`, `.mtag`, `.portion-tag`, `.mm`, `.lancer`, `.btn-ghost`).
+Rayons dérivés : boutons et cartes compactes `12px`, pills `999px` (`.menu-pill`, `.rtab`, `.mtag`, `.mm`, `.lancer`, `.btn-ghost`).
 
 ---
 
@@ -98,15 +98,18 @@ Rayons dérivés : boutons et cartes compactes `12px`, pills `999px` (`.menu-pil
 | `.obj-bloc` (+ `.obj-pills` `.obj-pill-type` `.obj-pill-reg` `.obj-echeance` `.obj-prog` `.obj-kg` `.obj-bar` `.obj-comps` `.cchip`) | bloc objectif en tête de Mon suivi | surface + radius ; pill type basilic texte blanc, pill régime citron 60 % (texte encre), échéance `.late` = `--danger`, barre progression `--accent` sur `--surface-2`, compléments `.cchip` surface-2 sous filet pointillé |
 | `.checklist` + `.done` | listes cochables | label min-height 48 px, checkbox 22 px `accent-color: --accent` ; done = barré + muted |
 | `.seance-rec` (+ `.seance-txt`) | pastille « conseillé lun. » des séances | pill surface-2 10px/700 uppercase, texte mix muted 70 % (≥ 4,5:1 — la pastille porte la seule copie du jour), jamais barrée quand la séance est cochée |
-| `.menu-reserve` / `.menu-reserve-head` | réserve de recettes (Menu v2) | note d'ordre (batch/frigo d'abord) + compteur `.progress` (« N/33 faits ») — aucun jour imposé |
-| `.menu-card` (+ `.fait`) | carte repas (1 ligne repas = 1 occurrence cochable) | surface + bordure + radius ; coche custom `.menu-coche` 24px (basilic, check SVG blanc), tuile icône `.mtile`, tag `.mtag`, nom 14,5px/600 (fait = barré mix muted), meta `.mmeta` (temps, kcal), chips `.mchip`, fraîcheur `.mh` |
-| `.mtag` (`.tag-marc` `.tag-mel` `.tag-fam` `.tag-bat`) | tags de profil des repas | pills 11px/700 : Marc plein `--accent` (texte blanc), Mél citron 55% (texte encre), Famille `--surface-2`, Batch `--accent` 20% (texte basilic) |
-| `.portions-box` / `.portion-tag` | portions par profil dans la carte | fond `--accent` 7%, tags pills : Marc plein basilic (texte blanc), Mél citron 70% (texte encre) |
-| `.rtoggle` | bouton « Voir la recette » | pleine largeur 48px, chevron SVG pivotant, `aria-expanded` |
-| `.recette-nutri` | bloc nutrition | barre `--surface-2` radius 8, cellules conditionnelles (icônes SVG : kcal / C / P / F) 11px muted, nowrap, traits verticaux `--border` |
-| `.recette-score` / `.score-bar` | health score | valeur + barre 97px (10 segments, `.score-seg.on` = accent) |
-| `.recette-detail` + `.recette-*` | détail déplié dans la carte (séparateur pointillé) | pour, `.recette-bchip` cliquable 48px (état `.on` = bordure accent), `.recette-etapes`, `.recette-mel` / `.recette-bat` pastilles via `color-mix` + `::before` |
-| `.progress` + `progress` | compteurs de progression | texte bold mix muted, barre native `accent-color: --accent` |
+| `.menu-head` / `.menu-progress` + `.bar` | progression de l'onglet Menu v3 (« Dîners X/N · Boxes X/N ») | compteurs 12,5px/700 mix muted 70 % (≥ 4,5:1 sur `--bg`) ; barres 72×6px `--surface-2` + remplissage `--accent`, transition width décorative (couverte par le kill-switch reduced-motion) |
+| `.rtabs` / `.rtab` (+ `.active` `.fait` `.tick` `.rn`) | barre d'onglets par recette (7 dîners + 🍱 Déjeuners, aucun jour affiché) | pills scrollables (scrollbar masquée), plancher 42 px (même plancher que `.chip` — tension documentée vs CTA 48 px) ; actif = plein `--accent` texte blanc + glow ; fait = texte mix muted 70 % + line-through sur pill opaque (jamais d'opacité : le contraste casse), tick SVG |
+| `.onglet-recette` (+ `.onglet-meta` `.onglet-prepa` `.onglet-batch`) | fiche recette complète de l'onglet actif | blocs surface + bordure + radius ; meta pills `.meta-pill` (surface-2, icônes muted), note `.fraicheur` mix muted ; fait = contenu voilé opacité 0,75, CTA exempt |
+| `.qui` / `.portions` (+ `.qui-titre` `.portions-titre`) | encarts « Qui mange quoi » et « Portions — par personne » | fond `--accent` 7 % + bordure 15 % (`color-mix`), titres uppercase mix muted, tags `.mtag` — portions en mesures maison (les grammes ne servent qu'à caler l'œil) |
+| `.bat` | pastille « Batch associé » de l'onglet | `--surface-2`, tag `.tag-bat` |
+| `.mtag` (`.tag-marc` `.tag-mel` `.tag-fam` `.tag-bat`) | tags de profil des repas (onglets + file déjeuners) | pills 11px/700 : Marc plein `--accent` (texte blanc), Mél citron 55% (texte encre), Famille `--surface-2`, Batch `--accent` 20% (texte basilic) |
+| `.cta` (+ `.done`) | coche « C'est fait — dîner fini » de l'onglet | plein `--accent` texte blanc, 48px, glow, active `scale(0.97)` ; done = `--surface-2` texte encre sans glow |
+| `.mini-cta` | coche « Boxes faites » de la file déjeuners | plein `--accent` texte blanc, 48px, radius 12px |
+| `.file-dejeuners` (+ `.fhead` `.box-pair` `.lock-note`) | file dynamique des déjeuners (Prêtes à emporter / À venir / Mangées) | carte surface, séparateurs pointillés ; sections `.fhead` uppercase mix muted ; `.locked` / `.mangees` = texte `--muted` (pas d'opacité), mangées barrées ; `.lock-note` « débloquée quand … est fait » mix muted + icône lock |
+| `.score-bar` / `.score-seg` | health score dans la pill meta de l'onglet | barre 97px (10 segments, `.on` = `--accent`) |
+| `.recette-pour` / `.recette-bases` (+ `.recette-bchip` `.recette-bdesc`) / `.recette-etapes` | préparation dans `.onglet-prepa` | `.recette-bchip` cliquable 48px (état `.on` = bordure accent, texte basilic mixé 90 % ≥ 4,5:1 sur surface-2), description `.recette-bdesc` surface-2, étapes `ol` 13px |
+| `.progress` + `progress` | compteurs de progression (règles partagées Courses / Batch, dont le mode guidé) | texte bold mix muted, barre native `accent-color: --accent` |
 | `.batch-section` / `.batch-section-head` | cartes du Batch (rituel, micro-batch, guidé) | surface + bordure + radius tokens, titre 17px |
 | `.lancer` / `.batch-guide` | mode guidé « Lancer le batch » | pill basilic 48px texte blanc ; guide = étape num basilic, titre 19px, progress, CTA `.btn` + retour `.btn-ghost`, état final `.guide-done-ic` |
 | `.rituel-timeline` + `.rituel-etape` | timeline cochable du rituel dimanche | rail vertical 2px `--border` + dots 10px `--accent` (done = `--border`), lignes ≥ 48px, créneau muted à droite, done = barré + muted |

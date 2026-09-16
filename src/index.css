@@ -813,6 +813,31 @@ progress {
 .mini-cta:active {
   transform: scale(0.97);
 }
+/* Tags profil (Marc / Mél / Famille / Batch) — pills dans les onglets et la file */
+.mtag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 2px 8px;
+  margin-bottom: 4px;
+}
+.mtag.tag-marc {
+  background: var(--accent);
+  color: #ffffff;
+}
+.mtag.tag-mel {
+  background: color-mix(in srgb, var(--accent-2) 55%, var(--surface));
+  color: var(--text);
+}
+.mtag.tag-fam {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.mtag.tag-bat {
+  background: color-mix(in srgb, var(--accent) 20%, var(--surface));
+  color: var(--accent);
+}
 
 /* ---------- Checklists ---------- */
 
@@ -871,84 +896,6 @@ progress {
   text-decoration: none; /* la pastille reste lisible quand la séance est cochée */
 }
 
-/* ---------- Menu v2 — réserve de recettes ---------- */
-
-.menu-reserve-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-.menu-reserve-note {
-  font-size: 12.5px;
-  color: color-mix(in srgb, var(--muted) 70%, var(--text)); /* muted seul : 3,99:1 sur --bg */
-  flex: 1 1 100%;
-  min-width: 0;
-}
-.menu-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px;
-  margin-bottom: 12px;
-}
-.menu-card.fait .mname {
-  color: color-mix(in srgb, var(--muted) 70%, var(--text));
-  text-decoration: line-through;
-}
-.menu-card-top {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-.menu-coche {
-  flex-shrink: 0;
-  margin-top: 2px;
-  cursor: pointer;
-  position: relative;
-}
-.menu-coche input {
-  position: absolute;
-  opacity: 0;
-  width: 24px;
-  height: 24px;
-}
-.menu-coche-box {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 7px;
-  border: 2px solid var(--border);
-  color: transparent;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-}
-.menu-coche input:checked + .menu-coche-box {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #ffffff;
-}
-.menu-coche input:focus-visible + .menu-coche-box {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-.mtile {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
-  color: var(--accent);
-}
-.mt {
-  min-width: 0;
-  flex: 1;
-}
 .mtag {
   display: inline-block;
   font-size: 11px;
@@ -973,109 +920,6 @@ progress {
   background: color-mix(in srgb, var(--accent) 20%, var(--surface));
   color: var(--accent);
 }
-.mname {
-  font-weight: 600;
-  font-size: 14.5px;
-  line-height: 1.35;
-}
-.mmeta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 4px;
-  font-size: 12px;
-  color: var(--muted);
-}
-.mmeta span {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-.menu-card-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
-}
-.mchips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.mchip {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: var(--surface-2);
-  color: var(--text);
-}
-.mh {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12px;
-  color: var(--muted);
-}
-.portions-box {
-  margin-top: 10px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
-  border: 1px solid color-mix(in srgb, var(--accent) 15%, var(--border));
-}
-.portions-title {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--muted);
-  margin-bottom: 4px;
-}
-.portions-box p {
-  font-size: 13px;
-  line-height: 1.5;
-  margin: 2px 0;
-}
-.portion-tag {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 700;
-  border-radius: 999px;
-  padding: 1px 8px;
-  margin-right: 6px;
-  background: var(--accent);
-  color: #ffffff;
-}
-.portion-tag.keto {
-  background: color-mix(in srgb, var(--accent-2) 70%, var(--surface));
-  color: var(--text);
-}
-.rtoggle {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 12px;
-  padding: 10px 12px;
-  min-height: 48px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
-  color: var(--text);
-  font-size: 13px;
-  font-weight: 600;
-}
-.rtoggle .chev {
-  display: inline-flex;
-  color: var(--muted);
-  transition: transform 0.2s;
-}
-.rtoggle .chev.up {
-  transform: rotate(180deg);
-}
-
 /* ---------- Batch ---------- */
 
 .batch-section {
@@ -2174,7 +2018,7 @@ progress {
   text-align: center;
 }
 
-/* ---------- Détail recette (déplié dans les cartes menu) ---------- */
+/* ---------- Détail recette (fiche dans l'onglet Menu v3) ---------- */
 
 .recette-score {
   margin-left: auto;
