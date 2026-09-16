@@ -10,16 +10,20 @@ export function ShoppingList({
   items,
   semaine,
   budget,
+  syncVersion = 0,
 }: {
   items: CourseItem[];
   semaine: string;
   budget?: string;
+  syncVersion?: number;
 }) {
   const [checks, setChecks] = useState<Record<string, boolean>>(() => getChecks(semaine));
-  const [syncedSemaine, setSyncedSemaine] = useState(semaine);
   const [magasin, setMagasin] = useState(false);
-  if (syncedSemaine !== semaine) {
-    setSyncedSemaine(semaine);
+  // Pattern render-phase reset — cf. Checklist.tsx : un changement remote
+  // (syncVersion) ou de semaine relit le storage.
+  const [synced, setSynced] = useState({ semaine, version: syncVersion });
+  if (synced.semaine !== semaine || synced.version !== syncVersion) {
+    setSynced({ semaine, version: syncVersion });
     setChecks(getChecks(semaine));
   }
 
@@ -94,6 +98,7 @@ export function ShoppingList({
               <Checklist
                 items={affiches}
                 semaine={semaine}
+                dataVersion={syncVersion}
                 onChecksChange={(groupChecks) => setChecks((prev) => ({ ...prev, ...groupChecks }))}
                 renderLabel={labelCourse}
               />
@@ -116,6 +121,7 @@ export function ShoppingList({
               <Checklist
                 items={affiches}
                 semaine={semaine}
+                dataVersion={syncVersion}
                 onChecksChange={(groupChecks) => setChecks((prev) => ({ ...prev, ...groupChecks }))}
                 renderLabel={labelCourse}
               />

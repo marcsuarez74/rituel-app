@@ -13,7 +13,15 @@ const TABS: Array<{ id: CuisineTab; label: string }> = [
   { id: 'batch', label: 'Batch' },
 ];
 
-export function CuisineView({ data, profile }: { data: WeeklyData; profile: UserProfile }) {
+export function CuisineView({
+  data,
+  profile,
+  syncVersion = 0,
+}: {
+  data: WeeklyData;
+  profile: UserProfile;
+  syncVersion?: number;
+}) {
   const [tab, setTab] = useState<CuisineTab>('courses');
   const [depOuvert, setDepOuvert] = useState(false);
   const [depFocus, setDepFocus] = useState(false);
@@ -38,6 +46,7 @@ export function CuisineView({ data, profile }: { data: WeeklyData; profile: User
           <DepensesPanel
             profile={profile}
             focusTotal={depFocus}
+            syncVersion={syncVersion}
             onRetour={() => setDepOuvert(false)}
           />
         ) : (
@@ -45,16 +54,28 @@ export function CuisineView({ data, profile }: { data: WeeklyData; profile: User
             <CoursesBudget
               data={data}
               profile={profile}
+              syncVersion={syncVersion}
               onOuvrirDepenses={(focus) => {
                 setDepFocus(focus);
                 setDepOuvert(true);
               }}
             />
-            <ShoppingList items={data.courses} semaine={semaine} budget={data.budget} />
+            <ShoppingList
+              items={data.courses}
+              semaine={semaine}
+              budget={data.budget}
+              syncVersion={syncVersion}
+            />
           </>
         ))}
       {tab === 'menu' && (
-        <MenuView menu={data.menu} recettes={data.recettes} bases={data.bases} semaine={semaine} />
+        <MenuView
+          menu={data.menu}
+          recettes={data.recettes}
+          bases={data.bases}
+          semaine={semaine}
+          syncVersion={syncVersion}
+        />
       )}
       {tab === 'batch' && (
         <BatchView
@@ -64,6 +85,7 @@ export function CuisineView({ data, profile }: { data: WeeklyData; profile: User
           production={data.rituelProduction}
           termine={data.rituelTermine}
           semaine={semaine}
+          syncVersion={syncVersion}
         />
       )}
     </>

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { ProfilScreen } from './components/ProfilScreen';
 import { ProfileView } from './components/ProfileView';
@@ -13,6 +13,7 @@ import { PRENOMS } from './lib/model';
 import type { ImportedWeek, UserProfile } from './lib/model';
 import { parseWeeklyFile } from './lib/parse';
 import { loadProfile, loadProfilLegacy, loadWeeks, removeProfile } from './lib/storage';
+import { initSync, type SyncEtat } from './lib/sync/engine';
 import { indexSemaineCourante, semainesTriees } from './lib/weeks';
 import { todayISO } from './lib/dates';
 import sampleRaw from './assets/semaine-exemple.md?raw';
@@ -44,6 +45,23 @@ function App() {
   // ajoutée) incrémente weightsBump pour les remonter et relire les pesées.
   const [weightsBump, setWeightsBump] = useState(0);
   const [tab, setTab] = useState<TabId>('cuisine');
+  // Sync optionnelle : état (consommé par la brique UI sync) et version de
+  // re-rendu — onRemote bump la version quand un pull a écrit dans le storage,
+  // les composants coches/pesées/dépenses relisent alors leur source.
+  const [, setSyncEtat] = useState<SyncEtat>('off');
+  const [syncVersion, setSyncVersion] = useState(0);
+
+  // Sync optionnelle : no-op complet sans env Supabase (état 'off'). Effet
+  // posé avant les early returns — règle des hooks. Idempotent côté engine.
+  useEffect(() => {
+    initSync({
+      onEtat: setSyncEtat,
+      onRemote: () => {
+        setSemaines(semainesInitiales());
+        setSyncVersion((v) => v + 1);
+      },
+    });
+  }, []);
 
   // Swipe Cuisine ↔ Suivi (pointer events). Chaque pointerdown repart d'un état
   // propre : un geste exclu (contrôle interactif, second doigt, reduced-motion)
@@ -135,7 +153,9 @@ function App() {
       />
       <TabBar active={tab} onSelect={setTab} />
       <main onPointerDown={onPointerDown} onPointerUp={onPointerUp} onPointerCancel={purgeSwipe}>
-        {tab === 'cuisine' && <CuisineView data={affichee.data} profile={profile} />}
+        {tab === 'cuisine' && (
+          <CuisineView data={affichee.data} profile={profile} syncVersion={syncVersion} />
+        )}
         {tab === 'suivi' && (
           <>
             <p className="greeting">Salut {PRENOMS[profile.id]} 👋</p>
@@ -145,6 +165,7 @@ function App() {
               profile={profile}
               data={affichee.data.profiles[profile.id]}
               semaine={affichee.data.meta.semaine}
+              syncVersion={syncVersion}
               onWeightsChanged={() => setWeightsBump((b) => b + 1)}
             />
           </>

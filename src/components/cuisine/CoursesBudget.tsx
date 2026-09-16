@@ -18,12 +18,21 @@ export function CoursesBudget({
   data,
   profile,
   onOuvrirDepenses,
+  syncVersion = 0,
 }: {
   data: WeeklyData;
   profile: UserProfile;
   onOuvrirDepenses: (focusTotal: boolean) => void;
+  syncVersion?: number;
 }) {
-  const [depenses] = useState<DepenseEntry[]>(() => getDepenses());
+  // Pattern render-phase reset — cf. Checklist.tsx : un changement remote
+  // (syncVersion) relit les dépenses du storage.
+  const [depenses, setDepenses] = useState<DepenseEntry[]>(() => getDepenses());
+  const [synced, setSynced] = useState(syncVersion);
+  if (synced !== syncVersion) {
+    setSynced(syncVersion);
+    setDepenses(getDepenses());
+  }
 
   const paye = payeSurSemaine(depenses, data.meta.du, data.meta.au);
   const enSemaine = depenses.some((d) => d.date >= data.meta.du && d.date <= data.meta.au);
@@ -91,12 +100,21 @@ export function DepensesPanel({
   profile,
   focusTotal,
   onRetour,
+  syncVersion = 0,
 }: {
   profile: UserProfile;
   focusTotal: boolean;
   onRetour: () => void;
+  syncVersion?: number;
 }) {
   const [depenses, setDepenses] = useState<DepenseEntry[]>(() => getDepenses());
+  // Pattern render-phase reset — cf. Checklist.tsx : un changement remote
+  // (syncVersion) relit les dépenses du storage.
+  const [synced, setSynced] = useState(syncVersion);
+  if (synced !== syncVersion) {
+    setSynced(syncVersion);
+    setDepenses(getDepenses());
+  }
   const [date, setDate] = useState(() => todayISO());
   const [magasin, setMagasin] = useState(profile.magasin ?? '');
   const [total, setTotal] = useState('');
