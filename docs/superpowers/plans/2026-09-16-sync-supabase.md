@@ -483,7 +483,8 @@ describe('sync: storage → outbox', () => {
 
   it('upsertWeek empile une upsert weeks (payload = ImportedWeek)', () => {
     connecte();
-    const raw = '---\nsemaine: 2026-S39\n---\n';
+    // frontmatter complet requis par parseWeeklyFile (menu, du, au)
+    const raw = '---\nsemaine: 2026-S39\nmenu: A\ndu: 2026-09-21\nau: 2026-09-27\n---\n';
     const { data } = parseWeeklyFile(raw);
     const imp: ImportedWeek = { raw, data, importedAt: new Date().toISOString() };
     upsertWeek(raw, data);
@@ -1016,7 +1017,7 @@ describe('sync: pull / merge (outbox prime)', () => {
   });
 
   it('applique une semaine remote absente localement', async () => {
-    const raw = '---\nsemaine: 2026-S40\n---\n';
+    const raw = '---\nsemaine: 2026-S40\nmenu: B\ndu: 2026-09-28\nau: 2026-10-04\n---\n';
     const { data } = parseWeeklyFile(raw);
     const payload: ImportedWeek = { raw, data, importedAt: '2026-09-16T08:00:00.000Z' };
     client.lues.weeks = [{ household_id: 'f', semaine: '2026-S40', payload }];
