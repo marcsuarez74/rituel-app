@@ -5,9 +5,10 @@ import type { MutationSync, TableSync } from '../../src/lib/sync/outbox';
 vi.mock('../../src/lib/sync/config', () => ({
   SUPABASE_URL: 'https://example.supabase.co',
   SUPABASE_ANON_KEY: 'anon',
-  syncActif: () => true,
+  syncActif: vi.fn(() => true),
 }));
 
+import { syncActif } from '../../src/lib/sync/config';
 import {
   appliquerRemote,
   connecterFoyer,
@@ -15,10 +16,13 @@ import {
   etatSync,
   flush,
   flushDiffere,
+  initSync,
   injecterClient,
   lireSessionPub,
   pull,
+  purgerFoyer,
   reinitialiser,
+  ressynchroniser,
 } from '../../src/lib/sync/engine';
 import { definirSession, effacerSession, lireSession } from '../../src/lib/sync/session';
 import { empiler, lireOutbox, viderOutbox } from '../../src/lib/sync/outbox';
@@ -511,5 +515,77 @@ describe('sync: connexion foyer', () => {
   it('lireSessionPub expose la session (usage UI)', () => {
     definirSession('t', 'f');
     expect(lireSessionPub()).toEqual({ token: 't', foyerId: 'f' });
+  });
+});
+
+describe('sync: purge + init', () => {
+  let client: FauxClient;
+
+  beforeEach(() => {
+    vi.setSystemTime(new Date('2026-09-16T10:00:00'));
+    localStorage.clear();
+    viderOutbox();
+    effacerSession();
+    reinitialiser();
+    client = fauxClient();
+    injecterClient(client);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('purgerFoyer purge le serveur AVANT le nettoyage local', async () => {
+    definirSession('t', 'f');
+    setCheck('2026-S39', 'b1', true);
+    await purgerFoyer();
+    expect(client.purgees).toBe(true);
+    expect(lireSession()).toBeNull();
+    expect(lireOutbox()).toEqual([]);
+    expect(etatSync()).toBe('off');
+  });
+
+  it('purge en échec → session et outbox locales conservées', async () => {
+    definirSession('t', 'f');
+    setCheck('2026-S39', 'b1', true);
+    injecterClient({
+      ...client,
+      purger: async () => {
+        throw new Error('reseau');
+      },
+    });
+    await expect(purgerFoyer()).rejects.toThrow('reseau');
+    expect(lireSession()).toEqual({ token: 't', foyerId: 'f' });
+    expect(lireOutbox()).toHaveLength(1);
+    expect(etatSync()).not.toBe('off');
+  });
+
+  it('initSync sync inactive → etat off, aucun réseau', () => {
+    vi.mocked(syncActif).mockReturnValueOnce(false);
+    initSync({});
+    expect(etatSync()).toBe('off');
+    expect(client.lectures).toEqual([]); // aucun toutLire
+  });
+
+  it('initSync sans session → etat attente, aucun réseau', () => {
+    initSync({});
+    expect(etatSync()).toBe('attente');
+    expect(client.lectures).toEqual([]);
+  });
+
+  it('initSync avec session → flush + pull, onEtat appelé', async () => {
+    definirSession('t', 'f');
+    const onEtat = vi.fn();
+    initSync({ onEtat });
+    await vi.waitFor(() => expect(etatSync()).toBe('sync'));
+    expect(onEtat).toHaveBeenCalledWith('sync');
+  });
+
+  it('ressynchroniser → flush + pull immédiats', async () => {
+    definirSession('t', 'f');
+    setCheck('2026-S39', 'b1', true);
+    ressynchroniser();
+    await vi.waitFor(() => expect(client.upserts.length).toBe(1));
+    expect(etatSync()).toBe('sync');
   });
 });

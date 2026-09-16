@@ -21,6 +21,7 @@ import {
   lireOutbox,
   retirer,
   reprendreEmpilement,
+  surEmpile,
   suspendreEmpilement,
   viderOutbox,
   type MutationSync,
@@ -68,6 +69,7 @@ export const reinitialiser = (): void => {
   flushTimer = null;
   if (pullTimer) clearTimeout(pullTimer);
   pullTimer = null;
+  inited = false; // reset test : initSync rejouable
 };
 
 export const flush = async (): Promise<void> => {
@@ -356,6 +358,58 @@ export const deconnecterFoyer = (): void => {
   viderOutbox();
   effacerSession();
   definirEtat('off');
+};
+
+// Purge du foyer : le serveur est nettoyé AVANT le local — si le réseau
+// échoue, session + outbox restent en place (retry possible) et l'état ne
+// repasse 'off' qu'après une purge confirmée.
+export const purgerFoyer = async (): Promise<void> => {
+  if (!client) throw new Error('pas-connecte');
+  definirEtat('attente'); // purge engagée : plus 'off', même en cas d'échec
+  await client.purger(); // serveur d'abord — jamais de données orphelines
+  deconnecterFoyer();
+};
+
+// Amorçage une seule fois par chargement de l'app (idempotent).
+let inited = false;
+
+export const initSync = (
+  opts: { onRemote?: () => void; onEtat?: (e: SyncEtat) => void } = {},
+): void => {
+  if (inited) return;
+  inited = true;
+  onRemote = opts.onRemote ?? null;
+  onEtatCb = opts.onEtat ?? null;
+  // Branché avant le gate syncActif : sans sync, empilerMutation est déjà un
+  // no-op (gaté dans outbox) et la flush différée ne fait rien sans client.
+  surEmpile(() => flushDiffere());
+  if (!syncActif()) {
+    definirEtat('off');
+    return;
+  }
+  // Retour du réseau : on rafale immédiatement ce qui s'est empilé offline.
+  window.addEventListener('online', () => {
+    void flush();
+  });
+  const demarrer = async (): Promise<void> => {
+    if (!lireSession()) {
+      definirEtat('attente'); // sync prête, en attente d'appairage foyer
+      return;
+    }
+    try {
+      await connecter();
+      definirEtat('sync');
+    } catch {
+      definirEtat('erreur');
+    }
+  };
+  void demarrer();
+};
+
+// Tap sur l'indicateur de la bannière : re-sync manuelle immédiate.
+export const ressynchroniser = (): void => {
+  void flush();
+  if (client) void pull();
 };
 
 // Ré-export pour l'UI (ProfilScreen) sans import direct de session —
