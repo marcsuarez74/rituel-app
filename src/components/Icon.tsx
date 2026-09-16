@@ -82,6 +82,12 @@ const ICONS = {
   ),
   drop: <path d="M12 3.5c3.5 4 6 7.2 6 10.2a6 6 0 0 1-12 0c0-3 2.5-6.2 6-10.2z" />,
   plus: <path d="M12 5.5v13M5.5 12h13" />,
+  lock: (
+    <>
+      <rect x="5" y="11" width="14" height="9" rx="2" />
+      <path d="M8.5 11V7.5a3.5 3.5 0 0 1 7 0V11" />
+    </>
+  ),
   play: <path d="M8 5.5v13l10-6.5z" />,
 } satisfies Record<string, ReactNode>;
 
