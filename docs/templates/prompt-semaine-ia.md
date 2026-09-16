@@ -32,7 +32,12 @@ Suis EXACTEMENT le process et les règles dures ci-dessous, puis l'auto-contrôl
    (`dejeuner-marc`, `dejeuner-melanie`, `diner-famille`, `diner-melanie`,
    `batch`). Les dîners = les recettes du menu du carnet ; les déjeuners
    suivent la logique boxes (boîte du batch pour Marc, restes/box keto pour
-   Mélanie). Ajoute `→ slug` quand le plat correspond à une recette du fichier.
+   Mélanie). OBLIGATOIRE pour les déjeuners : une box de midi porte toujours
+   `→ slug` vers la recette qui la produit (batch ou dîner de la veille) —
+   sans ref, l'app la considère « toujours prête ». Les portions
+   (`- portions marc/melanie:` des recettes) sont en MESURES MAISON :
+   pièces, poignées, c. à soupe, louches — grammes entre parenthèses
+   uniquement pour caler l'œil. Jamais de portion qui exige une balance.
    Intègre les événements fournis en paramètres (ils PRIMENT sur le carnet).
 4. **Batch** : le rituel générique du carnet (5-6 étapes horodatées, détail
    ajusté au dîner du dimanche du menu) + le micro-batch du menu (du tableau
@@ -64,6 +69,8 @@ Suis EXACTEMENT le process et les règles dures ci-dessous, puis l'auto-contrôl
 - [ ] Chaque fichier : les 7 jours, 5 clés, aucune clé inconnue
 - [ ] Chaque `→ slug` correspond à une recette du fichier (slug = slugify du
       titre, sans accents ni majuscules)
+- [ ] Chaque box de midi (`dejeuner-*`) issue d'un batch/dîner porte `→ slug` ;
+      les portions des recettes sont en mesures maison (pas de pesée obligatoire)
 - [ ] Recettes partagées entre menus : valeurs identiques
 - [ ] Aucune ligne hors format (pas de gras, pas de tables, pas de sous-listes)
 - [ ] Les blocs Marc/Melanie sont identiques d'une semaine à l'autre

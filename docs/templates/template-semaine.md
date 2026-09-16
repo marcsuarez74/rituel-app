@@ -14,6 +14,12 @@ et src/lib/parse.ts. Règles absolues :
   libellé, le renommer perd l'état.
 - Refs recette : « → slug » = slugify du titre exact (ex. « R8 · Chili con
   carne + riz » → r8-chili-con-carne-riz).
+- Portions recette en MESURES MAISON (pièces, poignées, c. à soupe, louches) ;
+  les grammes vont entre parenthèses pour caler l'œil : « 1 poignée de riz
+  (~150 g cuit) ». Jamais de portion qui exige une balance.
+- Une box de midi est toujours liée au plat qui la produit : la ligne
+  `dejeuner-*` porte `→ slug` quand elle vient d'un batch ou d'un dîner
+  (sans ref, l'app la considère « toujours prête »).
 - Le rayon « ### Keto » (extras de Mélanie) est toujours le DERNIER rayon.
 - Le placard permanent (réassort mensuel) ne va JAMAIS dans un fichier hebdo.
 -->
@@ -51,8 +57,8 @@ au: {{AAAA-MM-JJ, dimanche}}
 ## Menu
 
 ### Lundi
-- dejeuner-marc: {{boîte ou repas}} → {{slug-recette si ref}}
-- dejeuner-melanie: {{assiette keto}}
+- dejeuner-marc: {{boîte du batch ou repas}} → {{slug-recette-source}}
+- dejeuner-melanie: {{assiette keto ou box}} → {{slug-recette-source si ref}}
 - diner-famille: {{dîner}} → {{slug-recette}}
 - diner-melanie: {{dîner version keto}}
 - batch: {{prep du jour ou « Zéro prep — ... »}}
@@ -72,6 +78,8 @@ score: {{entier 0-10}}
 image: {{URL https://images.unsplash.com/... vérifiée}}
 bases: {{B#, B#}}
 - pour 4: {{ingrédients quantifiés, séparés par ·}}
+- portions marc: {{mesures maison — pièces, poignées, c. à soupe, louches}}
+- portions melanie: {{mesures maison keto}}
 1. {{étape}}
 2. {{étape}}
 - mel: {{assiette keto de Mélanie}}

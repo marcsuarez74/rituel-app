@@ -137,8 +137,9 @@ utilisée — le slug dérive du libellé, le renommer perd l'état cochée.
 Trois sous-onglets partagés (Courses · Menu · Batch), en segmented control (onglet actif en lime) :
 
 - **Bannière** : le menu courant (« Menu A ») reste visible en pill à côté du titre de semaine.
-- **Menu** : le jour courant passe en tête (badge « Aujourd'hui »), les jours passés sont regroupés à la fin (badge « Passé », atténués) ; chaque repas porte un tag de profil (Marc / Mé / Famille / Batch) et une référence `→ R1` affiche la **carte recette compacte** sous la ligne (état local : plusieurs cartes peuvent être ouvertes à la fois).
-- **Cartes recettes** : photo 110×76 + nom + bouton lime « Voir la recette », badge du repas, temps, Health score /10 en barre segmentée, footer nutrition unifié (kcal/C/P/F) ; le bouton déplie étapes, ingrédients « pour 4 », adaptation keto de Mé et rappel batch ; les bases référencées (B4, B6…) sont cliquables et affichent la technique.
+- **Menu** : une barre d'onglets par **recette** (les 7 dîners du fichier + 🍱 Déjeuners) — aucun jour affiché, l'ordre du fichier est l'ordre conseillé (batch/frigo d'abord, frais ensuite) ; l'onglet du jour courant est présélectionné. La progression lit « Dîners X/N · Boxes X/N ».
+- **Onglet recette** : la fiche complète d'un bloc (temps, kcal, health score, fraîcheur), « Qui mange quoi » (dîner famille + adaptation keto de Mél), « Portions — par personne » en **mesures maison** (pièces, poignées, c. à soupe, louches — les grammes entre parenthèses ne servent qu'à caler l'œil), la préparation (ingrédients « pour 4 », étapes, bases cliquables), le batch du jour en info, et la coche unique « C'est fait — dîner fini » (l'onglet se grise, nom barré + ✓).
+- **Déjeuners dynamiques** : une paire de boxes devient « prête » quand la recette qui la produit (`→ R#` sur la ligne déjeuner) est cochée ; verrouillée sinon (« débloquée quand … est fait ») ; une box sans ref est toujours disponible. Une coche par paire (« Boxes faites ») coche les lignes Marc + Mél du jour.
 - **Courses** : compteurs d'items par rayon, et le rayon `### Keto` devient un encadré dédié en fin de liste.
 - **Batch** : le rituel du dimanche s'affiche en **timeline cochable**, le micro-batch en **carrousel** horizontal par jour.
 
