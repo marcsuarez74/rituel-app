@@ -14,6 +14,29 @@ const code =
   codeArg ??
   `${MOTS[randomInt(MOTS.length)]}-${MOTS[randomInt(MOTS.length)]}-${randomBytes(2).toString('hex')}`;
 
+// Phase avec l'edge function : un code < 6 caractères serait refusé (401).
+if (code.length < 6) {
+  console.error('Code de foyer trop court : 6 caractères minimum (exigé par la connexion).');
+  process.exit(1);
+}
+
+// L'edge function exige UN foyer unique (data.length === 1) : on refuse
+// d'en créer un second.
+const deja = await fetch(`${url}/rest/v1/households?select=id`, {
+  headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` },
+});
+if (!deja.ok) {
+  console.error(`Échec lecture households (${deja.status}) : ${await deja.text()}`);
+  process.exit(1);
+}
+const existants = await deja.json();
+if (existants.length > 0) {
+  console.error(
+    `Un foyer existe déjà (id ${existants[0].id}) — la connexion exige un foyer unique. Purge-le d'abord si besoin.`,
+  );
+  process.exit(1);
+}
+
 const salt = randomBytes(16);
 const hash = pbkdf2Sync(code, salt, 100000, 32, 'sha256');
 const b64url = (b) => b.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');

@@ -59,18 +59,23 @@ alter table weights enable row level security;
 alter table depenses enable row level security;
 alter table profiles enable row level security;
 
+drop policy if exists foyer_weeks on weeks;
 create policy foyer_weeks on weeks for all
   using (household_id::text = auth.jwt()->>'household_id')
   with check (household_id::text = auth.jwt()->>'household_id');
+drop policy if exists foyer_checks on checks;
 create policy foyer_checks on checks for all
   using (household_id::text = auth.jwt()->>'household_id')
   with check (household_id::text = auth.jwt()->>'household_id');
+drop policy if exists foyer_weights on weights;
 create policy foyer_weights on weights for all
   using (household_id::text = auth.jwt()->>'household_id')
   with check (household_id::text = auth.jwt()->>'household_id');
+drop policy if exists foyer_depenses on depenses;
 create policy foyer_depenses on depenses for all
   using (household_id::text = auth.jwt()->>'household_id')
   with check (household_id::text = auth.jwt()->>'household_id');
+drop policy if exists foyer_profiles on profiles;
 create policy foyer_profiles on profiles for all
   using (household_id::text = auth.jwt()->>'household_id')
   with check (household_id::text = auth.jwt()->>'household_id');

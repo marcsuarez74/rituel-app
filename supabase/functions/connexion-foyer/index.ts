@@ -40,7 +40,11 @@ const verifierHash = async (code: string, stocke: string): Promise<boolean> => {
 const signerJwt = async (foyerId: string, secret: string): Promise<string> => {
   const head = b64url(enc.encode(JSON.stringify({ alg: 'HS256', typ: 'JWT' })));
   const now = Math.floor(Date.now() / 1000);
-  const corps = b64url(enc.encode(JSON.stringify({ household_id: foyerId, role: 'foyer', iat: now, exp: now + 365 * 24 * 3600 })));
+  // role 'anon' : PostgREST fait SET ROLE sur la claim role — un rôle custom
+  // inexistant casserait chaque requête REST. Le rôle par défaut 'anon' ne
+  // change rien : les policies RLS « for all » (PUBLIC) filtrent via
+  // auth.jwt()->>'household_id'.
+  const corps = b64url(enc.encode(JSON.stringify({ household_id: foyerId, role: 'anon', iat: now, exp: now + 365 * 24 * 3600 })));
   const key = await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   const sig = new Uint8Array(await crypto.subtle.sign('HMAC', key, enc.encode(`${head}.${corps}`)));
   return `${head}.${corps}.${b64url(sig)}`;
