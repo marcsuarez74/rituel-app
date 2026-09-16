@@ -1,5 +1,5 @@
 import type { MealKey, MenuDay, Recette } from './model';
-import { recetteParRef } from './stats';
+import { recetteParRef, trouverJourDuJour } from './stats';
 
 // Tags de profil par clé repas (identiques à l'ancienne MenuView).
 // Record clé par clé : exhaustivité garantie par le compilateur.
@@ -22,13 +22,17 @@ export interface Occurrence {
   recette?: Recette;
 }
 
+// Id de coche d'une ligne menu : jour trim + minuscule (contrat stable).
+const idCoche = (jour: string, cle: string): string =>
+  `menu:${jour.trim().toLowerCase()}:${cle}`;
+
 const occurrence = (day: MenuDay, cle: MealKey, recettes: Recette[]): Occurrence | null => {
   const texte = day[cle];
   if (!texte) return null;
   const meta = MEALS[cle];
   const ref = day.recetteRefs?.[cle];
   return {
-    id: `menu:${day.jour.trim().toLowerCase()}:${cle}`,
+    id: idCoche(day.jour, cle),
     jour: day.jour,
     cle,
     tag: meta[0],
@@ -79,3 +83,74 @@ export function construireOnglets(menu: MenuDay[], recettes: Recette[]): OngletD
   }
   return onglets;
 }
+
+export interface PaireDejeuners {
+  jour: string;
+  ids: string[]; // toutes les clés déjeuner présentes ce jour
+  lignes: Occurrence[];
+}
+
+export function construirePaires(menu: MenuDay[], recettes: Recette[]): PaireDejeuners[] {
+  const paires: PaireDejeuners[] = [];
+  for (const day of menu) {
+    const lignes = [
+      occurrence(day, 'dejeunerMarc', recettes),
+      occurrence(day, 'dejeunerMelanie', recettes),
+    ].filter((o): o is Occurrence => o !== null);
+    if (lignes.length === 0) continue;
+    paires.push({ jour: day.jour, ids: lignes.map((l) => l.id), lignes });
+  }
+  return paires;
+}
+
+// ref de recette → ids de coches « dîner » qui la réalisent (dinerFamille OU
+// dinerMelanie). Les refs déjeuner sont les consommatrices, jamais les sources.
+export const faitsParRecette = (menu: MenuDay[]): Record<string, string[]> => {
+  const out: Record<string, string[]> = {};
+  for (const day of menu) {
+    for (const cle of ['dinerFamille', 'dinerMelanie'] as const) {
+      const ref = day.recetteRefs?.[cle];
+      if (!ref) continue;
+      (out[ref] ??= []).push(idCoche(day.jour, cle));
+    }
+  }
+  return out;
+};
+
+export const pairePrete = (
+  paire: PaireDejeuners,
+  checks: Record<string, boolean>,
+  faits: Record<string, string[]>,
+): boolean => paire.lignes.every((l) => !l.ref || (faits[l.ref] ?? []).some((id) => checks[id]));
+
+export const paireFaite = (paire: PaireDejeuners, checks: Record<string, boolean>): boolean =>
+  paire.ids.every((id) => checks[id]);
+
+// Nom court de la recette qui bloque la paire (« débloquée quand … est fait »),
+// null si déjà prête. Une ref cassée retombe sur la ref brute.
+export const debloquePar = (
+  paire: PaireDejeuners,
+  checks: Record<string, boolean>,
+  faits: Record<string, string[]>,
+): string | null => {
+  const bloque = paire.lignes.find(
+    (l) => l.ref && !(faits[l.ref] ?? []).some((id) => checks[id]),
+  );
+  if (!bloque?.ref) return null;
+  return bloque.recette ? labelCourt(bloque.recette.nom) : bloque.ref;
+};
+
+// Onglet ouvert à l'arrivée : celui du jour courant (le jour n'est jamais
+// affiché), repli = premier onglet non fait, dernier repli = le premier.
+// Précondition d'appelant : onglets vide → 0 (garder, ex. `onglets[actif] &&`).
+export const selectionInitiale = (
+  onglets: OngletDiner[],
+  menu: MenuDay[],
+  checks: Record<string, boolean>,
+): number => {
+  const jourDuJour = trouverJourDuJour(menu)?.jour.trim().toLowerCase();
+  const idxJour = onglets.findIndex((o) => o.jour.trim().toLowerCase() === jourDuJour);
+  if (idxJour >= 0) return idxJour;
+  const idxLibre = onglets.findIndex((o) => !checks[o.cleCoche]);
+  return idxLibre >= 0 ? idxLibre : 0;
+};

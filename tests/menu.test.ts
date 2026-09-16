@@ -1,6 +1,15 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import type { MenuDay, Recette } from '../src/lib/model';
-import { construireOnglets, labelCourt } from '../src/lib/menu';
+import {
+  construireOnglets,
+  construirePaires,
+  debloquePar,
+  faitsParRecette,
+  labelCourt,
+  paireFaite,
+  pairePrete,
+  selectionInitiale,
+} from '../src/lib/menu';
 
 const RECETTE: Recette = {
   id: 'r1',
@@ -27,6 +36,7 @@ const MENU: MenuDay[] = [
   },
   { jour: 'Mardi', dejeunerMarc: 'Boîte poulet-riz (lun)', recetteRefs: { dejeunerMarc: 'R1' } },
   { jour: 'Mercredi', dinerFamille: 'Omelette + salade' },
+  { jour: 'Jeudi', dejeunerMarc: 'Restes ou wrap' },
 ];
 
 describe('menu — labelCourt', () => {
@@ -72,5 +82,85 @@ describe('menu — construireOnglets', () => {
     );
     expect(repli[0].cleCoche).toBe('menu:vendredi:dinerMelanie');
     expect(repli[0].label).toBe('Bowl saumon');
+  });
+});
+
+describe('menu — paires de déjeuners', () => {
+  const paires = construirePaires(MENU, [RECETTE]);
+
+  it('une paire par jour qui a au moins un déjeuner, dans l ordre du fichier', () => {
+    expect(paires).toHaveLength(3); // lundi, mardi, jeudi — mercredi n a pas de déjeuner
+    expect(paires[0].ids).toEqual(['menu:lundi:dejeunerMarc', 'menu:lundi:dejeunerMelanie']);
+    expect(paires[1].ids).toEqual(['menu:mardi:dejeunerMarc']); // une seule ligne
+    expect(paires[2].ids).toEqual(['menu:jeudi:dejeunerMarc']);
+  });
+
+  it('pairePrete : ref débloquée par le dîner de la recette source, sans ref = toujours prête', () => {
+    const faits = faitsParRecette(MENU);
+    expect(faits['R1']).toEqual(['menu:lundi:dinerFamille']); // seul dinerFamille réalise R1
+    expect(pairePrete(paires[0], {}, faits)).toBe(false); // lundi ← R1 pas fait
+    expect(pairePrete(paires[0], { 'menu:lundi:dinerFamille': true }, faits)).toBe(true);
+    expect(pairePrete(paires[1], { 'menu:lundi:dinerFamille': true }, faits)).toBe(true);
+    expect(pairePrete(paires[2], {}, faits)).toBe(true); // jeudi sans ref : toujours prête
+  });
+
+  it('paireFaite : toutes les lignes de la paire cochées', () => {
+    expect(paireFaite(paires[0], {})).toBe(false);
+    expect(
+      paireFaite(paires[0], {
+        'menu:lundi:dejeunerMarc': true,
+        'menu:lundi:dejeunerMelanie': true,
+      }),
+    ).toBe(true);
+    expect(paireFaite(paires[1], { 'menu:mardi:dejeunerMarc': true })).toBe(true);
+  });
+
+  it('debloquePar : le nom court de la recette manquante, null sinon', () => {
+    const faits = faitsParRecette(MENU);
+    expect(debloquePar(paires[0], {}, faits)).toBe('Poulet au four');
+    expect(debloquePar(paires[0], { 'menu:lundi:dinerFamille': true }, faits)).toBeNull();
+    expect(debloquePar(paires[2], {}, faits)).toBeNull();
+  });
+
+  it('ref cassée : la note retombe sur la ref brute (jamais de crash)', () => {
+    const pairesRc = construirePaires(
+      [{ jour: 'Vendredi', dejeunerMarc: 'Box mystère', recetteRefs: { dejeunerMarc: 'R99' } }],
+      [RECETTE],
+    );
+    expect(debloquePar(pairesRc[0], {}, faitsParRecette(
+      [{ jour: 'Vendredi', dejeunerMarc: 'Box mystère', recetteRefs: { dejeunerMarc: 'R99' } }],
+    ))).toBe('R99');
+  });
+});
+
+describe('menu — selectionInitiale', () => {
+  beforeEach(() => {
+    vi.useRealTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('jour courant présélectionné (mercredi → Omelette)', () => {
+    vi.setSystemTime(new Date('2026-09-09T10:00:00')); // mercredi
+    const onglets = construireOnglets(MENU, [RECETTE]);
+    expect(selectionInitiale(onglets, MENU, {})).toBe(1);
+  });
+
+  it('hors menu : premier onglet non fait, sinon le premier', () => {
+    vi.setSystemTime(new Date('2026-09-11T10:00:00')); // vendredi, absent du menu
+    const onglets = construireOnglets(MENU, [RECETTE]);
+    expect(selectionInitiale(onglets, MENU, {})).toBe(0);
+    expect(
+      selectionInitiale(onglets, MENU, {
+        'menu:lundi:dinerFamille': true,
+        'menu:mercredi:dinerFamille': true,
+      }),
+    ).toBe(0);
+  });
+
+  it('onglets vides : retombe sur 0 (l appelant doit garder)', () => {
+    expect(selectionInitiale([], [], {})).toBe(0);
   });
 });
