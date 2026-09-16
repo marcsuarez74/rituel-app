@@ -526,7 +526,7 @@ input[type='checkbox'] {
   accent-color: var(--accent);
 }
 
-/* ---------- Progression ---------- */
+/* ---------- Progression (Courses / Batch — règles partagées) ---------- */
 
 .progress {
   display: flex;
@@ -545,6 +545,273 @@ progress {
   height: 8px;
   margin-top: 4px;
   accent-color: var(--accent);
+}
+
+/* ---------- Menu v3 (onglets par recette) ---------- */
+
+.menu-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.menu-progress {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  /* Compteur sur --bg : le muted seul descend à 3,99:1 — mix pour passer ≥ 4,5:1. */
+  color: color-mix(in srgb, var(--muted) 70%, var(--text));
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.menu-progress .bar {
+  display: inline-block;
+  width: 72px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.menu-progress .bar i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  /* Décorative ; couverte par le kill-switch prefers-reduced-motion global. */
+  transition: width 0.2s ease;
+}
+
+.rtabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 2px 8px;
+  margin-bottom: 8px;
+  scrollbar-width: none;
+}
+.rtabs::-webkit-scrollbar {
+  display: none;
+}
+.rtab {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 42px; /* même plancher que les pills .chip */
+  padding: 6px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font: 600 12.5px Poppins, sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.rtab.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.rtab.fait {
+  /* Fait : texte atténué + barré sur pill opaque (l'opacité cassait le contraste). */
+  color: color-mix(in srgb, var(--muted) 70%, var(--text));
+}
+.rtab.fait .rn {
+  text-decoration: line-through;
+}
+.rtab.fait.active {
+  color: #ffffff;
+}
+.rtab .tick {
+  display: inline-flex;
+}
+
+.onglet-recette {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+/* L'air demandé entre « Qui mange quoi » / « Portions » / « Préparation ». */
+.onglet-recette .qui,
+.onglet-recette .portions {
+  margin-bottom: 6px;
+}
+.onglet-recette.fait > :not(.cta) {
+  opacity: 0.75;
+}
+
+.onglet-meta,
+.onglet-prepa,
+.onglet-batch {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+}
+
+.onglet-prepa h4,
+.onglet-batch h4 {
+  margin: 0 0 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.meta-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+.meta-pill svg {
+  color: var(--muted);
+}
+
+.fraicheur {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: color-mix(in srgb, var(--muted) 70%, var(--text));
+}
+
+.qui,
+.portions {
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 15%, var(--border));
+}
+.qui-titre,
+.portions-titre {
+  margin: 0 0 7px;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: color-mix(in srgb, var(--muted) 70%, var(--text));
+}
+.qui p,
+.portions p {
+  margin: 4px 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.bat {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 48px;
+  border: none;
+  border-radius: 14px;
+  background: var(--accent);
+  color: #ffffff;
+  font: 700 15px Poppins, sans-serif;
+  cursor: pointer;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.cta:active {
+  transform: scale(0.97);
+}
+.cta.done {
+  background: var(--surface-2);
+  color: var(--text);
+  box-shadow: none;
+}
+
+.file-dejeuners {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 14px 12px;
+}
+.fhead {
+  margin: 10px 2px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: color-mix(in srgb, var(--muted) 70%, var(--text));
+}
+.box-pair {
+  padding: 10px 2px;
+  border-bottom: 1px dashed var(--border);
+}
+.box-pair:last-child {
+  border-bottom: none;
+}
+.box-pair p {
+  margin: 3px 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.box-pair.locked {
+  color: var(--muted);
+}
+.box-pair.mangees {
+  color: var(--muted);
+}
+.box-pair.mangees p {
+  text-decoration: line-through;
+}
+.lock-note {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 6px 0 0;
+  font-size: 11.5px;
+  color: color-mix(in srgb, var(--muted) 70%, var(--text));
+}
+.mini-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 8px;
+  border: none;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #ffffff;
+  font: 700 13.5px Poppins, sans-serif;
+  cursor: pointer;
+}
+.mini-cta:active {
+  transform: scale(0.97);
 }
 
 /* ---------- Checklists ---------- */
