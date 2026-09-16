@@ -14,17 +14,45 @@ export interface MutationSync {
 
 const OUTBOX_KEY = 'sportapp:sync:outbox';
 
+const TABLES_VALIDES: readonly TableSync[] = ['weeks', 'checks', 'weights', 'depenses', 'profiles'];
+
+const estObjet = (v: unknown): v is Record<string, unknown> =>
+  !!v && typeof v === 'object' && !Array.isArray(v);
+
+const estMutation = (v: unknown): v is MutationSync =>
+  estObjet(v) &&
+  (v.op === 'upsert' || v.op === 'delete') &&
+  TABLES_VALIDES.includes(v.table as TableSync) &&
+  estObjet(v.key) &&
+  Object.values(v.key).every((x) => typeof x === 'string') &&
+  (v.payload === undefined || estObjet(v.payload));
+
 export const lireOutbox = (): MutationSync[] => {
   const raw = localStorage.getItem(OUTBOX_KEY);
   if (raw === null) return [];
+  let parsed: unknown = null;
   try {
-    const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed) ? (parsed as MutationSync[]) : [];
+    parsed = JSON.parse(raw);
   } catch {
     console.warn(`Outbox corrompue ignorée : ${OUTBOX_KEY}`);
     localStorage.removeItem(OUTBOX_KEY);
     return [];
   }
+  if (!Array.isArray(parsed)) {
+    console.warn(`Outbox corrompue ignorée : ${OUTBOX_KEY}`);
+    localStorage.removeItem(OUTBOX_KEY);
+    return [];
+  }
+  const outbox: MutationSync[] = [];
+  for (const v of parsed) {
+    if (estMutation(v)) outbox.push(v);
+    else console.warn(`Mutation illégale ignorée dans l'outbox : ${JSON.stringify(v)}`);
+  }
+  if (outbox.length !== parsed.length) {
+    if (outbox.length === 0) localStorage.removeItem(OUTBOX_KEY);
+    else ecrireOutbox(outbox);
+  }
+  return outbox;
 };
 
 const ecrireOutbox = (m: MutationSync[]): void => localStorage.setItem(OUTBOX_KEY, JSON.stringify(m));
@@ -35,8 +63,9 @@ const memeCle = (a: MutationSync, b: MutationSync): boolean =>
 const identique = (a: MutationSync, b: MutationSync): boolean =>
   memeCle(a, b) && JSON.stringify(a.payload ?? null) === JSON.stringify(b.payload ?? null);
 
-// Dédoublonnage : une nouvelle mutation sur la même clé remplace l'ancienne —
-// la flush enverra la valeur finale locale, pas l'historique.
+// Dédoublonnage : une nouvelle mutation remplace l'ancienne à (op, table, key)
+// égal — la flush enverra la valeur finale locale. Upsert puis delete
+// coexistent : ils convergent dans l'ordre.
 export const empiler = (m: MutationSync): void => {
   ecrireOutbox([...lireOutbox().filter((x) => !memeCle(x, m)), m]);
 };

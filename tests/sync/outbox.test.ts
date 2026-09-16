@@ -32,6 +32,8 @@ describe('sync: outbox', () => {
     effacerSession();
   });
 
+  afterEach(() => surEmpile(null)); // débranche pour les autres tests
+
   it('lireOutbox vide sans connexion', () => {
     expect(lireOutbox()).toEqual([]);
   });
@@ -79,11 +81,24 @@ describe('sync: outbox', () => {
     empilerMutation(up());
     expect(lireOutbox()).toEqual([up()]);
     expect(cb).toHaveBeenCalledOnce();
-    surEmpile(null as unknown as () => void); // débranche pour les autres tests
   });
 
   it('outbox corrompue → vidée silencieusement', () => {
     localStorage.setItem('sportapp:sync:outbox', '{pas-du-json');
     expect(lireOutbox()).toEqual([]);
+  });
+
+  it('lireOutbox filtre les éléments illégaux et conserve les valides', () => {
+    localStorage.setItem(
+      'sportapp:sync:outbox',
+      JSON.stringify([{ foo: 1 }, up()]),
+    );
+    expect(lireOutbox()).toEqual([up()]);
+  });
+
+  it('lireOutbox : JSON valide non-tableau → vide et clé retirée', () => {
+    localStorage.setItem('sportapp:sync:outbox', '{}');
+    expect(lireOutbox()).toEqual([]);
+    expect(localStorage.getItem('sportapp:sync:outbox')).toBeNull();
   });
 });
