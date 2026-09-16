@@ -641,6 +641,19 @@ describe('MenuView v3 — onglets par recette', () => {
     ).toBe(false);
   });
 
+  it('coches existantes (v2) : la pill de la recette arrive déjà fait, sans aucune action', () => {
+    vi.setSystemTime(new Date('2026-09-09T10:00:00')); // mercredi
+    localStorage.setItem(
+      'sportapp:checks:2026-S40',
+      JSON.stringify({ 'menu:lundi:dinerFamille': true }),
+    );
+    const { container } = render(
+      <MenuView menu={MENU} recettes={[RECETTE]} bases={[]} semaine="2026-S40" />,
+    );
+    expect(container.querySelectorAll('.rtab')[0]).toHaveClass('fait');
+    expect(document.querySelector('.menu-progress')).toHaveTextContent('Dîners 1/2');
+  });
+
   it('file déjeuners : verrouillée avec note, prête après le dîner, coche paire = 2 ids, mangées barrées', async () => {
     const user = userEvent.setup();
     vi.setSystemTime(new Date('2026-09-09T10:00:00'));
