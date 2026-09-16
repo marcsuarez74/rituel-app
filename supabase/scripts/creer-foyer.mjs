@@ -12,11 +12,13 @@ if (!url || !serviceKey) {
 const MOTS = ['basilic', 'citron', 'sauge', 'romarin', 'thym', 'menthe', 'origan', 'estragon'];
 const code =
   codeArg ??
-  `${MOTS[randomInt(MOTS.length)]}-${MOTS[randomInt(MOTS.length)]}-${randomBytes(2).toString('hex')}`;
+  `${MOTS[randomInt(MOTS.length)]}-${MOTS[randomInt(MOTS.length)]}-${randomBytes(4).toString('hex')}`;
 
-// Phase avec l'edge function : un code < 6 caractères serait refusé (401).
-if (code.length < 6) {
-  console.error('Code de foyer trop court : 6 caractères minimum (exigé par la connexion).');
+// Durcissement brute-force (pas de rate limit en vue) : un code court est
+// énumérable — plancher 12 caractères. L'edge function garde sa garde < 6
+// (format minimum) ; la politique de force vit côté création.
+if (code.length < 12) {
+  console.error('Code de foyer trop court : 12 caractères minimum.');
   process.exit(1);
 }
 

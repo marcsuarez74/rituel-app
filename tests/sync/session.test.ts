@@ -6,6 +6,13 @@ import {
   lireSession,
 } from '../../src/lib/sync/session';
 
+// Force l'activation : en vitest, VITE_SUPABASE_* est undefined.
+vi.mock('../../src/lib/sync/config', () => ({
+  SUPABASE_URL: 'https://example.supabase.co',
+  SUPABASE_ANON_KEY: 'anon',
+  syncActif: () => true,
+}));
+
 describe('sync: session foyer', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -49,6 +56,22 @@ describe('sync: session foyer', () => {
       vi.fn(async () => new Response('boom', { status: 500 })),
     );
     await expect(demanderSession('code')).rejects.toThrow('indisponible');
+    vi.unstubAllGlobals();
+  });
+
+  it('demanderSession envoie le header Authorization (verify_jwt de la plateforme)', async () => {
+    const inits: RequestInit[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (_url: unknown, init?: RequestInit) => {
+        inits.push(init ?? {});
+        return new Response(JSON.stringify({ token: 'jwt', foyer: 'f' }), {
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }),
+    );
+    await demanderSession('bon-code');
+    expect(inits[0]?.headers).toMatchObject({ Authorization: 'Bearer anon' });
     vi.unstubAllGlobals();
   });
 });

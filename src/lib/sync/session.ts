@@ -29,7 +29,14 @@ export const effacerSession = (): void => {
 export const demanderSession = async (code: string): Promise<SessionFoyer> => {
   const res = await fetch(`${SUPABASE_URL}/functions/v1/connexion-foyer`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY! },
+    // Authorization (clé anon) : exigé par le verify_jwt de la plateforme —
+    // sans lui l'edge est rejeté 401 AVANT le code (indistinguable d'un
+    // code-refuse côté app).
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: SUPABASE_ANON_KEY!,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY!}`,
+    },
     body: JSON.stringify({ code }),
   });
   if (res.status === 401) throw new Error('code-refuse');

@@ -80,9 +80,14 @@ create policy foyer_profiles on profiles for all
   using (household_id::text = auth.jwt()->>'household_id')
   with check (household_id::text = auth.jwt()->>'household_id');
 
--- Realtime
-alter publication supabase_realtime add table weeks;
-alter publication supabase_realtime add table checks;
-alter publication supabase_realtime add table weights;
-alter publication supabase_realtime add table depenses;
-alter publication supabase_realtime add table profiles;
+-- Realtime (idempotent : duplicate_object si la table est déjà membre)
+do $$
+begin
+  alter publication supabase_realtime add table weeks;
+  alter publication supabase_realtime add table checks;
+  alter publication supabase_realtime add table weights;
+  alter publication supabase_realtime add table depenses;
+  alter publication supabase_realtime add table profiles;
+exception
+  when duplicate_object then null;
+end $$;

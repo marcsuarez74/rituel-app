@@ -55,6 +55,8 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') return new Response('method not allowed', { status: 405, headers: CORS });
   try {
     const { code } = (await req.json()) as { code?: string };
+    // garde < 6 : format minimum — le script creer-foyer impose ≥ 12,
+    // la politique de force vit côté création.
     if (!code || code.length < 6) return new Response('unauthorized', { status: 401, headers: CORS });
 
     const admin = createClient(
@@ -64,6 +66,8 @@ Deno.serve(async (req) => {
     );
     const { data, error } = await admin.from('households').select('id, code_hash');
     if (error || !data || data.length !== 1) {
+      // observabilité : aide au debug d'une misconfig (0 ou plusieurs foyers)
+      console.error(`foyers trouvés: ${data?.length ?? 0} (attendu 1)`);
       return new Response('unauthorized', { status: 401, headers: CORS });
     }
     const foyer = data[0] as { id: string; code_hash: string };
