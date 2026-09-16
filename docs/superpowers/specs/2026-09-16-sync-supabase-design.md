@@ -22,6 +22,7 @@ Décisions validées en brainstorming (2026-09-16) :
 | « Profil actif » | **Non synchronisé** (état device-local) — on sync le *contenu* des profils, pas lequel est actif |
 | Dépendance | **`@supabase/supabase-js`** acceptée (discussion brainstorming) — realtime à la main serait disproportionné ; chargée en **dynamic import** pour ne pas alourdir le bundle initial |
 | e2e | **Sync désactivée en tests** (env absente) — zéro réseau en CI, specs e2e inchangées |
+| RGPD | **Usage domestique → non applicable** (considérant 15, foyer de 2 personnes sans inscription publique). Mesures d'hygiène retenues quand même : **droit à l'effacement** (bouton « Supprimer les données du foyer » : purge serveur + clés sync locales) et **transparence** (note vie privée README + Profil). Conformité formelle (consentement, registre, politique) reportée à une éventuelle ouverture à d'autres foyers |
 
 ## 1. Principes
 
@@ -113,12 +114,13 @@ src/lib/sync/
 - **Merge** (règle § 1.4) : à la réception d'un changement remote, l'appliquer au localStorage **sauf** si une entrée d'outbox pende sur la même clé ; à la flush, upsert écrase le remote.
 - **Première connexion** : si le foyer serveur est **vide** → push complet de l'état local (le premier appareil connecté alimente le foyer) ; si le foyer contient **déjà des données** → pull d'abord (les entrées d'outbox locales flushent ensuite, la règle outbox-prime tranche). Ainsi un second appareil qui se connecte reçoit l'état existant sans l'écraser.
 - **Notif App** : `subscribe(cb)` — App recharge ses états (weeks, checks…) quand un changement remote est appliqué (pattern props/useState existant, pas de contexte).
+- **Effacement du foyer** : `purgerFoyer()` — suppression serveur des lignes du foyer dans les 5 tables, puis suppression des clés `sportapp:sync:*` (token, outbox) : l'app redevient 100 % locale, ses données d'app (semaines, coches, pesées…) restent sur le téléphone. Appelée par le bouton Profil (cf. § 5).
 - **Bundles** : le module est importé dynamiquement depuis `App.tsx` ; env absente → aucun code réseau chargé, aucun comportement modifié.
 
 ## 5. UI (langage Herbes, discret)
 
 - **Onboarding — étape 6 optionnelle** « Synchroniser les téléphones » : champ code de foyer + bouton « Plus tard » ; ignorée = app sans sync, aucun rappel insistant.
-- **Écran Profil — bloc « Synchronisation »** : état (Sync ✓ / Hors ligne / Erreur / Désactivée), « Se connecter au foyer » (saisie code), « Déconnecter ». Boutons sobres (`.bsoft`).
+- **Écran Profil — bloc « Synchronisation »** : état (Sync ✓ / Hors ligne / Erreur / Désactivée), « Se connecter au foyer » (saisie code), « Déconnecter », **« Supprimer les données du foyer »** (destructif, double confirmation, purge serveur cf. § 4). Boutons sobres (`.bsoft`). Sous le bloc, une **note de transparence** : « Données synchronisées chez Supabase — région UE, accès limité au foyer. »
 - **Indicateur bannière** : point de statut discret (tap = re-sync manuelle + toast résultat). Pas de spinner permanent — la sync doit être invisible.
 - **Erreurs visibles mais non bloquantes** : échec de flush → point passe en erreur + outbox conservée (retry au prochain déclencheur) ; échec d'auth → message clair « Code de foyer refusé ».
 
@@ -128,11 +130,12 @@ src/lib/sync/
 - **Payload remote invalide** → ignoré + warn (l'état local reste sain).
 - **Boucle realtime** : l'application d'un changement remote ne re-empile rien dans l'outbox (distinction mutation locale / application remote).
 - **Token expiré (401)** → statut « Se reconnecter », outbox conservée.
+- **Purge** : échec serveur → erreur visible, **clés sync locales conservées** (la suppression locale n'a lieu qu'après confirmation serveur — jamais de données orphelines silencieuses).
 
 ## 7. Tests (TDD, miroir du src)
 
 - `tests/sync/outbox.test.ts` — empilement, dédoublonnage par clé, persistance.
-- `tests/sync/engine.test.ts` — flush, pull, règle **outbox-prime**, première connexion (push complet), payloads invalides ignorés — avec un **faux client** injecté (aucun réseau en vitest).
+- `tests/sync/engine.test.ts` — flush, pull, règle **outbox-prime**, première connexion (push si foyer vide / pull sinon), payloads invalides ignorés, **purgerFoyer** (purge serveur avant nettoyage local ; échec réseau → clés locales conservées) — avec un **faux client** injecté (aucun réseau en vitest).
 - `tests/sync/auth.test.ts` — connecterFoyer (succès / code refusé), déconnexion (nettoyage des clés).
 - `tests/components.test.tsx` / `app.test.tsx` — compléments : bloc sync du Profil, étape 6 onboarding, indicateur bannière, app inchangée sans env sync.
 - **e2e inchangés** (sync désactivée : env absente) — le workflow Deploy reste sans dépendance Supabase.
@@ -147,7 +150,7 @@ src/lib/sync/
 
 - `docs/ameliorations.md` : révision de la contrainte « Zéro backend » → « backend optionnel, données locales d'abord » + point sur les phases 2-3 (IA, push).
 - `AGENTS.md` : section Storage (nouvelles clés `sportapp:sync:*`), structure (`src/lib/sync/`, `supabase/`), posture backend.
-- `README.md` : section « Synchronisation entre téléphones » (usage) + « Backend » (setup).
+- `README.md` : section « Synchronisation entre téléphones » (usage) + « Backend » (setup) + note de transparence vie privée (Supabase UE, accès foyer, effacement).
 - `CHANGELOG.md` : entrée `[Non publié]`.
 - `docs/backend.md` (nouveau) : setup Supabase pas-à-pas (projet EU, SQL du schéma, code de foyer, CLI, envs).
 
