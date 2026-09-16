@@ -13,7 +13,7 @@ import { PRENOMS } from './lib/model';
 import type { ImportedWeek, UserProfile } from './lib/model';
 import { parseWeeklyFile } from './lib/parse';
 import { loadProfile, loadProfilLegacy, loadWeeks, removeProfile } from './lib/storage';
-import { initSync, type SyncEtat } from './lib/sync/engine';
+import { initSync, ressynchroniser, type SyncEtat } from './lib/sync/engine';
 import { indexSemaineCourante, semainesTriees } from './lib/weeks';
 import { todayISO } from './lib/dates';
 import sampleRaw from './assets/semaine-exemple.md?raw';
@@ -45,10 +45,10 @@ function App() {
   // ajoutée) incrémente weightsBump pour les remonter et relire les pesées.
   const [weightsBump, setWeightsBump] = useState(0);
   const [tab, setTab] = useState<TabId>('cuisine');
-  // Sync optionnelle : état (consommé par la brique UI sync) et version de
+  // Sync optionnelle : état (point bannière + bloc profil) et version de
   // re-rendu — onRemote bump la version quand un pull a écrit dans le storage,
   // les composants coches/pesées/dépenses relisent alors leur source.
-  const [, setSyncEtat] = useState<SyncEtat>('off');
+  const [syncEtat, setSyncEtat] = useState<SyncEtat>('off');
   const [syncVersion, setSyncVersion] = useState(0);
 
   // Sync optionnelle : no-op complet sans env Supabase (état 'off'). Effet
@@ -103,6 +103,7 @@ function App() {
       <div className="main-content">
         <ProfilScreen
           profile={profile}
+          syncEtat={syncEtat}
           onBack={() => setProfilOuvert(false)}
           onChangeProfile={() => {
             removeProfile();
@@ -135,6 +136,8 @@ function App() {
       <WeekBanner
         meta={affichee.data.meta}
         onOpenProfile={() => setProfilOuvert(true)}
+        syncEtat={syncEtat}
+        onSyncTap={() => ressynchroniser()}
         onPrev={
           navigable
             ? () => setSelection(semaines[Math.max(0, idxAffiche - 1)].data.meta.semaine)

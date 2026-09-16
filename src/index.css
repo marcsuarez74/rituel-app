@@ -2541,3 +2541,61 @@ progress {
     grid-column: span 2;
   }
 }
+
+/* ---------- Sync (point bannière + bloc profil) ---------- */
+
+.sync-dot {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.sync-dot::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.sync-dot.sync-sync::before {
+  background: var(--accent);
+}
+
+.sync-dot.sync-attente::before {
+  background: var(--muted);
+}
+
+.sync-dot.sync-erreur::before {
+  background: var(--danger);
+}
+
+.sync-dot:active {
+  transform: scale(0.97);
+}
+
+.sync-bloc .profil-ghost {
+  margin-top: 12px;
+}
+
+.sync-bloc .sync-danger {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  background: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.sync-bloc .sync-danger:active {
+  transform: scale(0.97);
+}

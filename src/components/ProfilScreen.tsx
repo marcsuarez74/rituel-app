@@ -4,12 +4,32 @@ import type { ObjectifType, Regime, UserProfile } from '../lib/model';
 import { formatEuro, parseEuro } from '../lib/prix';
 import { ageDepuis, todayISO } from '../lib/dates';
 import { saveProfile } from '../lib/storage';
+import {
+  connecterFoyer,
+  deconnecterFoyer,
+  lireSessionPub,
+  purgerFoyer,
+} from '../lib/sync/engine';
+import type { SyncEtat } from '../lib/sync/engine';
 import { ImportButton } from './ImportButton';
 import { Icon } from './Icon';
 
 type Section = 'infos' | 'objectif' | 'complements' | 'regime' | 'maison';
 type SectionAvecErreur = 'infos' | 'objectif' | 'complements' | 'maison';
 type Erreur = { section: SectionAvecErreur; texte: string };
+
+// Message d'état en vue connectée (texte simple — pas de symbole).
+const ETAT_SYNC: Record<Exclude<SyncEtat, 'off'>, string> = {
+  attente: 'Synchronisation : en attente.',
+  sync: 'Synchronisé.',
+  erreur: 'Synchronisation : erreur.',
+};
+
+// L'engine distingue code refusé / indisponible — l'UI parle utilisateur.
+const messageConnexion = (e: unknown): string =>
+  e instanceof Error && e.message === 'code-refuse'
+    ? 'Code de foyer refusé.'
+    : 'Connexion impossible pour le moment. Réessaie plus tard.';
 
 // Bloc « Paramètres » recopié dans le prompt de génération de cycle.
 // Une ligne par donnée présente ; régime omis si aucun ; null si rien.
@@ -38,12 +58,14 @@ export function ProfilScreen({
   onChangeProfile,
   onProfileSaved,
   onImported,
+  syncEtat = 'off',
 }: {
   profile: UserProfile;
   onBack: () => void;
   onChangeProfile: () => void;
   onProfileSaved?: (p: UserProfile) => void;
   onImported: () => void;
+  syncEtat?: SyncEtat;
 }) {
   const [dateNaissance, setDateNaissance] = useState(profile.dateNaissance);
   const [taille, setTaille] = useState(String(profile.taille));
@@ -64,6 +86,11 @@ export function ProfilScreen({
   const [copie, setCopie] = useState(false);
   const [savedSection, setSavedSection] = useState<Section | null>(null);
   const [erreur, setErreur] = useState<Erreur | null>(null);
+  // Sync foyer : la bascule non-connecté ↔ connecté vient de lireSessionPub()
+  // (re-rendu via le changement de prop syncEtat) — pas d'état local dupliqué.
+  const [codeFoyer, setCodeFoyer] = useState('');
+  const [syncErreur, setSyncErreur] = useState<string | null>(null);
+  const [syncOccupe, setSyncOccupe] = useState(false);
 
   const maj = (section: Section, updated: UserProfile) => {
     saveProfile(updated);
@@ -201,6 +228,34 @@ export function ProfilScreen({
       )
     )
       onChangeProfile();
+  };
+
+  const connecterFoyerCode = async () => {
+    const code = codeFoyer.trim();
+    if (!code) return;
+    setSyncOccupe(true);
+    setSyncErreur(null);
+    try {
+      await connecterFoyer(code);
+      setCodeFoyer('');
+    } catch (e) {
+      setSyncErreur(messageConnexion(e));
+    } finally {
+      setSyncOccupe(false);
+    }
+  };
+
+  // Purge : le serveur est nettoyé avant le local (engine) — double
+  // confirmation car l'action est définitive pour tout le foyer.
+  const supprimerFoyer = () => {
+    if (
+      !window.confirm(
+        'Supprimer les données du foyer ? Semaines, pesées et dépenses partagées seront effacées chez Supabase et sur tous les téléphones du foyer.',
+      )
+    )
+      return;
+    if (!window.confirm('Dernière confirmation : cette action est définitive.')) return;
+    purgerFoyer().catch(() => setSyncErreur('Suppression impossible : réessaie plus tard.'));
   };
 
   const fil = (s: Section) =>
@@ -526,6 +581,54 @@ export function ProfilScreen({
         <h3>Semaine</h3>
         <ImportButton onImported={onImported} label="Importer un cycle (.md)" />
       </section>
+
+      {syncEtat !== 'off' && (
+        <section className="profile-section sync-bloc">
+          <h3>Synchronisation</h3>
+          {lireSessionPub() ? (
+            <>
+              <p className="muted">{ETAT_SYNC[syncEtat]}</p>
+              <button type="button" className="profil-ghost" onClick={deconnecterFoyer}>
+                Déconnecter le foyer
+              </button>
+              <button type="button" className="sync-danger" onClick={supprimerFoyer}>
+                Supprimer les données du foyer
+              </button>
+            </>
+          ) : (
+            <>
+              <div className="onboarding-field">
+                <label htmlFor="sync-code">Code de foyer</label>
+                <input
+                  id="sync-code"
+                  type="password"
+                  value={codeFoyer}
+                  onChange={(e) => {
+                    setSyncErreur(null);
+                    setCodeFoyer(e.target.value);
+                  }}
+                />
+              </div>
+              <button
+                type="button"
+                className="profil-ghost"
+                onClick={connecterFoyerCode}
+                disabled={syncOccupe}
+              >
+                {syncOccupe ? 'Connexion…' : 'Se connecter au foyer'}
+              </button>
+            </>
+          )}
+          {syncErreur && (
+            <p className="error" role="alert">
+              {syncErreur}
+            </p>
+          )}
+          <p className="onb-hint">
+            Données synchronisées chez Supabase — région UE, accès limité au foyer.
+          </p>
+        </section>
+      )}
 
       <section className="profile-section">
         <h3>Compte</h3>
