@@ -2586,6 +2586,7 @@ progress {
 .sync-bloc .sync-danger {
   display: block;
   width: 100%;
+  min-height: 48px;
   margin-top: 8px;
   padding: 10px 12px;
   border: 1px solid var(--danger);

@@ -148,6 +148,19 @@ describe('sync UI: bloc profil', () => {
     expect(purgerFoyer).toHaveBeenCalledOnce();
   });
 
+  it('purge : double-tap → un seul appel', async () => {
+    const { purgerFoyer } = await import('../../src/lib/sync/engine');
+    definirSession('t', 'f');
+    vi.stubGlobal('confirm', () => true);
+    // Jamais résolue : simule la flush en vol — le bouton doit se verrouiller.
+    vi.mocked(purgerFoyer).mockImplementation(() => new Promise(() => {}));
+    renderProfil('sync');
+    const u = userEvent.setup();
+    await u.click(screen.getByRole('button', { name: /supprimer les données du foyer/i }));
+    await u.click(screen.getByRole('button', { name: /suppression/i }));
+    expect(purgerFoyer).toHaveBeenCalledOnce();
+  });
+
   it('note de transparence affichée', () => {
     renderProfil('attente');
     expect(screen.getByText(/supabase.*région ue.*accès limité au foyer/i)).toBeInTheDocument();

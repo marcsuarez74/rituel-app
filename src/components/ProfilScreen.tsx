@@ -91,6 +91,7 @@ export function ProfilScreen({
   const [codeFoyer, setCodeFoyer] = useState('');
   const [syncErreur, setSyncErreur] = useState<string | null>(null);
   const [syncOccupe, setSyncOccupe] = useState(false);
+  const [purgeEnCours, setPurgeEnCours] = useState(false);
 
   const maj = (section: Section, updated: UserProfile) => {
     saveProfile(updated);
@@ -246,8 +247,10 @@ export function ProfilScreen({
   };
 
   // Purge : le serveur est nettoyé avant le local (engine) — double
-  // confirmation car l'action est définitive pour tout le foyer.
+  // confirmation car l'action est définitive pour tout le foyer. La garde
+  // purgeEnCours verrouille pendant la flush en vol (double-tap).
   const supprimerFoyer = () => {
+    if (purgeEnCours) return;
     if (
       !window.confirm(
         'Supprimer les données du foyer ? Semaines, pesées et dépenses partagées seront effacées chez Supabase et sur tous les téléphones du foyer.',
@@ -255,7 +258,10 @@ export function ProfilScreen({
     )
       return;
     if (!window.confirm('Dernière confirmation : cette action est définitive.')) return;
-    purgerFoyer().catch(() => setSyncErreur('Suppression impossible : réessaie plus tard.'));
+    setPurgeEnCours(true);
+    purgerFoyer()
+      .catch(() => setSyncErreur('Suppression impossible : réessaie plus tard.'))
+      .finally(() => setPurgeEnCours(false));
   };
 
   const fil = (s: Section) =>
@@ -591,8 +597,13 @@ export function ProfilScreen({
               <button type="button" className="profil-ghost" onClick={deconnecterFoyer}>
                 Déconnecter le foyer
               </button>
-              <button type="button" className="sync-danger" onClick={supprimerFoyer}>
-                Supprimer les données du foyer
+              <button
+                type="button"
+                className="sync-danger"
+                onClick={supprimerFoyer}
+                disabled={purgeEnCours}
+              >
+                {purgeEnCours ? 'Suppression…' : 'Supprimer les données du foyer'}
               </button>
             </>
           ) : (
