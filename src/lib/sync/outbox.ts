@@ -14,7 +14,7 @@ export interface MutationSync {
 
 const OUTBOX_KEY = 'sportapp:sync:outbox';
 
-const TABLES_VALIDES: readonly TableSync[] = ['weeks', 'checks', 'weights', 'depenses', 'profiles'];
+export const TABLES: readonly TableSync[] = ['weeks', 'checks', 'weights', 'depenses', 'profiles'];
 
 const estObjet = (v: unknown): v is Record<string, unknown> =>
   !!v && typeof v === 'object' && !Array.isArray(v);
@@ -22,7 +22,7 @@ const estObjet = (v: unknown): v is Record<string, unknown> =>
 const estMutation = (v: unknown): v is MutationSync =>
   estObjet(v) &&
   (v.op === 'upsert' || v.op === 'delete') &&
-  TABLES_VALIDES.includes(v.table as TableSync) &&
+  TABLES.includes(v.table as TableSync) &&
   estObjet(v.key) &&
   Object.values(v.key).every((x) => typeof x === 'string') &&
   (v.payload === undefined || estObjet(v.payload));

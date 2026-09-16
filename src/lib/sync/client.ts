@@ -1,5 +1,5 @@
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from './config';
-import type { TableSync } from './outbox';
+import { TABLES, type TableSync } from './outbox';
 import { lireSession } from './session';
 
 export type RowSync = Record<string, unknown>;
@@ -11,8 +11,6 @@ export interface SyncClient {
   purger: () => Promise<void>;
   abonner: (onEvenement: () => void) => () => void;
 }
-
-const TABLES: TableSync[] = ['weeks', 'checks', 'weights', 'depenses', 'profiles'];
 
 const verifier = (error: { message: string } | null): void => {
   if (error) throw new Error(error.message);
