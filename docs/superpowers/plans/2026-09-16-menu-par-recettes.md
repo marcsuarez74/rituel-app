@@ -569,7 +569,7 @@ describe('MenuView v3 — onglets par recette', () => {
     expect(pills[2].textContent).toContain('Déjeuners');
     expect(container.querySelector('.rtab.active')).toHaveTextContent('Omelette');
     expect(document.querySelector('.menu-progress')).toHaveTextContent('Dîners 0/2');
-    expect(document.querySelector('.menu-progress')).toHaveTextContent('Boxes 0/2');
+    expect(document.querySelector('.menu-progress')).toHaveTextContent('Boxes 0/3');
   });
 
   it('onglet recette : meta, qui mange quoi, portions, préparation, batch associé — sans duplication recette', async () => {
