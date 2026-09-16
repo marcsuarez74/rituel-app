@@ -919,7 +919,11 @@ export const flush = async (): Promise<void> => {
         .filter((m) => m.table === t && m.op === 'upsert' && m.payload)
         .map<RowSync>((m) => ({
           ...m.key,
-          ...m.payload,
+          // weeks et profiles : payload enveloppé (colonne jsonb serveur) —
+          // checks/weights/depenses : colonnes scalaires (spread).
+          ...(t === 'weeks' || t === 'profiles'
+            ? { payload: m.payload }
+            : { ...m.payload }),
           household_id: foyerId,
           updated_at: new Date().toISOString(),
         }));
@@ -1377,18 +1381,16 @@ const pousserTout = (): void => {
   }
 };
 
-// Premier appareil : foyer vide → push complet. Second appareil : pull.
+// Fusion union à la connexion (décision produit 2026-09-16) : CHAQUE appareil
+// empile son état local AVANT le merge — jamais de perte des données locales
+// jamais synchronisées, conflits tranchés par « outbox locale prime ».
 const postConnexion = async (): Promise<void> => {
   if (!client || !lireSession()) return;
   definirEtat('attente');
+  pousserTout();
   const rows = {} as Record<TableSync, RowSync[]>;
   for (const t of TABLES) rows[t] = await client.toutLire(t);
-  const vide = TABLES.every((t) => rows[t].length === 0);
-  if (vide) {
-    pousserTout();
-  } else {
-    if (await appliquerRemote(rows)) onRemote?.();
-  }
+  if (await appliquerRemote(rows)) onRemote?.();
   await flush();
 };
 
@@ -1425,6 +1427,10 @@ export const deconnecterFoyer = (): void => {
   desabonner?.();
   desabonner = null;
   client = null;
+  if (pullTimer) clearTimeout(pullTimer);
+  pullTimer = null;
+  if (flushTimer) clearTimeout(flushTimer);
+  flushTimer = null;
   viderOutbox();
   effacerSession();
   definirEtat('off');
