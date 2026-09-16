@@ -896,30 +896,6 @@ progress {
   text-decoration: none; /* la pastille reste lisible quand la séance est cochée */
 }
 
-.mtag {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 700;
-  border-radius: 999px;
-  padding: 2px 8px;
-  margin-bottom: 4px;
-}
-.mtag.tag-marc {
-  background: var(--accent);
-  color: #ffffff;
-}
-.mtag.tag-mel {
-  background: color-mix(in srgb, var(--accent-2) 55%, var(--surface));
-  color: var(--text);
-}
-.mtag.tag-fam {
-  background: var(--surface-2);
-  color: var(--text);
-}
-.mtag.tag-bat {
-  background: color-mix(in srgb, var(--accent) 20%, var(--surface));
-  color: var(--accent);
-}
 /* ---------- Batch ---------- */
 
 .batch-section {
