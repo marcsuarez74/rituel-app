@@ -1,4 +1,10 @@
-import { definirSession, effacerSession, lireSession } from '../../src/lib/sync/session';
+import { vi } from 'vitest';
+import {
+  demanderSession,
+  definirSession,
+  effacerSession,
+  lireSession,
+} from '../../src/lib/sync/session';
 
 describe('sync: session foyer', () => {
   beforeEach(() => {
@@ -26,5 +32,23 @@ describe('sync: session foyer', () => {
   it('lireSession est null si un seul des deux champs manque', () => {
     localStorage.setItem('sportapp:sync:token', 't');
     expect(lireSession()).toBeNull();
+  });
+
+  it('demanderSession : 401 → code-refuse', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('unauthorized', { status: 401 })),
+    );
+    await expect(demanderSession('mauvais')).rejects.toThrow('code-refuse');
+    vi.unstubAllGlobals();
+  });
+
+  it('demanderSession : 500 → indisponible (pas code-refuse)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response('boom', { status: 500 })),
+    );
+    await expect(demanderSession('code')).rejects.toThrow('indisponible');
+    vi.unstubAllGlobals();
   });
 });

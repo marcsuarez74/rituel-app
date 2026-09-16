@@ -32,7 +32,8 @@ export const demanderSession = async (code: string): Promise<SessionFoyer> => {
     headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY! },
     body: JSON.stringify({ code }),
   });
-  if (!res.ok) throw new Error('code-refuse');
+  if (res.status === 401) throw new Error('code-refuse');
+  if (!res.ok) throw new Error('indisponible');
   const { token, foyer } = (await res.json()) as { token?: string; foyer?: string };
   if (!token || !foyer) throw new Error('reponse-invalide');
   return { token, foyerId: foyer };
