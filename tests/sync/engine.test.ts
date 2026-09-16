@@ -37,6 +37,7 @@ interface FauxClient extends SyncClient {
   upserts: Array<{ table: TableSync; rows: RowSync[] }>;
   suppressions: Array<{ table: TableSync; clefs: Record<string, string>[] }>;
   echecApres: number;
+  echouerLectures: boolean; // pull : échec des lectures (toutLire) — flush a déjà echecApres
   lues: Record<string, RowSync[]>;
   purgees: boolean;
   echouer: (apres: 'aucun' | number) => void;
@@ -47,6 +48,7 @@ const fauxClient = (): FauxClient => {
     upserts: [],
     suppressions: [],
     echecApres: Infinity,
+    echouerLectures: false,
     async upsert(table: TableSync, rows: RowSync[]) {
       if (c.echecApres <= c.upserts.length) throw new Error('reseau');
       c.upserts.push({ table, rows });
@@ -55,6 +57,7 @@ const fauxClient = (): FauxClient => {
       c.suppressions.push({ table, clefs });
     },
     async toutLire(table: TableSync) {
+      if (c.echouerLectures) throw new Error('reseau');
       return c.lues[table] ?? [];
     },
     async purger() {
@@ -354,5 +357,30 @@ describe('sync: pull / merge (outbox prime)', () => {
     await pull();
     expect(loadWeeks()['2026-S40']).toBeUndefined();
     expect(etatSync()).toBe('sync');
+  });
+
+  it('payload profil invalide → ignoré, profil local intact', async () => {
+    saveProfile(profilMarc());
+    viderOutbox();
+    client.lues.profiles = [
+      { household_id: 'f', profil: 'marc', payload: { id: 'marc', taille: 'abc' } },
+    ];
+    await pull();
+    expect(loadProfile()?.taille).toBe(180); // local intact, payload pourri non persisté
+  });
+
+  it('profil remote inconnu (pas marc/melanie) → ignoré', async () => {
+    client.lues.weights = [
+      { household_id: 'f', profil: 'x', date_: '2026-09-21', kg: 82.4 },
+    ];
+    await pull();
+    expect(getWeights('marc')).toEqual([]);
+    expect(getWeights('x' as 'marc')).toEqual([]); // aucune clé junk
+  });
+
+  it('pull en échec réseau → etat erreur', async () => {
+    client.echouerLectures = true;
+    await pull();
+    expect(etatSync()).toBe('erreur');
   });
 });

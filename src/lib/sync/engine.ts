@@ -2,6 +2,7 @@ import type { ImportedWeek, ProfileKey, UserProfile } from '../model';
 import {
   addWeight,
   deleteDepense,
+  estProfilValide,
   getChecks,
   getDepenses,
   getWeights,
@@ -118,6 +119,7 @@ const reconstruireDepenses = (remoteRows: RowSync[]): boolean => {
   for (const r of remoteRows) {
     const total = Number(r.total);
     if (!Number.isFinite(total) || total <= 0) continue;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(r.date_))) continue; // date_ illégale → ligne ignorée
     const date = String(r.date_);
     const magasinKey = String(r.magasin_key);
     if (clesAttente.has(`${date}|${magasinKey}`)) continue;
@@ -164,6 +166,7 @@ export const appliquerRemote = async (rows: Record<TableSync, RowSync[]>): Promi
   for (const r of rows.weeks) {
     const key = { semaine: String(r.semaine) };
     if (attente.has(signature('weeks', key))) continue;
+    if (!key.semaine) continue; // clé vide → ignorée
     const payload = r.payload as ImportedWeek | undefined;
     if (!payload?.data?.meta?.semaine) continue; // payload remote invalide → ignoré
     const local = loadWeeks()[key.semaine];
@@ -175,6 +178,7 @@ export const appliquerRemote = async (rows: Record<TableSync, RowSync[]>): Promi
   for (const r of rows.checks) {
     const key = { semaine: String(r.semaine), check_id: String(r.check_id) };
     if (attente.has(signature('checks', key))) continue;
+    if (!key.semaine || !key.check_id) continue; // clé vide → ignorée
     if (getChecks(key.semaine)[key.check_id] !== r.done) {
       setCheck(key.semaine, key.check_id, r.done === true);
       change = true;
@@ -184,6 +188,7 @@ export const appliquerRemote = async (rows: Record<TableSync, RowSync[]>): Promi
   for (const r of rows.weights) {
     const key = { profil: String(r.profil), date_: String(r.date_) };
     if (attente.has(signature('weights', key))) continue;
+    if (key.profil !== 'marc' && key.profil !== 'melanie') continue; // profil inconnu → jamais de clé junk
     const kg = Number(r.kg);
     if (!Number.isFinite(kg) || kg <= 0) continue;
     const connu = getWeights(key.profil as ProfileKey).some(
@@ -203,6 +208,7 @@ export const appliquerRemote = async (rows: Record<TableSync, RowSync[]>): Promi
     const payload = r.payload as UserProfile | undefined;
     const local = loadProfile();
     if (!payload || payload.id !== local?.id) continue; // l'autre profil : pas de slot local
+    if (!estProfilValide(payload)) continue; // payload distant invalide → jamais persisté
     if (JSON.stringify(local) !== JSON.stringify(payload)) {
       saveProfile(payload);
       change = true;
@@ -214,8 +220,12 @@ export const appliquerRemote = async (rows: Record<TableSync, RowSync[]>): Promi
 
 export const pull = async (): Promise<void> => {
   if (!client) return;
-  const rows = {} as Record<TableSync, RowSync[]>;
-  for (const t of TABLES) rows[t] = await client.toutLire(t);
-  if (await appliquerRemote(rows)) onRemote?.();
-  definirEtat('sync');
+  try {
+    const rows = {} as Record<TableSync, RowSync[]>;
+    for (const t of TABLES) rows[t] = await client.toutLire(t);
+    if (await appliquerRemote(rows)) onRemote?.();
+    definirEtat('sync');
+  } catch {
+    definirEtat('erreur'); // symétrique de la flush : retry au prochain déclencheur
+  }
 };

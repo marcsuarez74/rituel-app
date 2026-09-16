@@ -187,32 +187,41 @@ export const removeProfile = (): void => {
 const OBJECTIF_TYPES_VALIDES = ['perte', 'affiner', 'masse', 'maintien'];
 const REGIMES_VALIDES = ['keto', 'vegetarien', 'vegan', 'sans-gluten', 'aucun'];
 
-export const loadProfile = (): UserProfile | null => {
-  const raw = localStorage.getItem(PROFILE_KEY);
-  if (raw === null) return null;
-  const parsed = safeParse<unknown>(PROFILE_KEY, raw, null);
-  const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
-  const isStr = (v: unknown): v is string => typeof v === 'string';
-  const optionalNum = (v: unknown): boolean => v === undefined || isNum(v);
-  const obj = isPlainObject(parsed) ? parsed.objectif : undefined;
-  const complements = isPlainObject(parsed) ? parsed.complements : undefined;
-  const ok =
-    isPlainObject(parsed) &&
-    (parsed.id === 'marc' || parsed.id === 'melanie') &&
-    isStr(parsed.dateNaissance) &&
-    isNum(parsed.taille) &&
-    optionalNum(parsed.poidsObjectif) &&
+// Garde de forme du profil v2.1 — partagée entre la lecture locale (loadProfile)
+// et le merge remote (engine) : un payload invalide n'est jamais persisté.
+export const estProfilValide = (v: unknown): v is UserProfile => {
+  const isNum = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
+  const isStr = (x: unknown): x is string => typeof x === 'string';
+  const optionalNum = (x: unknown): boolean => x === undefined || isNum(x);
+  const obj = isPlainObject(v) ? v.objectif : undefined;
+  const complements = isPlainObject(v) ? v.complements : undefined;
+  return (
+    isPlainObject(v) &&
+    (v.id === 'marc' || v.id === 'melanie') &&
+    isStr(v.dateNaissance) &&
+    isNum(v.taille) &&
+    optionalNum(v.poidsObjectif) &&
     isPlainObject(obj) &&
     OBJECTIF_TYPES_VALIDES.includes(obj.type as string) &&
     (obj.echeance === undefined || isStr(obj.echeance)) &&
     Array.isArray(complements) &&
     complements.every(isStr) &&
-    REGIMES_VALIDES.includes(parsed.regime as string);
-  if (!ok) {
+    REGIMES_VALIDES.includes(v.regime as string)
+  );
+};
+
+export const loadProfile = (): UserProfile | null => {
+  const raw = localStorage.getItem(PROFILE_KEY);
+  if (raw === null) return null;
+  const parsed = safeParse<unknown>(PROFILE_KEY, raw, null);
+  if (!estProfilValide(parsed)) {
     console.warn(`Profil corrompu ignoré : ${PROFILE_KEY}`);
     localStorage.removeItem(PROFILE_KEY);
     return null;
   }
+  const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+  const isStr = (v: unknown): v is string => typeof v === 'string';
+  const optionalNum = (v: unknown): boolean => v === undefined || isNum(v);
   const optionalInt1a12 = (v: unknown): v is number =>
     v === undefined || (isNum(v) && Number.isInteger(v) && v >= 1 && v <= 12);
   const optionalPositif = (v: unknown): v is number => v === undefined || (isNum(v) && v > 0);
