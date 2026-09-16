@@ -13,6 +13,7 @@ export function BatchView({
   production,
   termine,
   semaine,
+  syncVersion = 0,
 }: {
   rituel?: RituelEtape[];
   microBatch?: MicroBatchJour[];
@@ -20,6 +21,7 @@ export function BatchView({
   production?: string;
   termine?: string;
   semaine: string;
+  syncVersion?: number;
 }) {
   const [mode, setMode] = useState<'apercu' | 'run' | 'fini'>('apercu');
   const [idx, setIdx] = useState(0);
@@ -52,6 +54,7 @@ export function BatchView({
           etapes={rituel}
           production={production}
           semaine={semaine}
+          syncVersion={syncVersion}
           onLancer={() => {
             setMode('run');
             setIdx(0);
@@ -162,17 +165,21 @@ function RituelTimeline({
   etapes,
   production,
   semaine,
+  syncVersion = 0,
   onLancer,
 }: {
   etapes: RituelEtape[];
   production?: string;
   semaine: string;
+  syncVersion?: number;
   onLancer: () => void;
 }) {
   const [checks, setChecks] = useState<Record<string, boolean>>(() => getChecks(semaine));
-  const [syncedSemaine, setSyncedSemaine] = useState(semaine);
-  if (syncedSemaine !== semaine) {
-    setSyncedSemaine(semaine);
+  // Pattern render-phase reset — cf. Checklist.tsx : un changement remote
+  // (syncVersion) ou de semaine relit le storage.
+  const [synced, setSynced] = useState({ semaine, version: syncVersion });
+  if (synced.semaine !== semaine || synced.version !== syncVersion) {
+    setSynced({ semaine, version: syncVersion });
     setChecks(getChecks(semaine));
   }
   const duree = dureeRituel(etapes);

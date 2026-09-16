@@ -17,17 +17,21 @@ export function ProfileView({
   profile,
   data,
   semaine,
+  syncVersion = 0,
   onWeightsChanged,
 }: {
   profile: UserProfile;
   data: ProfileData;
   semaine: string;
+  syncVersion?: number;
   onWeightsChanged?: () => void;
 }) {
   const [weights, setWeights] = useState<WeightEntry[]>(() => getWeights(profile.id));
   const [syncedProfile, setSyncedProfile] = useState(profile.id);
   const [checksMap, setChecksMap] = useState(() => getChecks(semaine));
-  const [syncedSemaine, setSyncedSemaine] = useState(semaine);
+  // Pattern render-phase reset (syncedSemaine) étendu à la version de sync :
+  // un changement remote (syncVersion) relit pesées et coches du storage.
+  const [syncedSemaine, setSyncedSemaine] = useState({ semaine, version: syncVersion });
   const [date, setDate] = useState<string>(todayISO);
   const [kg, setKg] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
@@ -37,9 +41,10 @@ export function ProfileView({
     setError(null);
     setKg('');
   }
-  if (syncedSemaine !== semaine) {
-    setSyncedSemaine(semaine);
+  if (syncedSemaine.semaine !== semaine || syncedSemaine.version !== syncVersion) {
+    setSyncedSemaine({ semaine, version: syncVersion });
     setChecksMap(getChecks(semaine));
+    setWeights(getWeights(profile.id));
   }
   const compte = compteChecklist(checksMap, data.seances);
 
@@ -72,6 +77,7 @@ export function ProfileView({
         <Checklist
           items={data.seances}
           semaine={semaine}
+          dataVersion={syncVersion}
           className="checklist-seances"
           onChecksChange={(p) => setChecksMap((c) => ({ ...c, ...p }))}
           renderLabel={(it) => {

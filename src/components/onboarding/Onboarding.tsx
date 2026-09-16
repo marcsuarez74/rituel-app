@@ -11,6 +11,10 @@ import type { ObjectifType, ProfilLegacy, ProfileKey, Regime, UserProfile } from
 import { ageDepuis, todayISO } from '../../lib/dates';
 import { parseEuro } from '../../lib/prix';
 import { addWeight, getWeights, saveProfile } from '../../lib/storage';
+import { syncActif } from '../../lib/sync/config';
+import { connecterFoyer } from '../../lib/sync/engine';
+import { messageConnexion } from '../../lib/sync/messages';
+import { lireSession } from '../../lib/sync/session';
 import { Icon } from '../Icon';
 
 const PROFILS: Array<{ id: ProfileKey; prenom: string; emoji: string; tagline: string }> = [
@@ -26,7 +30,9 @@ export function Onboarding({
   prefill?: ProfilLegacy;
 }) {
   // Migration : démarrer directement à l'étape 2, profil verrouillé (pas d'étape 1).
-  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(prefill ? 2 : 1);
+  // Étape 6 (« Synchroniser les téléphones ») : optionnelle, atteinte seulement
+  // si la sync est active et qu'aucune session foyer n'existe encore.
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(prefill ? 2 : 1);
   const [id, setId] = useState<ProfileKey | null>(prefill?.id ?? null);
   const [poids, setPoids] = useState(() => {
     if (!prefill) return '';
@@ -51,11 +57,14 @@ export function Onboarding({
   const [preferences, setPreferences] = useState<string[]>([]);
   const [nouvellePreference, setNouvellePreference] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [profileFinal, setProfileFinal] = useState<UserProfile | null>(null);
+  const [codeFoyer, setCodeFoyer] = useState('');
+  const [syncOccupe, setSyncOccupe] = useState(false);
 
   const migration = prefill != null;
   const profil = id ? PROFILS.find((p) => p.id === id) : undefined;
 
-  const aller = (n: 1 | 2 | 3 | 4 | 5) => {
+  const aller = (n: 1 | 2 | 3 | 4 | 5 | 6) => {
     setError(null);
     setStep(n);
   };
@@ -65,7 +74,7 @@ export function Onboarding({
     aller(2);
   };
 
-  const retour = () => aller(Math.max(1, step - 1) as 1 | 2 | 3 | 4 | 5);
+  const retour = () => aller(Math.max(1, step - 1) as 1 | 2 | 3 | 4 | 5 | 6);
 
   // Valide l'étape 2 et retourne le poids/taille parsés, ou null avec un message.
   // En migration, le poids est optionnel (champ vide si aucune pesée enregistrée —
@@ -217,7 +226,33 @@ export function Onboarding({
     };
     saveProfile(profile);
     if (infos.kg != null) addWeight(id, todayISO(), infos.kg);
+    // Sync active sans session foyer (première installation) : étape 6
+    // optionnelle avant de terminer — sinon on termine comme avant.
+    if (syncActif() && !lireSession()) {
+      setProfileFinal(profile);
+      aller(6);
+      return;
+    }
     onDone(profile);
+  };
+
+  // Étape 6 : appairage du foyer. Profil déjà enregistré — en cas de refus,
+  // l'utilisateur peut réessayer ou passer (Plus tard) sans rien perdre.
+  // Garde syncOccupe : le bouton disabled ne couvre pas le Enter (form submit).
+  const connecterSync = async () => {
+    if (syncOccupe) return;
+    const code = codeFoyer.trim();
+    if (!profileFinal || !code) return;
+    setSyncOccupe(true);
+    setError(null);
+    try {
+      await connecterFoyer(code);
+      onDone(profileFinal);
+    } catch (e) {
+      setError(messageConnexion(e));
+    } finally {
+      setSyncOccupe(false);
+    }
   };
 
   return (
@@ -271,6 +306,7 @@ export function Onboarding({
             if (step === 2) continuerInfos();
             else if (step === 3) continuerObjectif();
             else if (step === 4) aller(5);
+            else if (step === 6) void connecterSync();
             else valider();
           }}
         >
@@ -674,6 +710,47 @@ export function Onboarding({
               <div className="onb-btnrow">
                 <button type="button" className="onb-back" onClick={retour}>
                   Retour
+                </button>
+              </div>
+            </>
+          )}
+
+          {step === 6 && profileFinal && (
+            <>
+              <h1>Synchroniser les téléphones</h1>
+              <p className="onboarding-sub">
+                Optionnel — retrouve semaines, courses et pesées sur les deux téléphones.
+              </p>
+              <div className="onboarding-field">
+                <label htmlFor="ob-sync-code">Code de foyer</label>
+                <input
+                  id="ob-sync-code"
+                  type="password"
+                  value={codeFoyer}
+                  onChange={(e) => {
+                    setError(null);
+                    setCodeFoyer(e.target.value);
+                  }}
+                />
+              </div>
+              <button
+                type="button"
+                className="onboarding-cta onb-full"
+                onClick={connecterSync}
+                disabled={syncOccupe}
+              >
+                {syncOccupe ? 'Connexion…' : 'Connecter le foyer'}
+              </button>
+              <div className="onb-btnrow">
+                <button type="button" className="onb-back" onClick={retour}>
+                  Retour
+                </button>
+                <button
+                  type="button"
+                  className="onb-next"
+                  onClick={() => onDone(profileFinal)}
+                >
+                  Plus tard
                 </button>
               </div>
             </>

@@ -22,22 +22,25 @@ export function MenuView({
   recettes = [],
   bases = [],
   semaine,
+  syncVersion = 0,
 }: {
   menu: MenuDay[];
   recettes?: Recette[];
   bases?: BaseCuisine[];
   semaine: string;
+  syncVersion?: number;
 }) {
   const [checks, setChecks] = useState<Record<string, boolean>>(() => getChecks(semaine));
   const onglets = construireOnglets(menu, recettes);
   const paires = construirePaires(menu, recettes);
   const faits = faitsParRecette(menu);
 
-  // Pattern render-phase reset (syncedSemaine) — cf. Checklist.tsx.
-  const [syncedSemaine, setSyncedSemaine] = useState(semaine);
+  // Pattern render-phase reset — cf. Checklist.tsx : un changement remote
+  // (syncVersion) ou de semaine relit le storage et recalcule l'onglet actif.
+  const [synced, setSynced] = useState({ semaine, version: syncVersion });
   const [actif, setActif] = useState(() => selectionInitiale(onglets, menu, checks));
-  if (syncedSemaine !== semaine) {
-    setSyncedSemaine(semaine);
+  if (synced.semaine !== semaine || synced.version !== syncVersion) {
+    setSynced({ semaine, version: syncVersion });
     const fresh = getChecks(semaine);
     setChecks(fresh);
     setActif(Math.min(selectionInitiale(onglets, menu, fresh), onglets.length));

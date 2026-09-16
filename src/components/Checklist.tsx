@@ -6,20 +6,24 @@ import { getChecks, setCheck } from '../lib/storage';
 export function Checklist<T extends ChecklistItem>({
   items,
   semaine,
+  dataVersion = 0,
   className,
   onChecksChange,
   renderLabel,
 }: {
   items: T[];
   semaine: string;
+  dataVersion?: number;
   className?: string;
   onChecksChange?: (checks: Record<string, boolean>) => void;
   renderLabel?: (item: T) => ReactNode;
 }) {
   const [checks, setChecks] = useState<Record<string, boolean>>(() => getChecks(semaine));
-  const [syncedSemaine, setSyncedSemaine] = useState(semaine);
-  if (syncedSemaine !== semaine) {
-    setSyncedSemaine(semaine);
+  // Pattern render-phase reset (syncedSemaine) étendu à la version de sync :
+  // un changement remote (dataVersion) ou de semaine relit le storage.
+  const [synced, setSynced] = useState({ semaine, version: dataVersion });
+  if (synced.semaine !== semaine || synced.version !== dataVersion) {
+    setSynced({ semaine, version: dataVersion });
     setChecks(getChecks(semaine));
   }
   const toggle = (item: ChecklistItem) => {

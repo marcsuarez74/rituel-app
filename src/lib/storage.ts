@@ -1,5 +1,6 @@
 import type { DepenseEntry, ImportedWeek, ProfileKey, ProfilLegacy, UserProfile, WeeklyData } from './model';
 import { normaliseComplement } from './model';
+import { empilerMutation } from './sync/outbox';
 
 const WEEK_KEY = 'sportapp:week';
 const WEEKS_KEY = 'sportapp:weeks';
@@ -91,6 +92,12 @@ export const upsertWeek = (raw: string, data: WeeklyData): void => {
     importedAt: new Date().toISOString(),
   } satisfies ImportedWeek;
   localStorage.setItem(WEEKS_KEY, JSON.stringify({ semaines }));
+  empilerMutation({
+    op: 'upsert',
+    table: 'weeks',
+    key: { semaine: data.meta.semaine },
+    payload: { ...semaines[data.meta.semaine] },
+  });
 };
 
 export const getChecks = (semaine: string): Record<string, boolean> => {
@@ -110,6 +117,12 @@ export const setCheck = (semaine: string, id: string, done: boolean): void => {
   const c = getChecks(semaine);
   c[id] = done;
   localStorage.setItem(checksKey(semaine), JSON.stringify(c));
+  empilerMutation({
+    op: 'upsert',
+    table: 'checks',
+    key: { semaine, check_id: id },
+    payload: { done },
+  });
 };
 
 export const getWeights = (p: ProfileKey): WeightEntry[] => {
@@ -135,6 +148,12 @@ export const addWeight = (p: ProfileKey, date: string, kg: number): WeightEntry[
     .concat({ date, kg })
     .sort((a, b) => a.date.localeCompare(b.date));
   localStorage.setItem(weightsKey(p), JSON.stringify(list));
+  empilerMutation({
+    op: 'upsert',
+    table: 'weights',
+    key: { profil: p, date_: date },
+    payload: { kg },
+  });
   return list;
 };
 
@@ -158,6 +177,7 @@ export const saveProfile = (profile: UserProfile): void => {
       : {}),
   };
   localStorage.setItem(PROFILE_KEY, JSON.stringify(net));
+  empilerMutation({ op: 'upsert', table: 'profiles', key: { profil: net.id }, payload: { ...net } });
 };
 
 export const removeProfile = (): void => {
@@ -167,32 +187,41 @@ export const removeProfile = (): void => {
 const OBJECTIF_TYPES_VALIDES = ['perte', 'affiner', 'masse', 'maintien'];
 const REGIMES_VALIDES = ['keto', 'vegetarien', 'vegan', 'sans-gluten', 'aucun'];
 
-export const loadProfile = (): UserProfile | null => {
-  const raw = localStorage.getItem(PROFILE_KEY);
-  if (raw === null) return null;
-  const parsed = safeParse<unknown>(PROFILE_KEY, raw, null);
-  const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
-  const isStr = (v: unknown): v is string => typeof v === 'string';
-  const optionalNum = (v: unknown): boolean => v === undefined || isNum(v);
-  const obj = isPlainObject(parsed) ? parsed.objectif : undefined;
-  const complements = isPlainObject(parsed) ? parsed.complements : undefined;
-  const ok =
-    isPlainObject(parsed) &&
-    (parsed.id === 'marc' || parsed.id === 'melanie') &&
-    isStr(parsed.dateNaissance) &&
-    isNum(parsed.taille) &&
-    optionalNum(parsed.poidsObjectif) &&
+// Garde de forme du profil v2.1 — partagée entre la lecture locale (loadProfile)
+// et le merge remote (engine) : un payload invalide n'est jamais persisté.
+export const estProfilValide = (v: unknown): v is UserProfile => {
+  const isNum = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
+  const isStr = (x: unknown): x is string => typeof x === 'string';
+  const optionalNum = (x: unknown): boolean => x === undefined || isNum(x);
+  const obj = isPlainObject(v) ? v.objectif : undefined;
+  const complements = isPlainObject(v) ? v.complements : undefined;
+  return (
+    isPlainObject(v) &&
+    (v.id === 'marc' || v.id === 'melanie') &&
+    isStr(v.dateNaissance) &&
+    isNum(v.taille) &&
+    optionalNum(v.poidsObjectif) &&
     isPlainObject(obj) &&
     OBJECTIF_TYPES_VALIDES.includes(obj.type as string) &&
     (obj.echeance === undefined || isStr(obj.echeance)) &&
     Array.isArray(complements) &&
     complements.every(isStr) &&
-    REGIMES_VALIDES.includes(parsed.regime as string);
-  if (!ok) {
+    REGIMES_VALIDES.includes(v.regime as string)
+  );
+};
+
+export const loadProfile = (): UserProfile | null => {
+  const raw = localStorage.getItem(PROFILE_KEY);
+  if (raw === null) return null;
+  const parsed = safeParse<unknown>(PROFILE_KEY, raw, null);
+  if (!estProfilValide(parsed)) {
     console.warn(`Profil corrompu ignoré : ${PROFILE_KEY}`);
     localStorage.removeItem(PROFILE_KEY);
     return null;
   }
+  const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+  const isStr = (v: unknown): v is string => typeof v === 'string';
+  const optionalNum = (v: unknown): boolean => v === undefined || isNum(v);
   const optionalInt1a12 = (v: unknown): v is number =>
     v === undefined || (isNum(v) && Number.isInteger(v) && v >= 1 && v <= 12);
   const optionalPositif = (v: unknown): v is number => v === undefined || (isNum(v) && v > 0);
@@ -293,6 +322,12 @@ export const saveDepense = (date: string, magasin: string, total: number): Depen
     .concat({ date, magasin: mag, total })
     .sort((a, b) => b.date.localeCompare(a.date) || b.magasin.localeCompare(a.magasin));
   localStorage.setItem(DEPENSES_KEY, JSON.stringify(maj));
+  empilerMutation({
+    op: 'upsert',
+    table: 'depenses',
+    key: { date_: date, magasin_key: mag.toLowerCase() },
+    payload: { magasin: mag, total },
+  });
   return maj;
 };
 
@@ -302,5 +337,10 @@ export const deleteDepense = (date: string, magasin: string): DepenseEntry[] => 
     (d) => !(d.date === date && d.magasin.toLowerCase() === mag),
   );
   localStorage.setItem(DEPENSES_KEY, JSON.stringify(list));
+  empilerMutation({
+    op: 'delete',
+    table: 'depenses',
+    key: { date_: date, magasin_key: mag },
+  });
   return list;
 };
