@@ -8,8 +8,11 @@ au moment de choisir la prochaine itération.
 
 ## Contraintes non négociables
 
-- **Zéro backend** : toutes les données vivent dans le téléphone (localStorage),
-  PWA offline-first. Toute idée qui suppose un serveur est à re-formuler.
+- **Backend optionnel** (révision 2026-09-16) : les données vivent d'abord dans
+  le téléphone ; la sync Supabase (chantier 1) est un miroir qui peut être
+  ignoré — l'app doit toujours être utilisable sans lui. Phases suivantes
+  (reportées) : génération IA dans l'app (edge function), notifications push
+  (Web Push + VAPID, iOS ≥ 16.4 PWA installée).
 - **Public actuel** : Marc & Mélanie uniquement — mais garder la porte ouverte à
   une évolution multiprofile (ne pas graver « 2 profils » dans le code).
 - **La rotation de 4 menus (A/B/C/D) est la clé** pour installer la routine

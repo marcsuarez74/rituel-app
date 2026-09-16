@@ -193,3 +193,14 @@ L'app est déployée sur **GitHub Pages** via GitHub Actions (`.github/workflows
 - **Tout est stocké en local sur le téléphone** (localStorage) — aucun serveur, aucune donnée envoyée.
 - Les **pesées sont stockées par profil** : importer un nouveau fichier de semaine différent ne les remet pas à zéro.
 - Les **coches** (courses, batch, séances) sont réinitialisées à chaque nouvelle semaine.
+
+## Synchronisation entre téléphones (optionnelle)
+
+Par défaut, tout reste sur le téléphone. Si un foyer est configuré (voir
+[`docs/backend.md`](docs/backend.md)), les données (semaines, coches, pesées,
+dépenses, profils) se synchronisent entre Marc et Mélanie en quasi temps-réel,
+avec file d'attente hors ligne.
+
+> Vie privée : données hébergées chez Supabase (région UE), accès limité au
+> foyer par code. « Supprimer les données du foyer » (Profil) purge serveur +
+> local à tout moment.
