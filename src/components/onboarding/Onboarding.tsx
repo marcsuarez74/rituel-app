@@ -238,7 +238,9 @@ export function Onboarding({
 
   // Étape 6 : appairage du foyer. Profil déjà enregistré — en cas de refus,
   // l'utilisateur peut réessayer ou passer (Plus tard) sans rien perdre.
+  // Garde syncOccupe : le bouton disabled ne couvre pas le Enter (form submit).
   const connecterSync = async () => {
+    if (syncOccupe) return;
     const code = codeFoyer.trim();
     if (!profileFinal || !code) return;
     setSyncOccupe(true);

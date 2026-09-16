@@ -246,6 +246,20 @@ describe('sync UI: onboarding étape 6', () => {
     expect(connecterFoyer).toHaveBeenCalledWith('rituel-2026');
   });
 
+  it('étape 6 : double soumission → un seul connecterFoyer', async () => {
+    const { connecterFoyer } = await import('../../src/lib/sync/engine');
+    // Jamais résolue : simule la connexion en vol — le garde-fou doit verrouiller.
+    vi.mocked(connecterFoyer).mockImplementation(() => new Promise(() => {}));
+    const user = await allerEtape5();
+    await user.click(screen.getByRole('button', { name: /C'est parti/ }));
+    await user.type(screen.getByLabelText('Code de foyer'), 'rituel-2026');
+    // Tap + Entrée en rafale : le bouton disabled ne couvre pas le Enter
+    // (soumission du form — convention repo fireEvent.submit sous happy-dom).
+    await user.click(screen.getByRole('button', { name: 'Connecter le foyer' }));
+    fireEvent.submit(document.querySelector('.onboarding-form')!);
+    expect(connecterFoyer).toHaveBeenCalledOnce();
+  });
+
   it('sync inactive : pas d étape 6, C est parti appelle onDone directement', async () => {
     vi.mocked(syncActif).mockReturnValue(false);
     try {
