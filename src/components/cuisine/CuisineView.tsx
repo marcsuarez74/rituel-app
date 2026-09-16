@@ -57,7 +57,14 @@ export function CuisineView({ data, profile }: { data: WeeklyData; profile: User
         <MenuView menu={data.menu} recettes={data.recettes} bases={data.bases} semaine={semaine} />
       )}
       {tab === 'batch' && (
-        <BatchView rituel={data.rituel} microBatch={data.microBatch} semaine={semaine} />
+        <BatchView
+          rituel={data.rituel}
+          microBatch={data.microBatch}
+          reserve={data.reserve}
+          production={data.rituelProduction}
+          termine={data.rituelTermine}
+          semaine={semaine}
+        />
       )}
     </>
   );

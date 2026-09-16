@@ -8,6 +8,7 @@ import type {
   MicroBatchJour,
   ProfileData,
   Recette,
+  ReserveLigne,
   RituelEtape,
   WeekMeta,
   WeeklyData,
@@ -84,8 +85,10 @@ export function parseWeeklyFile(raw: string): ParseResult {
   const menu = parseMenu(sections.get('menu') ?? '', 'menu', warnings);
   const lignes = lignesBatch(sections.get('batch') ?? '', warnings);
   const batch = parseBatch(lignes, warnings, seen);
-  const rituel = parseRituel(lignes, 'batch', warnings, seen);
+  const rituelParse = parseRituel(lignes, 'batch', warnings, seen);
+  const rituel = rituelParse.etapes;
   const microBatch = parseMicroBatch(lignes, warnings);
+  const reserve = parseReserve(lignes, warnings);
   const recettes = parseRecettes(sections.get('recettes') ?? '', warnings, seen);
   const bases = parseBases(sections.get('bases') ?? '', warnings, seen);
   const profiles = {
@@ -105,7 +108,10 @@ export function parseWeeklyFile(raw: string): ParseResult {
       ...(recettes.length ? { recettes } : {}),
       ...(bases.length ? { bases } : {}),
       ...(rituel.length ? { rituel } : {}),
+      ...(rituelParse.production ? { rituelProduction: rituelParse.production } : {}),
+      ...(rituelParse.termine ? { rituelTermine: rituelParse.termine } : {}),
       ...(microBatch.length ? { microBatch } : {}),
+      ...(reserve.length ? { reserve } : {}),
     },
     warnings,
   };
@@ -232,7 +238,7 @@ function parseProfile(text: string, section: string, warnings: string[], seen: S
   return res;
 }
 
-const BATCH_SUBS = new Set(['rituel-dimanche', 'micro-batch']);
+const BATCH_SUBS = new Set(['rituel-dimanche', 'micro-batch', 'reserve']);
 const SUB_IGNOREE = '__ignore__';
 
 type LigneBatch = [line: string, cur: string | null];
@@ -254,6 +260,10 @@ function parseBatch(lignes: LigneBatch[], warnings: string[], seen: Set<string>)
     if (!withBox) {
       if (RITUEL_SHAPE.test(line)) {
         warnings.push('Ligne rituel hors sous-section « Rituel dimanche » ignorée (batch).');
+        continue;
+      }
+      if (/^\s*[-*]\s+(production|termine)\s*:/.test(line)) {
+        warnings.push('Ligne production/termine hors sous-section « Rituel dimanche » ignorée (batch).');
         continue;
       }
       if (MICRO_SHAPE.test(line)) {
@@ -294,11 +304,29 @@ function parseRituel(
   section: string,
   warnings: string[],
   seen: Set<string>,
-): RituelEtape[] {
-  const out: RituelEtape[] = [];
+): { etapes: RituelEtape[]; production?: string; termine?: string } {
+  const etapes: RituelEtape[] = [];
+  let production: string | undefined;
+  let termine: string | undefined;
   for (const [line, cur] of lignes) {
     if (cur !== 'rituel-dimanche') continue;
     if (!line.trim()) continue;
+    const prod = line.match(/^\s*[-*]\s+production\s*:\s*(.*?)\s*$/);
+    if (prod) {
+      if (!prod[1]) warnings.push(`Ligne ignorée (${section}/rituel) : « production: » sans contenu.`);
+      else if (production !== undefined)
+        warnings.push(`« production » dupliquée (${section}/rituel) — la première gagne.`);
+      else production = prod[1];
+      continue;
+    }
+    const fin = line.match(/^\s*[-*]\s+termine\s*:\s*(.*?)\s*$/);
+    if (fin) {
+      if (!fin[1]) warnings.push(`Ligne ignorée (${section}/rituel) : « termine: » sans contenu.`);
+      else if (termine !== undefined)
+        warnings.push(`« termine » dupliqué (${section}/rituel) — le premier gagne.`);
+      else termine = fin[1];
+      continue;
+    }
     const m = line.match(RITUEL_SHAPE);
     if (!m) {
       warnings.push(`Ligne ignorée (${section}/rituel) : « ${preview(line)} »`);
@@ -307,9 +335,13 @@ function parseRituel(
     const [, creneau, label, detail] = m;
     const id = `batch:rituel:${slugify(label)}`;
     registerId(id, `${section}/rituel`, seen, warnings);
-    out.push({ id, creneau, label, ...(detail ? { detail } : {}) });
+    etapes.push({ id, creneau, label, ...(detail ? { detail } : {}) });
   }
-  return out;
+  return {
+    etapes,
+    ...(production !== undefined ? { production } : {}),
+    ...(termine !== undefined ? { termine } : {}),
+  };
 }
 
 function parseMicroBatch(lignes: LigneBatch[], warnings: string[]): MicroBatchJour[] {
@@ -322,7 +354,39 @@ function parseMicroBatch(lignes: LigneBatch[], warnings: string[]): MicroBatchJo
       warnings.push(`Ligne ignorée (batch/micro-batch) : « ${preview(line)} »`);
       continue;
     }
-    out.push({ jour: m[1], quoi: m[2] });
+    const pipe = m[2].indexOf('|');
+    const gauche = pipe === -1 ? m[2].trim() : m[2].slice(0, pipe).trim();
+    const droite = pipe === -1 ? undefined : m[2].slice(pipe + 1).trim();
+    out.push({ jour: m[1], quoi: gauche, ...(droite ? { detail: droite } : {}) });
+  }
+  return out;
+}
+
+const JOURS_RESERVE = new Set(['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche', 'mel']);
+
+function parseReserve(lignes: LigneBatch[], warnings: string[]): ReserveLigne[] {
+  const out: ReserveLigne[] = [];
+  for (const [line, cur] of lignes) {
+    if (cur !== 'reserve') continue;
+    if (!line.trim()) continue;
+    const m = line.match(/^\s*[-*]\s+([a-z-]+)\s*:\s*(.+?)\s*$/);
+    if (!m) {
+      warnings.push(`Ligne réserve ignorée : « ${preview(line)} »`);
+      continue;
+    }
+    const [, cle, reste] = m;
+    const pipe = reste.indexOf('|');
+    const plat = pipe === -1 ? reste.trim() : reste.slice(0, pipe).trim();
+    const conservation = pipe === -1 ? undefined : reste.slice(pipe + 1).trim();
+    if (!JOURS_RESERVE.has(cle)) {
+      warnings.push(`Ligne réserve ignorée : clé « ${cle} » inconnue (jour ou mel).`);
+      continue;
+    }
+    if (!plat || !conservation) {
+      warnings.push(`Ligne réserve ignorée (plat ou conservation vide) : « ${preview(line)} »`);
+      continue;
+    }
+    out.push({ cle, plat, conservation });
   }
   return out;
 }

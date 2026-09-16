@@ -353,7 +353,7 @@ export function ProfilScreen({
             }}
           />
           <button type="button" onClick={ajouterComplement}>
-            <Icon name="plus" size={13} /> Ajouter
+            <Icon name="plus" size={14} /> Ajouter
           </button>
         </div>
         <button type="button" className="btn profil-save" onClick={enregistrerComplements}>
@@ -493,7 +493,7 @@ export function ProfilScreen({
             }}
           />
           <button type="button" onClick={ajouterPreference}>
-            <Icon name="plus" size={13} /> Ajouter
+            <Icon name="plus" size={14} /> Ajouter
           </button>
         </div>
         <button type="button" className="btn profil-save" onClick={enregistrerMaison}>

@@ -66,6 +66,13 @@ export interface RituelEtape {
 export interface MicroBatchJour {
   jour: string;
   quoi: string;
+  detail?: string; // suffixe ` | détail` — 3e ligne de la carte micro-batch
+}
+
+export interface ReserveLigne {
+  cle: string; // jour (lundi..dimanche) ou « mel »
+  plat: string;
+  conservation: string;
 }
 
 export type MealKey = 'dejeunerMarc' | 'dejeunerMelanie' | 'dinerFamille' | 'dinerMelanie' | 'batch';
@@ -87,6 +94,9 @@ export interface WeeklyData {
   bases?: BaseCuisine[];
   rituel?: RituelEtape[];
   microBatch?: MicroBatchJour[];
+  rituelProduction?: string; // ligne `- production:` de ### Rituel dimanche
+  rituelTermine?: string; // ligne `- termine:` → état final du mode guidé
+  reserve?: ReserveLigne[]; // sous-section ### Réserve
 }
 
 export interface ImportedWeek {

@@ -486,7 +486,7 @@ export function Onboarding({
                   }}
                 />
                 <button type="button" onClick={ajouterComplement}>
-                  <Icon name="plus" size={13} /> Ajouter
+                  <Icon name="plus" size={14} /> Ajouter
                 </button>
               </div>
               <p className="onb-label">Régime</p>
@@ -665,7 +665,7 @@ export function Onboarding({
                   }}
                 />
                 <button type="button" onClick={ajouterPreference}>
-                  <Icon name="plus" size={13} /> Ajouter
+                  <Icon name="plus" size={14} /> Ajouter
                 </button>
               </div>
               <button type="submit" className="onboarding-cta onb-full">

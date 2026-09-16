@@ -163,6 +163,10 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
 
     await page.getByRole('button', { name: /Total payé/ }).click();
     await expect(page.getByRole('heading', { name: /Mes dépenses réelles/ })).toBeVisible();
+    // Date épinglée dans S37 : le champ part de « aujourd'hui », qui dérive du
+    // calendrier réel — sans épinglage, la session saisie sort de la semaine
+    // affichée et le payé de la carte ne la compte pas.
+    await page.getByLabel('Date').fill('2026-09-10');
     await page.getByLabel('Total (€)').fill('35,10');
     await page.getByLabel('Date').fill('2026-09-10'); // ∈ S37 : la date du jour sortirait de [du..au] dès que la semaine d'exemple expire
     await page.getByLabel('Magasin').fill('Carrefour');
@@ -172,8 +176,8 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
     // dans la semaine d'exemple : le test reste stable toute l'année.
     await expect(page.locator('.dep')).toHaveCount(2);
     await page.getByRole('button', { name: /Retour/ }).first().click();
-    // De retour sur la carte, le payé additionne les deux sessions de la semaine.
-    await expect(page.getByText('73,30 €')).toBeVisible();
+    // De retour sur la carte, le héros additionne les deux sessions de la semaine.
+    await expect(page.locator('.bud-hero')).toContainText('73,30 €');
 
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -189,6 +193,11 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
     await expect(page.locator('.rituel-timeline')).toBeVisible();
     await expect(page.locator('.rituel-etape')).toHaveCount(5);
     await expect(page.locator('.rituel-creneau').first()).toBeVisible();
+    await expect(page.locator('.rituel-badge')).toContainText('≈ 1 h');
+    await expect(page.locator('.rituel-production')).toBeVisible();
+    await expect(page.locator('.lancer-btn')).toBeVisible();
+    await expect(page.locator('.reserve-ligne')).toHaveCount(4);
+    await expect(page.locator('.micro-jour-detail').first()).toBeVisible();
 
     // La bannière « Ce soir » dépend du jour réel d'exécution : le micro-batch
     // de la semaine d'exemple couvre lundi, mardi et samedi.
@@ -208,8 +217,8 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
       await page.getByRole('button', { name: 'Étape terminée →' }).click();
     }
     await page.getByRole('button', { name: 'Terminer le batch ✓' }).click();
-    await expect(page.getByText('Batch terminé !')).toBeVisible();
-    await page.getByRole('button', { name: "Revenir à l'aperçu" }).click();
+    await expect(page.locator('.batch-guide')).toContainText('Batch terminé');
+    await page.getByRole('button', { name: "Revoir l'aperçu" }).click();
     await expect(page.locator('.rituel-timeline')).toBeVisible();
     await expect(page.locator('.rituel-etape.done')).toHaveCount(0);
   });
