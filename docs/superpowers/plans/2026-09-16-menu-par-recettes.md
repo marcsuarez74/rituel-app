@@ -1468,10 +1468,10 @@ describe('menu — semaine d exemple (intégration)', () => {
   });
 
   it('portions en mesures maison : jamais une portion qui oblige à peser en premier', () => {
-    const r1 = semaine.recettes?.find((r) => r.id === 'r1');
+    const r1 = semaine.recettes?.find((r) => r.id.startsWith('r1-'));
     expect(r1?.portions?.marc).toContain('poignée de riz');
     expect(r1?.portions?.marc).toMatch(/\(~150 g cuit\)/);
-    const r4 = semaine.recettes?.find((r) => r.id === 'r4');
+    const r4 = semaine.recettes?.find((r) => r.id.startsWith('r4-'));
     expect(r4?.portions?.marc).toContain('paume de poulet');
   });
 });
