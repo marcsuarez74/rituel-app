@@ -4,7 +4,7 @@ import { formatDayMonth } from '../lib/dates';
 import { Icon } from './Icon';
 
 const ETIQUETTES: Record<Exclude<SyncEtat, 'off' | 'hors-foyer'>, string> = {
-  attente: 'Synchronisation : non connecté',
+  attente: 'Synchronisation en cours',
   sync: 'Synchronisé',
   erreur: 'Synchronisation : erreur — appuyer pour réessayer',
 };

@@ -99,8 +99,8 @@ export const flush = (): Promise<void> => {
     flushDiffere(); // demande pendant l'envol : re-programmer (retry avalé sinon)
     return flushPromise;
   }
+  let ok = false;
   flushPromise = (async () => {
-    let ok = false;
     try {
       if (flushTimer) {
         clearTimeout(flushTimer);
@@ -148,12 +148,19 @@ export const flush = (): Promise<void> => {
     } catch {
       definirEtat('erreur'); // outbox conservée — retry au prochain déclencheur
     } finally {
-      flushPromise = null;
       // Mutations empilées pendant l'envol (corps sans exception) : partent
       // au tour suivant. En échec, on reste sur les déclencheurs existants.
       if (ok && lireOutbox().length > 0) flushDiffere();
     }
   })();
+  // La remise à null de la fence passe par .finally() sur la promesse — PAS
+  // dans le corps : un corps sans await (outbox vide, session absente) se
+  // termine de façon synchrone, AVANT l'affectation ci-dessus ; un null
+  // interne serait écrasé par l'affectation et la promesse résolue resterait
+  // posée pour toujours — tout flush suivant retomberait dans la fence.
+  void flushPromise.finally(() => {
+    flushPromise = null;
+  });
   return flushPromise;
 };
 
@@ -393,6 +400,10 @@ const installerRealtime = (): void => {
         pullTimer = setTimeout(() => {
           void pull();
         }, 500); // rattrapage : récupérer ce que la coupure a fait manquer
+        // La outbox peut contenir des mutations restées bloquées pendant la
+        // coupure (pas d'event online si le réseau, lui, n'est pas tombé).
+        // flush est fence et auto-correctrice : succès → sync, échec → erreur.
+        void flush();
       } else {
         definirEtat('erreur');
         planifierReconnexion();

@@ -772,6 +772,32 @@ describe('sync: reconnexion', () => {
     expect(etatSync()).toBe('hors-foyer'); // jamais 'erreur'
   });
 
+  it('réouverture du canal : flush de rattrapage de la outbox restée pleine', async () => {
+    // Coupure du canal SEUL (pas d'event online) pendant une mutation.
+    const statuts: Array<((ouvert: boolean) => void) | null> = [];
+    const client = fauxClient();
+    client.abonner = vi.fn((_ev: () => void, st?: (ouvert: boolean) => void) => {
+      statuts.push(st ?? null);
+      return () => {};
+    }) as unknown as SyncClient['abonner'];
+    injecterClient(client);
+    definirSession('token-test', 'foyer-1');
+    initSync({ onEtat: () => {}, onRemote: () => {} });
+    await vi.waitFor(() => expect(etatSync()).toBe('sync'));
+
+    // Canal coupé, puis une mutation s'empile (flush bloquée : canal fermé).
+    statuts[0]?.(false);
+    expect(etatSync()).toBe('erreur');
+    setCheck('2026-S39', 'courses:legumes-carottes', true);
+    expect(lireOutbox().length).toBeGreaterThan(0);
+
+    // Retour du canal : le statut ne doit être vert qu'après la flush.
+    client.echouer('aucun'); // l'upsert de la flush de rattrapage réussit
+    statuts[0]?.(true);
+    await vi.waitFor(() => expect(etatSync()).toBe('sync'));
+    expect(lireOutbox().length).toBe(0); // outbox vidée par le flush de rattrapage
+  });
+
   it('réouverture du canal : pull de rattrapage des push manqués', async () => {
     const statuts: Array<((ouvert: boolean) => void) | null> = [];
     const client = fauxClient();
