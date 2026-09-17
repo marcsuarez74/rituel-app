@@ -43,22 +43,34 @@ Rayons dérivés : boutons et cartes compactes `12px`, pills `999px` (`.menu-pil
 
 ## Typographie
 
-**Poppins** auto-hébergée (subset latin, 4 graisses 400/500/600/700, `font-display: swap`, précachée par le service worker) — 16 px base, `line-height: 1.5`.
+**Poppins** auto-hébergée (subset latin, 4 graisses 400/500/600/700, `font-display: swap`, précachée par le service worker) — 16 px base (`--fs-body`), interlignage `--lh-body` (1,5).
 
-| Niveau | Taille | Graisse | Usage |
+Échelle tokenisée — **aucune taille brute hors tokens** (garde-fou : `tests/css-tokens.test.ts`) :
+
+| Token | Taille | Graisse usuelle | Usage |
 |---|---|---|---|
-| `h1` | 22 px | 600 | titres de section (24 px/700 dans l'onboarding) |
-| `.week-title` | 20 px | 700 | titre de semaine (bannière) |
-| `h2` | 20 px | 600 | titre de profil |
-| `h3` | 17 px | 600 | titres de cartes (rayons, sections batch, cartes guide) |
-| corps | 16 px | 400 | contenu |
-| `.seg-tab` | 15 px | 600 | libellés des segments (actif = encre, inactif muted) |
+| `--fs-hero` | 26 px | 700 | chiffres héros (budget, poids) |
+| `--fs-h1` | 22 px | 600 | l'unique `h1` (titre de semaine) |
+| `--fs-h2` | 20 px | 600/700 | titres majeurs (bannière, écrans poussés) |
+| `--fs-h3` | 17 px | 600 | titres de cartes |
+| `--fs-body` | 16 px | 400 | corps de texte |
+| `--fs-sec` | 14 px | 600/700 | onglets, libellés secondaires |
+| `--fs-meta` | 12 px | 600/700 | compteurs, hints |
+| `--fs-micro` | 11 px | 500/700 | pastilles, notes |
+| `--fs-chart` | 10 px | 500 | labels SVG du graphique de poids |
+| `--fs-emoji` | 38 px | — | émojis géants de l'onboarding |
+
+Interlignage tokenisé : `--lh-none: 1` (pills une ligne) · `--lh-tight: 1.2` (chiffres) · `--lh-title: 1.25` (titres) · `--lh-body: 1.5` (corps).
 
 ---
 
 ## Espacements
 
-Échelle 4 px : 2 · 4 · 8 · 12 · 16 · 24. Padding standard des cartes : 16 px. Gouttières page : 16 px. Padding bas de page : `calc(28px + safe-area-inset-bottom)` (sur `.main-content`).
+Échelle **2 px tokenisée** — 10 valeurs, le nom du token est sa valeur en px (garde-fou : `tests/css-tokens.test.ts`) :
+
+`--sp-2` · `--sp-4` · `--sp-6` · `--sp-8` · `--sp-10` · `--sp-12` · `--sp-14` · `--sp-16` · `--sp-20` · `--sp-24`
+
+Padding standard des cartes : `var(--sp-16)`. Gouttières page : `var(--sp-16)`. Padding bas de page : `calc(28px + safe-area-inset-bottom)` sur `.main-content` (exempt calc). Exceptions documentées : `margin: -1px` de `.sr-only` (pattern d'accessibilité standard).
 
 ---
 

@@ -30,7 +30,7 @@ Colors:
 
 Typography:
 
-- define hierarchy (h1 22px/600, h2 20px/600, h3 17px/600, body 16px, font Poppins 400/500/600/700)
+- use ONLY the tokens: sizes --fs-hero/--fs-h1/--fs-h2/--fs-h3/--fs-body/--fs-sec/--fs-meta/--fs-micro/--fs-chart (+ --fs-emoji onboarding), line-heights --lh-none/--lh-tight/--lh-title/--lh-body, spacing --sp-2…--sp-24 (échelle 2px) — no raw values, enforced by tests/css-tokens.test.ts
 - maintain consistency
 
 Responsive:
