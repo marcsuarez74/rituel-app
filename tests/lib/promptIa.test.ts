@@ -106,6 +106,16 @@ describe('assemblePromptIa', () => {
     );
     expect(sansEcheance).toContain('Objectif : affiner la silhouette.');
     expect(sansEcheance).not.toContain("d'ici");
+    const sansPoidsCible = assemblePromptIa(
+      { ...profilComplet, poidsObjectif: undefined, objectif: { type: 'perte', echeance: '2027-06-01' } },
+      null,
+    );
+    expect(sansPoidsCible).toContain("Objectif : perdre du poids d'ici juin 2027.");
+    const avecPoidsCible = assemblePromptIa(
+      { ...profilComplet, poidsObjectif: 75, objectif: { type: 'perte' } },
+      null,
+    );
+    expect(avecPoidsCible).toContain('Objectif : perdre du poids vers 75 kg.');
   });
 
   it('laisse les placeholders de chat intacts et remplit les placeholders app', () => {

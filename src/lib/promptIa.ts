@@ -28,7 +28,7 @@ const OBJECTIFS_PROMPT: Record<ObjectifType, string> = {
 };
 
 // 82.4 -> « 82,4 » (nombre à la française, sans unité).
-const fmtKg = (kg: number): string => kg.toLocaleString('fr-FR', { maximumFractionDigits: 1 });
+const formatKg = (kg: number): string => kg.toLocaleString('fr-FR', { maximumFractionDigits: 1 });
 
 // '2027-03-01' -> « mars 2027 » (split, jamais de new Date sur une date seule).
 const formatMoisAnnee = (iso: string): string => {
@@ -37,14 +37,14 @@ const formatMoisAnnee = (iso: string): string => {
 };
 
 const objectifPhrase = (p: UserProfile): string => {
-  const cible = p.poidsObjectif != null ? ` vers ${fmtKg(p.poidsObjectif)} kg` : '';
+  const cible = p.poidsObjectif != null ? ` vers ${formatKg(p.poidsObjectif)} kg` : '';
   const echeance = p.objectif.echeance ? ` d'ici ${formatMoisAnnee(p.objectif.echeance)}` : '';
   return `${OBJECTIFS_PROMPT[p.objectif.type]}${cible}${echeance}`;
 };
 
 const ouverture = (p: UserProfile, dernierPoids: WeightEntry | null): string => {
   const perso = dernierPoids
-    ? `${PRENOMS[p.id]} (${ageDepuis(p.dateNaissance)} ans, ${fmtKg(dernierPoids.kg)} kg — dernière pesée du ${formatDayMonth(dernierPoids.date)}, ${p.taille} cm)`
+    ? `${PRENOMS[p.id]} (${ageDepuis(p.dateNaissance)} ans, ${formatKg(dernierPoids.kg)} kg — dernière pesée du ${formatDayMonth(dernierPoids.date)}, ${p.taille} cm)`
     : `${PRENOMS[p.id]} (${ageDepuis(p.dateNaissance)} ans, ${p.taille} cm)`;
   return `Tu es un nutritionniste. ${perso} te demande de lui réaliser une rotation de menus sur 4 semaines pour installer une routine durable. Objectif : ${objectifPhrase(p)}.`;
 };
@@ -77,5 +77,9 @@ const contexte = (p: UserProfile): string => {
 
 // Assemble le prompt maître : ouverture + contexte perso remplis ; les 3
 // placeholders de chat (semaine de départ, menus, événements) restent à éditer.
+// Forme fonction de replace : le texte utilisateur ne doit jamais être
+// interprété comme patterns ($&, $', $$…).
 export const assemblePromptIa = (profil: UserProfile, dernierPoids: WeightEntry | null): string =>
-  template.replace('{{OUVERTURE}}', ouverture(profil, dernierPoids)).replace('{{CONTEXTE}}', contexte(profil));
+  template
+    .replace('{{OUVERTURE}}', () => ouverture(profil, dernierPoids))
+    .replace('{{CONTEXTE}}', () => contexte(profil));
