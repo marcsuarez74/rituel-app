@@ -37,7 +37,7 @@ let onEtatCb: ((e: SyncEtat) => void) | null = null;
 // Enregistré par initSync : callback UI après application du remote (re-rendu).
 let onRemote: (() => void) | null = null;
 let flushTimer: ReturnType<typeof setTimeout> | null = null;
-// Debounce du realtime : rafale d'événements → un seul pull après 500 ms.
+// Debounce du realtime : rafale d'événements → un seul pull après 150 ms.
 let pullTimer: ReturnType<typeof setTimeout> | null = null;
 // Désabonnement realtime (posé par connecter, retiré par deconnecterFoyer).
 let desabonner: (() => void) | null = null;
@@ -168,7 +168,7 @@ export const flushDiffere = (): void => {
   if (flushTimer) clearTimeout(flushTimer);
   flushTimer = setTimeout(() => {
     void flush();
-  }, 2000);
+  }, 300);
 };
 
 const signature = (table: TableSync, key: Record<string, string>): string =>
@@ -298,14 +298,16 @@ export const appliquerRemote = async (rows: Record<TableSync, RowSync[]>): Promi
 };
 
 export const pull = async (): Promise<void> => {
-  if (!client) return;
+  const c = client;
+  if (!c) return;
   try {
-    const rows = {} as Record<TableSync, RowSync[]>;
-    for (const t of TABLES) {
-      if (!client || !lireSession()) return; // déconnexion pendant les lectures
-      rows[t] = await client.toutLire(t);
-    }
+    // Lectures parallèles : 5 tables en 1 RTT au lieu de 5 RTT séquentiels.
+    const listes = await Promise.all(TABLES.map((t) => c.toutLire(t)));
     if (!client || !lireSession()) return; // déconnexion pendant les lectures → n'écrit rien
+    const rows = {} as Record<TableSync, RowSync[]>;
+    TABLES.forEach((t, i) => {
+      rows[t] = listes[i];
+    });
     if (await appliquerRemote(rows)) onRemote?.();
     definirEtat('sync');
   } catch {
@@ -358,11 +360,16 @@ const pousserTout = (): void => {
 // outbox), puis le remote est fusionné avec la règle outbox-prime (les clés
 // locales gagnent), puis flush envoie l'union. Pas de branche vide/non-vide.
 const postConnexion = async (): Promise<void> => {
-  if (!client || !lireSession()) return;
+  const c = client;
+  if (!c || !lireSession()) return;
   definirEtat('attente');
   pousserTout();
+  const listes = await Promise.all(TABLES.map((t) => c.toutLire(t)));
+  if (!client || !lireSession()) return; // déconnexion pendant les lectures → n'écrit rien
   const rows = {} as Record<TableSync, RowSync[]>;
-  for (const t of TABLES) rows[t] = await client.toutLire(t);
+  TABLES.forEach((t, i) => {
+    rows[t] = listes[i];
+  });
   if (await appliquerRemote(rows)) onRemote?.();
   await flush();
 };
@@ -388,7 +395,7 @@ const installerRealtime = (): void => {
       if (pullTimer) clearTimeout(pullTimer);
       pullTimer = setTimeout(() => {
         void pull();
-      }, 500);
+      }, 150);
     },
     (ouvert) => {
       // Statut d'une installation supplantée ou app sans session : ignorer —
@@ -399,7 +406,7 @@ const installerRealtime = (): void => {
         if (pullTimer) clearTimeout(pullTimer);
         pullTimer = setTimeout(() => {
           void pull();
-        }, 500); // rattrapage : récupérer ce que la coupure a fait manquer
+        }, 150); // rattrapage : récupérer ce que la coupure a fait manquer
         // La outbox peut contenir des mutations restées bloquées pendant la
         // coupure (pas d'event online si le réseau, lui, n'est pas tombé).
         // flush est fence et auto-correctrice : succès → sync, échec → erreur.

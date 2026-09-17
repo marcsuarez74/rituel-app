@@ -110,7 +110,7 @@ src/lib/sync/
 ```
 
 - **Outbox** : `{ op, table, key, payload? }[]` persistée — `op: 'upsert' | 'delete'` (le delete concerne aujourd'hui la seule suppression d'une dépense réelle) ; entrée créée *après* chaque mutation locale réussie (weeks/checks/weights/depenses/profiles), dédoublonnée par clé (la plus récente remplace), retirée après flush confirmé.
-- **Déclencheurs de sync** : ouverture d'app, retour `online`, mutation locale (flush différée ~2 s, debounce), événement realtime (pull ciblé).
+- **Déclencheurs de sync** : ouverture d'app, retour `online`, mutation locale (flush différée ~300 ms, debounce), événement realtime (pull ciblé).
 - **Merge** (règle § 1.4) : à la réception d'un changement remote, l'appliquer au localStorage **sauf** si une entrée d'outbox pende sur la même clé ; à la flush, upsert écrase le remote.
 - **Première connexion** : si le foyer serveur est **vide** → push complet de l'état local (le premier appareil connecté alimente le foyer) ; si le foyer contient **déjà des données** → pull d'abord (les entrées d'outbox locales flushent ensuite, la règle outbox-prime tranche). Ainsi un second appareil qui se connecte reçoit l'état existant sans l'écraser.
 - **Notif App** : `subscribe(cb)` — App recharge ses états (weeks, checks…) quand un changement remote est appliqué (pattern props/useState existant, pas de contexte).
