@@ -11,6 +11,11 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 - Synchronisation optionnelle entre les 2 téléphones (Supabase) : semaines, coches, pesées, dépenses et profils ; file d'attente hors ligne, realtime, code de foyer, effacement du foyer.
 - « Copier le prompt IA » au Profil : un geste copie le prompt complet de génération de cycle — contexte personnel (prénom, âge, dernière pesée, taille, objectif, régime, compléments, courses/budget, personnes à table, préférences) + squelette du format .md et règles dures inline. Remplace le bloc « Paramètres » à recoller à la main.
 
+### Corrigé
+
+- Le point de synchronisation de la bannière n'apparaît que si un foyer est appairé (plus de point « non connecté » en permanence) ; après une déconnexion volontaire, le bloc Profil propose de nouveau la connexion sans recharger la page
+- Statut de sync vivant : échec de connexion au démarrage réparé par un appui sur le point ou au retour du réseau (plus besoin de recharger), coupure du canal websocket détectée et reconnexion automatique (~5 s), rattrapage des données manquées à la réouverture
+
 ## [1.2.0] - 2026-09-16
 
 ### Modifié

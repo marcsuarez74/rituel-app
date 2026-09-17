@@ -74,7 +74,8 @@ npm run build
 Les deux vars sont **publiques par design** (clé anon) — aucun secret dans le
 front. Les téléphones se connectent ensuite :
 
-- **Profil** → bloc **Synchronisation** (visible dès que la sync est compilée)
+- **Profil** → bloc **Synchronisation** (visible dès que la sync est compilée ;
+  sur un appareil non appairé, aucun point n'est affiché dans la bannière)
   → saisir le code de foyer → « Se connecter au foyer » ;
 - l'**onboarding** propose l'étape 6 optionnelle « Synchroniser les
   téléphones » aux nouveaux profils (« Plus tard » possible).
@@ -83,13 +84,17 @@ front. Les téléphones se connectent ensuite :
 
 1. Téléphone A : connexion au code → la pastille de la bannière passe à
    « Synchronisé » (sans coche ni émoji — libellé au survol/lecteur d'écran ;
-   un appui dessus force une re-sync). Le bloc Profil → Synchronisation
-   affiche « Synchronisé. »
+   un appui dessus force une re-sync, et recrée la connexion si elle a échoué
+   au démarrage). Le bloc Profil → Synchronisation affiche « Synchronisé. »
 2. Téléphone B : connexion au code → la fusion union lui apporte les données
    du foyer (et pousse les siennes).
 3. Cocher un item de courses sur A → apparaît coché sur B (~1 s, realtime).
 4. Mode avion sur B → l'app continue hors ligne (les mutations s'empilent dans
    l'outbox locale) ; au retour du réseau, la file est vidée.
+5. Indisponibilité momentanée de Supabase à l'ouverture → le point passe en
+   erreur ; un appui dessus (ou le retour du réseau) reconnecte sans
+   recharger la page. Coupure du canal en plein usage → erreur puis
+   reconnexion automatique en ~5 s, avec rattrapage des données manquées.
 
 ## Comment ça marche (résumé)
 
