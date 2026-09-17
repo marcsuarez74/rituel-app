@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { MAGASINS_PRESETS, OBJECTIF_TYPES, PRENOMS, REGIMES, normaliseComplement } from '../lib/model';
 import type { ObjectifType, Regime, UserProfile } from '../lib/model';
-import { formatEuro, parseEuro } from '../lib/prix';
+import { parseEuro } from '../lib/prix';
 import { ageDepuis, todayISO } from '../lib/dates';
-import { saveProfile } from '../lib/storage';
+import { getWeights, saveProfile } from '../lib/storage';
+import { assemblePromptIa } from '../lib/promptIa';
 import {
   connecterFoyer,
   deconnecterFoyer,
@@ -24,27 +25,6 @@ const ETAT_SYNC: Record<Exclude<SyncEtat, 'off'>, string> = {
   attente: 'Synchronisation : en attente.',
   sync: 'Synchronisé.',
   erreur: 'Synchronisation : erreur.',
-};
-
-// Bloc « Paramètres » recopié dans le prompt de génération de cycle.
-// Une ligne par donnée présente ; régime omis si aucun ; null si rien.
-// Le régime seul ne justifie pas le bloc : au moins un champ maison requis.
-const paramsIaTexte = (p: UserProfile): string | null => {
-  const lignes: string[] = [];
-  if (p.magasin) lignes.push(`- Magasin : ${p.magasin}`);
-  if (p.budgetMax != null) lignes.push(`- Budget courses / semaine : ${formatEuro(p.budgetMax)}`);
-  if (p.personnes != null || p.repasJour != null) {
-    const parties: string[] = [];
-    if (p.personnes != null) parties.push(`${p.personnes}`);
-    if (p.repasJour != null) parties.push(`${p.repasJour} repas/jour`);
-    lignes.push(`- Personnes à table : ${parties.join(' · ')}`);
-  }
-  if (p.preferences && p.preferences.length > 0) {
-    lignes.push(`- Préférences : ${p.preferences.map((x) => x.toLowerCase()).join(', ')}`);
-  }
-  if (lignes.length === 0) return null;
-  if (p.regime !== 'aucun') lignes.push(`- Régime : ${p.regime}`);
-  return lignes.join('\n');
 };
 
 export function ProfilScreen({
@@ -189,9 +169,8 @@ export function ProfilScreen({
     setNouvellePreference('');
   };
 
-  const copierParametres = async () => {
-    const texte = paramsIaTexte(profile);
-    if (!texte) return;
+  const copierPrompt = async () => {
+    const texte = assemblePromptIa(profile, getWeights(profile.id).at(-1) ?? null);
     try {
       await navigator.clipboard.writeText(texte);
     } catch {
@@ -561,20 +540,18 @@ export function ProfilScreen({
 
       <section className="profile-section">
         <h3>Génération IA</h3>
-        {paramsIaTexte(profile) !== null && (
-          <>
-            <p className="onb-hint">
-              Ces réglages complètent les « Paramètres » du prompt de génération de cycle — recopie-les d'un geste.
-            </p>
-            <button type="button" className="profil-ghost" onClick={copierParametres}>
-              Copier les paramètres IA
-            </button>
-            {copie && (
-              <p className="muted" role="status">
-                Paramètres copiés ✓ — colle-les dans le prompt.
-              </p>
-            )}
-          </>
+        <p className="onb-hint">
+          Copie ce prompt dans un chat IA (Claude, ChatGPT…), attache tes fichiers HTML
+          du carnet, complète les 3 champs {'{{...}}'} et envoie : tu récupères 4 fichiers
+          .md prêts à importer.
+        </p>
+        <button type="button" className="profil-ghost" onClick={copierPrompt}>
+          Copier le prompt IA
+        </button>
+        {copie && (
+          <p className="muted" role="status">
+            Prompt copié — colle-le dans le chat.
+          </p>
         )}
       </section>
 

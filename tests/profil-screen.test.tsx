@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import type { Mock } from 'vitest';
+import { vi, type Mock } from 'vitest';
 import App from '../src/App';
 import { ProfilScreen } from '../src/components/ProfilScreen';
 import type { UserProfile } from '../src/lib/model';
@@ -416,60 +416,52 @@ describe('ProfilScreen — Maison & courses', () => {
 });
 
 describe('ProfilScreen — Génération IA', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
   afterEach(() => {
     Reflect.deleteProperty(navigator, 'clipboard');
+    vi.useRealTimers();
   });
 
-  it('est masqué quand aucune donnée maison n est renseignée', () => {
+  it('est toujours visible (le contexte perso existe pour tout profil)', () => {
     render(
       <ProfilScreen profile={profileMarc} onBack={() => {}} onChangeProfile={() => {}} onImported={() => {}} />,
     );
 
-    expect(screen.queryByRole('button', { name: /Copier les paramètres IA/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Copier le prompt IA/ })).toBeInTheDocument();
   });
 
-  it('est masqué si le régime seul est renseigné (aucun champ maison)', () => {
-    // Spec §4 : le régime seul ne justifie pas le bloc.
-    render(
-      <ProfilScreen
-        profile={{ ...profileMarc, regime: 'keto' }}
-        onBack={() => {}}
-        onChangeProfile={() => {}}
-        onImported={() => {}}
-      />,
-    );
-
-    expect(screen.queryByRole('button', { name: /Copier les paramètres IA/ })).not.toBeInTheDocument();
-  });
-
-  it('copie le bloc paramètres avec confirmation', async () => {
+  it('copie le prompt complet avec confirmation', async () => {
+    vi.setSystemTime(new Date('2026-09-17T10:00:00'));
     const user = userEvent.setup();
     // user-event réinstalle le clipboard natif au setup() : le mock se pose APRÈS.
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    addWeight('marc', '2026-09-14', 82.4);
+    addWeight('marc', '2026-09-07', 84);
     render(
       <ProfilScreen
-        profile={{ ...profileMarc, magasin: 'Lidl', budgetMax: 40, personnes: 4, repasJour: 3, regime: 'keto' }}
+        profile={{ ...profileMarc, magasin: 'Lidl', budgetMax: 40, regime: 'keto', complements: ['Créatine'] }}
         onBack={() => {}}
         onChangeProfile={() => {}}
         onImported={() => {}}
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: /Copier les paramètres IA/ }));
+    await user.click(screen.getByRole('button', { name: /Copier le prompt IA/ }));
+    const texte = writeText.mock.calls[0][0] as string;
+    // at(-1) = la DERNIÈRE pesée (le storage est trié ascendant) — pas la plus ancienne.
+    expect(texte).toContain('Tu es un nutritionniste. Marc (41 ans, 82,4 kg — dernière pesée du 14/09, 178 cm)');
+    expect(texte).not.toContain('84 kg');
     // formatEuro insère une espace insécable (U+00A0) avant € — cf. lib/prix.test.ts.
-    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
-      [
-        '- Magasin : Lidl',
-        '- Budget courses / semaine : 40,00\u00a0€',
-        '- Personnes à table : 4 · 3 repas/jour',
-        '- Régime : keto',
-      ].join('\n'),
-    );
-    expect(screen.getByText(/Paramètres copiés/)).toBeInTheDocument();
+    expect(texte).toContain('- Courses : Lidl, budget 40,00\u00a0€/semaine');
+    expect(texte).toContain('{{SEMAINE_DEPART}}');
+    expect(texte).toContain('## Règles dures');
+    expect(screen.getByText(/Prompt copié/)).toBeInTheDocument();
   });
 
-  it('efface la confirmation dès qu un champ maison change (paramètres périmés)', async () => {
+  it('efface la confirmation dès qu un champ maison change (prompt périmé)', async () => {
     const user = userEvent.setup();
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
@@ -482,13 +474,13 @@ describe('ProfilScreen — Génération IA', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: /Copier les paramètres IA/ }));
-    expect(screen.getByText(/Paramètres copiés/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Copier le prompt IA/ }));
+    expect(screen.getByText(/Prompt copié/)).toBeInTheDocument();
 
     await user.clear(screen.getByLabelText('Magasin habituel'));
     await user.type(screen.getByLabelText('Magasin habituel'), 'Intermarché');
 
-    expect(screen.queryByText(/Paramètres copiés/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Prompt copié/)).not.toBeInTheDocument();
   });
 });
 

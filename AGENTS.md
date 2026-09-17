@@ -7,7 +7,7 @@ Guide pour les agents IA travaillant sur ce repo. Règles courtes, KISS : si une
 **Rituel** — PWA React (thème clair « Herbes ») de suivi cuisine/diet/sport pour Marc & Mélanie. 100 % front + backend optionnel de sync (Supabase — voir `docs/backend.md`) ; sans configuration, l'app reste strictement locale :
 
 - **UX personnalisée** : au premier lancement, un onboarding en **5 étapes** (profil, infos avec date de naissance, objectif 4 types + échéance, compléments & régime, maison & courses) — clé `sportapp:profile` ; une **migration préremplie** relance l'onboarding quand un profil de l'ancienne forme est détecté. L'app utilise un **accent unique** (basilic #3e7a46 + citron #f2dc7b, palette Herbes) — plus de teinte par profil — et n'affiche que « ce qui me concerne » + la cuisine
-- L'app affiche **2 onglets en nav segmented** sous la bannière : 🛒 Cuisine (Courses / Menu / Batch, partagé — carte budget courses, panneau dépenses réelles, fiches recettes dépliables, timeline rituel, encadré keto) · 🎯 Mon suivi (cibles/séances/rappels/pesées du profil actif) ; écran **Profil** (infos, maison & courses, changer de profil, « Copier les paramètres IA ») via l'icône en haut à droite
+- L'app affiche **2 onglets en nav segmented** sous la bannière : 🛒 Cuisine (Courses / Menu / Batch, partagé — carte budget courses, panneau dépenses réelles, fiches recettes dépliables, timeline rituel, encadré keto) · 🎯 Mon suivi (cibles/séances/rappels/pesées du profil actif) ; écran **Profil** (infos, maison & courses, changer de profil, « Copier le prompt IA ») via l'icône en haut à droite
 - Le contenu : une **semaine d'exemple auto-chargée** au premier lancement (fallback en mémoire, l'app est donc toujours utilisable). L'import .md est **retiré de l'UI** pour l'instant — il reviendra avec une convention « template » ; le parser `parse.ts` reste la référence du format
 - Coches + pesées persistées en **localStorage** (aucune donnée ne quitte le téléphone)
 - Déployée en PWA offline-first sur GitHub Pages : https://marcsuarez74.github.io/rituel-app/
@@ -48,7 +48,7 @@ src/lib/          # cœur logique, zéro React : model.ts (types), parse.ts (.md
                   # text.ts (capitalize mutualisé)
 src/lib/sync/     # sync optionnelle Supabase : config/session/outbox/client/engine/messages
 src/components/   # composants UI ; cuisine/ pour l'onglet Cuisine ; onboarding/ pour le premier lancement
-src/assets/       # semaine-exemple.md (référence du format) + rayons/ (miniatures jpg des rayons)
+src/assets/       # semaine-exemple.md (référence du format) + prompt-cycle-template.md (prompt maître IA, assemblé par src/lib/promptIa.ts) + rayons/ (miniatures jpg des rayons)
 tests/            # miroir de src/, vitest + Testing Library, environnement happy-dom
                   # parse.test.ts, storage.test.ts, weeks.test.ts, lib/rayons.test.ts,
 tests/e2e/        # specs Playwright (navigateur réel, config playwright.config.ts, projets mobile 375 + 320)
@@ -56,7 +56,7 @@ supabase/         # SQL + edge function + script foyer, hors tsconfig
 CHANGELOG.md      # historique des versions (Keep a Changelog) ; source de vérité = package.json `version`
 .github/workflows/deploy.yml   # déploie sur GitHub Pages à chaque push sur main
 .github/workflows/release.yml  # crée la GitHub Release à chaque push de tag v* (notes = section CHANGELOG)
-docs/templates/   # convention template semaine + prompt IA de génération d'un cycle
+docs/templates/   # template-semaine.md (référence humaine du format .md) ; le prompt maître IA vit dans src/assets/
 docs/ameliorations.md # axes d'amélioration futurs (mémoire d'idées, pas une spec)
 docs/superpowers/ # spec design + plan d'implémentation (contexte historique)
 ai/               # configs d'agents IA (cf. section « Dossier ai/ »)
@@ -122,7 +122,8 @@ Toute lecture passe par `safeParse` + garde de forme : une donnée corrompue se 
 ## Git
 
 - Commits courts en français, préfixe conventionnel : `feat:`, `fix:`, `chore:`, `test:`, `docs:`, `ci:`
-- Un commit = un changement cohérent. Pousser sur `main` déclenche le déploiement — ne jamais pousser un état qui ne build pas.
+- **Tout changement passe par une Pull Request**, même petit : branche dédiée → push → `gh pr create` → CI PR (`.github/workflows/ci.yml`) verte → merge. Ne jamais pousser directement sur `main`.
+- Un commit = un changement cohérent. Le merge sur `main` déclenche le déploiement — ne jamais merger un état qui ne build pas.
 - Pas de rebase/force-push sur `main`.
 - Release : bump **volontaire** via `npm version` (section CHANGELOG renommée avant le bump), tag `v*` poussé après merge — pas de tag sans entrée CHANGELOG (`release.yml` échoue sinon).
 

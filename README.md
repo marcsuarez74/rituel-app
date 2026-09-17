@@ -123,9 +123,11 @@ Exemple canonique complet : [`src/assets/semaine-exemple.md`](src/assets/semaine
 Le contenu vient d'une rotation de 4 menus avec batch commun. Une session de
 prompt IA génère le cycle complet (4 fichiers .md, un par semaine) :
 
-1. Ouvrir `docs/templates/prompt-semaine-ia.md`, remplir les paramètres
-   (semaine de départ, menus, événements) et le coller dans un chat IA avec
-   les 4 documents du dossier `diet/` en pièces jointes
+1. Dans l'app : Profil → « Copier le prompt IA » — le prompt embarque ton
+   contexte (objectif, régime, compléments, courses/budget…) et le format
+   complet ; le coller dans un chat IA avec les 4 documents du dossier
+   `diet/` en pièces jointes, compléter les 3 champs {{...}} (semaine de
+   départ, menus, événements) et envoyer
 2. Sauvegarder les 4 fichiers générés dans `diet/rotations/`
 3. Dans l'app : Profil → Semaine → « Importer un cycle (.md) » → sélectionner
    les 4 fichiers d'un coup
