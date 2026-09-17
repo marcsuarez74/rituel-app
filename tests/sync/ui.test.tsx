@@ -73,9 +73,26 @@ describe('sync UI: app', () => {
 });
 
 describe('sync UI: bannière', () => {
+  const metaFix = { semaine: '2026-S39', menu: 'A', du: '2026-09-21', au: '2026-09-27' };
+
   it('pas de point sans sync (off / prop absente)', () => {
     render(<WeekBanner meta={{ semaine: '2026-S39', menu: 'A', du: '2026-09-21', au: '2026-09-27' }} />);
     expect(screen.queryByRole('button', { name: /synchroni/i })).toBeNull();
+  });
+
+  it('hors-foyer : aucun point bannière', () => {
+    render(<WeekBanner meta={metaFix} syncEtat="hors-foyer" />);
+    expect(screen.queryByRole('button', { name: /Synchronisation/ })).not.toBeInTheDocument();
+    // Garde sur tout bouton : sans le fix, le point existe mais son aria-label
+    // est undefined — il ne matcherait pas /Synchronisation/.
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+
+  it('attente et erreur : le point reste visible (régression)', () => {
+    const { rerender } = render(<WeekBanner meta={metaFix} syncEtat="attente" />);
+    expect(screen.getByRole('button', { name: /Synchronisation/ })).toBeInTheDocument();
+    rerender(<WeekBanner meta={metaFix} syncEtat="erreur" />);
+    expect(screen.getByRole('button', { name: /Synchronisation/ })).toBeInTheDocument();
   });
 
   it('point visible en erreur, tap déclenche re-sync', async () => {
@@ -103,7 +120,7 @@ describe('sync UI: bloc profil', () => {
     regime: 'aucun',
   });
 
-  const renderProfil = (syncEtat: 'attente' | 'sync' = 'attente') =>
+  const renderProfil = (syncEtat: 'attente' | 'sync' | 'hors-foyer' = 'attente') =>
     render(
       <ProfilScreen
         profile={profil()}
@@ -126,6 +143,12 @@ describe('sync UI: bloc profil', () => {
     await userEvent.setup().type(screen.getByLabelText('Code de foyer'), 'rituel-2026');
     await userEvent.setup().click(screen.getByRole('button', { name: 'Se connecter au foyer' }));
     expect(connecterFoyer).toHaveBeenCalledWith('rituel-2026');
+  });
+
+  it('hors-foyer : le formulaire de connexion est proposé', () => {
+    renderProfil('hors-foyer');
+    expect(screen.getByLabelText('Code de foyer')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Se connecter au foyer/ })).toBeInTheDocument();
   });
 
   it('code refusé : message visible', async () => {

@@ -29,7 +29,7 @@ import {
 } from './outbox';
 import { demanderSession, definirSession, effacerSession, lireSession } from './session';
 
-export type SyncEtat = 'off' | 'attente' | 'sync' | 'erreur';
+export type SyncEtat = 'off' | 'hors-foyer' | 'attente' | 'sync' | 'erreur';
 
 let client: SyncClient | null = null;
 let etat: SyncEtat = 'off';
@@ -380,12 +380,14 @@ export const deconnecterFoyer = (): void => {
   pullTimer = null;
   viderOutbox();
   effacerSession();
-  definirEtat('off');
+  // hors-foyer (pas off) : le bloc Profil reste affiché avec le formulaire
+  // de reconnexion — plus besoin de recharger la page pour se reconnecter.
+  definirEtat('hors-foyer');
 };
 
 // Purge du foyer : le serveur est nettoyé AVANT le local — si le réseau
 // échoue, session + outbox restent en place (retry possible) et l'état ne
-// repasse 'off' qu'après une purge confirmée.
+// repasse 'hors-foyer' qu'après une purge confirmée.
 export const purgerFoyer = async (): Promise<void> => {
   if (!client) throw new Error('pas-connecte');
   definirEtat('attente'); // purge engagée : plus 'off', même en cas d'échec
@@ -415,7 +417,7 @@ export const initSync = (
   window.addEventListener('online', surEnLigne);
   const demarrer = async (): Promise<void> => {
     if (!lireSession()) {
-      definirEtat('attente'); // sync prête, en attente d'appairage foyer
+      definirEtat('hors-foyer'); // sync prête, foyer non appairé : pas de point
       return;
     }
     try {

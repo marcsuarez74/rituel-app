@@ -509,7 +509,7 @@ describe('sync: connexion foyer', () => {
     deconnecterFoyer();
     expect(lireSession()).toBeNull();
     expect(lireOutbox()).toEqual([]);
-    expect(etatSync()).toBe('off');
+    expect(etatSync()).toBe('hors-foyer');
   });
 
   it('lireSessionPub expose la session (usage UI)', () => {
@@ -542,7 +542,7 @@ describe('sync: purge + init', () => {
     expect(client.purgees).toBe(true);
     expect(lireSession()).toBeNull();
     expect(lireOutbox()).toEqual([]);
-    expect(etatSync()).toBe('off');
+    expect(etatSync()).toBe('hors-foyer');
   });
 
   it('purge en échec → session et outbox locales conservées', async () => {
@@ -568,9 +568,9 @@ describe('sync: purge + init', () => {
     expect(client.lectures).toEqual([]); // aucun toutLire
   });
 
-  it('initSync sans session → etat attente, aucun réseau', () => {
+  it('initSync sans session → etat hors-foyer, aucun réseau', () => {
     initSync({});
-    expect(etatSync()).toBe('attente');
+    expect(etatSync()).toBe('hors-foyer');
     expect(client.lectures).toEqual([]);
   });
 
@@ -617,6 +617,34 @@ describe('sync: purge + init', () => {
     resoudreLecture();
     await p;
     expect(getChecks('2026-S39')['b1']).toBe(false); // le remote n'a PAS été appliqué
-    expect(etatSync()).toBe('off');
+    expect(etatSync()).toBe('hors-foyer');
+  });
+});
+
+describe('sync: états de présence', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    viderOutbox();
+    effacerSession();
+    reinitialiser();
+    injecterClient(fauxClient());
+  });
+  afterEach(() => {
+    reinitialiser();
+  });
+
+  it('sync active, sans session : hors-foyer (pas de point bannière)', () => {
+    initSync({ onEtat: () => {}, onRemote: () => {} });
+    expect(etatSync()).toBe('hors-foyer');
+  });
+
+  it('déconnexion volontaire : hors-foyer (reconnexion possible au profil)', () => {
+    // Session posée APRÈS initSync : sans session au démarrage, aucune
+    // connexion ne s'amorce — l'assertion porte sur l'état final uniquement.
+    initSync({ onEtat: () => {}, onRemote: () => {} });
+    definirSession('token-test', 'foyer-1');
+    deconnecterFoyer();
+    expect(etatSync()).toBe('hors-foyer');
+    expect(lireSessionPub()).toBeNull();
   });
 });
