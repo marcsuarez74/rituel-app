@@ -124,7 +124,7 @@ Transitions nouvelles ou modifiées :
 
 ## Checklist de test réel à deux téléphones (post-merge, hors code)
 
-1. A coche un dîner → B le voit apparaître (< ~1 s après debounce 500 ms).
+1. A coche un dîner → B le voit apparaître (< ~1 s après debounce 150 ms).
 2. B ajoute une pesée → la carte Objectif de A se met à jour.
 3. A passe en avion, coche, revient réseau → la coche part (flush) et l'état
    repasse vert.
