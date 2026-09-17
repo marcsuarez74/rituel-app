@@ -409,7 +409,7 @@ Dans `## [Non publié]`, insérer avant la sous-section `### Corrigé` (si absen
 - [ ] **Step 6: Gates complètes**
 
 Run: `npm test && npm run typecheck && npm run lint && npm run build && ls dist/sw.js dist/manifest.webmanifest`
-Expected: 489 tests, tout vert, `dist/sw.js` et `dist/manifest.webmanifest` listés.
+Expected: 490 tests, tout vert, `dist/sw.js` et `dist/manifest.webmanifest` listés.
 
 Run: `npm run e2e`
 Expected: 48/48 passés, zéro débordement horizontal sur 320/375.
@@ -440,7 +440,7 @@ gh pr create --title "Design tokens : typo, espacement, interlignage" --body "##
 
 ## Gates
 
-- 489/489 tests · typecheck · lint · build (sw.js + manifest) · e2e 48/48
+- 490/490 tests · typecheck · lint · build (sw.js + manifest) · e2e 48/48
 
 Spec : \`docs/superpowers/specs/2026-09-17-design-tokens-typo-espacement-design.md\`"
 ```

@@ -66,6 +66,8 @@ Politique 8–9.5 px : ces tailles sont les labels du graphique SVG (`WeightChar
 
 Exemptions documentées (resteront en littéral ou exemptées du balayage) : `margin: -1px` de `.sr-only` (pattern d'accessibilité standard), les expressions `calc()`/`max()` de safe-areas iOS ; la négation d'un token s'écrit `calc(var(--sp-N) * -1)`.
 
+Balayage complémentaire (post-revue Task 2) : les 16 shorthands `font:` portant une taille (`font: 600 12.5px Poppins, sans-serif`) sont tokenisés selon les mêmes tables (12/12.5/13 → `--fs-meta`, 13.5/14/15 → `--fs-sec`) ; les 6 `font: inherit` restent tels quels. Le garde-fou les couvre (4ᵉ test) et son scan d'espacement retire les sous-chaînes `calc(...)` avant d'extraire les px — un px brut collé à un token dans un shorthand mixte (`padding: var(--sp-8) 10px`) est donc attrapé aussi.
+
 **Zéro changement dans les composants** — pur CSS. Le rendu ne bouge que des ±1 px assumés (~60 déclarations d'espacement, ≈50 de typo, ~12 d'interlignage).
 
 ## Le garde-fou
