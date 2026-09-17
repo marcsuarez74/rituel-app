@@ -60,11 +60,11 @@ Hors périmètre : graisses (400/500/600/700 restent des littéraux — déjà c
 
 Balayage **mécanique piloté par la table de correspondance** ci-dessus, pas composant par composant. Chaque occurrence est remplacée par son token ; les shorthands multi-valeurs se tokenisent par valeur (`padding: 10px 16px` → `padding: var(--sp-10) var(--sp-16)`).
 
-Correspondances d'espacement (impaires → voisine, selon l'échelle validée) : 1 → exception au cas par cas, 3 → 4, 5 → 6, 7 → 8, 9 → 10, 11 → 12, 13 → 12, 18 → 20, 22 → 24.
+Correspondances d'espacement (impaires → voisine, selon l'échelle validée) : 1 → 2 (exception littérale : `margin: -1px` de `.sr-only`), 3 → 4, 5 → 6, 7 → 8, 9 → 10, 11 → 12, 13 → 12, 15 → 14 (occurrence tardive `padding: 0 15px` de `.addrow button`, absente du premier audit), 18 → 20, 22 → 24.
 
 Politique 8–9.5 px : ces tailles sont les labels du graphique SVG (`WeightChart`) → `--fs-chart`. Si une occurrence s'avère être du texte hors graphique lors du balayage, elle monte à `--fs-micro` (11 px) et la doc l'indique.
 
-Exemptions documentées (resteront en littéral, commentées) : 2 marges négatives, 4 `calc()` (safe-areas).
+Exemptions documentées (resteront en littéral ou exemptées du balayage) : `margin: -1px` de `.sr-only` (pattern d'accessibilité standard), les expressions `calc()`/`max()` de safe-areas iOS ; la négation d'un token s'écrit `calc(var(--sp-N) * -1)`.
 
 **Zéro changement dans les composants** — pur CSS. Le rendu ne bouge que des ±1 px assumés (~60 déclarations d'espacement, ≈50 de typo, ~12 d'interlignage).
 

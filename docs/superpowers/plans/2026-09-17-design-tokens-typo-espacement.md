@@ -253,7 +253,7 @@ Créer `/tmp/sweep-spacing.mjs` :
 ```js
 import { readFileSync, writeFileSync } from 'node:fs';
 
-// Échelle 2 px validée ; SNAP = impaires → voisine (1→2, 3→4, 5→6, 7→8, 9→10,
+// Échelle 2 px validée ; SNAP = impaires → voisine (1→2, 3→4, 5→6, 7→8, 9→10, 15→14,
 // 11→12, 13→12, 18→20, 22→24). Les négatives deviennent calc(var(--X) * -1).
 const SP = {
   2: '--sp-2', 4: '--sp-4', 6: '--sp-6', 8: '--sp-8', 10: '--sp-10',
