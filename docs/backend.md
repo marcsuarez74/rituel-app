@@ -100,8 +100,8 @@ front. Les téléphones se connectent ensuite :
 
 - **Outbox locale** (`sportapp:sync:outbox`) : toute mutation passe par
   `storage.ts` → `empilerMutation` (no-op sans env/token). Flush différée de
-  2 s après mutation, dédup « dernier op gagne » par clé.
-- **Pull/merge** : le realtime (debounce 500 ms) déclenche un pull ; le merge
+  ~300 ms après mutation, dédup « dernier op gagne » par clé.
+- **Pull/merge** : le realtime (debounce 150 ms) déclenche un pull ; le merge
   applique le remote sauf sur les clés en attente dans l'outbox (l'outbox
   locale prime). Payload distant invalide → jamais persisté.
 - **Connexion** : fusion union — l'état local part d'abord, puis le remote est

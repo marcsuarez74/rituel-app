@@ -14,6 +14,7 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 ### Changé
 
 - Échelles de design tokenisées dans `src/index.css` : typographie (10 tokens `--fs-*`), espacement 2 px (10 tokens `--sp-*`), interlignage (4 tokens `--lh-*`) — balayage complet du CSS, y compris le shorthand `font:` (rendu inchangé aux ±1 px près) et garde-fou anti-régression `tests/css-tokens.test.ts`.
+- Latence de sync réduite : une coche apparaît sur l'autre téléphone en < 1 s (flush différée 2 s → 300 ms, lectures des 5 tables en parallèle, debounce realtime 500 → 150 ms).
 
 ### Corrigé
 
