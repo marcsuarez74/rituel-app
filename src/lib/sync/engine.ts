@@ -41,14 +41,20 @@ let flushTimer: ReturnType<typeof setTimeout> | null = null;
 let pullTimer: ReturnType<typeof setTimeout> | null = null;
 // Désabonnement realtime (posé par connecter, retiré par deconnecterFoyer).
 let desabonner: (() => void) | null = null;
+// Reconnexion du canal planifiée après une coupure (une seule en vol).
+let reconnexionTimer: ReturnType<typeof setTimeout> | null = null;
 // Fencing : une seule flush en vol, représentée par sa promesse partagée —
 // les déclencheurs (mutations, realtime, réseau) peuvent se rafaler, les
 // demandes concurrentes reçoivent la même promesse et re-programment un tour.
 let flushPromise: Promise<void> | null = null;
 
-// Retour du réseau : rafale immédiate de ce qui s'est empilé offline.
-// Ref module : reinitialiser doit pouvoir se désabonner.
+// Retour du réseau : si le client n'existe pas (échec au démarrage), on
+// relance la connexion ; sinon on rafale ce qui s'est empilé hors ligne.
 const surEnLigne = (): void => {
+  if (!client && lireSession()) {
+    void connecter().catch(() => definirEtat('erreur'));
+    return;
+  }
   void flush();
 };
 
@@ -76,6 +82,8 @@ export const reinitialiser = (): void => {
   flushTimer = null;
   if (pullTimer) clearTimeout(pullTimer);
   pullTimer = null;
+  if (reconnexionTimer) clearTimeout(reconnexionTimer);
+  reconnexionTimer = null;
   flushPromise = null;
   surEmpile(null);
   inited = false; // reset test : initSync rejouable
@@ -347,19 +355,47 @@ const postConnexion = async (): Promise<void> => {
   await flush();
 };
 
+// Coupure du canal : une seule reconnexion planifiée en vol (5 s), annulée
+// par deconnecterFoyer/reinitialiser. No-op sans client ou sans session.
+const planifierReconnexion = (): void => {
+  if (reconnexionTimer) return;
+  reconnexionTimer = setTimeout(() => {
+    reconnexionTimer = null;
+    if (client && lireSession()) installerRealtime();
+  }, 5000);
+};
+
+// Installe (ou réinstalle) le realtime sur le client courant : événements
+// data (pull debouncé) + statut du canal (coupure → erreur + reconnexion).
+const installerRealtime = (): void => {
+  if (!client) return;
+  desabonner?.();
+  desabonner = client.abonner(
+    () => {
+      if (pullTimer) clearTimeout(pullTimer);
+      pullTimer = setTimeout(() => {
+        void pull();
+      }, 500);
+    },
+    (ouvert) => {
+      if (ouvert) {
+        if (etat !== 'sync') definirEtat('sync');
+      } else {
+        definirEtat('erreur');
+        planifierReconnexion();
+      }
+    },
+  );
+};
+
 // Installe le client + le realtime (idempotent) puis déclenche la
 // post-connexion. Si un client est déjà posé (tests, reconnexion), on ne
 // recrée rien — mais la post-connexion doit avoir lieu.
 const connecter = async (): Promise<void> => {
   if (!client) {
     client = await creerClient();
-    desabonner = client.abonner(() => {
-      if (pullTimer) clearTimeout(pullTimer);
-      pullTimer = setTimeout(() => {
-        void pull();
-      }, 500);
-    });
   }
+  installerRealtime();
   await postConnexion();
 };
 
@@ -385,6 +421,8 @@ export const deconnecterFoyer = (): void => {
   flushTimer = null;
   if (pullTimer) clearTimeout(pullTimer);
   pullTimer = null;
+  if (reconnexionTimer) clearTimeout(reconnexionTimer);
+  reconnexionTimer = null;
   viderOutbox();
   effacerSession();
   // hors-foyer (pas off) : le bloc Profil reste affiché avec le formulaire
@@ -437,10 +475,19 @@ export const initSync = (
   void demarrer();
 };
 
-// Tap sur l'indicateur de la bannière : re-sync manuelle séquentielle
-// (flush puis pull — jamais en parallèle).
+// Tap sur l'indicateur de la bannière. Client absent (échec au démarrage) :
+// reconnecter d'abord — flush/pull sans client ne feraient rien. Sinon :
+// re-sync manuelle séquentielle (flush puis pull — jamais en parallèle).
 export const ressynchroniser = (): void => {
   void (async () => {
+    if (!client && lireSession()) {
+      try {
+        await connecter();
+      } catch {
+        definirEtat('erreur');
+      }
+      return;
+    }
     await flush();
     if (client) await pull();
   })();

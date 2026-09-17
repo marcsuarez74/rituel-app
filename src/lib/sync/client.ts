@@ -9,7 +9,7 @@ export interface SyncClient {
   supprimer: (table: TableSync, clefs: Record<string, string>[]) => Promise<void>;
   toutLire: (table: TableSync) => Promise<RowSync[]>;
   purger: () => Promise<void>;
-  abonner: (onEvenement: () => void) => () => void;
+  abonner: (onEvenement: () => void, onStatut?: (ouvert: boolean) => void) => () => void;
 }
 
 const verifier = (error: { message: string } | null): void => {
@@ -56,7 +56,7 @@ export const creerClient = async (): Promise<SyncClient> => {
         verifier(error);
       }
     },
-    abonner: (onEvenement) => {
+    abonner: (onEvenement, onStatut) => {
       const canal = supabase.channel('sync-foyer');
       for (const t of TABLES) {
         canal.on(
@@ -65,7 +65,14 @@ export const creerClient = async (): Promise<SyncClient> => {
           () => onEvenement(),
         );
       }
-      canal.subscribe();
+      // Statut du canal : une coupure websocket doit être visible (erreur +
+      // reconnexion), sinon l'app croit être à jour sans recevoir les push.
+      canal.subscribe((status) => {
+        if (status === 'SUBSCRIBED') onStatut?.(true);
+        else if (status === 'TIMED_OUT' || status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+          onStatut?.(false);
+        }
+      });
       return () => {
         void supabase.removeChannel(canal);
       };
