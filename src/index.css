@@ -508,7 +508,8 @@ button {
 input[type='date'],
 input[type='number'],
 input[type='text'],
-input[type='search'] {
+input[type='search'],
+input[type='password'] {
   min-height: 48px;
   padding: 10px 12px;
   background: var(--surface-2);
