@@ -5,8 +5,16 @@ import { join } from 'node:path';
 
 // Contrat CSS (spec 2026-09-17-design-tokens-typo-espacement-design.md) :
 // toute taille/espacement/interlignage passe par les tokens de :root.
-// Exceptions d'espacement documentées (voir describe dédié, ajouté en Task 2).
+// Échelle d'espacement : 2 px (le nom du token --sp-N est sa valeur en px).
+// Exceptions d'espacement documentées ci-dessous avec leur raison.
+// Le contrat couvre font-size:/line-height:/padding|margin|gap — un futur
+// shorthand `font:` devrait être ajouté ici s'il entre dans le code.
 const css = readFileSync(join(process.cwd(), 'src', 'index.css'), 'utf8');
+
+// Exceptions documentées, avec raison :
+// - "margin:-1px" (.sr-only) : pattern d'accessibilité standard (clip), pas du rythme.
+// - calc(...) : safe-areas iOS et négation d'un token — exemptées par nature.
+const EXCEPTIONS_SP = ['margin:-1px'];
 
 describe('contrat CSS — tokens de typographie', () => {
   it('chaque font-size utilise un token --fs-*', () => {
@@ -23,16 +31,39 @@ describe('contrat CSS — tokens de typographie', () => {
     expect(brutes, `line-height brutes : ${brutes.join(' | ')}`).toEqual([]);
   });
 
-  it('chaque référence var(--fs-*) / var(--lh-*) est définie dans :root', () => {
+  it('chaque référence var(--fs-*|--lh-*|--sp-*) est définie', () => {
     const definis = new Set(
-      [...css.matchAll(/(--(?:fs|lh)-[\w-]+):/g)].map(([d]) => d.slice(0, -1)),
+      [...css.matchAll(/(--(?:fs|lh|sp)-[\w-]+):/g)].map(([d]) => d.slice(0, -1)),
     );
-    const orphelines = [...css.matchAll(/var\((--(?:fs|lh)-[\w-]+)\)/g)]
+    const orphelines = [...css.matchAll(/var\((--(?:fs|lh|sp)-[\w-]+)\)/g)]
       .map(([, t]) => t)
       .filter((t) => !definis.has(t));
     expect(
       orphelines,
       `tokens référencés non définis : ${orphelines.join(' | ')}`,
     ).toEqual([]);
+  });
+});
+
+describe('contrat CSS — tokens d\'espacement', () => {
+  // Garde anti-régression silencieuse : si le CSS est réorganisé et que le
+  // sélecteur ci-dessous ne matche plus rien, ce test le signale.
+  const decls = [
+    ...css.matchAll(/^(\s*)((?:padding|margin|gap|scroll-padding)[a-z-]*):([^;]+);/gm),
+  ];
+
+  it('le CSS contient des déclarations d\'espacement à auditer', () => {
+    expect(decls.length).toBeGreaterThan(200);
+  });
+
+  it('chaque valeur px est un token --sp-* (ou exception documentée)', () => {
+    const hors = decls
+      .filter(([, , prop, v]) => !EXCEPTIONS_SP.includes(`${prop.trim()}:${v.trim()}`))
+      .filter(([, , , v]) => !v.includes('var(') && !v.includes('calc('))
+      .flatMap(([, , prop, v]) => {
+        const px = [...v.matchAll(/(-?)(\d+(?:\.\d+)?)px/g)].map((m) => Math.abs(parseFloat(m[2])));
+        return px.map((n) => `${prop.trim()}:${v.trim()} [${n}px]`);
+      });
+    expect(hors, `hors échelle : ${hors.join(' | ')}`).toEqual([]);
   });
 });

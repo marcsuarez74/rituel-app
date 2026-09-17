@@ -150,8 +150,8 @@ textarea {
   margin: 0 auto;
   padding-top: calc(16px + env(safe-area-inset-top));
   padding-bottom: calc(28px + env(safe-area-inset-bottom));
-  padding-left: max(16px, env(safe-area-inset-left));
-  padding-right: max(16px, env(safe-area-inset-right));
+  padding-left: max(var(--sp-16), env(safe-area-inset-left));
+  padding-right: max(var(--sp-16), env(safe-area-inset-right));
 }
 
 /* Le swipe horizontal (Cuisine ↔ Suivi) est capturé par les pointer events
@@ -163,7 +163,7 @@ main {
 h1,
 h2,
 h3 {
-  margin: 0 0 8px;
+  margin: 0 0 var(--sp-8);
   line-height: var(--lh-title);
 }
 
@@ -183,7 +183,7 @@ h3 {
 }
 
 p {
-  margin: 0 0 8px;
+  margin: 0 0 var(--sp-8);
 }
 
 .muted {
@@ -199,8 +199,8 @@ p {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 16px;
-  margin-bottom: 12px;
+  padding: var(--sp-16);
+  margin-bottom: var(--sp-12);
 }
 
 .pesee-card {
@@ -215,11 +215,11 @@ p {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--sp-12);
 }
 
 .week-banner p {
-  margin: 2px 0;
+  margin: var(--sp-2) 0;
   font-size: var(--fs-sec);
 }
 
@@ -270,13 +270,13 @@ p {
 .week-title-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-10);
   flex-wrap: wrap;
 }
 
 .menu-pill {
   flex-shrink: 0;
-  padding: 3px 12px;
+  padding: var(--sp-4) var(--sp-12);
   background: var(--accent);
   color: #ffffff;
   border-radius: 999px;
@@ -291,9 +291,9 @@ p {
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  padding: 4px;
-  margin: 14px 0 18px;
+  gap: var(--sp-4);
+  padding: var(--sp-4);
+  margin: var(--sp-14) 0 var(--sp-20);
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -322,7 +322,7 @@ p {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--sp-8);
   min-height: 48px;
   border: 0;
   background: none;
@@ -348,17 +348,17 @@ p {
 
 .cuisine-tabs {
   display: flex;
-  gap: 22px;
+  gap: var(--sp-24);
   border-bottom: 1px solid var(--border);
-  margin-bottom: 16px;
-  padding: 0 2px;
+  margin-bottom: var(--sp-16);
+  padding: 0 var(--sp-2);
 }
 .cuisine-tabs .tab {
   position: relative;
   border: 0;
   background: none;
   min-height: 48px;
-  padding: 0 2px;
+  padding: 0 var(--sp-2);
   font-size: var(--fs-sec);
   font-weight: 600;
   color: var(--muted);
@@ -380,8 +380,8 @@ p {
 .course-group-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: var(--sp-10);
+  margin-bottom: var(--sp-10);
 }
 
 .course-group-header img {
@@ -406,15 +406,15 @@ p {
   border: 1px solid color-mix(in srgb, var(--accent-2) 45%, transparent);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 16px;
-  margin-bottom: 12px;
+  padding: var(--sp-16);
+  margin-bottom: var(--sp-12);
 }
 
 .keto-title {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 0 0 10px;
+  gap: var(--sp-8);
+  margin: 0 0 var(--sp-10);
   font-weight: 700;
   font-size: var(--fs-sec);
   color: var(--text);
@@ -425,14 +425,14 @@ p {
 .batch-banner {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
+  gap: var(--sp-10);
+  padding: var(--sp-12) var(--sp-14);
   border-radius: 14px;
   background: color-mix(in srgb, var(--accent) 9%, var(--surface));
   color: var(--text);
   font-size: var(--fs-meta);
   line-height: var(--lh-body);
-  margin-bottom: 14px;
+  margin-bottom: var(--sp-14);
 }
 .batch-banner b {
   font-weight: 700;
@@ -461,15 +461,15 @@ p {
 .item-rituel {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  margin-left: 6px;
+  gap: var(--sp-4);
+  margin-left: var(--sp-6);
   color: var(--accent);
   font-size: var(--fs-meta);
   font-weight: 600;
 }
 .item-note {
   display: block;
-  margin-top: 2px;
+  margin-top: var(--sp-2);
   font-size: var(--fs-meta);
   color: color-mix(in srgb, var(--muted) 70%, var(--text));
 }
@@ -479,13 +479,13 @@ p {
 .mm {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sp-6);
   margin-left: auto;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
   border-radius: 999px;
-  padding: 6px 12px;
+  padding: var(--sp-6) var(--sp-12);
   min-height: 48px;
   font-size: var(--fs-meta);
   font-weight: 600;
@@ -508,9 +508,9 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--sp-8);
   min-height: 48px;
-  padding: 12px 18px;
+  padding: var(--sp-12) var(--sp-20);
   background: var(--accent);
   color: #ffffff;
   font-weight: 700;
@@ -538,7 +538,7 @@ input[type='text'],
 input[type='search'],
 input[type='password'] {
   min-height: 48px;
-  padding: 10px 12px;
+  padding: var(--sp-10) var(--sp-12);
   background: var(--surface-2);
   color: var(--text);
   font: inherit;
@@ -559,9 +559,9 @@ input[type='checkbox'] {
 .progress {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-8);
   flex-wrap: wrap;
-  margin-bottom: 12px;
+  margin-bottom: var(--sp-12);
   /* Compteur sur --bg : le muted seul descend à 3,99:1 — mix pour passer ≥ 4,5:1. */
   color: color-mix(in srgb, var(--muted) 70%, var(--text));
   font-weight: 700;
@@ -571,7 +571,7 @@ progress {
   display: block;
   width: 100%;
   height: 8px;
-  margin-top: 4px;
+  margin-top: var(--sp-4);
   accent-color: var(--accent);
 }
 
@@ -580,16 +580,16 @@ progress {
 .menu-head {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-10);
   flex-wrap: wrap;
-  margin-bottom: 10px;
+  margin-bottom: var(--sp-10);
 }
 
 .menu-progress {
   display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--sp-6);
   margin: 0;
   /* Compteur sur --bg : le muted seul descend à 3,99:1 — mix pour passer ≥ 4,5:1. */
   color: color-mix(in srgb, var(--muted) 70%, var(--text));
@@ -617,10 +617,10 @@ progress {
 
 .rtabs {
   display: flex;
-  gap: 8px;
+  gap: var(--sp-8);
   overflow-x: auto;
-  padding: 2px 2px 8px;
-  margin-bottom: 8px;
+  padding: var(--sp-2) var(--sp-2) var(--sp-8);
+  margin-bottom: var(--sp-8);
   scrollbar-width: none;
 }
 .rtabs::-webkit-scrollbar {
@@ -630,9 +630,9 @@ progress {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-6);
   min-height: 42px; /* même plancher que les pills .chip */
-  padding: 6px 14px;
+  padding: var(--sp-6) var(--sp-14);
   border: 1.5px solid var(--border);
   border-radius: 999px;
   background: var(--surface);
@@ -664,12 +664,12 @@ progress {
 .onglet-recette {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--sp-14);
 }
 /* L'air demandé entre « Qui mange quoi » / « Portions » / « Préparation ». */
 .onglet-recette .qui,
 .onglet-recette .portions {
-  margin-bottom: 6px;
+  margin-bottom: var(--sp-6);
 }
 .onglet-recette.fait > :not(.cta) {
   opacity: 0.75;
@@ -681,12 +681,12 @@ progress {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 14px;
+  padding: var(--sp-14);
 }
 
 .onglet-prepa h4,
 .onglet-batch h4 {
-  margin: 0 0 8px;
+  margin: 0 0 var(--sp-8);
   font-size: var(--fs-sec);
   font-weight: 600;
 }
@@ -694,15 +694,15 @@ progress {
 .meta-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-10);
   flex-wrap: wrap;
 }
 
 .meta-pill {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
+  gap: var(--sp-6);
+  padding: var(--sp-4) var(--sp-10);
   border-radius: 999px;
   background: var(--surface-2);
   font-size: var(--fs-meta);
@@ -716,22 +716,22 @@ progress {
 .fraicheur {
   display: flex;
   align-items: center;
-  gap: 5px;
-  margin: 8px 0 0;
+  gap: var(--sp-6);
+  margin: var(--sp-8) 0 0;
   font-size: var(--fs-meta);
   color: color-mix(in srgb, var(--muted) 70%, var(--text));
 }
 
 .qui,
 .portions {
-  padding: 11px 13px;
+  padding: var(--sp-12) var(--sp-12);
   border-radius: 12px;
   background: color-mix(in srgb, var(--accent) 7%, var(--surface));
   border: 1px solid color-mix(in srgb, var(--accent) 15%, var(--border));
 }
 .qui-titre,
 .portions-titre {
-  margin: 0 0 7px;
+  margin: 0 0 var(--sp-8);
   font-size: var(--fs-micro);
   font-weight: 700;
   text-transform: uppercase;
@@ -740,7 +740,7 @@ progress {
 }
 .qui p,
 .portions p {
-  margin: 4px 0;
+  margin: var(--sp-4) 0;
   font-size: var(--fs-meta);
   line-height: var(--lh-body);
 }
@@ -748,8 +748,8 @@ progress {
 .bat {
   display: flex;
   align-items: flex-start;
-  gap: 9px;
-  padding: 9px 11px;
+  gap: var(--sp-10);
+  padding: var(--sp-10) var(--sp-12);
   border-radius: 10px;
   background: var(--surface-2);
   font-size: var(--fs-meta);
@@ -760,7 +760,7 @@ progress {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--sp-8);
   width: 100%;
   min-height: 48px;
   border: none;
@@ -784,10 +784,10 @@ progress {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 6px 14px 12px;
+  padding: var(--sp-6) var(--sp-14) var(--sp-12);
 }
 .fhead {
-  margin: 10px 2px 6px;
+  margin: var(--sp-10) var(--sp-2) var(--sp-6);
   font-size: var(--fs-micro);
   font-weight: 700;
   text-transform: uppercase;
@@ -795,14 +795,14 @@ progress {
   color: color-mix(in srgb, var(--muted) 70%, var(--text));
 }
 .box-pair {
-  padding: 10px 2px;
+  padding: var(--sp-10) var(--sp-2);
   border-bottom: 1px dashed var(--border);
 }
 .box-pair:last-child {
   border-bottom: none;
 }
 .box-pair p {
-  margin: 3px 0;
+  margin: var(--sp-4) 0;
   font-size: var(--fs-meta);
   line-height: var(--lh-body);
 }
@@ -818,8 +818,8 @@ progress {
 .lock-note {
   display: flex;
   align-items: center;
-  gap: 5px;
-  margin: 6px 0 0;
+  gap: var(--sp-6);
+  margin: var(--sp-6) 0 0;
   font-size: var(--fs-meta);
   color: color-mix(in srgb, var(--muted) 70%, var(--text));
 }
@@ -827,10 +827,10 @@ progress {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: var(--sp-8);
   width: 100%;
   min-height: 48px;
-  margin-top: 8px;
+  margin-top: var(--sp-8);
   border: none;
   border-radius: 12px;
   background: var(--accent);
@@ -847,8 +847,8 @@ progress {
   font-size: var(--fs-micro);
   font-weight: 700;
   border-radius: 999px;
-  padding: 2px 8px;
-  margin-bottom: 4px;
+  padding: var(--sp-2) var(--sp-8);
+  margin-bottom: var(--sp-4);
 }
 .mtag.tag-marc {
   background: var(--accent);
@@ -876,15 +876,15 @@ progress {
 }
 
 .checklist li + li {
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 
 .checklist label {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--sp-12);
   min-height: 48px;
-  padding: 4px 8px;
+  padding: var(--sp-4) var(--sp-8);
   border-radius: 12px;
   cursor: pointer;
 }
@@ -904,7 +904,7 @@ progress {
   min-width: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-8);
 }
 .seance-rec {
   margin-left: auto;
@@ -918,7 +918,7 @@ progress {
   color: color-mix(in srgb, var(--muted) 70%, var(--text));
   background: var(--surface-2);
   border-radius: 999px;
-  padding: 3px 8px;
+  padding: var(--sp-4) var(--sp-8);
 }
 .checklist-seances label.done .seance-rec {
   text-decoration: none; /* la pastille reste lisible quand la séance est cochée */
@@ -931,16 +931,16 @@ progress {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 16px;
-  margin-bottom: 12px;
+  padding: var(--sp-16);
+  margin-bottom: var(--sp-12);
 }
 
 .batch-section-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: var(--sp-8);
+  margin-bottom: var(--sp-8);
 }
 
 .batch-section-head h3,
@@ -953,7 +953,7 @@ progress {
   position: relative;
   list-style: none;
   margin: 0;
-  padding: 0 0 0 24px;
+  padding: 0 0 0 var(--sp-24);
 }
 
 .rituel-timeline::before {
@@ -969,7 +969,7 @@ progress {
 
 .rituel-etape {
   position: relative;
-  padding: 8px 0;
+  padding: var(--sp-8) 0;
 }
 
 .rituel-etape::before {
@@ -991,13 +991,13 @@ progress {
 .rituel-etape label {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: var(--sp-10);
   min-height: 48px;
   cursor: pointer;
 }
 
 .rituel-etape input {
-  margin-top: 4px;
+  margin-top: var(--sp-4);
   width: 20px;
   height: 20px;
   accent-color: var(--accent);
@@ -1013,7 +1013,7 @@ progress {
   display: flex;
   flex: 1;
   align-items: baseline;
-  gap: 8px;
+  gap: var(--sp-8);
   font-weight: 700;
   font-size: var(--fs-sec);
 }
@@ -1037,14 +1037,14 @@ progress {
   color: var(--muted);
   font-size: var(--fs-sec);
   line-height: var(--lh-body);
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 
 .micro-batch {
   display: flex;
-  gap: 8px;
+  gap: var(--sp-8);
   overflow-x: auto;
-  padding-bottom: 2px;
+  padding-bottom: var(--sp-2);
   scrollbar-width: none;
 }
 
@@ -1058,12 +1058,12 @@ progress {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 12px;
+  padding: var(--sp-12);
 }
 
 .micro-jour-nom {
   display: inline-block;
-  padding: 3px 9px;
+  padding: var(--sp-4) var(--sp-10);
   background: var(--accent-2);
   color: var(--text);
   border-radius: 7px;
@@ -1076,25 +1076,25 @@ progress {
 .micro-jour-quoi {
   font-size: var(--fs-meta);
   line-height: var(--lh-body);
-  margin-top: 8px;
+  margin-top: var(--sp-8);
 }
 
 .micro-jour-detail {
   font-size: var(--fs-micro);
   color: var(--muted);
   line-height: var(--lh-body);
-  margin-top: 5px;
+  margin-top: var(--sp-6);
 }
 
 .reserve-list {
-  margin-top: 4px;
+  margin-top: var(--sp-4);
 }
 
 .reserve-ligne {
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 10px 0;
+  gap: var(--sp-12);
+  padding: var(--sp-10) 0;
   border-top: 1px solid var(--border);
 }
 
@@ -1129,13 +1129,13 @@ progress {
   font-size: var(--fs-micro);
   color: var(--muted);
   line-height: var(--lh-body);
-  margin-top: 1px;
+  margin-top: var(--sp-2);
 }
 
 .micro-dots {
   display: flex;
-  gap: 4px;
-  margin-top: 10px;
+  gap: var(--sp-4);
+  margin-top: var(--sp-10);
 }
 
 .micro-dots i {
@@ -1155,14 +1155,14 @@ progress {
 .rituel-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--sp-4);
   font-size: var(--fs-micro);
   font-weight: 700;
   color: var(--accent);
   background: var(--surface-2);
   border: 1px dashed var(--accent);
   border-radius: 7px;
-  padding: 3px 8px;
+  padding: var(--sp-4) var(--sp-8);
   white-space: nowrap;
 }
 
@@ -1170,22 +1170,22 @@ progress {
   font-size: var(--fs-micro);
   color: var(--muted);
   line-height: var(--lh-body);
-  margin: 6px 0 0;
+  margin: var(--sp-6) 0 0;
 }
 
 .lancer-btn {
   width: 100%;
-  margin-top: 12px;
+  margin-top: var(--sp-12);
 }
 .batch-guide {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 12px;
+  gap: var(--sp-12);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 20px 16px;
+  padding: var(--sp-20) var(--sp-16);
 }
 .guide-etape-num {
   font-size: var(--fs-meta);
@@ -1213,7 +1213,7 @@ progress {
   background: none;
   color: var(--text);
   font-weight: 600;
-  padding: 0 16px;
+  padding: 0 var(--sp-16);
 }
 .guide-done-ic {
   display: inline-flex;
@@ -1236,20 +1236,20 @@ progress {
 .warn-line {
   color: #fbbf24;
   border-left: 3px solid #fbbf24;
-  padding-left: 8px;
+  padding-left: var(--sp-8);
   font-size: var(--fs-sec);
 }
 
 .import {
   display: grid;
-  gap: 8px;
+  gap: var(--sp-8);
   justify-items: start;
 }
 
 /* ---------- Profils ---------- */
 
 .profile-title {
-  margin-bottom: 12px;
+  margin-bottom: var(--sp-12);
 }
 
 .target-list,
@@ -1263,7 +1263,7 @@ progress {
 .target-list li,
 .rappel-list li,
 .weight-list li {
-  padding: 8px 0;
+  padding: var(--sp-8) 0;
   border-bottom: 1px solid var(--border);
 }
 
@@ -1277,8 +1277,8 @@ progress {
 .weight-form {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: var(--sp-8);
+  margin-bottom: var(--sp-12);
 }
 
 .weight-form input[type='number'],
@@ -1288,19 +1288,19 @@ progress {
 }
 
 .weight-chart {
-  margin: 10px 0;
+  margin: var(--sp-10) 0;
 }
 
 .weight-chips {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: var(--sp-8);
 }
 
 .weight-chip {
   background: var(--surface-2);
   border-radius: 8px;
-  padding: 8px;
+  padding: var(--sp-8);
 }
 
 .weight-chip strong {
@@ -1319,7 +1319,7 @@ progress {
 .weight-curve {
   width: 100%;
   height: auto;
-  margin-top: 12px;
+  margin-top: var(--sp-12);
 }
 
 .weight-grid {
@@ -1394,7 +1394,7 @@ progress {
   min-height: 100dvh;
   max-width: 560px;
   margin: 0 auto;
-  padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-left)) max(24px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-right));
+  padding: max(var(--sp-24), env(safe-area-inset-top)) max(var(--sp-20), env(safe-area-inset-left)) max(var(--sp-24), env(safe-area-inset-bottom)) max(var(--sp-20), env(safe-area-inset-right));
   background:
     radial-gradient(120% 90% at 15% 0%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 55%),
     radial-gradient(120% 90% at 85% 100%, color-mix(in srgb, var(--accent-2) 16%, transparent), transparent 55%),
@@ -1402,21 +1402,21 @@ progress {
 }
 
 .onboarding h1 {
-  margin-top: 16px;
+  margin-top: var(--sp-16);
   font-size: var(--fs-h1);
   font-weight: 700;
   line-height: var(--lh-tight);
 }
 
 .onboarding-sub {
-  margin: 4px 0 0;
+  margin: var(--sp-4) 0 0;
   color: var(--muted);
   font-size: var(--fs-sec);
 }
 
 .onboarding-dots {
   display: flex;
-  gap: 6px;
+  gap: var(--sp-6);
 }
 
 .onboarding-dots span {
@@ -1434,8 +1434,8 @@ progress {
 .onboarding-cards {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 20px;
+  gap: var(--sp-12);
+  margin-top: var(--sp-20);
 }
 
 .onboarding-card {
@@ -1443,7 +1443,7 @@ progress {
   flex-direction: column;
   align-items: flex-start;
   min-height: 96px;
-  padding: 18px 16px;
+  padding: var(--sp-20) var(--sp-16);
   border: none;
   border-radius: 18px;
   color: var(--text);
@@ -1474,7 +1474,7 @@ progress {
 }
 
 .onboarding-card-prenom {
-  margin-top: 8px;
+  margin-top: var(--sp-8);
   font-size: var(--fs-h2);
   font-weight: 700;
 }
@@ -1488,14 +1488,14 @@ progress {
 .onboarding-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 20px;
+  gap: var(--sp-12);
+  margin-top: var(--sp-20);
 }
 
 .onboarding-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--sp-10);
 }
 
 .onboarding-row .onboarding-field {
@@ -1507,7 +1507,7 @@ progress {
 .onboarding-field {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: var(--sp-6);
 }
 
 .onboarding-field input {
@@ -1523,7 +1523,7 @@ progress {
 
 .onboarding-cta {
   min-height: 48px;
-  margin-top: 4px;
+  margin-top: var(--sp-4);
   border: none;
   border-radius: 14px;
   background: var(--accent);
@@ -1542,19 +1542,19 @@ progress {
 /* ——— Onboarding 4 étapes + migration ——— */
 .onb-note {
   display: flex;
-  gap: 10px;
+  gap: var(--sp-10);
   align-items: flex-start;
   background: color-mix(in srgb, var(--accent-2) 32%, var(--surface));
   border: 1px solid color-mix(in srgb, var(--accent-2) 55%, var(--border));
   border-radius: 14px;
-  padding: 12px 14px;
+  padding: var(--sp-12) var(--sp-14);
   font-size: var(--fs-meta);
   line-height: var(--lh-body);
 }
 .onb-note svg {
   color: var(--accent);
   flex-shrink: 0;
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 .mig-prof {
   display: flex;
@@ -1562,10 +1562,10 @@ progress {
   justify-content: space-between;
   background: var(--surface-2);
   border-radius: 12px;
-  padding: 10px 14px;
+  padding: var(--sp-10) var(--sp-14);
   font-size: var(--fs-meta);
   font-weight: 600;
-  margin-top: 12px;
+  margin-top: var(--sp-12);
 }
 .mig-prof span:last-child {
   color: var(--muted);
@@ -1581,7 +1581,7 @@ progress {
 .onb-hint {
   font-size: var(--fs-micro);
   color: var(--muted);
-  margin-top: 5px;
+  margin-top: var(--sp-6);
   line-height: var(--lh-body);
 }
 .onb-opt {
@@ -1593,17 +1593,17 @@ progress {
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  margin-top: 18px;
+  margin-top: var(--sp-20);
 }
 .onb-btnrow {
   display: flex;
-  gap: 9px;
-  margin-top: 24px;
+  gap: var(--sp-10);
+  margin-top: var(--sp-24);
   align-items: center;
 }
 .onb-row2 {
   display: flex;
-  gap: 10px;
+  gap: var(--sp-10);
 }
 .onb-row2 .onboarding-field {
   flex: 1;
@@ -1614,7 +1614,7 @@ progress {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: var(--sp-8);
   min-height: 48px;
   border: 0;
   border-radius: 999px;
@@ -1632,7 +1632,7 @@ progress {
   background: var(--surface);
   color: var(--text);
   border-radius: 999px;
-  padding: 0 18px;
+  padding: 0 var(--sp-20);
   font: 600 13px Poppins, sans-serif;
   cursor: pointer;
 }
@@ -1641,21 +1641,21 @@ progress {
 }
 .onb-full {
   width: 100%;
-  margin-top: 24px;
+  margin-top: var(--sp-24);
 }
 
 /* ——— Cartes radio objectif ——— */
 .rcards {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 9px;
-  margin-top: 14px;
+  gap: var(--sp-10);
+  margin-top: var(--sp-14);
 }
 .rcard {
   border: 1.5px solid var(--border);
   background: var(--surface);
   border-radius: 14px;
-  padding: 12px;
+  padding: var(--sp-12);
   text-align: left;
   cursor: pointer;
   min-height: 48px;
@@ -1664,7 +1664,7 @@ progress {
 .rcard-t {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-6);
   font-size: var(--fs-sec);
   font-weight: 700;
 }
@@ -1672,7 +1672,7 @@ progress {
   display: block;
   font-size: var(--fs-micro);
   color: var(--muted);
-  margin-top: 3px;
+  margin-top: var(--sp-4);
   line-height: var(--lh-body);
 }
 .rcard.sel {
@@ -1688,17 +1688,17 @@ progress {
 .rline {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-top: 12px;
+  gap: var(--sp-8);
+  margin-top: var(--sp-12);
 }
 .rl {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-10);
   border: 1.5px solid var(--border);
   background: var(--surface);
   border-radius: 12px;
-  padding: 11px 14px;
+  padding: var(--sp-12) var(--sp-14);
   min-height: 48px;
   font: 600 13.5px Poppins, sans-serif;
   color: var(--text);
@@ -1732,8 +1732,8 @@ progress {
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 7px;
-  margin-top: 12px;
+  gap: var(--sp-8);
+  margin-top: var(--sp-12);
 }
 .chip {
   display: inline-flex;
@@ -1741,7 +1741,7 @@ progress {
   border: 1.5px solid var(--border);
   background: var(--surface);
   border-radius: 999px;
-  padding: 8px 13px;
+  padding: var(--sp-8) var(--sp-12);
   min-height: 42px;
   font: 600 12.5px Poppins, sans-serif;
   color: var(--text);
@@ -1753,13 +1753,13 @@ progress {
   color: #fff;
 }
 .chip .rm {
-  margin-left: 4px;
+  margin-left: var(--sp-4);
   opacity: 0.7;
 }
 .addrow {
   display: flex;
-  gap: 8px;
-  margin-top: 10px;
+  gap: var(--sp-8);
+  margin-top: var(--sp-10);
 }
 .addrow input {
   flex: 1;
@@ -1767,19 +1767,19 @@ progress {
   border: 1.5px solid var(--border);
   background: var(--bg);
   border-radius: 12px;
-  padding: 10px 12px;
+  padding: var(--sp-10) var(--sp-12);
   font: 500 13px Poppins, sans-serif;
   color: var(--text);
 }
 .addrow button {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sp-6);
   min-height: 42px;
   border: 1.5px solid var(--border);
   background: var(--surface);
   border-radius: 999px;
-  padding: 0 15px;
+  padding: 0 var(--sp-14);
   font: 600 12.5px Poppins, sans-serif;
   color: var(--text);
   cursor: pointer;
@@ -1790,15 +1790,15 @@ progress {
 .stat-cards {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: var(--sp-8);
+  margin-bottom: var(--sp-12);
 }
 
 .stat-card-hero {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--sp-10);
 }
 .stat-card-hero .stat-value {
   font-size: var(--fs-hero);
@@ -1808,23 +1808,23 @@ progress {
   display: block;
   font-weight: 600;
   color: var(--muted);
-  margin-top: 2px;
+  margin-top: var(--sp-2);
 }
 
 .stat-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 12px;
+  padding: var(--sp-12);
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: var(--sp-4);
 }
 
 .stat-label {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-6);
   color: var(--muted);
   font-size: var(--fs-micro);
   font-weight: 500;
@@ -1863,7 +1863,7 @@ progress {
 /* ---------- Accueil personnalisé (onglet Mon suivi) ---------- */
 
 .greeting {
-  margin: 0 0 12px;
+  margin: 0 0 var(--sp-12);
   color: var(--muted);
   font-size: var(--fs-sec);
   font-weight: 700;
@@ -1874,42 +1874,42 @@ progress {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 16px;
+  padding: var(--sp-16);
 }
 .obj-pills {
   display: flex;
-  gap: 7px;
+  gap: var(--sp-8);
   flex-wrap: wrap;
 }
 .obj-pill-type {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sp-6);
   font-size: var(--fs-micro);
   font-weight: 700;
   border-radius: 999px;
-  padding: 4px 10px;
+  padding: var(--sp-4) var(--sp-10);
   background: var(--accent);
   color: #fff;
 }
 .obj-pill-reg {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sp-6);
   font-size: var(--fs-micro);
   font-weight: 700;
   border-radius: 999px;
-  padding: 4px 10px;
+  padding: var(--sp-4) var(--sp-10);
   background: color-mix(in srgb, var(--accent-2) 60%, var(--surface));
   color: var(--text);
 }
 .obj-echeance {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-6);
   font-size: var(--fs-meta);
   color: var(--muted);
-  margin-top: 10px;
+  margin-top: var(--sp-10);
 }
 .obj-echeance b {
   color: var(--text);
@@ -1918,7 +1918,7 @@ progress {
   color: var(--danger);
 }
 .obj-prog {
-  margin-top: 12px;
+  margin-top: var(--sp-12);
 }
 .obj-kg {
   font-size: var(--fs-h1);
@@ -1929,19 +1929,19 @@ progress {
   font-size: var(--fs-meta);
   font-weight: 600;
   color: var(--muted);
-  margin-left: 2px;
+  margin-left: var(--sp-2);
 }
 .obj-kg span {
   font-size: var(--fs-meta);
   font-weight: 600;
   color: var(--muted);
-  margin-left: 2px;
+  margin-left: var(--sp-2);
 }
 .obj-bar {
   height: 7px;
   border-radius: 99px;
   background: var(--surface-2);
-  margin-top: 9px;
+  margin-top: var(--sp-10);
   overflow: hidden;
 }
 .obj-bar span {
@@ -1953,16 +1953,16 @@ progress {
 .obj-det {
   font-size: var(--fs-micro);
   color: var(--muted);
-  margin-top: 6px;
+  margin-top: var(--sp-6);
   line-height: var(--lh-body);
 }
 .obj-plain {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-8);
   font-size: var(--fs-meta);
   color: var(--muted);
-  margin-top: 12px;
+  margin-top: var(--sp-12);
 }
 .obj-plain b {
   color: var(--text);
@@ -1970,10 +1970,10 @@ progress {
 .obj-comps {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--sp-6);
   align-items: center;
-  margin-top: 13px;
-  padding-top: 12px;
+  margin-top: var(--sp-12);
+  padding-top: var(--sp-12);
   border-top: 1px dashed var(--border);
 }
 .obj-comps-label {
@@ -1988,7 +1988,7 @@ progress {
   font-size: var(--fs-micro);
   font-weight: 600;
   border-radius: 999px;
-  padding: 3px 10px;
+  padding: var(--sp-4) var(--sp-10);
   background: var(--surface-2);
   color: var(--text);
 }
@@ -1999,13 +1999,13 @@ progress {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--sp-8);
 }
 
 .week-banner-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-8);
   flex-shrink: 0;
 }
 
@@ -2029,8 +2029,8 @@ progress {
 
 .profil-back {
   min-height: 48px;
-  padding: 10px 0;
-  margin-bottom: 4px;
+  padding: var(--sp-10) 0;
+  margin-bottom: var(--sp-4);
   border: none;
   background: none;
   color: var(--text);
@@ -2042,12 +2042,12 @@ progress {
 }
 
 .profil-screen .profile-section .btn {
-  margin-top: 12px;
+  margin-top: var(--sp-12);
 }
 
 .profil-screen .profile-section .btn.profil-save {
   width: 100%;
-  margin-top: 16px;
+  margin-top: var(--sp-16);
 }
 
 .profil-switch {
@@ -2077,7 +2077,7 @@ progress {
 }
 
 .profil-about {
-  margin-top: 16px;
+  margin-top: var(--sp-16);
   font-size: var(--fs-meta);
   text-align: center;
 }
@@ -2093,7 +2093,7 @@ progress {
   display: flex;
   align-items: baseline;
   justify-content: flex-end;
-  gap: 6px;
+  gap: var(--sp-6);
 }
 
 .recette-score-value {
@@ -2110,9 +2110,9 @@ progress {
 
 .score-bar {
   display: flex;
-  gap: 2px;
+  gap: var(--sp-2);
   width: 97px;
-  margin-top: 4px;
+  margin-top: var(--sp-4);
   margin-left: auto;
 }
 
@@ -2133,8 +2133,8 @@ progress {
   justify-content: space-between;
   background: var(--surface-2);
   border-radius: 8px;
-  padding: 7px 10px;
-  margin-top: 10px;
+  padding: var(--sp-8) var(--sp-10);
+  margin-top: var(--sp-10);
   font-size: var(--fs-micro);
   color: var(--muted);
 }
@@ -2145,17 +2145,17 @@ progress {
 
 .recette-nutri span + span {
   border-left: 1px solid var(--border);
-  padding-left: 10px;
+  padding-left: var(--sp-10);
 }
 
 .recette-detail {
   border-top: 1px dashed var(--border);
-  margin-top: 10px;
-  padding-top: 2px;
+  margin-top: var(--sp-10);
+  padding-top: var(--sp-2);
 }
 
 .recette-pour {
-  margin: 8px 0 0;
+  margin: var(--sp-8) 0 0;
   font-size: var(--fs-meta);
   line-height: var(--lh-body);
   color: var(--text);
@@ -2163,9 +2163,9 @@ progress {
 
 .recette-bases {
   display: flex;
-  gap: 6px;
+  gap: var(--sp-6);
   flex-wrap: wrap;
-  margin-top: 8px;
+  margin-top: var(--sp-8);
 }
 
 .recette-bchip {
@@ -2177,7 +2177,7 @@ progress {
   /* Cible tactile : plancher 48px du repo, comme tous les boutons.
      Texte basilic mixé 90 % d'encre pour rester ≥ 4,5:1 sur surface-2. */
   min-height: 48px;
-  padding: 4px 16px;
+  padding: var(--sp-4) var(--sp-16);
   font-size: var(--fs-meta);
   font-weight: 700;
   color: color-mix(in srgb, var(--accent) 90%, var(--text));
@@ -2190,8 +2190,8 @@ progress {
 }
 
 .recette-bdesc {
-  margin: 8px 0 0;
-  padding: 8px 10px;
+  margin: var(--sp-8) 0 0;
+  padding: var(--sp-8) var(--sp-10);
   background: var(--surface-2);
   border-radius: 10px;
   font-size: var(--fs-meta);
@@ -2200,20 +2200,20 @@ progress {
 }
 
 .recette-etapes {
-  margin: 10px 0 0;
-  padding-left: 18px;
+  margin: var(--sp-10) 0 0;
+  padding-left: var(--sp-20);
   font-size: var(--fs-meta);
   line-height: var(--lh-body);
   color: var(--text);
 }
 
 .recette-etapes li {
-  margin-bottom: 4px;
+  margin-bottom: var(--sp-4);
 }
 
 .recette-ligne {
-  margin: 8px 0 0;
-  padding: 7px 10px;
+  margin: var(--sp-8) 0 0;
+  padding: var(--sp-8) var(--sp-10);
   border-radius: 10px;
   font-size: var(--fs-meta);
   line-height: var(--lh-body);
@@ -2246,13 +2246,13 @@ progress {
   background: color-mix(in srgb, var(--accent-2) 16%, var(--surface));
   border: 1px solid color-mix(in srgb, var(--accent-2) 55%, var(--border));
   border-radius: var(--radius);
-  padding: 16px 18px 18px;
+  padding: var(--sp-16) var(--sp-20) var(--sp-20);
 }
 .bud-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--sp-8);
 }
 .bud-head b {
   font-size: var(--fs-sec);
@@ -2262,11 +2262,11 @@ progress {
 .mag {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sp-6);
   font-size: var(--fs-micro);
   font-weight: 700;
   border-radius: 999px;
-  padding: 3px 9px;
+  padding: var(--sp-4) var(--sp-10);
   background: var(--surface);
   color: var(--text);
 }
@@ -2275,13 +2275,13 @@ progress {
   font-size: var(--fs-meta);
   font-weight: 600;
   color: color-mix(in srgb, var(--muted) 70%, var(--text));
-  margin-top: 14px;
+  margin-top: var(--sp-14);
 }
 .bud-hero {
   display: block;
   font-size: var(--fs-hero);
   font-weight: 700;
-  margin-top: 2px;
+  margin-top: var(--sp-2);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }
@@ -2291,7 +2291,7 @@ progress {
 .bud-sub {
   font-size: var(--fs-meta);
   color: color-mix(in srgb, var(--muted) 70%, var(--text));
-  margin: 3px 0 0;
+  margin: var(--sp-4) 0 0;
 }
 .bud-sub b {
   color: var(--text);
@@ -2301,8 +2301,8 @@ progress {
 .bud-foot {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 13px;
+  gap: var(--sp-10);
+  margin-top: var(--sp-12);
 }
 .bud-bar {
   flex: 1;
@@ -2334,9 +2334,9 @@ progress {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 13px;
-  padding-top: 12px;
+  gap: var(--sp-10);
+  margin-top: var(--sp-12);
+  padding-top: var(--sp-12);
   border-top: 1px dashed color-mix(in srgb, var(--accent-2) 55%, var(--border));
 }
 .bud-lie {
@@ -2350,9 +2350,9 @@ progress {
 .bsoft {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-6);
   min-height: 48px;
-  padding: 0 14px;
+  padding: 0 var(--sp-14);
   border: 1.5px solid color-mix(in srgb, var(--accent) 35%, var(--border));
   background: var(--surface);
   color: var(--accent);
@@ -2366,7 +2366,7 @@ progress {
 .blink {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sp-6);
   min-height: 48px;
   border: 0;
   background: none;
@@ -2378,12 +2378,12 @@ progress {
 
 /* Panneau « Mes dépenses réelles » */
 .dep-head {
-  padding-top: 4px;
+  padding-top: var(--sp-4);
 }
 .dep-back {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: var(--sp-6);
   border: 0;
   background: none;
   font: 600 13px Poppins, sans-serif;
@@ -2394,24 +2394,24 @@ progress {
 .dep-head h1 {
   font-size: var(--fs-h2);
   font-weight: 700;
-  margin: 8px 0 0;
+  margin: var(--sp-8) 0 0;
 }
 .dep-sub {
   font-size: var(--fs-meta);
   color: var(--muted);
-  margin: 2px 0 0;
+  margin: var(--sp-2) 0 0;
 }
 .dep-form {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 13px 14px 14px;
-  margin-top: 14px;
+  padding: var(--sp-12) var(--sp-14) var(--sp-14);
+  margin-top: var(--sp-14);
 }
 .dep-form .frow {
   display: grid;
   grid-template-columns: 1.15fr 1fr 0.8fr;
-  gap: 9px;
+  gap: var(--sp-10);
 }
 .dep-form .fl {
   display: block;
@@ -2420,14 +2420,14 @@ progress {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--muted);
-  margin-bottom: 5px;
+  margin-bottom: var(--sp-6);
 }
 .dep-form input {
   width: 100%;
   border: 1.5px solid var(--border);
   background: var(--bg);
   border-radius: 10px;
-  padding: 9px 10px;
+  padding: var(--sp-10) var(--sp-10);
   font: 500 13px Poppins, sans-serif;
   color: var(--text);
   min-width: 0;
@@ -2440,8 +2440,8 @@ progress {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 12px;
-  margin-top: 11px;
+  gap: var(--sp-12);
+  margin-top: var(--sp-12);
 }
 .dep-form .bgo {
   min-height: 38px;
@@ -2449,12 +2449,12 @@ progress {
   background: var(--accent);
   color: var(--surface);
   border-radius: 999px;
-  padding: 0 16px;
+  padding: 0 var(--sp-16);
   font: 700 12px Poppins, sans-serif;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-6);
 }
 .dep-form .fact .blink {
   font-size: var(--fs-meta);
@@ -2465,25 +2465,25 @@ progress {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--muted);
-  margin: 16px 0 8px;
+  margin: var(--sp-16) 0 var(--sp-8);
 }
 .dep-sum {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 9px;
+  gap: var(--sp-10);
 }
 .dep-sum .s {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 11px 13px;
+  padding: var(--sp-12) var(--sp-12);
   min-width: 0;
 }
 .dep-sum .nm {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 6px;
+  gap: var(--sp-6);
   font-size: var(--fs-meta);
   font-weight: 700;
 }
@@ -2497,14 +2497,14 @@ progress {
   display: block;
   font-size: var(--fs-h3);
   font-weight: 700;
-  margin-top: 3px;
+  margin-top: var(--sp-4);
   font-variant-numeric: tabular-nums;
 }
 .dep-sum .avg {
   font-size: var(--fs-micro);
   color: var(--muted);
   font-weight: 600;
-  margin-top: 1px;
+  margin-top: var(--sp-2);
   font-variant-numeric: tabular-nums;
 }
 .dep-list {
@@ -2514,8 +2514,8 @@ progress {
 .dep {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 11px 2px;
+  gap: var(--sp-10);
+  padding: var(--sp-12) var(--sp-2);
   border-bottom: 1px solid var(--border);
   font-size: var(--fs-meta);
 }
@@ -2540,7 +2540,7 @@ progress {
 .dep .rm {
   width: 32px;
   height: 32px;
-  margin-right: -6px;
+  margin-right: calc(var(--sp-6) * -1);
   border: 0;
   background: none;
   color: var(--muted);
@@ -2553,11 +2553,11 @@ progress {
 .hint {
   font-size: var(--fs-micro);
   color: var(--muted);
-  margin-top: 5px;
+  margin-top: var(--sp-6);
   line-height: var(--lh-body);
 }
 .dep-hint {
-  margin-top: 12px;
+  margin-top: var(--sp-12);
 }
 
 @media (max-width: 360px) {
@@ -2608,15 +2608,15 @@ progress {
 }
 
 .sync-bloc .profil-ghost {
-  margin-top: 12px;
+  margin-top: var(--sp-12);
 }
 
 .sync-bloc .sync-danger {
   display: block;
   width: 100%;
   min-height: 48px;
-  margin-top: 8px;
-  padding: 10px 12px;
+  margin-top: var(--sp-8);
+  padding: var(--sp-10) var(--sp-12);
   border: 1px solid var(--danger);
   color: var(--danger);
   background: none;
