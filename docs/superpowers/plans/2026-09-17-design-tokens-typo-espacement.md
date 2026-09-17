@@ -171,7 +171,7 @@ git commit -m "feat: échelle typographique et d'interlignage tokenisées (+ gar
 
 - [ ] **Step 1: Étendre le garde-fou avec le contrat espacement (rouge)**
 
-Remplacer le contenu de `tests/css-tokens.test.ts` par :
+Remplacer le contenu de `tests/css-tokens.test.ts` par (le 3ᵉ test d'existence ajouté en Task 1 revue qualité est **conservé** et étendu aux `--sp-*` ; intitulé ajusté — la regex scanne tout le fichier, pas seulement `:root`) :
 
 ```ts
 import { describe, expect, it } from 'vitest';
@@ -201,6 +201,19 @@ describe('contrat CSS — tokens de typographie', () => {
       .filter(([, v]) => /^\d/.test(v.trim()) && !v.includes('var(--lh-'))
       .map(([, v]) => v.trim());
     expect(brutes, `line-height brutes : ${brutes.join(' | ')}`).toEqual([]);
+  });
+
+  it('chaque référence var(--fs-*|--lh-*|--sp-*) est définie', () => {
+    const definis = new Set(
+      [...css.matchAll(/(--(?:fs|lh|sp)-[\w-]+):/g)].map(([d]) => d.slice(0, -1)),
+    );
+    const orphelines = [...css.matchAll(/var\((--(?:fs|lh|sp)-[\w-]+)\)/g)]
+      .map(([, t]) => t)
+      .filter((t) => !definis.has(t));
+    expect(
+      orphelines,
+      `tokens référencés non définis : ${orphelines.join(' | ')}`,
+    ).toEqual([]);
   });
 });
 
@@ -303,7 +316,7 @@ Expected: PASS (4 tests).
 - [ ] **Step 7: Suite complète + commit**
 
 Run: `npm test && npm run typecheck && npm run lint`
-Expected: 488 tests passés (486 + 2 nouveaux), typecheck et lint verts.
+Expected: 489 tests passés (487 + 2 nouveaux), typecheck et lint verts.
 
 ```bash
 git add src/index.css tests/css-tokens.test.ts
@@ -396,7 +409,7 @@ Dans `## [Non publié]`, insérer avant la sous-section `### Corrigé` (si absen
 - [ ] **Step 6: Gates complètes**
 
 Run: `npm test && npm run typecheck && npm run lint && npm run build && ls dist/sw.js dist/manifest.webmanifest`
-Expected: 488 tests, tout vert, `dist/sw.js` et `dist/manifest.webmanifest` listés.
+Expected: 489 tests, tout vert, `dist/sw.js` et `dist/manifest.webmanifest` listés.
 
 Run: `npm run e2e`
 Expected: 48/48 passés, zéro débordement horizontal sur 320/375.
@@ -427,7 +440,7 @@ gh pr create --title "Design tokens : typo, espacement, interlignage" --body "##
 
 ## Gates
 
-- 488/488 tests · typecheck · lint · build (sw.js + manifest) · e2e 48/48
+- 489/489 tests · typecheck · lint · build (sw.js + manifest) · e2e 48/48
 
 Spec : \`docs/superpowers/specs/2026-09-17-design-tokens-typo-espacement-design.md\`"
 ```
