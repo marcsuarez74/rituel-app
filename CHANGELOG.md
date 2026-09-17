@@ -9,7 +9,7 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 ### Ajouté
 
 - Synchronisation optionnelle entre les 2 téléphones (Supabase) : semaines, coches, pesées, dépenses et profils ; file d'attente hors ligne, realtime, code de foyer, effacement du foyer.
-- « Copier le prompt IA » au Profil : un geste copie le prompt complet de génération de cycle — contexte personnel (prénom, âge, dernière pesée, taille, objectif, régime, compléments, courses/budget) + squelette du format .md et règles dures inline. Remplace le bloc « Paramètres » à recoller à la main.
+- « Copier le prompt IA » au Profil : un geste copie le prompt complet de génération de cycle — contexte personnel (prénom, âge, dernière pesée, taille, objectif, régime, compléments, courses/budget, personnes à table, préférences) + squelette du format .md et règles dures inline. Remplace le bloc « Paramètres » à recoller à la main.
 
 ## [1.2.0] - 2026-09-16
 

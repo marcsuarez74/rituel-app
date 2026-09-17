@@ -48,7 +48,7 @@ src/lib/          # cœur logique, zéro React : model.ts (types), parse.ts (.md
                   # text.ts (capitalize mutualisé)
 src/lib/sync/     # sync optionnelle Supabase : config/session/outbox/client/engine/messages
 src/components/   # composants UI ; cuisine/ pour l'onglet Cuisine ; onboarding/ pour le premier lancement
-src/assets/       # semaine-exemple.md (référence du format) + rayons/ (miniatures jpg des rayons)
+src/assets/       # semaine-exemple.md (référence du format) + prompt-cycle-template.md (prompt maître IA, assemblé par src/lib/promptIa.ts) + rayons/ (miniatures jpg des rayons)
 tests/            # miroir de src/, vitest + Testing Library, environnement happy-dom
                   # parse.test.ts, storage.test.ts, weeks.test.ts, lib/rayons.test.ts,
 tests/e2e/        # specs Playwright (navigateur réel, config playwright.config.ts, projets mobile 375 + 320)
@@ -56,7 +56,7 @@ supabase/         # SQL + edge function + script foyer, hors tsconfig
 CHANGELOG.md      # historique des versions (Keep a Changelog) ; source de vérité = package.json `version`
 .github/workflows/deploy.yml   # déploie sur GitHub Pages à chaque push sur main
 .github/workflows/release.yml  # crée la GitHub Release à chaque push de tag v* (notes = section CHANGELOG)
-docs/templates/   # convention template semaine + prompt IA de génération d'un cycle
+docs/templates/   # template-semaine.md (référence humaine du format .md) ; le prompt maître IA vit dans src/assets/
 docs/ameliorations.md # axes d'amélioration futurs (mémoire d'idées, pas une spec)
 docs/superpowers/ # spec design + plan d'implémentation (contexte historique)
 ai/               # configs d'agents IA (cf. section « Dossier ai/ »)
