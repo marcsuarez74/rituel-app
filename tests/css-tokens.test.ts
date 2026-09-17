@@ -7,8 +7,8 @@ import { join } from 'node:path';
 // toute taille/espacement/interlignage passe par les tokens de :root.
 // Échelle d'espacement : 2 px (le nom du token --sp-N est sa valeur en px).
 // Exceptions d'espacement documentées ci-dessous avec leur raison.
-// Le contrat couvre font-size:/line-height:/padding|margin|gap — un futur
-// shorthand `font:` devrait être ajouté ici s'il entre dans le code.
+// Le contrat couvre font-size:/line-height:/padding|margin|gap. Le shorthand
+// `font:` (utilisé : onboarding, pills) est couvert par le 4ᵉ test ci-dessous.
 const css = readFileSync(join(process.cwd(), 'src', 'index.css'), 'utf8');
 
 // Exceptions documentées, avec raison :
@@ -43,6 +43,13 @@ describe('contrat CSS — tokens de typographie', () => {
       `tokens référencés non définis : ${orphelines.join(' | ')}`,
     ).toEqual([]);
   });
+
+  it('chaque taille du shorthand font: utilise un token --fs-*', () => {
+    const brutes = [...css.matchAll(/^(\s*)font:\s*([^;]+);/gm)]
+      .filter(([, , v]) => v.trim() !== 'inherit' && !v.includes('var(--fs-'))
+      .map(([, ind, v]) => `${ind}font: ${v.trim()}`);
+    expect(brutes, `shorthand font: brutes : ${brutes.join(' | ')}`).toEqual([]);
+  });
 });
 
 describe('contrat CSS — tokens d\'espacement', () => {
@@ -59,9 +66,9 @@ describe('contrat CSS — tokens d\'espacement', () => {
   it('chaque valeur px est un token --sp-* (ou exception documentée)', () => {
     const hors = decls
       .filter(([, , prop, v]) => !EXCEPTIONS_SP.includes(`${prop.trim()}:${v.trim()}`))
-      .filter(([, , , v]) => !v.includes('var(') && !v.includes('calc('))
       .flatMap(([, , prop, v]) => {
-        const px = [...v.matchAll(/(-?)(\d+(?:\.\d+)?)px/g)].map((m) => Math.abs(parseFloat(m[2])));
+        const sansCalc = v.replace(/calc\([^)]*\)/g, '');
+        const px = [...sansCalc.matchAll(/(-?)(\d+(?:\.\d+)?)px/g)].map((m) => Math.abs(parseFloat(m[2])));
         return px.map((n) => `${prop.trim()}:${v.trim()} [${n}px]`);
       });
     expect(hors, `hors échelle : ${hors.join(' | ')}`).toEqual([]);

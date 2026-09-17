@@ -637,7 +637,7 @@ progress {
   border-radius: 999px;
   background: var(--surface);
   color: var(--text);
-  font: 600 12.5px Poppins, sans-serif;
+  font: 600 var(--fs-meta) Poppins, sans-serif;
   white-space: nowrap;
   cursor: pointer;
 }
@@ -767,7 +767,7 @@ progress {
   border-radius: 14px;
   background: var(--accent);
   color: #ffffff;
-  font: 700 15px Poppins, sans-serif;
+  font: 700 var(--fs-sec) Poppins, sans-serif;
   cursor: pointer;
   box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 35%, transparent);
 }
@@ -835,7 +835,7 @@ progress {
   border-radius: 12px;
   background: var(--accent);
   color: #ffffff;
-  font: 700 13.5px Poppins, sans-serif;
+  font: 700 var(--fs-sec) Poppins, sans-serif;
   cursor: pointer;
 }
 .mini-cta:active {
@@ -1620,7 +1620,7 @@ progress {
   border-radius: 999px;
   background: var(--accent);
   color: #fff;
-  font: 700 14px Poppins, sans-serif;
+  font: 700 var(--fs-sec) Poppins, sans-serif;
   cursor: pointer;
 }
 .onb-next:active {
@@ -1633,7 +1633,7 @@ progress {
   color: var(--text);
   border-radius: 999px;
   padding: 0 var(--sp-20);
-  font: 600 13px Poppins, sans-serif;
+  font: 600 var(--fs-meta) Poppins, sans-serif;
   cursor: pointer;
 }
 .onb-back:active {
@@ -1700,7 +1700,7 @@ progress {
   border-radius: 12px;
   padding: var(--sp-12) var(--sp-14);
   min-height: 48px;
-  font: 600 13.5px Poppins, sans-serif;
+  font: 600 var(--fs-sec) Poppins, sans-serif;
   color: var(--text);
   cursor: pointer;
 }
@@ -1743,7 +1743,7 @@ progress {
   border-radius: 999px;
   padding: var(--sp-8) var(--sp-12);
   min-height: 42px;
-  font: 600 12.5px Poppins, sans-serif;
+  font: 600 var(--fs-meta) Poppins, sans-serif;
   color: var(--text);
   cursor: pointer;
 }
@@ -1768,7 +1768,7 @@ progress {
   background: var(--bg);
   border-radius: 12px;
   padding: var(--sp-10) var(--sp-12);
-  font: 500 13px Poppins, sans-serif;
+  font: 500 var(--fs-meta) Poppins, sans-serif;
   color: var(--text);
 }
 .addrow button {
@@ -1780,7 +1780,7 @@ progress {
   background: var(--surface);
   border-radius: 999px;
   padding: 0 var(--sp-14);
-  font: 600 12.5px Poppins, sans-serif;
+  font: 600 var(--fs-meta) Poppins, sans-serif;
   color: var(--text);
   cursor: pointer;
 }
@@ -2057,7 +2057,7 @@ progress {
   border-radius: 999px;
   width: 100%;
   min-height: 48px;
-  font: 600 13px Poppins, sans-serif;
+  font: 600 var(--fs-meta) Poppins, sans-serif;
   cursor: pointer;
 }
 
@@ -2068,7 +2068,7 @@ progress {
   border-radius: 999px;
   width: 100%;
   min-height: 48px;
-  font: 600 13px Poppins, sans-serif;
+  font: 600 var(--fs-meta) Poppins, sans-serif;
   cursor: pointer;
 }
 
@@ -2357,7 +2357,7 @@ progress {
   background: var(--surface);
   color: var(--accent);
   border-radius: 999px;
-  font: 700 12.5px Poppins, sans-serif;
+  font: 700 var(--fs-meta) Poppins, sans-serif;
   cursor: pointer;
 }
 .bsoft:active {
@@ -2372,7 +2372,7 @@ progress {
   background: none;
   padding: 0;
   color: var(--accent);
-  font: 700 12.5px Poppins, sans-serif;
+  font: 700 var(--fs-meta) Poppins, sans-serif;
   cursor: pointer;
 }
 
@@ -2386,7 +2386,7 @@ progress {
   gap: var(--sp-6);
   border: 0;
   background: none;
-  font: 600 13px Poppins, sans-serif;
+  font: 600 var(--fs-meta) Poppins, sans-serif;
   color: var(--muted);
   cursor: pointer;
   padding: 0;
@@ -2428,7 +2428,7 @@ progress {
   background: var(--bg);
   border-radius: 10px;
   padding: var(--sp-10) var(--sp-10);
-  font: 500 13px Poppins, sans-serif;
+  font: 500 var(--fs-meta) Poppins, sans-serif;
   color: var(--text);
   min-width: 0;
 }
@@ -2450,7 +2450,7 @@ progress {
   color: var(--surface);
   border-radius: 999px;
   padding: 0 var(--sp-16);
-  font: 700 12px Poppins, sans-serif;
+  font: 700 var(--fs-meta) Poppins, sans-serif;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
