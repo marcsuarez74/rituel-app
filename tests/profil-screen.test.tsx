@@ -439,6 +439,7 @@ describe('ProfilScreen — Génération IA', () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
     addWeight('marc', '2026-09-14', 82.4);
+    addWeight('marc', '2026-09-07', 84);
     render(
       <ProfilScreen
         profile={{ ...profileMarc, magasin: 'Lidl', budgetMax: 40, regime: 'keto', complements: ['Créatine'] }}
@@ -450,7 +451,9 @@ describe('ProfilScreen — Génération IA', () => {
 
     await user.click(screen.getByRole('button', { name: /Copier le prompt IA/ }));
     const texte = writeText.mock.calls[0][0] as string;
-    expect(texte).toContain('Tu es un nutritionniste. Marc (');
+    // at(-1) = la DERNIÈRE pesée (le storage est trié ascendant) — pas la plus ancienne.
+    expect(texte).toContain('Tu es un nutritionniste. Marc (41 ans, 82,4 kg — dernière pesée du 14/09, 178 cm)');
+    expect(texte).not.toContain('84 kg');
     // formatEuro insère une espace insécable (U+00A0) avant € — cf. lib/prix.test.ts.
     expect(texte).toContain('- Courses : Lidl, budget 40,00\u00a0€/semaine');
     expect(texte).toContain('{{SEMAINE_DEPART}}');
