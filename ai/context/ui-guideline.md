@@ -31,7 +31,7 @@ Complète `design-system.md` (les tokens) avec les règles d'usage. Source de v�
 ## Écran Profil
 
 - 5 sections éditables séparément : **Mes infos** (date de naissance/taille, âge calculé), **Objectif** (cartes radio + échéance + poids objectif), **Compléments** (chips presets + libre), **Régime** (radios), **Maison & courses** (magasin datalist, budget max, foyer `.onb-row2`, préférences — mêmes champs que l'onboarding, un champ vidé retire la donnée) — enregistrement **par section**, feedback « enregistrées ✓ » en `role="status"` ; une erreur est rendue **dans sa section**
-- **Génération IA** : bouton `.profil-ghost` « Copier les paramètres IA » (clipboard + fallback execCommand, confirmation « Paramètres copiés ✓ ») — **masqué si aucun champ maison** (magasin, budget, personnes/repas, préférences) : le régime seul ne justifie pas le bloc ; toute édition maison efface la confirmation (paramètres périmés)
+- **Génération IA** : bouton `.profil-ghost` « Copier le prompt IA » (clipboard + fallback execCommand, confirmation « Prompt copié — colle-le dans le chat. ») — **toujours visible** : le prompt maître (`src/assets/prompt-cycle-template.md`) est assemblé depuis le profil par `src/lib/promptIa.ts` (contexte perso + contrat de format inline) ; toute édition maison efface la confirmation (prompt périmé)
 - **changer de profil** (bordure `--danger`, `window.confirm` obligatoire — efface le choix, garde les données)
 - Après changement : retour à l'onboarding (le sous-arbre suivi est démonté, les données restent en storage)
 

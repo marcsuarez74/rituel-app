@@ -93,7 +93,7 @@ Rayons dérivés : boutons et cartes compactes `12px`, pills `999px` (`.menu-pil
 | `.keto-box` / `.keto-title` | encadré keto de Mélanie (rayon `### Keto`) | fond `--accent-2` 12% + bordure 45% (`color-mix`), titre encre 15px/700 (icône leaf basilic) — affiché en dernier |
 | `.profile-icon-btn` | accès écran Profil | 48px, surface-2, icône SVG person `currentColor` |
 | `.profil-screen` / `.profil-switch` | écran Profil | sections `.profile-section` ; switch = bordure `--danger` (action sensible) |
-| `.profil-ghost` | bouton secondaire du Profil (« Copier les paramètres IA ») | ghost bordure `--border`, pill pleine largeur 48px, texte encre |
+| `.profil-ghost` | bouton secondaire du Profil (« Copier le prompt IA ») | ghost bordure `--border`, pill pleine largeur 48px, texte encre |
 | `.greeting` | accueil personnalisé Mon suivi | muted, 14px/700 |
 | `.obj-bloc` (+ `.obj-pills` `.obj-pill-type` `.obj-pill-reg` `.obj-echeance` `.obj-prog` `.obj-kg` `.obj-bar` `.obj-comps` `.cchip`) | bloc objectif en tête de Mon suivi | surface + radius ; pill type basilic texte blanc, pill régime citron 60 % (texte encre), échéance `.late` = `--danger`, barre progression `--accent` sur `--surface-2`, compléments `.cchip` surface-2 sous filet pointillé |
 | `.checklist` + `.done` | listes cochables | label min-height 48 px, checkbox 22 px `accent-color: --accent` ; done = barré + muted |
