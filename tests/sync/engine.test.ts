@@ -833,7 +833,7 @@ describe('sync: reconnexion', () => {
     const lecturesAvant = client.lectures.length;
 
     statuts[0]?.(true); // le canal se rouvre : rattraper ce qui a manqué
-    await vi.runAllTimersAsync(); // debounce pull 500 ms
+    await vi.runAllTimersAsync(); // debounce pull 150 ms
     expect(client.lectures.length).toBeGreaterThan(lecturesAvant);
   });
 
