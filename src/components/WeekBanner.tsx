@@ -3,8 +3,8 @@ import type { SyncEtat } from '../lib/sync/engine';
 import { formatDayMonth } from '../lib/dates';
 import { Icon } from './Icon';
 
-const ETIQUETTES: Record<Exclude<SyncEtat, 'off'>, string> = {
-  attente: 'Synchronisation : non connecté',
+const ETIQUETTES: Record<Exclude<SyncEtat, 'off' | 'hors-foyer'>, string> = {
+  attente: 'Synchronisation en cours',
   sync: 'Synchronisé',
   erreur: 'Synchronisation : erreur — appuyer pour réessayer',
 };
@@ -29,7 +29,7 @@ export function WeekBanner({
   onSyncTap?: () => void;
 }) {
   const nav = !!(onPrev || onNext);
-  const syncVisible = !!syncEtat && syncEtat !== 'off';
+  const syncVisible = !!syncEtat && syncEtat !== 'off' && syncEtat !== 'hors-foyer';
   return (
     <header className="week-banner">
       {nav && (

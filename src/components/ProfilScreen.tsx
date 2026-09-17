@@ -21,7 +21,7 @@ type SectionAvecErreur = 'infos' | 'objectif' | 'complements' | 'maison';
 type Erreur = { section: SectionAvecErreur; texte: string };
 
 // Message d'état en vue connectée (texte simple — pas de symbole).
-const ETAT_SYNC: Record<Exclude<SyncEtat, 'off'>, string> = {
+const ETAT_SYNC: Record<Exclude<SyncEtat, 'off' | 'hors-foyer'>, string> = {
   attente: 'Synchronisation : en attente.',
   sync: 'Synchronisé.',
   erreur: 'Synchronisation : erreur.',
@@ -565,7 +565,10 @@ export function ProfilScreen({
           <h3>Synchronisation</h3>
           {lireSessionPub() ? (
             <>
-              <p className="muted">{ETAT_SYNC[syncEtat]}</p>
+              {/* hors-foyer n'a jamais de label ici : fenêtre transitoire
+                  (session posée, connexion en échec) — l'alerte syncErreur
+                  et le point rouge portent le signal. */}
+              {syncEtat !== 'hors-foyer' && <p className="muted">{ETAT_SYNC[syncEtat]}</p>}
               <button type="button" className="profil-ghost" onClick={deconnecterFoyer}>
                 Déconnecter le foyer
               </button>

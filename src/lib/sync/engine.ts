@@ -29,7 +29,7 @@ import {
 } from './outbox';
 import { demanderSession, definirSession, effacerSession, lireSession } from './session';
 
-export type SyncEtat = 'off' | 'attente' | 'sync' | 'erreur';
+export type SyncEtat = 'off' | 'hors-foyer' | 'attente' | 'sync' | 'erreur';
 
 let client: SyncClient | null = null;
 let etat: SyncEtat = 'off';
@@ -41,14 +41,24 @@ let flushTimer: ReturnType<typeof setTimeout> | null = null;
 let pullTimer: ReturnType<typeof setTimeout> | null = null;
 // Désabonnement realtime (posé par connecter, retiré par deconnecterFoyer).
 let desabonner: (() => void) | null = null;
+// Reconnexion du canal planifiée après une coupure (une seule en vol).
+let reconnexionTimer: ReturnType<typeof setTimeout> | null = null;
+// Génération du realtime installé : tout callback de statut d'une
+// installation supplantée (canal retiré) est obsolète — la lib appelle
+// CLOSED même pour un canal retiré volontairement.
+let generationRealtime = 0;
 // Fencing : une seule flush en vol, représentée par sa promesse partagée —
 // les déclencheurs (mutations, realtime, réseau) peuvent se rafaler, les
 // demandes concurrentes reçoivent la même promesse et re-programment un tour.
 let flushPromise: Promise<void> | null = null;
 
-// Retour du réseau : rafale immédiate de ce qui s'est empilé offline.
-// Ref module : reinitialiser doit pouvoir se désabonner.
+// Retour du réseau : si le client n'existe pas (échec au démarrage), on
+// relance la connexion ; sinon on rafale ce qui s'est empilé hors ligne.
 const surEnLigne = (): void => {
+  if (!client && lireSession()) {
+    void connecter().catch(() => definirEtat('erreur'));
+    return;
+  }
   void flush();
 };
 
@@ -67,6 +77,7 @@ export const injecterClient = (c: SyncClient | null): void => {
 export const reinitialiser = (): void => {
   desabonner?.();
   desabonner = null;
+  generationRealtime++; // les callbacks de statut en vol deviennent obsolètes
   window.removeEventListener('online', surEnLigne);
   client = null;
   etat = 'off';
@@ -76,6 +87,8 @@ export const reinitialiser = (): void => {
   flushTimer = null;
   if (pullTimer) clearTimeout(pullTimer);
   pullTimer = null;
+  if (reconnexionTimer) clearTimeout(reconnexionTimer);
+  reconnexionTimer = null;
   flushPromise = null;
   surEmpile(null);
   inited = false; // reset test : initSync rejouable
@@ -86,8 +99,8 @@ export const flush = (): Promise<void> => {
     flushDiffere(); // demande pendant l'envol : re-programmer (retry avalé sinon)
     return flushPromise;
   }
+  let ok = false;
   flushPromise = (async () => {
-    let ok = false;
     try {
       if (flushTimer) {
         clearTimeout(flushTimer);
@@ -135,12 +148,19 @@ export const flush = (): Promise<void> => {
     } catch {
       definirEtat('erreur'); // outbox conservée — retry au prochain déclencheur
     } finally {
-      flushPromise = null;
       // Mutations empilées pendant l'envol (corps sans exception) : partent
       // au tour suivant. En échec, on reste sur les déclencheurs existants.
       if (ok && lireOutbox().length > 0) flushDiffere();
     }
   })();
+  // La remise à null de la fence passe par .finally() sur la promesse — PAS
+  // dans le corps : un corps sans await (outbox vide, session absente) se
+  // termine de façon synchrone, AVANT l'affectation ci-dessus ; un null
+  // interne serait écrasé par l'affectation et la promesse résolue resterait
+  // posée pour toujours — tout flush suivant retomberait dans la fence.
+  void flushPromise.finally(() => {
+    flushPromise = null;
+  });
   return flushPromise;
 };
 
@@ -347,19 +367,59 @@ const postConnexion = async (): Promise<void> => {
   await flush();
 };
 
+// Coupure du canal : une seule reconnexion planifiée en vol (5 s), annulée
+// par deconnecterFoyer/reinitialiser. No-op sans client ou sans session.
+const planifierReconnexion = (): void => {
+  if (reconnexionTimer) return;
+  reconnexionTimer = setTimeout(() => {
+    reconnexionTimer = null;
+    if (client && lireSession()) installerRealtime();
+  }, 5000);
+};
+
+// Installe (ou réinstalle) le realtime sur le client courant : événements
+// data (pull debouncé) + statut du canal (coupure → erreur + reconnexion).
+const installerRealtime = (): void => {
+  if (!client) return;
+  desabonner?.();
+  const gen = ++generationRealtime;
+  desabonner = client.abonner(
+    () => {
+      if (pullTimer) clearTimeout(pullTimer);
+      pullTimer = setTimeout(() => {
+        void pull();
+      }, 500);
+    },
+    (ouvert) => {
+      // Statut d'une installation supplantée ou app sans session : ignorer —
+      // seul le canal courant pilote l'état.
+      if (gen !== generationRealtime || !client || !lireSession()) return;
+      if (ouvert) {
+        if (etat !== 'sync') definirEtat('sync');
+        if (pullTimer) clearTimeout(pullTimer);
+        pullTimer = setTimeout(() => {
+          void pull();
+        }, 500); // rattrapage : récupérer ce que la coupure a fait manquer
+        // La outbox peut contenir des mutations restées bloquées pendant la
+        // coupure (pas d'event online si le réseau, lui, n'est pas tombé).
+        // flush est fence et auto-correctrice : succès → sync, échec → erreur.
+        void flush();
+      } else {
+        definirEtat('erreur');
+        planifierReconnexion();
+      }
+    },
+  );
+};
+
 // Installe le client + le realtime (idempotent) puis déclenche la
 // post-connexion. Si un client est déjà posé (tests, reconnexion), on ne
 // recrée rien — mais la post-connexion doit avoir lieu.
 const connecter = async (): Promise<void> => {
   if (!client) {
     client = await creerClient();
-    desabonner = client.abonner(() => {
-      if (pullTimer) clearTimeout(pullTimer);
-      pullTimer = setTimeout(() => {
-        void pull();
-      }, 500);
-    });
   }
+  installerRealtime();
   await postConnexion();
 };
 
@@ -367,28 +427,40 @@ export const connecterFoyer = async (code: string): Promise<void> => {
   if (!syncActif()) throw new Error('sync-inactive');
   const session = await demanderSession(code.trim());
   definirSession(session.token, session.foyerId);
-  await connecter();
+  try {
+    await connecter();
+  } catch (e) {
+    // Session posée mais connexion échouée : l'état doit refléter l'erreur
+    // (point rouge + tap réparateur), pas rester hors-foyer avec une session.
+    if (lireSession()) definirEtat('erreur');
+    throw e;
+  }
 };
 
 export const deconnecterFoyer = (): void => {
   desabonner?.();
   desabonner = null;
+  generationRealtime++; // les callbacks de statut en vol deviennent obsolètes
   client = null;
   if (flushTimer) clearTimeout(flushTimer);
   flushTimer = null;
   if (pullTimer) clearTimeout(pullTimer);
   pullTimer = null;
+  if (reconnexionTimer) clearTimeout(reconnexionTimer);
+  reconnexionTimer = null;
   viderOutbox();
   effacerSession();
-  definirEtat('off');
+  // hors-foyer (pas off) : le bloc Profil reste affiché avec le formulaire
+  // de reconnexion — plus besoin de recharger la page pour se reconnecter.
+  definirEtat('hors-foyer');
 };
 
 // Purge du foyer : le serveur est nettoyé AVANT le local — si le réseau
 // échoue, session + outbox restent en place (retry possible) et l'état ne
-// repasse 'off' qu'après une purge confirmée.
+// repasse 'hors-foyer' qu'après une purge confirmée.
 export const purgerFoyer = async (): Promise<void> => {
   if (!client) throw new Error('pas-connecte');
-  definirEtat('attente'); // purge engagée : plus 'off', même en cas d'échec
+  definirEtat('attente'); // purge engagée : plus 'hors-foyer', même en cas d'échec
   await flush(); // fence : les upserts en attente partent avant les deletes
   if (!client) return; // déconnexion pendant la flush → plus rien à purger
   await client.purger(); // serveur d'abord — jamais de données orphelines
@@ -415,7 +487,7 @@ export const initSync = (
   window.addEventListener('online', surEnLigne);
   const demarrer = async (): Promise<void> => {
     if (!lireSession()) {
-      definirEtat('attente'); // sync prête, en attente d'appairage foyer
+      definirEtat('hors-foyer'); // sync prête, foyer non appairé : pas de point
       return;
     }
     try {
@@ -428,10 +500,19 @@ export const initSync = (
   void demarrer();
 };
 
-// Tap sur l'indicateur de la bannière : re-sync manuelle séquentielle
-// (flush puis pull — jamais en parallèle).
+// Tap sur l'indicateur de la bannière. Client absent (échec au démarrage) :
+// reconnecter d'abord — flush/pull sans client ne feraient rien. Sinon :
+// re-sync manuelle séquentielle (flush puis pull — jamais en parallèle).
 export const ressynchroniser = (): void => {
   void (async () => {
+    if (!client && lireSession()) {
+      try {
+        await connecter();
+      } catch {
+        definirEtat('erreur');
+      }
+      return;
+    }
     await flush();
     if (client) await pull();
   })();

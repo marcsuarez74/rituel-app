@@ -8,6 +8,29 @@ vi.mock('../../src/lib/sync/config', () => ({
   syncActif: vi.fn(() => true),
 }));
 
+// Mocks partiels : seul creerClient / demanderSession est substituable —
+// le reste des modules reste réel (session localStorage, types du client).
+const { creerClientMock, demanderSessionMock } = vi.hoisted(() => ({
+  creerClientMock: vi.fn(),
+  demanderSessionMock: vi.fn(),
+}));
+
+vi.mock('../../src/lib/sync/client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../src/lib/sync/client')>()),
+  creerClient: (...args: Parameters<typeof import('../../src/lib/sync/client').creerClient>) =>
+    creerClientMock(...args),
+}));
+
+vi.mock('../../src/lib/sync/session', async (importOriginal) => {
+  const reel = await importOriginal<typeof import('../../src/lib/sync/session')>();
+  demanderSessionMock.mockImplementation(reel.demanderSession); // passthrough réel par défaut
+  return {
+    ...reel,
+    demanderSession: (...args: Parameters<typeof reel.demanderSession>) =>
+      demanderSessionMock(...args),
+  };
+});
+
 import { syncActif } from '../../src/lib/sync/config';
 import {
   appliquerRemote,
@@ -509,7 +532,7 @@ describe('sync: connexion foyer', () => {
     deconnecterFoyer();
     expect(lireSession()).toBeNull();
     expect(lireOutbox()).toEqual([]);
-    expect(etatSync()).toBe('off');
+    expect(etatSync()).toBe('hors-foyer');
   });
 
   it('lireSessionPub expose la session (usage UI)', () => {
@@ -542,7 +565,7 @@ describe('sync: purge + init', () => {
     expect(client.purgees).toBe(true);
     expect(lireSession()).toBeNull();
     expect(lireOutbox()).toEqual([]);
-    expect(etatSync()).toBe('off');
+    expect(etatSync()).toBe('hors-foyer');
   });
 
   it('purge en échec → session et outbox locales conservées', async () => {
@@ -566,12 +589,6 @@ describe('sync: purge + init', () => {
     initSync({});
     expect(etatSync()).toBe('off');
     expect(client.lectures).toEqual([]); // aucun toutLire
-  });
-
-  it('initSync sans session → etat attente, aucun réseau', () => {
-    initSync({});
-    expect(etatSync()).toBe('attente');
-    expect(client.lectures).toEqual([]);
   });
 
   it('initSync avec session → flush + pull, onEtat appelé', async () => {
@@ -617,6 +634,217 @@ describe('sync: purge + init', () => {
     resoudreLecture();
     await p;
     expect(getChecks('2026-S39')['b1']).toBe(false); // le remote n'a PAS été appliqué
-    expect(etatSync()).toBe('off');
+    expect(etatSync()).toBe('hors-foyer');
+  });
+});
+
+describe('sync: états de présence', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    viderOutbox();
+    effacerSession();
+    reinitialiser();
+    injecterClient(fauxClient());
+  });
+  afterEach(() => {
+    reinitialiser();
+  });
+
+  it('sync active, sans session : hors-foyer (pas de point bannière)', () => {
+    initSync({ onEtat: () => {}, onRemote: () => {} });
+    expect(etatSync()).toBe('hors-foyer');
+  });
+
+  it('appairage réussi mais connexion en échec : erreur (session posée)', async () => {
+    // Chemin réel : sans client injecté, connecter() passe par creerClient()
+    // (Supabase indisponible au moment de l'appairage) — injecterClient ne
+    // couvre pas ce chemin.
+    injecterClient(null);
+    creerClientMock.mockRejectedValueOnce(new Error('reseau'));
+    demanderSessionMock.mockResolvedValueOnce({ token: 't', foyerId: 'f' });
+    await expect(connecterFoyer('CODE-1')).rejects.toThrow('reseau');
+    expect(etatSync()).toBe('erreur');
+    expect(lireSessionPub()).not.toBeNull();
+  });
+
+  it('déconnexion volontaire : hors-foyer (reconnexion possible au profil)', () => {
+    // Session posée APRÈS initSync : sans session au démarrage, aucune
+    // connexion ne s'amorce — l'assertion porte sur l'état final uniquement.
+    initSync({ onEtat: () => {}, onRemote: () => {} });
+    definirSession('token-test', 'foyer-1');
+    deconnecterFoyer();
+    expect(etatSync()).toBe('hors-foyer');
+    expect(lireSessionPub()).toBeNull();
+  });
+});
+
+describe('sync: reconnexion', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-09-16T10:00:00'));
+    localStorage.clear();
+    viderOutbox();
+    effacerSession();
+    reinitialiser();
+    creerClientMock.mockReset();
+  });
+  afterEach(() => {
+    reinitialiser();
+    vi.useRealTimers();
+  });
+
+  it('ressynchronise recrée le client après un échec au démarrage', async () => {
+    // Démarrage sans réseau : creerClient rejette → erreur, client null.
+    creerClientMock.mockRejectedValueOnce(new Error('reseau'));
+    definirSession('token-test', 'foyer-1');
+    initSync({ onEtat: () => {}, onRemote: () => {} });
+    await vi.waitFor(() => expect(etatSync()).toBe('erreur'));
+    // Le réseau revient : le tap sur le point recrée le client et repasse sync.
+    const client = fauxClient();
+    creerClientMock.mockResolvedValueOnce(client);
+    ressynchroniser();
+    await vi.waitFor(() => expect(etatSync()).toBe('sync'));
+    expect(client.lectures.length).toBeGreaterThan(0); // post-connexion a pullé
+  });
+
+  it('fermeture du canal : erreur puis réabonnement automatique (~5 s)', async () => {
+    const statuts: Array<((ouvert: boolean) => void) | null> = [];
+    const client = fauxClient();
+    client.abonner = vi.fn((_ev: () => void, st?: (ouvert: boolean) => void) => {
+      statuts.push(st ?? null);
+      return () => {};
+    }) as unknown as SyncClient['abonner'];
+    injecterClient(client);
+    definirSession('token-test', 'foyer-1');
+    initSync({ onEtat: () => {}, onRemote: () => {} });
+    await vi.waitFor(() => expect(etatSync()).toBe('sync'));
+    expect(statuts.length).toBe(1);
+
+    statuts[0]?.(false); // TIMED_OUT / CLOSED / CHANNEL_ERROR
+    expect(etatSync()).toBe('erreur');
+
+    await vi.runAllTimersAsync(); // reconnexion planifiée (5 s)
+    expect(client.abonner).toHaveBeenCalledTimes(2);
+    statuts[1]?.(true); // le nouveau canal s'ouvre
+    expect(etatSync()).toBe('sync');
+  });
+
+  it('le canal supplanté (CLOSED après réabonnement) ne déclenche ni erreur ni reconnexion', async () => {
+    const statuts: Array<((ouvert: boolean) => void) | null> = [];
+    const client = fauxClient();
+    client.abonner = vi.fn((_ev: () => void, st?: (ouvert: boolean) => void) => {
+      statuts.push(st ?? null);
+      return () => {};
+    }) as unknown as SyncClient['abonner'];
+    injecterClient(client);
+    definirSession('token-test', 'foyer-1');
+    initSync({ onEtat: () => {}, onRemote: () => {} });
+    await vi.waitFor(() => expect(etatSync()).toBe('sync'));
+
+    statuts[0]?.(false); // coupure réelle → erreur + reconnexion planifiée
+    expect(etatSync()).toBe('erreur');
+    await vi.runAllTimersAsync(); // réabonnement → statuts.length === 2
+    expect(client.abonner).toHaveBeenCalledTimes(2);
+    statuts[1]?.(true); // le nouveau canal s'ouvre (SUBSCRIBED) — le vieux part au removeChannel
+    expect(etatSync()).toBe('sync');
+
+    statuts[0]?.(false); // le VIEUX canal annonce CLOSED (supprimé par removeChannel)
+    expect(etatSync()).toBe('sync'); // ni erreur…
+    await vi.runAllTimersAsync();
+    expect(client.abonner).toHaveBeenCalledTimes(2); // …ni nouvelle reconnexion
+  });
+
+  it('le CLOSED retardé du canal retiré ne sort pas de hors-foyer après déconnexion', async () => {
+    const statuts: Array<((ouvert: boolean) => void) | null> = [];
+    const client = fauxClient();
+    client.abonner = vi.fn((_ev: () => void, st?: (ouvert: boolean) => void) => {
+      statuts.push(st ?? null);
+      return () => {};
+    }) as unknown as SyncClient['abonner'];
+    injecterClient(client);
+    definirSession('token-test', 'foyer-1');
+    initSync({ onEtat: () => {}, onRemote: () => {} });
+    await vi.waitFor(() => expect(etatSync()).toBe('sync'));
+
+    deconnecterFoyer();
+    expect(etatSync()).toBe('hors-foyer');
+    statuts[0]?.(false); // le CLOSED de removeChannel arrive après la fin synchrone
+    expect(etatSync()).toBe('hors-foyer'); // jamais 'erreur'
+  });
+
+  it('réouverture du canal : flush de rattrapage de la outbox restée pleine', async () => {
+    // Coupure du canal SEUL (pas d'event online) pendant une mutation.
+    const statuts: Array<((ouvert: boolean) => void) | null> = [];
+    const client = fauxClient();
+    client.abonner = vi.fn((_ev: () => void, st?: (ouvert: boolean) => void) => {
+      statuts.push(st ?? null);
+      return () => {};
+    }) as unknown as SyncClient['abonner'];
+    injecterClient(client);
+    definirSession('token-test', 'foyer-1');
+    initSync({ onEtat: () => {}, onRemote: () => {} });
+    await vi.waitFor(() => expect(etatSync()).toBe('sync'));
+
+    // Canal coupé, puis une mutation s'empile (flush bloquée : canal fermé).
+    statuts[0]?.(false);
+    expect(etatSync()).toBe('erreur');
+    setCheck('2026-S39', 'courses:legumes-carottes', true);
+    expect(lireOutbox().length).toBeGreaterThan(0);
+
+    // Retour du canal : le statut ne doit être vert qu'après la flush.
+    client.echouer('aucun'); // l'upsert de la flush de rattrapage réussit
+    statuts[0]?.(true);
+    await vi.waitFor(() => expect(etatSync()).toBe('sync'));
+    expect(lireOutbox().length).toBe(0); // outbox vidée par le flush de rattrapage
+  });
+
+  it('réouverture du canal : pull de rattrapage des push manqués', async () => {
+    const statuts: Array<((ouvert: boolean) => void) | null> = [];
+    const client = fauxClient();
+    client.abonner = vi.fn((_ev: () => void, st?: (ouvert: boolean) => void) => {
+      statuts.push(st ?? null);
+      return () => {};
+    }) as unknown as SyncClient['abonner'];
+    injecterClient(client);
+    definirSession('token-test', 'foyer-1');
+    initSync({ onEtat: () => {}, onRemote: () => {} });
+    await vi.waitFor(() => expect(etatSync()).toBe('sync'));
+    const lecturesAvant = client.lectures.length;
+
+    statuts[0]?.(true); // le canal se rouvre : rattraper ce qui a manqué
+    await vi.runAllTimersAsync(); // debounce pull 500 ms
+    expect(client.lectures.length).toBeGreaterThan(lecturesAvant);
+  });
+
+  it('retour du réseau sans client : connexion relancée', async () => {
+    creerClientMock.mockRejectedValueOnce(new Error('reseau'));
+    definirSession('token-test', 'foyer-1');
+    initSync({ onEtat: () => {}, onRemote: () => {} });
+    await vi.waitFor(() => expect(etatSync()).toBe('erreur'));
+
+    const client = fauxClient();
+    creerClientMock.mockResolvedValueOnce(client);
+    window.dispatchEvent(new Event('online'));
+    await vi.waitFor(() => expect(etatSync()).toBe('sync'));
+  });
+
+  it('reinitialiser annule la reconnexion planifiée (aucun timer fantôme)', async () => {
+    const statuts: Array<((ouvert: boolean) => void) | null> = [];
+    const client = fauxClient();
+    client.abonner = vi.fn((_ev: () => void, st?: (ouvert: boolean) => void) => {
+      statuts.push(st ?? null);
+      return () => {};
+    }) as unknown as SyncClient['abonner'];
+    injecterClient(client);
+    definirSession('token-test', 'foyer-1');
+    initSync({ onEtat: () => {}, onRemote: () => {} });
+    await vi.waitFor(() => expect(etatSync()).toBe('sync'));
+
+    statuts[0]?.(false);
+    reinitialiser(); // annule tout
+    injecterClient(client); // l'état module est remis à zéro
+    definirSession('token-test', 'foyer-1');
+    await vi.runAllTimersAsync(); // ne doit ni crasher ni réabonner
+    expect(client.abonner).toHaveBeenCalledTimes(1);
   });
 });
