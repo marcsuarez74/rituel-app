@@ -22,4 +22,17 @@ describe('contrat CSS — tokens de typographie', () => {
       .map(([, v]) => v.trim());
     expect(brutes, `line-height brutes : ${brutes.join(' | ')}`).toEqual([]);
   });
+
+  it('chaque référence var(--fs-*) / var(--lh-*) est définie dans :root', () => {
+    const definis = new Set(
+      [...css.matchAll(/(--(?:fs|lh)-[\w-]+):/g)].map(([d]) => d.slice(0, -1)),
+    );
+    const orphelines = [...css.matchAll(/var\((--(?:fs|lh)-[\w-]+)\)/g)]
+      .map(([, t]) => t)
+      .filter((t) => !definis.has(t));
+    expect(
+      orphelines,
+      `tokens référencés non définis : ${orphelines.join(' | ')}`,
+    ).toEqual([]);
+  });
 });
