@@ -43,6 +43,10 @@ let pullTimer: ReturnType<typeof setTimeout> | null = null;
 let desabonner: (() => void) | null = null;
 // Reconnexion du canal planifiée après une coupure (une seule en vol).
 let reconnexionTimer: ReturnType<typeof setTimeout> | null = null;
+// Génération du realtime installé : tout callback de statut d'une
+// installation supplantée (canal retiré) est obsolète — la lib appelle
+// CLOSED même pour un canal retiré volontairement.
+let generationRealtime = 0;
 // Fencing : une seule flush en vol, représentée par sa promesse partagée —
 // les déclencheurs (mutations, realtime, réseau) peuvent se rafaler, les
 // demandes concurrentes reçoivent la même promesse et re-programment un tour.
@@ -73,6 +77,7 @@ export const injecterClient = (c: SyncClient | null): void => {
 export const reinitialiser = (): void => {
   desabonner?.();
   desabonner = null;
+  generationRealtime++; // les callbacks de statut en vol deviennent obsolètes
   window.removeEventListener('online', surEnLigne);
   client = null;
   etat = 'off';
@@ -370,6 +375,7 @@ const planifierReconnexion = (): void => {
 const installerRealtime = (): void => {
   if (!client) return;
   desabonner?.();
+  const gen = ++generationRealtime;
   desabonner = client.abonner(
     () => {
       if (pullTimer) clearTimeout(pullTimer);
@@ -378,8 +384,15 @@ const installerRealtime = (): void => {
       }, 500);
     },
     (ouvert) => {
+      // Statut d'une installation supplantée ou app sans session : ignorer —
+      // seul le canal courant pilote l'état.
+      if (gen !== generationRealtime || !client || !lireSession()) return;
       if (ouvert) {
         if (etat !== 'sync') definirEtat('sync');
+        if (pullTimer) clearTimeout(pullTimer);
+        pullTimer = setTimeout(() => {
+          void pull();
+        }, 500); // rattrapage : récupérer ce que la coupure a fait manquer
       } else {
         definirEtat('erreur');
         planifierReconnexion();
@@ -416,6 +429,7 @@ export const connecterFoyer = async (code: string): Promise<void> => {
 export const deconnecterFoyer = (): void => {
   desabonner?.();
   desabonner = null;
+  generationRealtime++; // les callbacks de statut en vol deviennent obsolètes
   client = null;
   if (flushTimer) clearTimeout(flushTimer);
   flushTimer = null;

@@ -729,6 +729,67 @@ describe('sync: reconnexion', () => {
     expect(etatSync()).toBe('sync');
   });
 
+  it('le canal supplanté (CLOSED après réabonnement) ne déclenche ni erreur ni reconnexion', async () => {
+    const statuts: Array<((ouvert: boolean) => void) | null> = [];
+    const client = fauxClient();
+    client.abonner = vi.fn((_ev: () => void, st?: (ouvert: boolean) => void) => {
+      statuts.push(st ?? null);
+      return () => {};
+    }) as unknown as SyncClient['abonner'];
+    injecterClient(client);
+    definirSession('token-test', 'foyer-1');
+    initSync({ onEtat: () => {}, onRemote: () => {} });
+    await vi.waitFor(() => expect(etatSync()).toBe('sync'));
+
+    statuts[0]?.(false); // coupure réelle → erreur + reconnexion planifiée
+    expect(etatSync()).toBe('erreur');
+    await vi.runAllTimersAsync(); // réabonnement → statuts.length === 2
+    expect(client.abonner).toHaveBeenCalledTimes(2);
+    statuts[1]?.(true); // le nouveau canal s'ouvre (SUBSCRIBED) — le vieux part au removeChannel
+    expect(etatSync()).toBe('sync');
+
+    statuts[0]?.(false); // le VIEUX canal annonce CLOSED (supprimé par removeChannel)
+    expect(etatSync()).toBe('sync'); // ni erreur…
+    await vi.runAllTimersAsync();
+    expect(client.abonner).toHaveBeenCalledTimes(2); // …ni nouvelle reconnexion
+  });
+
+  it('le CLOSED retardé du canal retiré ne sort pas de hors-foyer après déconnexion', async () => {
+    const statuts: Array<((ouvert: boolean) => void) | null> = [];
+    const client = fauxClient();
+    client.abonner = vi.fn((_ev: () => void, st?: (ouvert: boolean) => void) => {
+      statuts.push(st ?? null);
+      return () => {};
+    }) as unknown as SyncClient['abonner'];
+    injecterClient(client);
+    definirSession('token-test', 'foyer-1');
+    initSync({ onEtat: () => {}, onRemote: () => {} });
+    await vi.waitFor(() => expect(etatSync()).toBe('sync'));
+
+    deconnecterFoyer();
+    expect(etatSync()).toBe('hors-foyer');
+    statuts[0]?.(false); // le CLOSED de removeChannel arrive après la fin synchrone
+    expect(etatSync()).toBe('hors-foyer'); // jamais 'erreur'
+  });
+
+  it('réouverture du canal : pull de rattrapage des push manqués', async () => {
+    const statuts: Array<((ouvert: boolean) => void) | null> = [];
+    const client = fauxClient();
+    client.abonner = vi.fn((_ev: () => void, st?: (ouvert: boolean) => void) => {
+      statuts.push(st ?? null);
+      return () => {};
+    }) as unknown as SyncClient['abonner'];
+    injecterClient(client);
+    definirSession('token-test', 'foyer-1');
+    initSync({ onEtat: () => {}, onRemote: () => {} });
+    await vi.waitFor(() => expect(etatSync()).toBe('sync'));
+    const lecturesAvant = client.lectures.length;
+
+    statuts[0]?.(true); // le canal se rouvre : rattraper ce qui a manqué
+    await vi.runAllTimersAsync(); // debounce pull 500 ms
+    expect(client.lectures.length).toBeGreaterThan(lecturesAvant);
+  });
+
   it('retour du réseau sans client : connexion relancée', async () => {
     creerClientMock.mockRejectedValueOnce(new Error('reseau'));
     definirSession('token-test', 'foyer-1');
