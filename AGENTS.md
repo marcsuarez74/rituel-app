@@ -122,7 +122,8 @@ Toute lecture passe par `safeParse` + garde de forme : une donnée corrompue se 
 ## Git
 
 - Commits courts en français, préfixe conventionnel : `feat:`, `fix:`, `chore:`, `test:`, `docs:`, `ci:`
-- Un commit = un changement cohérent. Pousser sur `main` déclenche le déploiement — ne jamais pousser un état qui ne build pas.
+- **Tout changement passe par une Pull Request**, même petit : branche dédiée → push → `gh pr create` → CI PR (`.github/workflows/ci.yml`) verte → merge. Ne jamais pousser directement sur `main`.
+- Un commit = un changement cohérent. Le merge sur `main` déclenche le déploiement — ne jamais merger un état qui ne build pas.
 - Pas de rebase/force-push sur `main`.
 - Release : bump **volontaire** via `npm version` (section CHANGELOG renommée avant le bump), tag `v*` poussé après merge — pas de tag sans entrée CHANGELOG (`release.yml` échoue sinon).
 
