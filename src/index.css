@@ -52,6 +52,33 @@
   --shadow: 0 4px 16px rgb(38 49 43 / 0.08);
   --radius: 18px;
   color-scheme: light;
+  /* Échelle typographique — 8 niveaux texte + graphique + émoji (spec 2026-09-17) */
+  --fs-hero: 26px;
+  --fs-h1: 22px;
+  --fs-h2: 20px;
+  --fs-h3: 17px;
+  --fs-body: 16px;
+  --fs-sec: 14px;
+  --fs-meta: 12px;
+  --fs-micro: 11px;
+  --fs-chart: 10px;
+  --fs-emoji: 38px;
+  /* Échelle d'espacement 2 px — le nom du token est sa valeur (utilisée en Task 2) */
+  --sp-2: 2px;
+  --sp-4: 4px;
+  --sp-6: 6px;
+  --sp-8: 8px;
+  --sp-10: 10px;
+  --sp-12: 12px;
+  --sp-14: 14px;
+  --sp-16: 16px;
+  --sp-20: 20px;
+  --sp-24: 24px;
+  /* Interlignage */
+  --lh-none: 1;
+  --lh-tight: 1.2;
+  --lh-title: 1.25;
+  --lh-body: 1.5;
 }
 
 *,
@@ -71,8 +98,8 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Poppins', -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -137,21 +164,21 @@ h1,
 h2,
 h3 {
   margin: 0 0 8px;
-  line-height: 1.25;
+  line-height: var(--lh-title);
 }
 
 h1 {
-  font-size: 22px;
+  font-size: var(--fs-h1);
   font-weight: 600;
 }
 
 h2 {
-  font-size: 20px;
+  font-size: var(--fs-h2);
   font-weight: 600;
 }
 
 h3 {
-  font-size: 17px;
+  font-size: var(--fs-h3);
   font-weight: 600;
 }
 
@@ -193,7 +220,7 @@ p {
 
 .week-banner p {
   margin: 2px 0;
-  font-size: 14px;
+  font-size: var(--fs-sec);
 }
 
 .week-banner-main {
@@ -212,8 +239,8 @@ p {
   border-radius: 10px;
   color: var(--text);
   font: inherit;
-  font-size: 22px;
-  line-height: 1;
+  font-size: var(--fs-h1);
+  line-height: var(--lh-none);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   transition: background 0.2s, border-color 0.2s, color 0.2s;
@@ -231,7 +258,7 @@ p {
 
 .week-title {
   margin: 0;
-  font-size: 20px;
+  font-size: var(--fs-h2);
   font-weight: 700;
   letter-spacing: 0.01em;
   min-width: 0;
@@ -253,7 +280,7 @@ p {
   background: var(--accent);
   color: #ffffff;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: var(--fs-meta);
   font-weight: 700;
   box-shadow: 0 3px 10px color-mix(in srgb, var(--accent) 35%, transparent);
 }
@@ -301,7 +328,7 @@ p {
   background: none;
   border-radius: 999px;
   font-family: inherit;
-  font-size: 15px;
+  font-size: var(--fs-sec);
   font-weight: 600;
   color: var(--muted);
   transition: color 0.2s;
@@ -332,7 +359,7 @@ p {
   background: none;
   min-height: 48px;
   padding: 0 2px;
-  font-size: 14.5px;
+  font-size: var(--fs-sec);
   font-weight: 600;
   color: var(--muted);
 }
@@ -369,7 +396,7 @@ p {
 
 .rayon-cnt {
   margin-left: auto;
-  font-size: 13px;
+  font-size: var(--fs-meta);
   color: var(--muted);
   font-weight: 700;
 }
@@ -389,7 +416,7 @@ p {
   gap: 8px;
   margin: 0 0 10px;
   font-weight: 700;
-  font-size: 15px;
+  font-size: var(--fs-sec);
   color: var(--text);
 }
 
@@ -403,8 +430,8 @@ p {
   border-radius: 14px;
   background: color-mix(in srgb, var(--accent) 9%, var(--surface));
   color: var(--text);
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: var(--fs-meta);
+  line-height: var(--lh-body);
   margin-bottom: 14px;
 }
 .batch-banner b {
@@ -437,13 +464,13 @@ p {
   gap: 3px;
   margin-left: 6px;
   color: var(--accent);
-  font-size: 12px;
+  font-size: var(--fs-meta);
   font-weight: 600;
 }
 .item-note {
   display: block;
   margin-top: 2px;
-  font-size: 12px;
+  font-size: var(--fs-meta);
   color: color-mix(in srgb, var(--muted) 70%, var(--text));
 }
 
@@ -460,7 +487,7 @@ p {
   border-radius: 999px;
   padding: 6px 12px;
   min-height: 48px;
-  font-size: 12px;
+  font-size: var(--fs-meta);
   font-weight: 600;
 }
 .mm[aria-pressed='true'] {
@@ -487,7 +514,7 @@ button {
   background: var(--accent);
   color: #ffffff;
   font-weight: 700;
-  font-size: 15px;
+  font-size: var(--fs-sec);
   border: none;
   border-radius: 12px;
   cursor: pointer;
@@ -515,7 +542,7 @@ input[type='password'] {
   background: var(--surface-2);
   color: var(--text);
   font: inherit;
-  font-size: 16px;
+  font-size: var(--fs-body);
   border: 1px solid var(--border);
   border-radius: 12px;
 }
@@ -566,7 +593,7 @@ progress {
   margin: 0;
   /* Compteur sur --bg : le muted seul descend à 3,99:1 — mix pour passer ≥ 4,5:1. */
   color: color-mix(in srgb, var(--muted) 70%, var(--text));
-  font-size: 12.5px;
+  font-size: var(--fs-meta);
   font-weight: 700;
 }
 
@@ -660,7 +687,7 @@ progress {
 .onglet-prepa h4,
 .onglet-batch h4 {
   margin: 0 0 8px;
-  font-size: 13.5px;
+  font-size: var(--fs-sec);
   font-weight: 600;
 }
 
@@ -678,7 +705,7 @@ progress {
   padding: 4px 10px;
   border-radius: 999px;
   background: var(--surface-2);
-  font-size: 12px;
+  font-size: var(--fs-meta);
   font-weight: 600;
   color: var(--text);
 }
@@ -691,7 +718,7 @@ progress {
   align-items: center;
   gap: 5px;
   margin: 8px 0 0;
-  font-size: 12px;
+  font-size: var(--fs-meta);
   color: color-mix(in srgb, var(--muted) 70%, var(--text));
 }
 
@@ -705,7 +732,7 @@ progress {
 .qui-titre,
 .portions-titre {
   margin: 0 0 7px;
-  font-size: 10.5px;
+  font-size: var(--fs-micro);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -714,8 +741,8 @@ progress {
 .qui p,
 .portions p {
   margin: 4px 0;
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: var(--fs-meta);
+  line-height: var(--lh-body);
 }
 
 .bat {
@@ -725,8 +752,8 @@ progress {
   padding: 9px 11px;
   border-radius: 10px;
   background: var(--surface-2);
-  font-size: 12.5px;
-  line-height: 1.45;
+  font-size: var(--fs-meta);
+  line-height: var(--lh-body);
 }
 
 .cta {
@@ -761,7 +788,7 @@ progress {
 }
 .fhead {
   margin: 10px 2px 6px;
-  font-size: 11px;
+  font-size: var(--fs-micro);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -776,8 +803,8 @@ progress {
 }
 .box-pair p {
   margin: 3px 0;
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: var(--fs-meta);
+  line-height: var(--lh-body);
 }
 .box-pair.locked {
   color: var(--muted);
@@ -793,7 +820,7 @@ progress {
   align-items: center;
   gap: 5px;
   margin: 6px 0 0;
-  font-size: 11.5px;
+  font-size: var(--fs-meta);
   color: color-mix(in srgb, var(--muted) 70%, var(--text));
 }
 .mini-cta {
@@ -817,7 +844,7 @@ progress {
 /* Tags profil (Marc / Mél / Famille / Batch) — pills dans les onglets et la file */
 .mtag {
   display: inline-block;
-  font-size: 11px;
+  font-size: var(--fs-micro);
   font-weight: 700;
   border-radius: 999px;
   padding: 2px 8px;
@@ -882,7 +909,7 @@ progress {
 .seance-rec {
   margin-left: auto;
   flex-shrink: 0;
-  font-size: 10px;
+  font-size: var(--fs-micro);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -919,7 +946,7 @@ progress {
 .batch-section-head h3,
 .batch-section h3 {
   margin: 0;
-  font-size: 17px;
+  font-size: var(--fs-h3);
 }
 
 .rituel-timeline {
@@ -988,7 +1015,7 @@ progress {
   align-items: baseline;
   gap: 8px;
   font-weight: 700;
-  font-size: 15px;
+  font-size: var(--fs-sec);
 }
 
 .rituel-etape.done .rituel-label,
@@ -1001,15 +1028,15 @@ progress {
   margin-left: auto;
   color: var(--muted);
   font-weight: 700;
-  font-size: 12px;
+  font-size: var(--fs-meta);
   white-space: nowrap;
 }
 
 .rituel-detail {
   display: block;
   color: var(--muted);
-  font-size: 13.5px;
-  line-height: 1.45;
+  font-size: var(--fs-sec);
+  line-height: var(--lh-body);
   margin-top: 2px;
 }
 
@@ -1040,22 +1067,22 @@ progress {
   background: var(--accent-2);
   color: var(--text);
   border-radius: 7px;
-  font-size: 10.5px;
+  font-size: var(--fs-micro);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
 .micro-jour-quoi {
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: var(--fs-meta);
+  line-height: var(--lh-body);
   margin-top: 8px;
 }
 
 .micro-jour-detail {
-  font-size: 11px;
+  font-size: var(--fs-micro);
   color: var(--muted);
-  line-height: 1.45;
+  line-height: var(--lh-body);
   margin-top: 5px;
 }
 
@@ -1093,15 +1120,15 @@ progress {
 
 .reserve-nom {
   display: block;
-  font-size: 12.5px;
+  font-size: var(--fs-meta);
   font-weight: 600;
 }
 
 .reserve-cons {
   display: block;
-  font-size: 11px;
+  font-size: var(--fs-micro);
   color: var(--muted);
-  line-height: 1.45;
+  line-height: var(--lh-body);
   margin-top: 1px;
 }
 
@@ -1129,7 +1156,7 @@ progress {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 10.5px;
+  font-size: var(--fs-micro);
   font-weight: 700;
   color: var(--accent);
   background: var(--surface-2);
@@ -1140,9 +1167,9 @@ progress {
 }
 
 .rituel-production {
-  font-size: 11px;
+  font-size: var(--fs-micro);
   color: var(--muted);
-  line-height: 1.5;
+  line-height: var(--lh-body);
   margin: 6px 0 0;
 }
 
@@ -1161,20 +1188,20 @@ progress {
   padding: 20px 16px;
 }
 .guide-etape-num {
-  font-size: 12px;
+  font-size: var(--fs-meta);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--accent);
 }
 .guide-titre {
-  font-size: 19px;
+  font-size: var(--fs-h2);
   font-weight: 700;
 }
 .guide-detail {
-  font-size: 14px;
+  font-size: var(--fs-sec);
   color: color-mix(in srgb, var(--muted) 70%, var(--text));
-  line-height: 1.5;
+  line-height: var(--lh-body);
 }
 .batch-guide progress {
   width: 100%;
@@ -1210,7 +1237,7 @@ progress {
   color: #fbbf24;
   border-left: 3px solid #fbbf24;
   padding-left: 8px;
-  font-size: 14px;
+  font-size: var(--fs-sec);
 }
 
 .import {
@@ -1278,7 +1305,7 @@ progress {
 
 .weight-chip strong {
   display: block;
-  font-size: 14px;
+  font-size: var(--fs-sec);
 }
 
 .weight-actuel {
@@ -1305,7 +1332,7 @@ progress {
 .weight-grid-label,
 .weight-mois {
   fill: color-mix(in srgb, var(--muted) 60%, var(--text));
-  font-size: 8px;
+  font-size: var(--fs-chart);
   font-family: inherit;
 }
 
@@ -1318,7 +1345,7 @@ progress {
 
 .weight-objectif-texte {
   fill: var(--text);
-  font-size: 8px;
+  font-size: var(--fs-chart);
   font-family: inherit;
 }
 
@@ -1343,13 +1370,13 @@ progress {
 
 .weight-label {
   fill: color-mix(in srgb, var(--muted) 60%, var(--text));
-  font-size: 8.5px;
+  font-size: var(--fs-chart);
   font-family: inherit;
 }
 
 .weight-label-actuel {
   fill: var(--text);
-  font-size: 9px;
+  font-size: var(--fs-chart);
   font-weight: 600;
 }
 
@@ -1376,15 +1403,15 @@ progress {
 
 .onboarding h1 {
   margin-top: 16px;
-  font-size: 24px;
+  font-size: var(--fs-h1);
   font-weight: 700;
-  line-height: 1.2;
+  line-height: var(--lh-tight);
 }
 
 .onboarding-sub {
   margin: 4px 0 0;
   color: var(--muted);
-  font-size: 14px;
+  font-size: var(--fs-sec);
 }
 
 .onboarding-dots {
@@ -1442,18 +1469,18 @@ progress {
 }
 
 .onboarding-card-emoji {
-  font-size: 38px;
-  line-height: 1;
+  font-size: var(--fs-emoji);
+  line-height: var(--lh-none);
 }
 
 .onboarding-card-prenom {
   margin-top: 8px;
-  font-size: 19px;
+  font-size: var(--fs-h2);
   font-weight: 700;
 }
 
 .onboarding-card-tagline {
-  font-size: 12px;
+  font-size: var(--fs-meta);
   font-weight: 600;
   color: rgb(39 41 50 / 0.75);
 }
@@ -1490,7 +1517,7 @@ progress {
 
 .onboarding-field label {
   color: var(--muted);
-  font-size: 12px;
+  font-size: var(--fs-meta);
   font-weight: 700;
 }
 
@@ -1502,7 +1529,7 @@ progress {
   background: var(--accent);
   color: #ffffff;
   font: inherit;
-  font-size: 16px;
+  font-size: var(--fs-body);
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 35%, transparent);
@@ -1521,8 +1548,8 @@ progress {
   border: 1px solid color-mix(in srgb, var(--accent-2) 55%, var(--border));
   border-radius: 14px;
   padding: 12px 14px;
-  font-size: 12.5px;
-  line-height: 1.5;
+  font-size: var(--fs-meta);
+  line-height: var(--lh-body);
 }
 .onb-note svg {
   color: var(--accent);
@@ -1536,32 +1563,32 @@ progress {
   background: var(--surface-2);
   border-radius: 12px;
   padding: 10px 14px;
-  font-size: 13px;
+  font-size: var(--fs-meta);
   font-weight: 600;
   margin-top: 12px;
 }
 .mig-prof span:last-child {
   color: var(--muted);
   font-weight: 500;
-  font-size: 11.5px;
+  font-size: var(--fs-meta);
 }
 .onb-req::after {
   content: ' · à compléter';
   color: var(--danger);
   font-weight: 700;
-  font-size: 11px;
+  font-size: var(--fs-micro);
 }
 .onb-hint {
-  font-size: 11px;
+  font-size: var(--fs-micro);
   color: var(--muted);
   margin-top: 5px;
-  line-height: 1.4;
+  line-height: var(--lh-body);
 }
 .onb-opt {
   font-weight: 500;
 }
 .onb-label {
-  font-size: 12px;
+  font-size: var(--fs-meta);
   font-weight: 700;
   color: var(--muted);
   text-transform: uppercase;
@@ -1638,15 +1665,15 @@ progress {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13.5px;
+  font-size: var(--fs-sec);
   font-weight: 700;
 }
 .rcard-d {
   display: block;
-  font-size: 11px;
+  font-size: var(--fs-micro);
   color: var(--muted);
   margin-top: 3px;
-  line-height: 1.4;
+  line-height: var(--lh-body);
 }
 .rcard.sel {
   border-color: var(--accent);
@@ -1774,7 +1801,7 @@ progress {
   gap: 10px;
 }
 .stat-card-hero .stat-value {
-  font-size: 26px;
+  font-size: var(--fs-hero);
   margin-top: 0;
 }
 .stat-delta small {
@@ -1799,24 +1826,24 @@ progress {
   align-items: center;
   gap: 6px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--fs-micro);
   font-weight: 500;
 }
 
 .stat-value {
-  font-size: 20px;
+  font-size: var(--fs-h2);
   font-weight: 600;
-  line-height: 1.2;
+  line-height: var(--lh-tight);
 }
 
 .stat-value small {
-  font-size: 11px;
+  font-size: var(--fs-micro);
   color: var(--muted);
   font-weight: 500;
 }
 
 .stat-delta {
-  font-size: 10px;
+  font-size: var(--fs-micro);
   font-weight: 600;
 }
 
@@ -1838,7 +1865,7 @@ progress {
 .greeting {
   margin: 0 0 12px;
   color: var(--muted);
-  font-size: 14px;
+  font-size: var(--fs-sec);
   font-weight: 700;
 }
 
@@ -1858,7 +1885,7 @@ progress {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 11px;
+  font-size: var(--fs-micro);
   font-weight: 700;
   border-radius: 999px;
   padding: 4px 10px;
@@ -1869,7 +1896,7 @@ progress {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 11px;
+  font-size: var(--fs-micro);
   font-weight: 700;
   border-radius: 999px;
   padding: 4px 10px;
@@ -1880,7 +1907,7 @@ progress {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12.5px;
+  font-size: var(--fs-meta);
   color: var(--muted);
   margin-top: 10px;
 }
@@ -1894,18 +1921,18 @@ progress {
   margin-top: 12px;
 }
 .obj-kg {
-  font-size: 22px;
+  font-size: var(--fs-h1);
   font-weight: 700;
   letter-spacing: -0.02em;
 }
 .obj-kg small {
-  font-size: 12px;
+  font-size: var(--fs-meta);
   font-weight: 600;
   color: var(--muted);
   margin-left: 2px;
 }
 .obj-kg span {
-  font-size: 12px;
+  font-size: var(--fs-meta);
   font-weight: 600;
   color: var(--muted);
   margin-left: 2px;
@@ -1924,16 +1951,16 @@ progress {
   background: var(--accent);
 }
 .obj-det {
-  font-size: 11px;
+  font-size: var(--fs-micro);
   color: var(--muted);
   margin-top: 6px;
-  line-height: 1.4;
+  line-height: var(--lh-body);
 }
 .obj-plain {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: var(--fs-meta);
   color: var(--muted);
   margin-top: 12px;
 }
@@ -1951,14 +1978,14 @@ progress {
 }
 .obj-comps-label {
   width: 100%;
-  font-size: 10.5px;
+  font-size: var(--fs-micro);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--muted);
 }
 .cchip {
-  font-size: 11px;
+  font-size: var(--fs-micro);
   font-weight: 600;
   border-radius: 999px;
   padding: 3px 10px;
@@ -2008,7 +2035,7 @@ progress {
   background: none;
   color: var(--text);
   font: inherit;
-  font-size: 14px;
+  font-size: var(--fs-sec);
   font-weight: 600;
   text-align: left;
   cursor: pointer;
@@ -2051,7 +2078,7 @@ progress {
 
 .profil-about {
   margin-top: 16px;
-  font-size: 13px;
+  font-size: var(--fs-meta);
   text-align: center;
 }
 
@@ -2070,7 +2097,7 @@ progress {
 }
 
 .recette-score-value {
-  font-size: 13px;
+  font-size: var(--fs-meta);
   font-weight: 600;
   color: var(--text);
 }
@@ -2078,7 +2105,7 @@ progress {
 .recette-score-value small {
   color: var(--muted);
   font-weight: 400;
-  font-size: 11px;
+  font-size: var(--fs-micro);
 }
 
 .score-bar {
@@ -2108,7 +2135,7 @@ progress {
   border-radius: 8px;
   padding: 7px 10px;
   margin-top: 10px;
-  font-size: 11px;
+  font-size: var(--fs-micro);
   color: var(--muted);
 }
 
@@ -2129,8 +2156,8 @@ progress {
 
 .recette-pour {
   margin: 8px 0 0;
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: var(--fs-meta);
+  line-height: var(--lh-body);
   color: var(--text);
 }
 
@@ -2151,7 +2178,7 @@ progress {
      Texte basilic mixé 90 % d'encre pour rester ≥ 4,5:1 sur surface-2. */
   min-height: 48px;
   padding: 4px 16px;
-  font-size: 12px;
+  font-size: var(--fs-meta);
   font-weight: 700;
   color: color-mix(in srgb, var(--accent) 90%, var(--text));
   cursor: pointer;
@@ -2167,16 +2194,16 @@ progress {
   padding: 8px 10px;
   background: var(--surface-2);
   border-radius: 10px;
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: var(--fs-meta);
+  line-height: var(--lh-body);
   color: var(--muted);
 }
 
 .recette-etapes {
   margin: 10px 0 0;
   padding-left: 18px;
-  font-size: 13px;
-  line-height: 1.55;
+  font-size: var(--fs-meta);
+  line-height: var(--lh-body);
   color: var(--text);
 }
 
@@ -2188,8 +2215,8 @@ progress {
   margin: 8px 0 0;
   padding: 7px 10px;
   border-radius: 10px;
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: var(--fs-meta);
+  line-height: var(--lh-body);
 }
 
 .recette-mel {
@@ -2228,7 +2255,7 @@ progress {
   gap: 8px;
 }
 .bud-head b {
-  font-size: 13.5px;
+  font-size: var(--fs-sec);
   font-weight: 700;
   color: var(--text);
 }
@@ -2236,7 +2263,7 @@ progress {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 10.5px;
+  font-size: var(--fs-micro);
   font-weight: 700;
   border-radius: 999px;
   padding: 3px 9px;
@@ -2245,14 +2272,14 @@ progress {
 }
 .bud-hero-label {
   display: block;
-  font-size: 11.5px;
+  font-size: var(--fs-meta);
   font-weight: 600;
   color: color-mix(in srgb, var(--muted) 70%, var(--text));
   margin-top: 14px;
 }
 .bud-hero {
   display: block;
-  font-size: 27px;
+  font-size: var(--fs-hero);
   font-weight: 700;
   margin-top: 2px;
   font-variant-numeric: tabular-nums;
@@ -2262,7 +2289,7 @@ progress {
   color: var(--danger);
 }
 .bud-sub {
-  font-size: 12px;
+  font-size: var(--fs-meta);
   color: color-mix(in srgb, var(--muted) 70%, var(--text));
   margin: 3px 0 0;
 }
@@ -2294,7 +2321,7 @@ progress {
   background: var(--danger);
 }
 .bud-pct {
-  font-size: 10.5px;
+  font-size: var(--fs-micro);
   font-weight: 700;
   color: color-mix(in srgb, var(--muted) 70%, var(--text));
   flex-shrink: 0;
@@ -2365,12 +2392,12 @@ progress {
   padding: 0;
 }
 .dep-head h1 {
-  font-size: 20px;
+  font-size: var(--fs-h2);
   font-weight: 700;
   margin: 8px 0 0;
 }
 .dep-sub {
-  font-size: 12px;
+  font-size: var(--fs-meta);
   color: var(--muted);
   margin: 2px 0 0;
 }
@@ -2388,7 +2415,7 @@ progress {
 }
 .dep-form .fl {
   display: block;
-  font-size: 9.5px;
+  font-size: var(--fs-micro);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -2430,10 +2457,10 @@ progress {
   gap: 6px;
 }
 .dep-form .fact .blink {
-  font-size: 12px;
+  font-size: var(--fs-meta);
 }
 .dep-sec-label {
-  font-size: 11px;
+  font-size: var(--fs-micro);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -2457,24 +2484,24 @@ progress {
   align-items: baseline;
   justify-content: space-between;
   gap: 6px;
-  font-size: 12.5px;
+  font-size: var(--fs-meta);
   font-weight: 700;
 }
 .dep-sum .nm small {
-  font-size: 10px;
+  font-size: var(--fs-micro);
   font-weight: 600;
   color: var(--muted);
   white-space: nowrap;
 }
 .dep-sum .tot {
   display: block;
-  font-size: 17px;
+  font-size: var(--fs-h3);
   font-weight: 700;
   margin-top: 3px;
   font-variant-numeric: tabular-nums;
 }
 .dep-sum .avg {
-  font-size: 10.5px;
+  font-size: var(--fs-micro);
   color: var(--muted);
   font-weight: 600;
   margin-top: 1px;
@@ -2490,7 +2517,7 @@ progress {
   gap: 10px;
   padding: 11px 2px;
   border-bottom: 1px solid var(--border);
-  font-size: 13px;
+  font-size: var(--fs-meta);
 }
 .dep:last-child {
   border-bottom: 0;
@@ -2517,17 +2544,17 @@ progress {
   border: 0;
   background: none;
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--fs-meta);
   cursor: pointer;
   border-radius: 8px;
   flex-shrink: 0;
 }
 /* Classe générique des hints (maquette maison-courses-v2 : petit texte muted) */
 .hint {
-  font-size: 11px;
+  font-size: var(--fs-micro);
   color: var(--muted);
   margin-top: 5px;
-  line-height: 1.4;
+  line-height: var(--lh-body);
 }
 .dep-hint {
   margin-top: 12px;
@@ -2595,7 +2622,7 @@ progress {
   background: none;
   border-radius: 10px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--fs-sec);
 }
 
 .sync-bloc .sync-danger:active {
