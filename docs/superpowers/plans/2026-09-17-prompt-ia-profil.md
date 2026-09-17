@@ -732,7 +732,7 @@ Remplacer la puce **Génération IA** par :
 
 - [ ] **Step 7: Gates**
 
-Run: `rg -n "Paramètres IA" src/ tests/ README.md AGENTS.md ai/`
+Run: `rg -ni "paramètres IA" src/ tests/ README.md AGENTS.md ai/` (insensible à la casse — les occurrences doc sont en minuscule)
 Expected: aucune occurrence (hors `docs/superpowers/` et `docs/ameliorations.md`, historiques).
 
 Run: `npm test`
