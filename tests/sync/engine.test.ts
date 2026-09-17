@@ -295,15 +295,15 @@ describe('sync: flush', () => {
     expect(lireOutbox()).toHaveLength(3);
   });
 
-  it('flushDiffere debounce : une seule flush après 2s, reset du timer', async () => {
+  it('flushDiffere debounce : une seule flush après 300 ms, reset du timer', async () => {
     vi.useFakeTimers();
     setCheck('2026-S39', 'b1', true);
     setCheck('2026-S39', 'b2', true);
     flushDiffere();
-    await vi.advanceTimersByTimeAsync(1500);
-    flushDiffere(); // reset : le premier timer (1500 ms déjà écoulés) est annulé
-    await vi.advanceTimersByTimeAsync(1999);
-    expect(client.upserts).toEqual([]); // 1500 + 1999 > 2000 : sans reset, la flush serait déjà passée
+    await vi.advanceTimersByTimeAsync(200);
+    flushDiffere(); // reset : le premier timer (200 ms déjà écoulés) est annulé
+    await vi.advanceTimersByTimeAsync(299);
+    expect(client.upserts).toEqual([]); // 200 + 299 > 300 : sans reset, la flush serait déjà passée
     await vi.advanceTimersByTimeAsync(10);
     expect(client.upserts).toHaveLength(1);
     expect(client.upserts[0]?.rows).toHaveLength(2); // les deux coches, groupées
@@ -354,6 +354,26 @@ describe('sync: pull / merge (outbox prime)', () => {
     ];
     await pull();
     expect(getChecks('2026-S39')['b1']).toBe(true);
+  });
+
+  it('pull démarre les 5 lectures en parallèle (avant la première réponse)', async () => {
+    let demarrees = 0;
+    let resoudre!: () => void;
+    const barriere = new Promise<void>((r) => {
+      resoudre = r;
+    });
+    injecterClient({
+      ...client,
+      toutLire: async (t: TableSync) => {
+        demarrees++;
+        return barriere.then(() => client.toutLire(t));
+      },
+    });
+    void pull();
+    await Promise.resolve(); // tick : laisser le corps de pull démarrer les lectures
+    expect(demarrees).toBe(5); // for...await séquentiel : 1 seule démarre avant la 1re réponse
+    resoudre();
+    await vi.waitFor(() => expect(etatSync()).toBe('sync'));
   });
 
   it('une pesée remote inconnue s\'ajoute ; identique → aucune écriture', async () => {
@@ -621,13 +641,14 @@ describe('sync: purge + init', () => {
     definirSession('t', 'f');
     setCheck('2026-S39', 'b1', false);
     let resoudreLecture: (rows?: RowSync[]) => void = () => {};
+    // Lectures parallèles : une promesse partagée par les 5 toutLire.
+    const lue = new Promise<RowSync[]>((r) => {
+      resoudreLecture = () =>
+        r([{ household_id: 'f', semaine: '2026-S39', check_id: 'b1', done: true }]);
+    });
     injecterClient({
       ...client,
-      toutLire: () =>
-        new Promise((r) => {
-          resoudreLecture = () =>
-            r([{ household_id: 'f', semaine: '2026-S39', check_id: 'b1', done: true }]);
-        }),
+      toutLire: () => lue,
     });
     const p = pull();
     deconnecterFoyer();
