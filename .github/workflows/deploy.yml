@@ -27,6 +27,11 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
+        env:
+          # Sync optionnelle (voir docs/backend.md) : injectées au build, jamais
+          # dans le repo. Sans secrets, la sync reste inactive (build local, CI PR).
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
       - name: Install navigateurs e2e
         run: |
           # Le miroir apt google-chrome du runner peut être incohérent côté CDN
