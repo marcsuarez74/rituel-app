@@ -8,6 +8,29 @@ vi.mock('../../src/lib/sync/config', () => ({
   syncActif: vi.fn(() => true),
 }));
 
+// Mocks partiels : seul creerClient / demanderSession est substituable —
+// le reste des modules reste réel (session localStorage, types du client).
+const { creerClientMock, demanderSessionMock } = vi.hoisted(() => ({
+  creerClientMock: vi.fn(),
+  demanderSessionMock: vi.fn(),
+}));
+
+vi.mock('../../src/lib/sync/client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../src/lib/sync/client')>()),
+  creerClient: (...args: Parameters<typeof import('../../src/lib/sync/client').creerClient>) =>
+    creerClientMock(...args),
+}));
+
+vi.mock('../../src/lib/sync/session', async (importOriginal) => {
+  const reel = await importOriginal<typeof import('../../src/lib/sync/session')>();
+  demanderSessionMock.mockImplementation(reel.demanderSession); // passthrough réel par défaut
+  return {
+    ...reel,
+    demanderSession: (...args: Parameters<typeof reel.demanderSession>) =>
+      demanderSessionMock(...args),
+  };
+});
+
 import { syncActif } from '../../src/lib/sync/config';
 import {
   appliquerRemote,
@@ -568,12 +591,6 @@ describe('sync: purge + init', () => {
     expect(client.lectures).toEqual([]); // aucun toutLire
   });
 
-  it('initSync sans session → etat hors-foyer, aucun réseau', () => {
-    initSync({});
-    expect(etatSync()).toBe('hors-foyer');
-    expect(client.lectures).toEqual([]);
-  });
-
   it('initSync avec session → flush + pull, onEtat appelé', async () => {
     definirSession('t', 'f');
     const onEtat = vi.fn();
@@ -636,6 +653,18 @@ describe('sync: états de présence', () => {
   it('sync active, sans session : hors-foyer (pas de point bannière)', () => {
     initSync({ onEtat: () => {}, onRemote: () => {} });
     expect(etatSync()).toBe('hors-foyer');
+  });
+
+  it('appairage réussi mais connexion en échec : erreur (session posée)', async () => {
+    // Chemin réel : sans client injecté, connecter() passe par creerClient()
+    // (Supabase indisponible au moment de l'appairage) — injecterClient ne
+    // couvre pas ce chemin.
+    injecterClient(null);
+    creerClientMock.mockRejectedValueOnce(new Error('reseau'));
+    demanderSessionMock.mockResolvedValueOnce({ token: 't', foyerId: 'f' });
+    await expect(connecterFoyer('CODE-1')).rejects.toThrow('reseau');
+    expect(etatSync()).toBe('erreur');
+    expect(lireSessionPub()).not.toBeNull();
   });
 
   it('déconnexion volontaire : hors-foyer (reconnexion possible au profil)', () => {

@@ -88,11 +88,13 @@ describe('sync UI: bannière', () => {
     expect(screen.queryByRole('button')).toBeNull();
   });
 
-  it('attente et erreur : le point reste visible (régression)', () => {
+  it('attente, erreur et sync : le point reste visible (régression)', () => {
     const { rerender } = render(<WeekBanner meta={metaFix} syncEtat="attente" />);
     expect(screen.getByRole('button', { name: /Synchronisation/ })).toBeInTheDocument();
     rerender(<WeekBanner meta={metaFix} syncEtat="erreur" />);
     expect(screen.getByRole('button', { name: /Synchronisation/ })).toBeInTheDocument();
+    rerender(<WeekBanner meta={metaFix} syncEtat="sync" />);
+    expect(screen.getByRole('button', { name: 'Synchronisé' })).toBeInTheDocument();
   });
 
   it('point visible en erreur, tap déclenche re-sync', async () => {

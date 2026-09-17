@@ -565,8 +565,9 @@ export function ProfilScreen({
           <h3>Synchronisation</h3>
           {lireSessionPub() ? (
             <>
-              {/* hors-foyer n'affiche jamais de label : la branche sans
-                  session (ci-dessous) montre le formulaire. */}
+              {/* hors-foyer n'a jamais de label ici : fenêtre transitoire
+                  (session posée, connexion en échec) — l'alerte syncErreur
+                  et le point rouge portent le signal. */}
               {syncEtat !== 'hors-foyer' && <p className="muted">{ETAT_SYNC[syncEtat]}</p>}
               <button type="button" className="profil-ghost" onClick={deconnecterFoyer}>
                 Déconnecter le foyer

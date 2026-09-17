@@ -367,7 +367,14 @@ export const connecterFoyer = async (code: string): Promise<void> => {
   if (!syncActif()) throw new Error('sync-inactive');
   const session = await demanderSession(code.trim());
   definirSession(session.token, session.foyerId);
-  await connecter();
+  try {
+    await connecter();
+  } catch (e) {
+    // Session posée mais connexion échouée : l'état doit refléter l'erreur
+    // (point rouge + tap réparateur), pas rester hors-foyer avec une session.
+    if (lireSession()) definirEtat('erreur');
+    throw e;
+  }
 };
 
 export const deconnecterFoyer = (): void => {
@@ -390,7 +397,7 @@ export const deconnecterFoyer = (): void => {
 // repasse 'hors-foyer' qu'après une purge confirmée.
 export const purgerFoyer = async (): Promise<void> => {
   if (!client) throw new Error('pas-connecte');
-  definirEtat('attente'); // purge engagée : plus 'off', même en cas d'échec
+  definirEtat('attente'); // purge engagée : plus 'hors-foyer', même en cas d'échec
   await flush(); // fence : les upserts en attente partent avant les deletes
   if (!client) return; // déconnexion pendant la flush → plus rien à purger
   await client.purger(); // serveur d'abord — jamais de données orphelines
