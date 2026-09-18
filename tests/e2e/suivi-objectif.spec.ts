@@ -46,7 +46,7 @@ test.describe('Mon suivi — bloc objectif et carte Poids', () => {
 
   test('bloc objectif, carte Poids et séances en liste libre', async ({ page }) => {
     await page.goto(ORIGIN);
-    await expect(page.getByText('Semaine 2026-S37')).toBeVisible();
+    await expect(page.getByText('Semaine 37')).toBeVisible();
     await page.getByRole('button', { name: 'Mon suivi' }).click();
 
     const obj = page.locator('.obj-bloc');
@@ -70,7 +70,7 @@ test.describe('Mon suivi — bloc objectif et carte Poids', () => {
     test(`zéro débordement horizontal sur le suivi à ${largeur}px`, async ({ page }) => {
       await page.setViewportSize({ width: largeur, height: 700 });
       await page.goto(ORIGIN);
-      await expect(page.getByText('Semaine 2026-S37')).toBeVisible();
+      await expect(page.getByText('Semaine 37')).toBeVisible();
       // document.fonts.ready fixe le layout avant la mesure (pattern dock.spec).
       await page.evaluate(() => document.fonts.ready);
       await page.getByRole('button', { name: 'Mon suivi' }).click();

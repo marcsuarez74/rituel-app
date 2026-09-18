@@ -29,7 +29,7 @@ test.describe('Nav segmented — mobile', () => {
 
   test('nav segmented visible sous la bannière, plus de dock flottant', async ({ page }) => {
     await page.goto(ORIGIN);
-    await expect(page.getByText('Semaine 2026-S37')).toBeVisible();
+    await expect(page.getByText('Semaine 37')).toBeVisible();
     const nav = page.locator('.tabbar-segmented');
     await expect(nav).toBeVisible();
     await expect(page.locator('.tabbar-dock')).toHaveCount(0);
@@ -52,7 +52,7 @@ test.describe('Nav segmented — mobile', () => {
   // swipe est ignoré (le handler exclut les contrôles interactifs).
   test('swipe horizontal bascule Cuisine ↔ Mon suivi', async ({ page }) => {
     await page.goto(ORIGIN);
-    await expect(page.getByText('Semaine 2026-S37')).toBeVisible();
+    await expect(page.getByText('Semaine 37')).toBeVisible();
     await page.evaluate(() => document.fonts.ready);
     // swipe vers la gauche → Mon suivi
     await page.mouse.move(300, 400);

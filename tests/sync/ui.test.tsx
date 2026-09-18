@@ -68,36 +68,37 @@ describe('sync UI: app', () => {
     await waitFor(() =>
       expect(screen.queryByRole('heading', { name: /Qui est derrière l'écran/ })).toBeNull(),
     );
-    expect(screen.getByText('Semaine 2026-S37')).toBeInTheDocument();
+    expect(screen.getByText('Semaine 37')).toBeInTheDocument();
   });
 });
 
 describe('sync UI: bannière', () => {
   const metaFix = { semaine: '2026-S39', menu: 'A', du: '2026-09-21', au: '2026-09-27' };
 
-  it('pas de point sans sync (off / prop absente)', () => {
+  it('sans sync (off / prop absente) : chip en mode Local, pas de bouton sync', () => {
     render(<WeekBanner meta={{ semaine: '2026-S39', menu: 'A', du: '2026-09-21', au: '2026-09-27' }} />);
     expect(screen.queryByRole('button', { name: /synchroni/i })).toBeNull();
+    expect(screen.getByText('Local')).toBeInTheDocument();
   });
 
-  it('hors-foyer : aucun point bannière', () => {
+  it('hors-foyer : chip en mode Local (pas de chip Duo)', () => {
     render(<WeekBanner meta={metaFix} syncEtat="hors-foyer" />);
     expect(screen.queryByRole('button', { name: /Synchronisation/ })).not.toBeInTheDocument();
-    // Garde sur tout bouton : sans le fix, le point existe mais son aria-label
-    // est undefined — il ne matcherait pas /Synchronisation/.
-    expect(screen.queryByRole('button')).toBeNull();
+    // Garde : aucune chip Duo (quel que soit son état), la chip affiche Local.
+    expect(screen.queryByRole('button', { name: /Duo/ })).not.toBeInTheDocument();
+    expect(screen.getByText('Local')).toBeInTheDocument();
   });
 
-  it('attente, erreur et sync : le point reste visible (régression)', () => {
+  it('attente, erreur et sync : la chip reste visible (régression)', () => {
     const { rerender } = render(<WeekBanner meta={metaFix} syncEtat="attente" />);
-    expect(screen.getByRole('button', { name: /Synchronisation/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /synchronisation en cours/i })).toBeInTheDocument();
     rerender(<WeekBanner meta={metaFix} syncEtat="erreur" />);
-    expect(screen.getByRole('button', { name: /Synchronisation/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /erreur, appuyer/i })).toBeInTheDocument();
     rerender(<WeekBanner meta={metaFix} syncEtat="sync" />);
-    expect(screen.getByRole('button', { name: 'Synchronisé' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /synchronisé, appuyer/i })).toBeInTheDocument();
   });
 
-  it('point visible en erreur, tap déclenche re-sync', async () => {
+  it('chip visible en erreur, tap déclenche re-sync', async () => {
     const onSyncTap = vi.fn();
     render(
       <WeekBanner
@@ -106,8 +107,8 @@ describe('sync UI: bannière', () => {
         onSyncTap={onSyncTap}
       />,
     );
-    const dot = screen.getByRole('button', { name: /synchronisation.*erreur/i });
-    await userEvent.setup().click(dot);
+    const chip = screen.getByRole('button', { name: /erreur, appuyer pour réessayer/i });
+    await userEvent.setup().click(chip);
     expect(onSyncTap).toHaveBeenCalledOnce();
   });
 });

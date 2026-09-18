@@ -107,11 +107,11 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     // Build de prod avec sync compilée : l'étape 6 optionnelle s'intercale
     // — « Plus tard » poursuit ; sans sync, le shell arrive direct.
     const plusTard = page.getByRole('button', { name: 'Plus tard' });
-    await plusTard.or(page.getByText('Semaine 2026-S37')).first().waitFor();
+    await plusTard.or(page.getByText('Semaine 37')).first().waitFor();
     if (await plusTard.isVisible()) await plusTard.click();
 
     // Profil enregistré + semaine d'exemple auto-chargée → shell direct
-    await expect(page.getByText('Semaine 2026-S37')).toBeVisible();
+    await expect(page.getByText('Semaine 37')).toBeVisible();
     const profil = await page.evaluate(() => JSON.parse(localStorage.getItem('sportapp:profile')!));
     expect(profil).toEqual({
       id: 'melanie',
@@ -148,10 +148,10 @@ test.describe('Onboarding 5 étapes — mobile', () => {
 
     // Même tolérance à l'étape 6 optionnelle que le parcours complet.
     const plusTard = page.getByRole('button', { name: 'Plus tard' });
-    await plusTard.or(page.getByText('Semaine 2026-S37')).first().waitFor();
+    await plusTard.or(page.getByText('Semaine 37')).first().waitFor();
     if (await plusTard.isVisible()) await plusTard.click();
 
-    await expect(page.getByText('Semaine 2026-S37')).toBeVisible();
+    await expect(page.getByText('Semaine 37')).toBeVisible();
     const profil = await page.evaluate(() => JSON.parse(localStorage.getItem('sportapp:profile')!));
     expect(profil).toEqual({
       id: 'melanie',
