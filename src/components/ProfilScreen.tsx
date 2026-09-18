@@ -50,8 +50,9 @@ export function ProfilScreen({
   onImported: () => void;
   syncEtat?: SyncEtat;
 }) {
-  const [dateNaissance, setDateNaissance] = useState(profile.dateNaissance);
-  const [taille, setTaille] = useState(String(profile.taille));
+  const [prenom, setPrenom] = useState(profile.prenom ?? '');
+  const [dateNaissance, setDateNaissance] = useState(profile.dateNaissance ?? '');
+  const [taille, setTaille] = useState(profile.taille != null ? String(profile.taille) : '');
   const [objectifType, setObjectifType] = useState<ObjectifType>(profile.objectif.type);
   const [echeance, setEcheance] = useState(profile.objectif.echeance ?? '');
   const [poidsObjectif, setPoidsObjectif] = useState(
@@ -149,26 +150,38 @@ export function ProfilScreen({
     setErreur((e) => (e?.section === section ? null : e));
 
   const enregistrerInfos = () => {
-    const cm = Number.parseInt(taille, 10);
-    if (!dateNaissance || Number.isNaN(cm)) {
+    const cm = taille ? Number.parseInt(taille, 10) : undefined;
+    if ((dateNaissance || taille) && (!dateNaissance || cm === undefined || Number.isNaN(cm))) {
       setErreur({ section: 'infos', texte: 'Formulaire incomplet : remplis ta date de naissance et ta taille.' });
       return;
     }
-    if (dateNaissance > todayISO()) {
-      setErreur({ section: 'infos', texte: 'La date de naissance ne peut pas être dans le futur.' });
-      return;
+    if (dateNaissance) {
+      if (dateNaissance > todayISO()) {
+        setErreur({ section: 'infos', texte: 'La date de naissance ne peut pas être dans le futur.' });
+        return;
+      }
+      const ans = ageDepuis(dateNaissance);
+      if (ans < 10 || ans > 100) {
+        setErreur({ section: 'infos', texte: 'Âge calculé invalide : entre 10 et 100 ans.' });
+        return;
+      }
     }
-    const ans = ageDepuis(dateNaissance);
-    if (ans < 10 || ans > 100) {
-      setErreur({ section: 'infos', texte: 'Âge calculé invalide : entre 10 et 100 ans.' });
-      return;
-    }
-    if (cm < 120 || cm > 230) {
+    if (cm != null && (cm < 120 || cm > 230)) {
       setErreur({ section: 'infos', texte: 'Taille invalide : entre 120 et 230 cm.' });
       return;
     }
     clearErreur('infos');
-    maj('infos', { ...profile, dateNaissance, taille: cm });
+    // Pattern delete + re-set (cf. enregistrerObjectif / enregistrerMaison) :
+    // un champ vidé retire la donnée — un profil partiel (prénom seul) est
+    // un état valide, jamais une valeur vide écrite.
+    const updated: UserProfile = { ...profile };
+    delete updated.prenom;
+    delete updated.dateNaissance;
+    delete updated.taille;
+    if (prenom.trim()) updated.prenom = prenom.trim();
+    if (dateNaissance) updated.dateNaissance = dateNaissance;
+    if (cm != null) updated.taille = cm;
+    maj('infos', updated);
   };
 
   const enregistrerObjectif = () => {
@@ -333,6 +346,21 @@ export function ProfilScreen({
 
       <section className="profile-section">
         <h3>Mes infos</h3>
+        <div className="onboarding-field">
+          <label htmlFor="pf-prenom">Prénom</label>
+          <input
+            id="pf-prenom"
+            type="text"
+            maxLength={20}
+            value={prenom}
+            onChange={(e) => {
+              setSavedSection(null);
+              clearErreur('infos');
+              setPrenom(e.target.value);
+            }}
+          />
+          <p className="onb-hint">Utilisé dans les salutations et le prompt IA.</p>
+        </div>
         <div className="onboarding-field">
           <label htmlFor="pf-naissance">Date de naissance</label>
           <input

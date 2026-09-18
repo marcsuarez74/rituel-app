@@ -125,6 +125,90 @@ describe('ProfilScreen (unité)', () => {
     });
   });
 
+  it('Mes infos : champ Prénom prérempli, édité puis enregistré', async () => {
+    render(
+      <ProfilScreen profile={{ ...profileMarc, prenom: 'Marc' }} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
+    );
+    const user = userEvent.setup();
+
+    expect(screen.getByLabelText('Prénom')).toHaveValue('Marc');
+    await user.clear(screen.getByLabelText('Prénom'));
+    await user.type(screen.getByLabelText('Prénom'), 'Jean');
+    await user.click(screen.getByRole('button', { name: /Enregistrer mes infos/ }));
+
+    expect(loadProfile()?.prenom).toBe('Jean');
+  });
+
+  it('prénom vidé : le profil ne porte plus de prenom (défaut à l affichage)', async () => {
+    render(
+      <ProfilScreen profile={{ ...profileMarc, prenom: 'Marc' }} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
+    );
+    const user = userEvent.setup();
+
+    await user.clear(screen.getByLabelText('Prénom'));
+    await user.click(screen.getByRole('button', { name: /Enregistrer mes infos/ }));
+
+    expect(loadProfile()?.prenom).toBeUndefined();
+  });
+
+  it('profil partiel (sans date ni taille) : Mes infos s affiche, le prénom s enregistre seul', async () => {
+    const partiel: UserProfile = {
+      id: 'marc',
+      prenom: '',
+      objectif: { type: 'perte' },
+      complements: [],
+      regime: 'aucun',
+    };
+    saveProfile(partiel);
+    render(
+      <ProfilScreen profile={partiel} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
+    );
+    const user = userEvent.setup();
+
+    expect(screen.getByLabelText('Prénom')).toBeInTheDocument();
+    expect(screen.getByLabelText('Taille (cm)')).toHaveValue(null);
+    expect(screen.getByText('Sélectionne ta date de naissance.')).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText('Prénom'), 'Jean');
+    await user.click(screen.getByRole('button', { name: /Enregistrer mes infos/ }));
+
+    const p = loadProfile();
+    expect(p?.prenom).toBe('Jean');
+    expect(p?.dateNaissance).toBeUndefined();
+    expect(p?.taille).toBeUndefined();
+  });
+
+  it('date et taille effacées : le profil partiel est enregistré sans erreur', async () => {
+    render(
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
+    );
+    const user = userEvent.setup();
+
+    // input[type=date] ne se laisse pas taper : convention repo = fireEvent.change.
+    await user.clear(screen.getByLabelText('Taille (cm)'));
+    fireEvent.change(screen.getByLabelText('Date de naissance'), { target: { value: '' } });
+    await user.click(screen.getByRole('button', { name: /Enregistrer mes infos/ }));
+
+    expect(within(section('Mes infos')).queryByRole('alert')).not.toBeInTheDocument();
+    const p = loadProfile();
+    expect(p?.dateNaissance).toBeUndefined();
+    expect(p?.taille).toBeUndefined();
+    expect(p?.objectif).toEqual(profileMarc.objectif);
+  });
+
+  it('date sans taille : erreur paire (formulaire incomplet)', async () => {
+    render(
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
+    );
+    const user = userEvent.setup();
+
+    await user.clear(screen.getByLabelText('Taille (cm)'));
+    await user.click(screen.getByRole('button', { name: /Enregistrer mes infos/ }));
+
+    expect(within(section('Mes infos')).getByRole('alert')).toHaveTextContent(/incomplet/i);
+    expect(loadProfile()).toBeNull();
+  });
+
   it('refuse une date de naissance donnant un âge hors bornes (cohérent avec l’onboarding)', () => {
     render(
       <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
