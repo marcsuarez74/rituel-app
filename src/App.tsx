@@ -9,7 +9,7 @@ import { Onboarding } from './components/onboarding/Onboarding';
 import { WeekBanner } from './components/WeekBanner';
 import { SemaineSwitcher } from './components/SemaineSwitcher';
 import { CuisineView } from './components/cuisine/CuisineView';
-import { PRENOMS } from './lib/model';
+import { prenomProfil } from './lib/model';
 import type { ImportedWeek, UserProfile } from './lib/model';
 import { parseWeeklyFile } from './lib/parse';
 import { loadProfile, loadProfilLegacy, loadWeeks, removeProfile } from './lib/storage';
@@ -185,7 +185,7 @@ function App() {
         )}
         {tab === 'suivi' && (
           <>
-            <p className="greeting">Salut {PRENOMS[profile.id]} 👋</p>
+            <p className="greeting">Salut {prenomProfil(profile.id, profile)} 👋</p>
             <SuiviHero key={`hero-${weightsBump}-${syncVersion}`} profile={profile} />
             <ProfileView
               profile={profile}

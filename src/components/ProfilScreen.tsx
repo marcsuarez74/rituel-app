@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MAGASINS_PRESETS, OBJECTIF_TYPES, PRENOMS, REGIMES, normaliseComplement } from '../lib/model';
+import { MAGASINS_PRESETS, OBJECTIF_TYPES, REGIMES, normaliseComplement, prenomProfil } from '../lib/model';
 import type { ObjectifType, Regime, UserProfile } from '../lib/model';
 import { parseEuro } from '../lib/prix';
 import { ageDepuis, todayISO } from '../lib/dates';
@@ -270,7 +270,7 @@ export function ProfilScreen({
   const changerProfil = () => {
     if (
       window.confirm(
-        `Changer de profil ? ${PRENOMS[profile.id]} restera sur ce téléphone avec ses données.`,
+        `Changer de profil ? ${prenomProfil(profile.id, profile)} restera sur ce téléphone avec ses données.`,
       )
     )
       onChangeProfile();

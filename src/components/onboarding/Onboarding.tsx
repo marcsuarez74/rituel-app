@@ -4,6 +4,7 @@ import {
   MAGASINS_PRESETS,
   OBJECTIF_TYPES,
   PREFERENCES_PRESETS,
+  PROFILS_META,
   REGIMES,
   normaliseComplement,
 } from '../../lib/model';
@@ -16,11 +17,6 @@ import { connecterFoyer } from '../../lib/sync/engine';
 import { messageConnexion } from '../../lib/sync/messages';
 import { lireSession } from '../../lib/sync/session';
 import { Icon } from '../Icon';
-
-const PROFILS: Array<{ id: ProfileKey; prenom: string; emoji: string; tagline: string }> = [
-  { id: 'marc', prenom: 'Marc', emoji: '💪', tagline: 'Diet & sport' },
-  { id: 'melanie', prenom: 'Mélanie', emoji: '🌿', tagline: 'Keto & sport' },
-];
 
 export function Onboarding({
   onDone,
@@ -62,7 +58,6 @@ export function Onboarding({
   const [syncOccupe, setSyncOccupe] = useState(false);
 
   const migration = prefill != null;
-  const profil = id ? PROFILS.find((p) => p.id === id) : undefined;
 
   const aller = (n: 1 | 2 | 3 | 4 | 5 | 6) => {
     setError(null);
@@ -280,20 +275,23 @@ export function Onboarding({
           <h1>Qui est derrière l'écran ?</h1>
           <p className="onboarding-sub">Choisis ton profil, on s'occupe du reste.</p>
           <div className="onboarding-cards">
-            {PROFILS.map(({ id: pid, prenom, emoji, tagline }) => (
-              <button
-                key={pid}
-                type="button"
-                className={`onboarding-card onboarding-card-${pid}`}
-                onClick={() => choisir(pid)}
-              >
-                <span className="onboarding-card-emoji" aria-hidden="true">
-                  {emoji}
-                </span>
-                <span className="onboarding-card-prenom">{prenom}</span>
-                <span className="onboarding-card-tagline">{tagline}</span>
-              </button>
-            ))}
+            {(Object.keys(PROFILS_META) as ProfileKey[]).map((pid) => {
+              const meta = PROFILS_META[pid];
+              return (
+                <button
+                  key={pid}
+                  type="button"
+                  className={`onboarding-card onboarding-card-${pid}`}
+                  onClick={() => choisir(pid)}
+                >
+                  <span className="onboarding-card-emoji" aria-hidden="true">
+                    {meta.emoji}
+                  </span>
+                  <span className="onboarding-card-prenom">{meta.nom}</span>
+                  <span className="onboarding-card-tagline">{meta.tagline}</span>
+                </button>
+              );
+            })}
           </div>
         </>
       )}
@@ -312,14 +310,14 @@ export function Onboarding({
         >
           {step === 2 && (
             <>
-              <h1>Salut {profil?.prenom} 👋</h1>
+              <h1>Salut {id ? PROFILS_META[id].nom : ''} 👋</h1>
               <p className="onboarding-sub">
                 {migration ? 'On met ton profil à niveau.' : 'Tes bases, pour tes suivis.'}
               </p>
               {migration && (
                 <p className="mig-prof">
                   <span>
-                    Profil : {profil?.prenom} {profil?.emoji}
+                    Profil : {id ? PROFILS_META[id].nom : ''} {id ? PROFILS_META[id].emoji : ''}
                   </span>
                   <span>non modifiable ici</span>
                 </p>

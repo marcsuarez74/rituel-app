@@ -1394,6 +1394,13 @@ describe('ProfileView', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'Mélanie — Keto & Sport' })).toBeInTheDocument();
   });
 
+  it('affiche le prénom édité dans le titre (profil v2.2)', () => {
+    render(
+      <ProfileView profile={{ ...profileV2('marc'), prenom: 'Jean' }} data={profileData} semaine="S39" />,
+    );
+    expect(screen.getByText('Jean — Diet & Sport')).toBeInTheDocument();
+  });
+
   it('renders cibles and rappels as list items with the exact strings', () => {
     const { container } = render(<ProfileView profile={profileV2('marc')} data={profileData} semaine="S39" />);
     const cibles = Array.from(container.querySelectorAll('ul.target-list > li')).map((li) => li.textContent);

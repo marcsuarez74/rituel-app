@@ -156,7 +156,16 @@ export const PREFERENCES_PRESETS: readonly string[] = [
   'Batch-friendly',
 ];
 
-export const PRENOMS: Record<ProfileKey, string> = { marc: 'Marc', melanie: 'Mélanie' };
+// Source unique des métadonnées d'affichage des profils (cartes d'onboarding,
+// titres, salutations) — fusion des anciennes constantes profils/titres/prénoms.
+export const PROFILS_META: Record<ProfileKey, { nom: string; emoji: string; tagline: string }> = {
+  marc: { nom: 'Marc', emoji: '💪', tagline: 'Diet & Sport' },
+  melanie: { nom: 'Mélanie', emoji: '🌿', tagline: 'Keto & Sport' },
+};
+
+// Prénom affiché : le prénom édité (profil v2.2) sinon le nom par défaut.
+export const prenomProfil = (id: ProfileKey, p?: UserProfile): string =>
+  p?.prenom?.trim() || PROFILS_META[id].nom;
 
 // ——— Profil v2 (objectif, compléments, régime) ———
 

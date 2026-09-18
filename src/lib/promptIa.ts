@@ -1,6 +1,6 @@
 import template from '../assets/prompt-cycle-template.md?raw';
 import { ageDepuis, formatDayMonth } from './dates';
-import { PRENOMS, type ObjectifType, type UserProfile } from './model';
+import { prenomProfil, type ObjectifType, type UserProfile } from './model';
 import { formatEuro } from './prix';
 import type { WeightEntry } from './storage';
 
@@ -51,7 +51,7 @@ const ouverture = (p: UserProfile, dernierPoids: WeightEntry | null): string => 
     p.taille != null ? `${p.taille} cm` : '',
   ].filter(Boolean);
   const qui =
-    details.length > 0 ? `${PRENOMS[p.id]} (${details.join(', ')})` : PRENOMS[p.id];
+    details.length > 0 ? `${prenomProfil(p.id, p)} (${details.join(', ')})` : prenomProfil(p.id, p);
   return `Tu es un nutritionniste. ${qui} te demande de lui réaliser une rotation de menus sur 4 semaines pour installer une routine durable. Objectif : ${objectifPhrase(p)}.`;
 };
 
