@@ -129,6 +129,41 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     });
   });
 
+  test('parcours tout sauté : étape 1 seule obligatoire → shell sans crash', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => document.fonts.ready);
+    await page.getByRole('button', { name: /Mélanie/ }).click();
+    await page.getByRole('button', { name: /Continuer/ }).click();
+
+    // « Passer » sur les étapes infos / objectif / compléments & régime.
+    for (let i = 0; i < 3; i++) {
+      await page.getByRole('button', { name: 'Passer' }).click();
+    }
+    await page.getByRole('button', { name: /C'est parti/ }).click();
+
+    // Même tolérance à l'étape 6 optionnelle que le parcours complet.
+    const plusTard = page.getByRole('button', { name: 'Plus tard' });
+    await plusTard.or(page.getByText('Semaine 37')).first().waitFor();
+    if (await plusTard.isVisible()) await plusTard.click();
+
+    // L'app s'affiche sans crash : salutation (onglet Mon suivi) avec le prénom
+    // prérempli + semaine d'exemple dans l'onglet par défaut.
+    await page.getByRole('button', { name: 'Mon suivi' }).click();
+    await expect(page.getByText('Salut Mélanie 👋')).toBeVisible();
+    await expect(page.getByText('Semaine 37')).toBeVisible();
+    await assertPasDeDebordement(page);
+
+    // Profil partiel enregistré : aucun champ sauté n'apparaît dans le storage.
+    const profil = await page.evaluate(() => JSON.parse(localStorage.getItem('sportapp:profile')!));
+    expect(profil).toEqual({
+      id: 'melanie',
+      prenom: 'Mélanie',
+      objectif: { type: 'perte' },
+      complements: [],
+      regime: 'aucun',
+    });
+  });
+
   test('migration : profil ancien → onboarding prérempli à l étape 2', async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem('sportapp:profile', JSON.stringify({ id: 'melanie', age: 38, taille: 165 }));
