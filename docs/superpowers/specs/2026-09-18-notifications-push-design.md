@@ -123,10 +123,11 @@ contenu (l'edge function formate le français).
 
 ## Phases d'implémentation
 
-1. **POC dérisquage** : edge function `push-register` minimale + envoi Web Push
-   depuis Deno → **un push réel reçu sur le téléphone de Marc**. Tranche la
-   question lib (npm:web-push vs WebCrypto maison). Si le POC échoue, on
-   s'arrête et on rediscute.
+1. **POC dérisquage** : edge function `push-poc` minimale + envoi Web Push
+   depuis Deno → **un push réel reçu sur Chrome desktop** (le test téléphone
+   réel attend le SW custom, phase 3 — en prod le SW actuel n'a pas de handler
+   `push`). Valide l'implémentation WebCrypto ; `npm:web-push` reste le plan B.
+   Si le POC échoue, on s'arrête et on rediscute.
 2. **Backend complet** : migration SQL (table + RLS + cron), 3 edge functions,
    secrets VAPID.
 3. **Front complet** : SW custom, module push, bloc Profil, hooks d'événement,
