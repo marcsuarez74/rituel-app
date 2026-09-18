@@ -2111,6 +2111,9 @@ progress {
 }
 
 .profil-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
   min-height: 48px;
   padding: var(--sp-10) 0;
   margin-bottom: var(--sp-4);
