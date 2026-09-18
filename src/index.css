@@ -212,15 +212,16 @@ p {
 /* ---------- Bannière semaine ---------- */
 
 /* Compacte validée (maquette 2026-09-18) : une seule ligne, fond page, éléments
-   nerveux. Les cibles tactiles ≥ 48 px passent par la marge de frappe : padding
-   transparent + marge négative égale — la mise en page reste petite, le tap
-   reste large (les zones de frappe se chevauchent dans le vide, pas sur un
-   voisin interactif). */
+   nerveux. Padding 8px et gap 6px (maquette : 10-12px/8px) pour tenir le budget
+   de largeur à 320px — chip Local + 2 chevrons + avatar + 4 gaps. Les cibles
+   tactiles ≥ 48 px passent par la marge de frappe : padding transparent + marge
+   négative égale — la mise en page reste petite, le tap reste large (les zones
+   de frappe se chevauchent dans le vide, pas sur un voisin interactif). */
 .week-banner {
   display: flex;
   align-items: center;
-  gap: var(--sp-8);
-  padding: var(--sp-8) var(--sp-12);
+  gap: var(--sp-6);
+  padding: var(--sp-8);
   margin-bottom: var(--sp-12);
 }
 
@@ -280,6 +281,7 @@ p {
   flex-wrap: wrap;
   align-items: center;
   gap: var(--sp-6);
+  row-gap: var(--sp-2);
   margin: 0;
   font-size: var(--fs-sec);
   font-weight: 600;
@@ -307,9 +309,13 @@ p {
   white-space: nowrap;
 }
 
+/* Titre optionnel du .md : une ligne sous les dates (ellipsis s'il est long). */
 .week-titre-md {
   margin: var(--sp-2) 0 0;
   font-size: var(--fs-meta);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Cercle basilic 30 px (maquette) dessiné en ::before ; le bouton fait 50 px
@@ -2663,7 +2669,7 @@ progress {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-4);
-  padding: var(--sp-6) var(--sp-8);
+  padding: var(--sp-6);
   border: none;
   border-radius: 999px;
   background: color-mix(in srgb, var(--accent) 12%, var(--surface));
