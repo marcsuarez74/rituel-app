@@ -314,6 +314,74 @@ p {
   box-shadow: 0 3px 10px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
+/* ---------- Changeur de semaine ---------- */
+
+.switcher-veil {
+  position: fixed;
+  inset: 0;
+  background: rgb(38 49 43 / 0.35);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 60;
+}
+
+.switcher-sheet {
+  width: 100%;
+  max-width: 420px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  padding: var(--sp-16) var(--sp-16) var(--sp-24);
+}
+
+.switcher-titre {
+  margin: 0 0 var(--sp-10);
+  font-size: var(--fs-h3);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.switcher-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+.switcher-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-10);
+  min-height: 48px;
+  padding: var(--sp-10) var(--sp-12);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-sec);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.switcher-item .switcher-dates {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+.switcher-item.actif {
+  border-color: var(--accent);
+  background: #eef4ec;
+  font-weight: 600;
+}
+
 /* ---------- Nav segmented (sous la bannière) ---------- */
 
 .tabbar-segmented {

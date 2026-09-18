@@ -8,6 +8,7 @@ import { TabBar } from './components/TabBar';
 import type { TabId } from './components/TabBar';
 import { Onboarding } from './components/onboarding/Onboarding';
 import { WeekBanner } from './components/WeekBanner';
+import { SemaineSwitcher } from './components/SemaineSwitcher';
 import { CuisineView } from './components/cuisine/CuisineView';
 import { PRENOMS } from './lib/model';
 import type { ImportedWeek, UserProfile } from './lib/model';
@@ -44,6 +45,7 @@ function App() {
   // semaine consultée via les chevrons. Rien n'est persisté.
   const [selection, setSelection] = useState<string | null>(null);
   const [profilOuvert, setProfilOuvert] = useState(false);
+  const [switcherOuvert, setSwitcherOuvert] = useState(false);
   // StatCards et ObjectifBloc lisent le storage au montage : onWeightsChanged (pesée
   // ajoutée) incrémente weightsBump pour les remonter et relire les pesées.
   const [weightsBump, setWeightsBump] = useState(0);
@@ -143,7 +145,6 @@ function App() {
   }
 
   const idx = indexSemaineCourante(semaines, todayISO());
-  const navigable = semaines.length > 1;
   const selectionIdx =
     selection != null
       ? Math.max(0, semaines.findIndex((w) => w.data.meta.semaine === selection))
@@ -157,24 +158,27 @@ function App() {
       <WeekBanner
         meta={affichee.data.meta}
         onOpenProfile={() => setProfilOuvert(true)}
+        onSwitcher={() => setSwitcherOuvert(true)}
         syncEtat={syncEtat}
         onSyncTap={() => ressynchroniser()}
-        onPrev={
-          navigable
-            ? () => setSelection(semaines[Math.max(0, idxAffiche - 1)].data.meta.semaine)
-            : undefined
+        onPrev={() => setSelection(semaines[Math.max(0, idxAffiche - 1)].data.meta.semaine)}
+        onNext={() =>
+          setSelection(semaines[Math.min(semaines.length - 1, idxAffiche + 1)].data.meta.semaine)
         }
-        onNext={
-          navigable
-            ? () =>
-                setSelection(
-                  semaines[Math.min(semaines.length - 1, idxAffiche + 1)].data.meta.semaine,
-                )
-            : undefined
-        }
-        hasPrev={navigable && idxAffiche > 0}
-        hasNext={navigable && idxAffiche < semaines.length - 1}
+        hasPrev={idxAffiche > 0}
+        hasNext={idxAffiche < semaines.length - 1}
       />
+      {switcherOuvert && (
+        <SemaineSwitcher
+          semaines={semaines}
+          active={affichee.data.meta.semaine}
+          onSelect={(id) => {
+            setSelection(id);
+            setSwitcherOuvert(false);
+          }}
+          onClose={() => setSwitcherOuvert(false)}
+        />
+      )}
       <TabBar active={tab} onSelect={setTab} />
       <main onPointerDown={onPointerDown} onPointerUp={onPointerUp} onPointerCancel={purgeSwipe}>
         {tab === 'cuisine' && (

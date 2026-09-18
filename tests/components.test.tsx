@@ -25,6 +25,7 @@ import { BatchView } from '../src/components/cuisine/BatchView';
 import { CuisineView } from '../src/components/cuisine/CuisineView';
 import { ProfileView } from '../src/components/ProfileView';
 import { WeekBanner } from '../src/components/WeekBanner';
+import { SemaineSwitcher } from '../src/components/SemaineSwitcher';
 import { Icon } from '../src/components/Icon';
 
 const profileV2 = (
@@ -1335,6 +1336,29 @@ describe('WeekBanner', () => {
     await user.click(duo);
     expect(onSyncTap).toHaveBeenCalledTimes(1);
     expect(onOpenProfile).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('SemaineSwitcher', () => {
+  const semaine = (id: string, du: string, au: string, menu = 'A') => {
+    const raw = mdSemaine(id, du, au, menu);
+    return { raw, data: parseWeeklyFile(raw).data, importedAt: '' };
+  };
+  const semaines = [
+    semaine('2026-S37', '2026-09-07', '2026-09-13', 'A'),
+    semaine('2026-S38', '2026-09-14', '2026-09-20', 'B'),
+  ];
+
+  it('liste les semaines, marque l\u2019active, sélectionne au clic', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    render(<SemaineSwitcher semaines={semaines} active="2026-S38" onSelect={onSelect} onClose={() => {}} />);
+    expect(screen.getByRole('dialog', { name: 'Choisir une semaine' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Semaine 37/ })).toBeInTheDocument();
+    const active = screen.getByRole('button', { name: /Semaine 38/ });
+    expect(active).toHaveClass('actif');
+    await user.click(active);
+    expect(onSelect).toHaveBeenCalledWith('2026-S38');
   });
 });
 
