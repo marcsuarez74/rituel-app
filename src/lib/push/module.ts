@@ -55,10 +55,12 @@ const postHeaders = (): Record<string, string> => {
 const enregistrer = async (
   sub: { endpoint: string; keys: { p256dh: string; auth: string } },
   config: PushConfig,
-): Promise<boolean> => {
-  if (!SUPABASE_URL) return false;
+): Promise<ResultatPush> => {
+  if (!SUPABASE_URL) return { ok: false, erreur: ERREURS.indisponible };
   const profil = loadProfile();
-  if (!profil || (profil.id !== 'marc' && profil.id !== 'melanie')) return false;
+  if (!profil || (profil.id !== 'marc' && profil.id !== 'melanie')) {
+    return { ok: false, erreur: 'Profil introuvable sur cet appareil.' };
+  }
   try {
     const res = await fetch(`${SUPABASE_URL}/functions/v1/push-register`, {
       method: 'POST',
@@ -73,9 +75,12 @@ const enregistrer = async (
         config,
       }),
     });
-    return res.ok;
-  } catch {
-    return false;
+    if (!res.ok) {
+      return { ok: false, erreur: `${ERREURS.serveur} (HTTP ${res.status})` };
+    }
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, erreur: `${ERREURS.serveur} (${String(e)})` };
   }
 };
 
@@ -126,9 +131,7 @@ export const souscrireEtEnregistrer = async (config: PushConfig): Promise<Result
       userVisibleOnly: true,
       applicationServerKey: b64urlVersBytes(VAPID_PUBLIC_KEY),
     });
-    return (await enregistrer(sub, config))
-      ? { ok: true }
-      : { ok: false, erreur: ERREURS.serveur };
+    return await enregistrer(sub, config);
   } catch (e) {
     // L'erreur brute est diagnostique (AbortError « permission denied »,
     // « push service error »…) — on la garde intégralement.
@@ -143,11 +146,7 @@ export const majConfig = async (config: PushConfig): Promise<ResultatPush> => {
   try {
     const reg = await registrationActive();
     const existante = await reg.pushManager.getSubscription();
-    if (existante) {
-      return (await enregistrer(existante, config))
-        ? { ok: true }
-        : { ok: false, erreur: ERREURS.serveur };
-    }
+    if (existante) return await enregistrer(existante, config);
     return await souscrireEtEnregistrer(config);
   } catch (e) {
     return { ok: false, erreur: String(e) };
