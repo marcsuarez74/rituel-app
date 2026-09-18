@@ -222,7 +222,6 @@ p {
 
 .week-banner p {
   margin: var(--sp-2) 0;
-  font-size: var(--fs-sec);
 }
 
 .week-banner-main {

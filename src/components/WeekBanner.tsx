@@ -11,7 +11,7 @@ const ETIQUETTES: Record<Exclude<SyncEtat, 'off' | 'hors-foyer'>, string> = {
 
 // Bannière compacte validée (maquette 2026-09-18) : chevrons toujours visibles
 // (grisés aux bornes), titre court tappable = changeur de semaine, dates + pill
-// menu, chip « Duo/Local » et avatar. ~56 px au lieu de ~120.
+// menu, chip « Duo/Local » et avatar. Nettement plus compacte que l'ancienne bannière.
 export function WeekBanner({
   meta,
   onOpenProfile,
