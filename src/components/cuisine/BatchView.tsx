@@ -75,7 +75,7 @@ export function BatchView({
           </div>
           <h3 className="guide-titre">{rituel[idx].label}</h3>
           {rituel[idx].detail && <p className="guide-detail">{rituel[idx].detail}</p>}
-          {recetteEtape && <FicheRecette recette={recetteEtape} />}
+          {recetteEtape && <FicheRecette key={idx} recette={recetteEtape} />}
           <progress value={idx} max={rituel.length} aria-hidden="true" />
           <button
             type="button"

@@ -979,8 +979,21 @@ describe('BatchView v2 — rituel et micro-batch', () => {
     expect(btn).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByText('60 min · four 180°')).toBeInTheDocument();
     expect(screen.getByText('Gratin : courgettes précuites + crème + fromage, 25 min.')).toBeInTheDocument();
+    expect(screen.getByText('Ingrédients')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Masquer la fiche' }));
     expect(screen.queryByText('60 min · four 180°')).toBeNull();
+  });
+
+  it('deux étapes avec ref : la fiche repart fermée à chaque étape', async () => {
+    const user = userEvent.setup();
+    const RITUEL_DEUX_REFS = [{ ...RITUEL[0], ref: 'r7' }, { ...RITUEL[1], ref: 'r7' }, ...RITUEL.slice(2)];
+    render(
+      <BatchView rituel={RITUEL_DEUX_REFS} recettes={[RECETTE_BATCH]} microBatch={[]} semaine="2026-S39" />,
+    );
+    await user.click(screen.getByRole('button', { name: /Lancer le rituel/ }));
+    await user.click(screen.getByRole('button', { name: 'Voir la fiche recette' }));
+    await user.click(screen.getByRole('button', { name: 'Étape terminée →' }));
+    expect(screen.getByRole('button', { name: 'Voir la fiche recette' })).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('étape sans ref : pas de fiche recette', async () => {

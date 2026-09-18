@@ -1494,13 +1494,18 @@ progress {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-6);
-  min-height: 42px;
+  min-height: 48px;
   padding: var(--sp-8) var(--sp-14);
   border: 1px dashed var(--accent);
   border-radius: 999px;
-  background: var(--surface-2);
+  background: var(--bg);
   color: var(--accent);
   font: 600 var(--fs-sec) Poppins, sans-serif;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.guide-fiche-btn:active {
+  transform: scale(0.97);
 }
 .fiche-corps {
   width: 100%;
