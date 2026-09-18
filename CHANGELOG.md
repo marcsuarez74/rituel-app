@@ -4,7 +4,7 @@ Toutes les évolutions notables de l'app sont documentées dans ce fichier.
 
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le versionnement sémantique ([semver](https://semver.org/lang/fr/)) : **majeur** = changement cassant (contrat .md, migration storage), **mineur** = nouvelle fonctionnalité, **correctif** = bugfix. La source de vérité est le champ `version` de `package.json`.
 
-## [Non publié]
+## [1.3.0] - 2026-09-18
 
 ### Ajouté
 
