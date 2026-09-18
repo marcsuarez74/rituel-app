@@ -47,3 +47,19 @@ export const compteChecklist = (
   faites: items.filter((i) => checks[i.id]).length,
   total: items.length,
 });
+
+// Progression perte/masse (carte héro) : départ = 1re pesée, actuel = dernière.
+// Arrondi au dixième : 4,4/8,8 en flottant donnerait 49,999… % sans lui.
+export function progressionPoids(
+  type: 'perte' | 'masse',
+  depart: number,
+  actuel: number,
+  cible: number,
+): { pct: number; kgRestant: number; sens: string } | null {
+  const total = type === 'perte' ? depart - cible : cible - depart;
+  if (total <= 0) return null;
+  const fait = type === 'perte' ? depart - actuel : actuel - depart;
+  const pct = Math.min(100, Math.max(0, Math.round((fait / total) * 1000) / 10));
+  const kgRestant = Math.round((type === 'perte' ? actuel - cible : cible - actuel) * 10) / 10;
+  return { pct, kgRestant, sens: type === 'perte' ? 'restants' : 'à prendre' };
+}
