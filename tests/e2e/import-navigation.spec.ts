@@ -11,7 +11,7 @@ async function assertPasDeDebordement(page: import('@playwright/test').Page) {
 }
 
 test.describe('Import du cycle & navigation semaines', () => {
-  // Profil seul : la semaine d'exemple se charge en fallback, sans chevrons.
+  // Profil seul : la semaine d'exemple se charge en fallback, chevrons désactivés.
   test.use({
     storageState: {
       cookies: [],
@@ -36,11 +36,11 @@ test.describe('Import du cycle & navigation semaines', () => {
     },
   });
 
-  test('une seule semaine : pas de chevrons', async ({ page }) => {
+  test('une seule semaine : chevrons désactivés', async ({ page }) => {
     await page.goto(ORIGIN);
     await expect(page.getByText('Semaine 37')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Semaine précédente' })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Semaine suivante' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Semaine précédente' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Semaine suivante' })).toBeDisabled();
     await assertPasDeDebordement(page);
   });
 
