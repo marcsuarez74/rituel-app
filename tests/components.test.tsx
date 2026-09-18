@@ -489,7 +489,7 @@ describe('CuisineView — sous-onglets', () => {
     render(<CuisineView data={data} profile={profileV2('marc')} />);
     expect(screen.getByRole('button', { name: 'Courses' })).toHaveClass('tab', 'active');
     expect(screen.getByRole('button', { name: 'Menu' })).toHaveClass('tab');
-    expect(screen.getByRole('button', { name: 'Batch' })).toHaveClass('tab');
+    expect(screen.getByRole('button', { name: 'Mon Rituel' })).toHaveClass('tab');
     expect(screen.queryByRole('button', { name: /🛒/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /📅/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /📦/ })).not.toBeInTheDocument();
@@ -787,17 +787,17 @@ describe('BatchView v2 — rituel et micro-batch', () => {
     vi.useRealTimers();
   });
 
-  it('mode guidé : Lancer le batch → étape par étape → écran terminé → retour aperçu (sans cocher)', async () => {
+  it('mode guidé : Lancer le rituel → étape par étape → écran terminé → retour aperçu (sans cocher)', async () => {
     const user = userEvent.setup();
     render(<BatchView rituel={RITUEL} microBatch={[]} semaine="2026-S39" />);
-    await user.click(screen.getByRole('button', { name: /Lancer le batch/ }));
+    await user.click(screen.getByRole('button', { name: /Lancer le rituel/ }));
     expect(document.querySelector('.guide-etape-num')).toHaveTextContent('Étape 1/5');
     expect(document.querySelector('.guide-titre')).toHaveTextContent('Four à 180°');
     await user.click(screen.getByRole('button', { name: 'Étape terminée →' }));
     expect(document.querySelector('.guide-etape-num')).toHaveTextContent('Étape 2/5');
     for (let i = 0; i < 3; i++) await user.click(screen.getByRole('button', { name: 'Étape terminée →' }));
-    await user.click(screen.getByRole('button', { name: /Terminer le batch/ }));
-    expect(screen.getByText('Batch terminé !')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Terminer le rituel/ }));
+    expect(screen.getByText('Rituel terminé !')).toBeInTheDocument();
     // présentation pure : aucune coche de timeline posée
     expect(screen.queryByRole('checkbox')).toBeNull();
     await user.click(screen.getByRole('button', { name: /Revoir l'aperçu/ }));
@@ -808,20 +808,20 @@ describe('BatchView v2 — rituel et micro-batch', () => {
   it('garde anti-crash : rituel plus court pendant un run → retour aperçu (render-phase reset)', async () => {
     const user = userEvent.setup();
     const { rerender } = render(<BatchView rituel={RITUEL} microBatch={[]} semaine="2026-S39" />);
-    await user.click(screen.getByRole('button', { name: /Lancer le batch/ }));
+    await user.click(screen.getByRole('button', { name: /Lancer le rituel/ }));
     await user.click(screen.getByRole('button', { name: 'Étape terminée →' }));
     await user.click(screen.getByRole('button', { name: 'Étape terminée →' }));
     await user.click(screen.getByRole('button', { name: 'Étape terminée →' }));
     expect(document.querySelector('.guide-etape-num')).toHaveTextContent('Étape 4/5');
     // changement de semaine : le nouveau rituel n'a qu'une étape (idx 3 hors bornes)
     rerender(<BatchView rituel={[RITUEL[0]]} microBatch={[]} semaine="2026-S40" />);
-    expect(screen.getByRole('button', { name: /Lancer le batch/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Lancer le rituel/ })).toBeInTheDocument();
     expect(screen.queryByText(/Étape /)).not.toBeInTheDocument();
   });
 
   it('sans rituel ni micro-batch : message muted seul', () => {
     const { container } = render(<BatchView semaine="2026-S39" />);
-    expect(screen.getByText('Aucun batch prévu cette semaine.')).toBeInTheDocument();
+    expect(screen.getByText('Aucun rituel prévu cette semaine.')).toBeInTheDocument();
     expect(container.querySelector('.batch-banner')).toBeNull();
     expect(container.querySelector('.rituel-timeline')).toBeNull();
     expect(container.querySelector('.micro-batch')).toBeNull();
@@ -831,7 +831,7 @@ describe('BatchView v2 — rituel et micro-batch', () => {
     const { container } = render(
       <BatchView rituel={[]} microBatch={[]} semaine="2026-S39" />,
     );
-    expect(screen.getByText('Aucun batch prévu cette semaine.')).toBeInTheDocument();
+    expect(screen.getByText('Aucun rituel prévu cette semaine.')).toBeInTheDocument();
     expect(container.querySelector('.batch-banner')).toBeNull();
     expect(container.querySelector('.rituel-timeline')).toBeNull();
     expect(container.querySelector('.micro-batch')).toBeNull();
@@ -917,8 +917,8 @@ describe('BatchView v2 — rituel et micro-batch', () => {
         semaine="2026-S39"
       />,
     );
-    await user.click(screen.getByRole('button', { name: /Lancer le batch/ }));
-    await user.click(screen.getByRole('button', { name: /Terminer le batch/ }));
+    await user.click(screen.getByRole('button', { name: /Lancer le rituel/ }));
+    await user.click(screen.getByRole('button', { name: /Terminer le rituel/ }));
     expect(screen.getByText('4 boîtes prêtes — la semaine est servie.')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Revoir l'aperçu/ }));
     expect(document.querySelector('.rituel-timeline')).not.toBeNull();
@@ -927,8 +927,8 @@ describe('BatchView v2 — rituel et micro-batch', () => {
   it('sans termine : texte par défaut à l’état final', async () => {
     const user = userEvent.setup();
     render(<BatchView rituel={[{ id: 'batch:rituel:x', creneau: '0-5 min', label: 'X' }]} microBatch={[]} semaine="2026-S39" />);
-    await user.click(screen.getByRole('button', { name: /Lancer le batch/ }));
-    await user.click(screen.getByRole('button', { name: /Terminer le batch/ }));
+    await user.click(screen.getByRole('button', { name: /Lancer le rituel/ }));
+    await user.click(screen.getByRole('button', { name: /Terminer le rituel/ }));
     expect(screen.getByText('Tout est prêt pour la semaine.')).toBeInTheDocument();
   });
 
@@ -940,13 +940,13 @@ describe('BatchView v2 — rituel et micro-batch', () => {
       />,
     );
     expect(container.querySelector('.reserve-list')).not.toBeNull();
-    expect(screen.queryByText('Aucun batch prévu cette semaine.')).toBeNull();
+    expect(screen.queryByText('Aucun rituel prévu cette semaine.')).toBeNull();
   });
 
-  it('« Lancer le batch » est un bouton pleine largeur sous la timeline (plus de pilule dans le head)', () => {
+  it('« Lancer le rituel » est un bouton pleine largeur sous la timeline (plus de pilule dans le head)', () => {
     const { container } = render(<BatchView rituel={RITUEL} microBatch={MICRO} semaine="2026-S39" />);
     expect(container.querySelector('.lancer-wrap')).toBeNull();
-    const btn = screen.getByRole('button', { name: /Lancer le batch/ });
+    const btn = screen.getByRole('button', { name: /Lancer le rituel/ });
     expect(btn).toHaveClass('lancer-btn');
     const section = container.querySelector('.batch-section')!;
     expect(section.contains(btn)).toBe(true);

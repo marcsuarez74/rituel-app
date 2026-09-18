@@ -74,7 +74,7 @@ export function BatchView({
             className="btn"
             onClick={() => (idx + 1 < rituel.length ? setIdx(idx + 1) : setMode('fini'))}
           >
-            {idx + 1 < rituel.length ? 'Étape terminée →' : 'Terminer le batch ✓'}
+            {idx + 1 < rituel.length ? 'Étape terminée →' : 'Terminer le rituel ✓'}
           </button>
           <button
             type="button"
@@ -93,7 +93,7 @@ export function BatchView({
           <span className="guide-done-ic">
             <Icon name="check" size={38} strokeWidth={2.5} />
           </span>
-          <h3 className="guide-titre">Batch terminé !</h3>
+          <h3 className="guide-titre">Rituel terminé !</h3>
           <p className="guide-detail">{termine ?? 'Tout est prêt pour la semaine.'}</p>
           <button type="button" className="btn-ghost" onClick={() => setMode('apercu')}>
             Revoir l'aperçu
@@ -102,7 +102,7 @@ export function BatchView({
       )}
       {hasMicro && mode === 'apercu' && microBatch && <MicroBatch jours={microBatch} />}
       {mode === 'apercu' && hasReserve && reserve && <Reserve lignes={reserve} />}
-      {!hasRituel && !hasMicro && !hasReserve && <p className="muted">Aucun batch prévu cette semaine.</p>}
+      {!hasRituel && !hasMicro && !hasReserve && <p className="muted">Aucun rituel prévu cette semaine.</p>}
     </>
   );
 }
@@ -222,7 +222,7 @@ function RituelTimeline({
         ))}
       </ol>
       <button type="button" className="btn lancer-btn" onClick={onLancer}>
-        <Icon name="play" size={14} /> Lancer le batch
+        <Icon name="play" size={14} /> Lancer le rituel
       </button>
     </section>
   );

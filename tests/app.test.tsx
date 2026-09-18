@@ -205,7 +205,7 @@ describe('App shell', () => {
     expect(document.querySelector('.rtab')).not.toBeNull();
     expect(screen.getByRole('tab', { selected: true })).toHaveTextContent('Poulet rôti');
 
-    await user.click(screen.getByRole('button', { name: 'Batch' }));
+    await user.click(screen.getByRole('button', { name: 'Mon Rituel' }));
     expect(screen.getByText(/muffins/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Mon suivi' }));
