@@ -32,6 +32,7 @@ jobs:
           # dans le repo. Sans secrets, la sync reste inactive (build local, CI PR).
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_VAPID_PUBLIC_KEY: ${{ secrets.VITE_VAPID_PUBLIC_KEY }}
       - name: Install navigateurs e2e
         run: |
           # Le miroir apt google-chrome du runner peut être incohérent côté CDN
