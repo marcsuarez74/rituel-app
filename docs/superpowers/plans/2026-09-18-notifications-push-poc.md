@@ -12,11 +12,22 @@
 
 **If the POC fails** (Deno/WebCrypto issue not resolved quickly): STOP, report BLOCKED to the controller — fallback `npm:web-push` (npm lib under node-compat) to be discussed, do not improvise alone.
 
+> **Verdict (2026-09-18) — POC validated.** Notification received on Chrome
+> desktop (`201` from FCM) after 2 fixes: (1) ECDH public key imported with
+> **empty usages** `[]` (`Invalid key usage` otherwise) ; (2) derivation
+> RFC 8291 §3.4 rewritten — `HKDF(salt=auth_secret, IKM=ecdh_secret, key_info,
+> 32)` → IKM, then HKDF(salt, IKM, cek/nonce) — and `payload || 0x02` padding,
+> **proven against the RFC's Appendix A test vectors** (IKM/CEK/NONCE 3/3).
+> The pure WebCrypto implementation of `_shared/webpush.ts` is kept as-is for
+> phase 2. Side note: Proxyman (local proxy) intercepted the FCM subscription —
+> to be disabled during tests. `push-poc` and `sw-poc.js` removed at the start
+> of phase 2.
+
 ---
 
 ## Preamble: worktree (once)
 
-- [ ] **Create worktree from main**
+- [x] **Create worktree from main**
 
 ```bash
 git worktree add .worktrees/push-poc -b feat/push-poc main
@@ -34,7 +45,7 @@ Note: `supabase/` is **outside tsconfig** (cf. AGENTS.md) — edge functions are
 - Create: `supabase/functions/_shared/webpush.ts`
 - Create: `supabase/functions/push-poc/index.ts`
 
-- [ ] **Step 1: `public/sw-poc.js`** — temporary minimal SW (removed at the end of the project; the real SW will be `src/sw.ts` in phase 3):
+- [x] **Step 1: `public/sw-poc.js`** — temporary minimal SW (removed at the end of the project; the real SW will be `src/sw.ts` in phase 3):
 
 ```js
 // SW minimal — POC notifications push (temporaire, remplacé par src/sw.ts en phase 3).
@@ -62,7 +73,7 @@ self.addEventListener('notificationclick', (event) => {
 });
 ```
 
-- [ ] **Step 2: `supabase/functions/_shared/webpush.ts`** — complete send module (will be reused as-is by `push-register` / `push-notifier` / `push-rappels` in phase 2):
+- [x] **Step 2: `supabase/functions/_shared/webpush.ts`** — complete send module (will be reused as-is by `push-register` / `push-notifier` / `push-rappels` in phase 2):
 
 ```ts
 // Envoi Web Push standard — VAPID (RFC 8292) + chiffrement aes128gcm (RFC 8291),
@@ -202,7 +213,7 @@ export const envoyerPush = async (
 };
 ```
 
-- [ ] **Step 3: `supabase/functions/push-poc/index.ts`** — temporary test function:
+- [x] **Step 3: `supabase/functions/push-poc/index.ts`** — temporary test function:
 
 ```ts
 // Edge function POC — envoi d'un push de test. POST { endpoint, p256dh, auth, titre?, corps? }.
@@ -239,7 +250,7 @@ Deno.serve(async (req) => {
 });
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add public/sw-poc.js supabase/functions/_shared/webpush.ts supabase/functions/push-poc/index.ts
@@ -252,7 +263,7 @@ git commit -m "feat: POC push — webpush WebCrypto partagé + fonction test + s
 
 **Files:** none (deployment + real test). The `supabase login`/`link`/`secrets` commands require Marc's session — to be run together.
 
-- [ ] **Step 1: Generate VAPID keys** (local terminal, once):
+- [x] **Step 1: Generate VAPID keys** (local terminal, once):
 
 ```bash
 npx web-push@3.6.7 generate-vapid-keys
@@ -260,7 +271,7 @@ npx web-push@3.6.7 generate-vapid-keys
 
 Expected output: a `Public Key` and a `Private Key` (base64url). Keep — they are final (frontend + secrets).
 
-- [ ] **Step 2: Link + secrets + deploy** (with Marc — project already linked to docs/backend.md):
+- [x] **Step 2: Link + secrets + deploy** (with Marc — project already linked to docs/backend.md):
 
 ```bash
 supabase login
@@ -273,7 +284,7 @@ supabase functions deploy push-poc --no-verify-jwt
 
 Expected: `Deployed Functions push-poc` — output OK.
 
-- [ ] **Step 3: Subscribe from Chrome desktop** — run `npm run dev` in the worktree, open http://localhost:5173/rituel-app/ , then **DevTools console**:
+- [x] **Step 3: Subscribe from Chrome desktop** — run `npm run dev` in the worktree, open http://localhost:5173/rituel-app/ , then **DevTools console**:
 
 ```js
 const reg = await navigator.serviceWorker.register('/rituel-app/sw-poc.js');
@@ -285,7 +296,7 @@ console.log(JSON.stringify(sub.toJSON()));
 
 Expected: permission prompt → allow → the JSON `{ endpoint: "https://fcm.googleapis.com/...", keys: { p256dh, auth } }` in the console.
 
-- [ ] **Step 4: Send the push**
+- [x] **Step 4: Send the push**
 
 ```bash
 curl -s -X POST "https://<ref>.supabase.co/functions/v1/push-poc" \
@@ -295,13 +306,13 @@ curl -s -X POST "https://<ref>.supabase.co/functions/v1/push-poc" \
 
 Expected: `{"ok":true,"status":201,...}` AND **the notification appears on the Mac (Chrome desktop)** — even without the site open (SW awake by push).
 
-- [ ] **Step 5: Verdict + POC cleanup**
+- [x] **Step 5: Verdict + POC cleanup**
 
 - Notification received → POC **validated**: WebCrypto implementation retained for phase 2 (no code changes).
 - `status` 400/401 (bad encryption / VAPID rejected) → debug against RFC 8291 (salt/info order), STOP after 2 attempts and report.
 - `npm run dev` can be stopped. The `push-poc` function and `sw-poc.js` are removed at the start of phase 2 (cleanup task).
 
-- [ ] **Step 6: Commit — POC validation note**
+- [x] **Step 6: Commit — POC validation note**
 
 ```bash
 # cocher les cases de ce plan + note de verdict, puis :
