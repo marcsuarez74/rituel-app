@@ -53,7 +53,7 @@ const postHeaders = (): Record<string, string> => {
 };
 
 const enregistrer = async (
-  sub: { endpoint: string; keys: { p256dh: string; auth: string } },
+  sub: { endpoint: string; keys?: { p256dh: string; auth: string }; toJSON?: () => { endpoint?: string; keys?: { p256dh: string; auth: string } } },
   config: PushConfig,
 ): Promise<ResultatPush> => {
   if (!SUPABASE_URL) return { ok: false, erreur: ERREURS.indisponible };
@@ -61,14 +61,23 @@ const enregistrer = async (
   if (!profil || (profil.id !== 'marc' && profil.id !== 'melanie')) {
     return { ok: false, erreur: 'Profil introuvable sur cet appareil.' };
   }
+  // `sub.keys` n'existe que sur Chrome desktop — la forme standard est
+  // toJSON() (Samsung Internet, Firefox…). On lit toJSON en priorité.
+  const json = sub.toJSON?.() ?? {};
+  const endpoint = json.endpoint ?? sub.endpoint;
+  const p256dh = json.keys?.p256dh ?? sub.keys?.p256dh;
+  const auth = json.keys?.auth ?? sub.keys?.auth;
+  if (!endpoint || !p256dh || !auth) {
+    return { ok: false, erreur: 'Souscription illisible : clés push manquantes.' };
+  }
   try {
     const res = await fetch(`${SUPABASE_URL}/functions/v1/push-register`, {
       method: 'POST',
       headers: postHeaders(),
       body: JSON.stringify({
-        endpoint: sub.endpoint,
-        p256dh: sub.keys.p256dh,
-        auth: sub.keys.auth,
+        endpoint,
+        p256dh,
+        auth,
         profil: profil.id,
         device_id: deviceId(),
         tz: Intl.DateTimeFormat().resolvedOptions().timeZone,

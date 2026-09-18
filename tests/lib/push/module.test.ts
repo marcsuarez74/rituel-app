@@ -231,3 +231,38 @@ describe('push: envoyerEvenement', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });
+
+describe('push: compatibilité navigateurs (toJSON)', () => {
+  it('subscribe sans propriété .keys (Samsung Internet / Firefox) → passe par toJSON', async () => {
+    const sub = {
+      endpoint: 'https://fcm.googleapis.com/fcm/send/samsung',
+      toJSON: () => ({
+        endpoint: 'https://fcm.googleapis.com/fcm/send/samsung',
+        keys: { p256dh: 'B0p256dh', auth: 'auth16' },
+      }),
+      unsubscribe: vi.fn(async () => true),
+    };
+    const reg = {
+      pushManager: {
+        subscribe: vi.fn(async () => sub),
+        getSubscription: vi.fn(async () => sub),
+      },
+    };
+    localStorage.setItem('sportapp:profile', JSON.stringify({
+      id: 'melanie', dateNaissance: '1990-06-15', taille: 165,
+      objectif: { type: 'perte' }, complements: [], regime: 'aucun',
+    }));
+    localStorage.setItem('sportapp:sync:token', 'jeton-foyer');
+    localStorage.setItem('sportapp:sync:foyer', 'foyer-1');
+    Object.defineProperty(navigator, 'serviceWorker', {
+      value: { ready: Promise.resolve(reg) },
+      configurable: true,
+    });
+    vi.stubGlobal('Notification', { requestPermission: vi.fn(async () => 'granted') });
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('ok', { status: 200 })));
+    const res = await souscrireEtEnregistrer(configDefaut());
+    expect(res.ok).toBe(true);
+    const corps = JSON.parse((vi.mocked(fetch).mock.calls[0] as unknown as [string, RequestInit])[1].body as string);
+    expect(corps).toMatchObject({ endpoint: sub.endpoint, p256dh: 'B0p256dh', auth: 'auth16', profil: 'melanie' });
+  });
+});
