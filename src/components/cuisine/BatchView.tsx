@@ -3,7 +3,7 @@ import type { MicroBatchJour, Recette, ReserveLigne, RituelEtape } from '../../l
 import { getChecks, setCheck } from '../../lib/storage';
 import { todayKey } from '../../lib/dates';
 import { capitalize } from '../../lib/text';
-import { dureeRituel, iconeReserve } from '../../lib/batch';
+import { dureeRituel, iconeReserve, reserveId } from '../../lib/batch';
 import { recetteParRef } from '../../lib/stats';
 import { nomCourt } from '../../lib/menu';
 import { Icon } from '../Icon';
@@ -110,7 +110,9 @@ export function BatchView({
         </section>
       )}
       {hasMicro && mode === 'apercu' && microBatch && <MicroBatch jours={microBatch} recettes={recettes} />}
-      {mode === 'apercu' && hasReserve && reserve && <Reserve lignes={reserve} />}
+      {mode === 'apercu' && hasReserve && reserve && (
+        <Reserve lignes={reserve} semaine={semaine} syncVersion={syncVersion} />
+      )}
       {!hasRituel && !hasMicro && !hasReserve && <p className="muted">Aucun rituel prévu cette semaine.</p>}
     </>
   );
@@ -209,24 +211,62 @@ function MicroBatch({ jours, recettes = [] }: { jours: MicroBatchJour[]; recette
   );
 }
 
-function Reserve({ lignes }: { lignes: ReserveLigne[] }) {
+function Reserve({
+  lignes,
+  semaine,
+  syncVersion = 0,
+}: {
+  lignes: ReserveLigne[];
+  semaine: string;
+  syncVersion?: number;
+}) {
+  const [checks, setChecks] = useState<Record<string, boolean>>(() => getChecks(semaine));
+  // Pattern render-phase reset — cf. RituelTimeline : un changement remote
+  // (syncVersion) ou de semaine relit le storage.
+  const [synced, setSynced] = useState({ semaine, version: syncVersion });
+  if (synced.semaine !== semaine || synced.version !== syncVersion) {
+    setSynced({ semaine, version: syncVersion });
+    setChecks(getChecks(semaine));
+  }
+  const toggle = (id: string) => {
+    const next = !checks[id];
+    setCheck(semaine, id, next);
+    setChecks((prev) => ({ ...prev, [id]: next }));
+  };
   return (
     <section className="batch-section">
       <h3>La réserve — au frigo cette semaine</h3>
+      <p className="reserve-note">Les plats d’avance qui attendent leur soir.</p>
       <div className="reserve-list">
-        {lignes.map((l, i) => (
-          <div className="reserve-ligne" key={`${l.cle}-${i}`}>
-            <span className="reserve-ic">
-              <Icon name={iconeReserve(l)} size={16} />
-            </span>
-            <span className="reserve-corps">
-              <span className="reserve-nom">
-                {l.cle === 'mel' ? 'Mél' : capitalize(l.cle)} — {l.plat}
+        {lignes.map((l, i) => {
+          const id = reserveId(l);
+          const consomme = !!checks[id];
+          return (
+            <label
+              className={consomme ? 'reserve-ligne consomme' : 'reserve-ligne'}
+              key={`${l.cle}-${i}`}
+            >
+              <input
+                type="checkbox"
+                checked={consomme}
+                onChange={() => toggle(id)}
+                aria-label={`${l.plat} — marquer consommé`}
+              />
+              <span className="reserve-ic">
+                <Icon name={iconeReserve(l)} size={16} />
               </span>
-              <span className="reserve-cons">{l.conservation}</span>
-            </span>
-          </div>
-        ))}
+              <span className="reserve-corps">
+                <span className="reserve-nom">
+                  {l.cle === 'mel' ? 'Mél' : capitalize(l.cle)} — {l.plat}
+                </span>
+                <span className="reserve-cons">{l.conservation}</span>
+              </span>
+              <span className={consomme ? 'reserve-etat fait' : 'reserve-etat'}>
+                {consomme ? 'Consommé' : 'Disponible'}
+              </span>
+            </label>
+          );
+        })}
       </div>
     </section>
   );

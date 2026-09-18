@@ -1450,6 +1450,47 @@ progress {
   margin-top: var(--sp-2);
 }
 
+.reserve-note {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-micro);
+  color: var(--muted);
+  line-height: var(--lh-body);
+}
+
+.reserve-ligne {
+  cursor: pointer;
+}
+
+.reserve-ligne input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+
+.reserve-ligne.consomme .reserve-nom,
+.reserve-ligne.consomme .reserve-cons {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.reserve-etat {
+  margin-left: auto;
+  padding: var(--sp-2) var(--sp-8);
+  border-radius: 999px;
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  line-height: var(--lh-tight);
+  white-space: nowrap;
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.reserve-etat.fait {
+  background: color-mix(in srgb, var(--accent) 15%, var(--surface));
+  color: var(--accent);
+}
+
 .micro-dots {
   display: flex;
   gap: var(--sp-4);

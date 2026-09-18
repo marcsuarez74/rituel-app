@@ -983,6 +983,56 @@ describe('BatchView v2 — rituel et micro-batch', () => {
     expect(screen.queryByText('Aucun rituel prévu cette semaine.')).toBeNull();
   });
 
+  it('réserve : état disponible/consommé persisté sous reserve:{cle}:{plat}', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <BatchView
+        rituel={RITUEL}
+        microBatch={[]}
+        reserve={[{ cle: 'lundi', plat: 'Poulet-riz', conservation: 'frigo, 2 j max' }]}
+        semaine="2026-S39"
+      />,
+    );
+    const ligne = container.querySelector('.reserve-ligne')!;
+    expect(ligne).not.toHaveClass('consomme');
+    expect(ligne.querySelector('.reserve-etat')).toHaveTextContent('Disponible');
+    await user.click(screen.getByRole('checkbox', { name: 'Poulet-riz — marquer consommé' }));
+    expect(getChecks('2026-S39')).toEqual({ 'reserve:lundi:poulet-riz': true });
+    expect(ligne.querySelector('.reserve-etat')).toHaveTextContent('Consommé');
+    expect(ligne).toHaveClass('consomme');
+  });
+
+  it('la réserve porte l explication d une ligne', () => {
+    render(
+      <BatchView
+        reserve={[{ cle: 'mel', plat: 'Box keto', conservation: 'à part' }]}
+        semaine="2026-S39"
+      />,
+    );
+    expect(screen.getByText('Les plats d’avance qui attendent leur soir.')).toBeInTheDocument();
+  });
+
+  it('réserve : resynchronise l état au changement de semaine (render-phase reset)', () => {
+    const { rerender } = render(
+      <BatchView
+        rituel={RITUEL}
+        microBatch={[]}
+        reserve={[{ cle: 'lundi', plat: 'Poulet-riz', conservation: 'frigo, 2 j max' }]}
+        semaine="2026-S39"
+      />,
+    );
+    setCheck('2026-S39', 'reserve:lundi:poulet-riz', true);
+    rerender(
+      <BatchView
+        rituel={RITUEL}
+        microBatch={[]}
+        reserve={[{ cle: 'lundi', plat: 'Poulet-riz', conservation: 'frigo, 2 j max' }]}
+        semaine="2026-S40"
+      />,
+    );
+    expect(document.querySelector('.reserve-etat')).toHaveTextContent('Disponible');
+  });
+
   it('« Lancer le rituel » est un bouton pleine largeur sous la timeline (plus de pilule dans le head)', () => {
     const { container } = render(<BatchView rituel={RITUEL} microBatch={MICRO} semaine="2026-S39" />);
     expect(container.querySelector('.lancer-wrap')).toBeNull();
