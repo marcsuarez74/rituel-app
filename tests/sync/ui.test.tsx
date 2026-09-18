@@ -303,8 +303,8 @@ describe('sync UI: onboarding étape 6', () => {
 // mockés — on teste l'UI et ses appels, pas le réseau.
 const { pushActifMock, souscrireMock, majConfigMock, desabonnerMock } = vi.hoisted(() => ({
   pushActifMock: vi.fn(() => true),
-  souscrireMock: vi.fn<(c: unknown) => Promise<boolean>>(async () => true),
-  majConfigMock: vi.fn<(c: unknown) => Promise<boolean>>(async () => true),
+  souscrireMock: vi.fn<(c: unknown) => Promise<{ ok: boolean; erreur?: string }>>(async () => ({ ok: true })),
+  majConfigMock: vi.fn<(c: unknown) => Promise<{ ok: boolean; erreur?: string }>>(async () => ({ ok: true })),
   desabonnerMock: vi.fn<() => Promise<void>>(async () => {}),
 }));
 
@@ -343,8 +343,8 @@ describe('profil: bloc Notifications', () => {
     viderOutbox();
     effacerSession();
     pushActifMock.mockReturnValue(true);
-    souscrireMock.mockClear().mockResolvedValue(true);
-    majConfigMock.mockClear().mockResolvedValue(true);
+    souscrireMock.mockClear().mockResolvedValue({ ok: true });
+    majConfigMock.mockClear().mockResolvedValue({ ok: true });
     desabonnerMock.mockClear().mockResolvedValue(undefined);
   });
 
@@ -376,6 +376,14 @@ describe('profil: bloc Notifications', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Désactiver les notifications' })).toBeInTheDocument(),
     );
+  });
+
+  it('activation en échec → l’erreur est affichée (role alert)', async () => {
+    const user = userEvent.setup();
+    await renderProfil();
+    souscrireMock.mockResolvedValueOnce({ ok: false, erreur: 'Registration failed - permission denied' });
+    await user.click(screen.getByRole('button', { name: 'Activer les notifications' }));
+    expect(screen.getByRole('alert')).toHaveTextContent('Registration failed - permission denied');
   });
 
   it('désactivation → desabonner', async () => {
