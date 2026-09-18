@@ -10,6 +10,8 @@ Suivi cuisine / diet / sport pour Marc & Mélanie — PWA installable, livrée a
    - **Android** : Chrome → **Installer**
 3. L'app fonctionne **hors ligne** après la première visite (le service worker est installé à ce moment-là).
 
+Au premier lancement, un **onboarding en 5 étapes** personnalise l'app : seule la première (choix du profil + prénom) est obligatoire, les suivantes se passent d'un appui sur « Passer ». Le prénom se modifie ensuite dans **Mes infos** (Profil) — salutations, titre du suivi et prompt IA l'utilisent — et la date de naissance comme la taille restent optionnelles.
+
 > **Note** : l'import de fichier `.md` est momentanément retiré de l'app (il reviendra avec une future convention « template »). La semaine d'exemple se charge automatiquement au premier lancement. Le format décrit ci-dessous reste le contrat de référence.
 
 ## Le fichier .md de la semaine (contrat de référence)
