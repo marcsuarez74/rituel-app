@@ -24,6 +24,8 @@ Source de vérité : `src/index.css` (section `:root`). Toute valeur ici doit y 
 | `--muted` | `#6e7a6c` | texte secondaire (≈ 4,4:1 sur surface, ≈ 3,99:1 sur bg — les compteurs/notes principales utilisent `color-mix(in srgb, var(--muted) 70%, var(--text))`) |
 | `--accent` | `#3e7a46` | **accent principal** (basilic) : actions, onglets, checkboxes, focus, tags Marc/Batch, barres séances — texte blanc dessus |
 | `--accent-2` | `#f2dc7b` | **accent secondaire** (citron) : surbrillance — carte pesée, encadré keto, tags Mél, barre courses, nom du jour micro-batch. **Jamais en couleur de texte** |
+| `--citron-surface` | `#fdf6d8` | fond des items « pot citron » du rituel |
+| `--citron-line` | `#e3c94f` | bordure des items « pot citron » du rituel |
 | `--danger` | `#b4452f` | erreurs (`.error`), `.profil-switch`, delta d'alerte (`.stat-delta-alerte`) |
 
 ⚠️ Ne jamais coder une couleur en dur dans un composant — utiliser `var(--token)`. **Règle Herbes : texte blanc `#ffffff` sur basilic** (boutons, tags Marc, pill menu, Mode magasin actif) — ≈ 5,2:1 ; **texte encre `#26312b` sur citron** (tags Mél, nom du jour micro-batch, carte Mélanie onboarding) — ≈ 9,8:1.

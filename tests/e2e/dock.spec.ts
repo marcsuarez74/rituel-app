@@ -29,7 +29,7 @@ test.describe('Nav segmented — mobile', () => {
 
   test('nav segmented visible sous la bannière, plus de dock flottant', async ({ page }) => {
     await page.goto(ORIGIN);
-    await expect(page.getByText('Semaine 2026-S37')).toBeVisible();
+    await expect(page.getByText('Semaine 37')).toBeVisible();
     const nav = page.locator('.tabbar-segmented');
     await expect(nav).toBeVisible();
     await expect(page.locator('.tabbar-dock')).toHaveCount(0);
@@ -47,23 +47,31 @@ test.describe('Nav segmented — mobile', () => {
 
   // Le swipe est envoyé via page.mouse : WebKit (projets mobiles) génère bien
   // les pointer events pointerdown/pointerup qui alimentent le handler de App.
-  // document.fonts.ready fixe le layout : sans lui, le swap de police peut
-  // amener le bouton « Mode magasin » au point de départ (300, 400) et le
-  // swipe est ignoré (le handler exclut les contrôles interactifs).
+  // Le point de départ est déduit de la bannière rituel (div non interactif
+  // dans <main>) : la bannière semaine compacte enveloppe sur 320 px — le
+  // milieu d'écran tombe sur la nav segmented, hors du handler — et la
+  // bannière rituel est sous la ligne de flottaison, d'où le scroll d'abord.
   test('swipe horizontal bascule Cuisine ↔ Mon suivi', async ({ page }) => {
     await page.goto(ORIGIN);
-    await expect(page.getByText('Semaine 2026-S37')).toBeVisible();
+    await expect(page.getByText('Semaine 37')).toBeVisible();
     await page.evaluate(() => document.fonts.ready);
+    const banniere = page.locator('.batch-banner');
+    await banniere.scrollIntoViewIfNeeded();
+    const origine = await banniere.boundingBox();
+    expect(origine).not.toBeNull();
+    // Départ côté droit de la bannière : un swipe de 200 px reste à l'écran.
+    const x = origine!.x + origine!.width - 30;
+    const y = origine!.y + origine!.height / 2;
     // swipe vers la gauche → Mon suivi
-    await page.mouse.move(300, 400);
+    await page.mouse.move(x, y);
     await page.mouse.down();
-    await page.mouse.move(100, 400, { steps: 8 });
+    await page.mouse.move(x - 200, y, { steps: 8 });
     await page.mouse.up();
     await expect(page.locator('.tabbar-segmented')).toHaveAttribute('data-active', 'suivi');
     // swipe vers la droite → Cuisine
-    await page.mouse.move(100, 400);
+    await page.mouse.move(x - 200, y);
     await page.mouse.down();
-    await page.mouse.move(300, 400, { steps: 8 });
+    await page.mouse.move(x, y, { steps: 8 });
     await page.mouse.up();
     await expect(page.locator('.tabbar-segmented')).toHaveAttribute('data-active', 'cuisine');
   });

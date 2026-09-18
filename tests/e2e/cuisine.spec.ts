@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 // Contrat de maintenance : la semaine d'exemple (S37, 2026-09-07 → 2026-09-13)
 // doit couvrir la semaine courante. Quand on la rafraîchit, mettre à jour
-// « Semaine 2026-S37 » et les compteurs exacts ci-dessous (même contrat que
+// « Semaine 37 » et les compteurs exacts ci-dessous (même contrat que
 // les tests unitaires). Hypothèses à préserver aussi : le frontmatter garde
 // `menu: A` (pill assertée), le menu compte 33 lignes repas (5+5+5+4+4+5+5) —
 // soit 7 dîners + 7 paires de déjeuners côté Menu v3. Les pills reprennent les
@@ -63,16 +63,16 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
     },
   });
 
-  test('bannière : pill « Menu A » visible', async ({ page }) => {
+  test('bannière : pill « A » visible', async ({ page }) => {
     await page.goto(ORIGIN);
-    await expect(page.getByText('Semaine 2026-S37')).toBeVisible();
+    await expect(page.getByText('Semaine 37')).toBeVisible();
     await expect(page.locator('.menu-pill')).toBeVisible();
-    await expect(page.locator('.menu-pill')).toHaveText('Menu A');
+    await expect(page.locator('.menu-pill')).toHaveText('A');
   });
 
   test('menu v3 : onglets par recette, coche dîner persistée, file de déjeuners', async ({ page }) => {
     await page.goto(ORIGIN);
-    await expect(page.getByText('Semaine 2026-S37')).toBeVisible();
+    await expect(page.getByText('Semaine 37')).toBeVisible();
     await page.getByRole('button', { name: 'Menu' }).click();
     await expect(page.locator('.rtab')).toHaveCount(8); // 7 dîners + 🍱 Déjeuners
     // Les pills n'affichent aucun jour : pas de « lundi » ni équivalent.
@@ -133,7 +133,7 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
 
   test('courses : compteurs par rayon et encadré keto en dernier', async ({ page }) => {
     await page.goto(ORIGIN);
-    await expect(page.getByText('Semaine 2026-S37')).toBeVisible();
+    await expect(page.getByText('Semaine 37')).toBeVisible();
 
     // 7 rayons dans la sample (6 groupes + keto), chacun avec son compteur 0/N
     await expect(page.locator('.rayon-cnt')).toHaveCount(7);
@@ -187,7 +187,7 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
 
   test('batch : timeline du rituel (5 étapes) et carrousel micro-batch', async ({ page }) => {
     await page.goto(ORIGIN);
-    await expect(page.getByText('Semaine 2026-S37')).toBeVisible();
+    await expect(page.getByText('Semaine 37')).toBeVisible();
 
     await page.getByRole('button', { name: 'Batch' }).click();
     await expect(page.locator('.rituel-timeline')).toBeVisible();
@@ -227,7 +227,7 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
     test(`zéro débordement horizontal sur les 3 sous-onglets à ${largeur}px`, async ({ page }) => {
       await page.setViewportSize({ width: largeur, height: 700 });
       await page.goto(ORIGIN);
-      await expect(page.getByText('Semaine 2026-S37')).toBeVisible();
+      await expect(page.getByText('Semaine 37')).toBeVisible();
       // document.fonts.ready fixe le layout (même pattern que dock.spec) :
       // sans lui, la mesure peut tomber pendant le swap de police (flake CI).
       await page.evaluate(() => document.fonts.ready);

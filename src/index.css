@@ -48,6 +48,8 @@
   --muted: #6e7a6c;
   --accent: #3e7a46; /* basilic */
   --accent-2: #f2dc7b; /* citron */
+  --citron-surface: #fdf6d8; /* fond des items « pot citron » (rituel) */
+  --citron-line: #e3c94f; /* bordure des items « pot citron » (rituel) */
   --danger: #b4452f;
   --shadow: 0 4px 16px rgb(38 49 43 / 0.08);
   --radius: 18px;
@@ -220,7 +222,6 @@ p {
 
 .week-banner p {
   margin: var(--sp-2) 0;
-  font-size: var(--fs-sec);
 }
 
 .week-banner-main {
@@ -256,22 +257,50 @@ p {
   color: #ffffff;
 }
 
+/* Titre = bouton : tap = changeur de semaine. Zones 48 px via min-height. */
+.week-head {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: var(--sp-4) 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.2s;
+}
+
+.week-head:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
 .week-title {
   margin: 0;
   font-size: var(--fs-h2);
   font-weight: 700;
-  letter-spacing: 0.01em;
+  line-height: var(--lh-tight);
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.week-title-row {
+.week-dates-row {
   display: flex;
   align-items: center;
-  gap: var(--sp-10);
   flex-wrap: wrap;
+  gap: var(--sp-6);
+}
+
+.week-dates {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+.week-titre-md {
+  font-size: var(--fs-meta);
 }
 
 .menu-pill {
@@ -283,6 +312,208 @@ p {
   font-size: var(--fs-meta);
   font-weight: 700;
   box-shadow: 0 3px 10px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+
+/* ---------- Changeur de semaine ---------- */
+
+.switcher-veil {
+  position: fixed;
+  inset: 0;
+  background: rgb(38 49 43 / 0.35);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 60;
+}
+
+.switcher-sheet {
+  width: 100%;
+  max-width: 420px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  padding: var(--sp-16) var(--sp-16) max(var(--sp-24), env(safe-area-inset-bottom));
+}
+
+.switcher-titre {
+  margin: 0 0 var(--sp-10);
+  font-size: var(--fs-h3);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.switcher-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+.switcher-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-10);
+  min-height: 48px;
+  padding: var(--sp-10) var(--sp-12);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-sec);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.switcher-item .switcher-dates {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+.switcher-item.actif {
+  border-color: var(--accent);
+  background: #eef4ec;
+  font-weight: 600;
+}
+
+/* ---------- Anneau de progression (héro suivi) ---------- */
+
+.progress-ring {
+  position: relative;
+  width: 118px;
+  height: 118px;
+  flex-shrink: 0;
+}
+
+.progress-ring svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ring-track {
+  fill: none;
+  stroke: var(--surface-2);
+  stroke-width: 9;
+}
+
+.ring-arc {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 9;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.4s;
+}
+
+.ring-bud {
+  fill: var(--accent-2);
+  stroke: var(--surface);
+  stroke-width: 2.5;
+}
+
+.ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  text-align: center;
+}
+
+.ring-center b {
+  font-size: var(--fs-h2);
+  color: var(--text);
+  line-height: var(--lh-tight);
+}
+
+.ring-center small {
+  font-size: var(--fs-micro);
+  color: var(--muted);
+}
+
+/* ---------- Suivi : carte héro (objectif + poids) ---------- */
+
+.suivi-hero {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: var(--sp-16);
+  box-shadow: var(--shadow);
+  margin-bottom: var(--sp-16);
+}
+
+.suivi-hero-main {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-16);
+}
+
+.suivi-hero-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+.suivi-hero-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+.suivi-hero-cible {
+  font-size: var(--fs-h2);
+  color: var(--text);
+}
+
+.suivi-hero-echeance {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-6);
+  margin: 0;
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+.suivi-hero-echeance.late {
+  color: var(--danger);
+}
+
+.suivi-hero-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-6);
+  margin-top: var(--sp-12);
+}
+
+.suivi-hero-poids {
+  width: 118px;
+  height: 118px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--surface-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  color: var(--muted);
+}
+
+.suivi-hero-poids b {
+  font-size: var(--fs-h2);
+  color: var(--text);
 }
 
 /* ---------- Nav segmented (sous la bannière) ---------- */
@@ -1785,40 +2016,13 @@ progress {
   cursor: pointer;
 }
 
-/* ---------- Stat-cards (Mon suivi) ---------- */
+/* ---------- Suivi : delta poids de la carte héro ---------- */
 
-.stat-cards {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--sp-8);
-  margin-bottom: var(--sp-12);
-}
-
-.stat-card-hero {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-10);
-}
-.stat-card-hero .stat-value {
-  font-size: var(--fs-hero);
-  margin-top: 0;
-}
 .stat-delta small {
   display: block;
   font-weight: 600;
   color: var(--muted);
   margin-top: var(--sp-2);
-}
-
-.stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: var(--sp-12);
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-4);
 }
 
 .stat-label {
@@ -1827,18 +2031,6 @@ progress {
   gap: var(--sp-6);
   color: var(--muted);
   font-size: var(--fs-micro);
-  font-weight: 500;
-}
-
-.stat-value {
-  font-size: var(--fs-h2);
-  font-weight: 600;
-  line-height: var(--lh-tight);
-}
-
-.stat-value small {
-  font-size: var(--fs-micro);
-  color: var(--muted);
   font-weight: 500;
 }
 
@@ -1869,121 +2061,7 @@ progress {
   font-weight: 700;
 }
 
-/* ——— Bloc objectif (tête de Mon suivi) ——— */
-.obj-bloc {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: var(--sp-16);
-}
-.obj-pills {
-  display: flex;
-  gap: var(--sp-8);
-  flex-wrap: wrap;
-}
-.obj-pill-type {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-6);
-  font-size: var(--fs-micro);
-  font-weight: 700;
-  border-radius: 999px;
-  padding: var(--sp-4) var(--sp-10);
-  background: var(--accent);
-  color: #fff;
-}
-.obj-pill-reg {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-6);
-  font-size: var(--fs-micro);
-  font-weight: 700;
-  border-radius: 999px;
-  padding: var(--sp-4) var(--sp-10);
-  background: color-mix(in srgb, var(--accent-2) 60%, var(--surface));
-  color: var(--text);
-}
-.obj-echeance {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-6);
-  font-size: var(--fs-meta);
-  color: var(--muted);
-  margin-top: var(--sp-10);
-}
-.obj-echeance b {
-  color: var(--text);
-}
-.obj-echeance.late b {
-  color: var(--danger);
-}
-.obj-prog {
-  margin-top: var(--sp-12);
-}
-.obj-kg {
-  font-size: var(--fs-h1);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-.obj-kg small {
-  font-size: var(--fs-meta);
-  font-weight: 600;
-  color: var(--muted);
-  margin-left: var(--sp-2);
-}
-.obj-kg span {
-  font-size: var(--fs-meta);
-  font-weight: 600;
-  color: var(--muted);
-  margin-left: var(--sp-2);
-}
-.obj-bar {
-  height: 7px;
-  border-radius: 99px;
-  background: var(--surface-2);
-  margin-top: var(--sp-10);
-  overflow: hidden;
-}
-.obj-bar span {
-  display: block;
-  height: 100%;
-  border-radius: 99px;
-  background: var(--accent);
-}
-.obj-det {
-  font-size: var(--fs-micro);
-  color: var(--muted);
-  margin-top: var(--sp-6);
-  line-height: var(--lh-body);
-}
-.obj-plain {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-8);
-  font-size: var(--fs-meta);
-  color: var(--muted);
-  margin-top: var(--sp-12);
-}
-.obj-plain b {
-  color: var(--text);
-}
-.obj-comps {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-6);
-  align-items: center;
-  margin-top: var(--sp-12);
-  padding-top: var(--sp-12);
-  border-top: 1px dashed var(--border);
-}
-.obj-comps-label {
-  width: 100%;
-  font-size: var(--fs-micro);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-}
+/* Chips (régime, compléments — carte héro suivi) */
 .cchip {
   font-size: var(--fs-micro);
   font-weight: 600;
@@ -1994,20 +2072,6 @@ progress {
 }
 
 /* ---------- Écran Profil ---------- */
-
-.week-banner {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--sp-8);
-}
-
-.week-banner-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-8);
-  flex-shrink: 0;
-}
 
 .profile-icon-btn {
   display: inline-flex;
@@ -2028,6 +2092,9 @@ progress {
 }
 
 .profil-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
   min-height: 48px;
   padding: var(--sp-10) 0;
   margin-bottom: var(--sp-4);
@@ -2570,42 +2637,57 @@ progress {
   }
 }
 
-/* ---------- Sync (point bannière + bloc profil) ---------- */
+/* ---------- Chip foyer (bannière) ---------- */
 
-.sync-dot {
-  width: 48px;
-  height: 48px;
-  display: grid;
-  place-items: center;
-  background: none;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
+.sync-chip {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  min-height: 48px;
+  padding: var(--sp-10) var(--sp-14);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font: 600 var(--fs-meta) Poppins, sans-serif;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
 
-.sync-dot::before {
-  content: '';
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-
-.sync-dot.sync-sync::before {
-  background: var(--accent);
-}
-
-.sync-dot.sync-attente::before {
+.sync-chip-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
   background: var(--muted);
 }
 
-.sync-dot.sync-erreur::before {
+.sync-chip-sync,
+.sync-chip-attente {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+}
+
+.sync-chip-sync .sync-chip-dot,
+.sync-chip-attente .sync-chip-dot {
+  background: var(--accent);
+}
+
+.sync-chip-erreur {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 35%, var(--border));
+}
+
+.sync-chip-erreur .sync-chip-dot {
   background: var(--danger);
 }
 
-.sync-dot:active {
-  transform: scale(0.97);
+.sync-chip:active {
+  background: var(--surface-2);
 }
+
+/* ---------- Sync (bloc profil) ---------- */
 
 .sync-bloc .profil-ghost {
   margin-top: var(--sp-12);

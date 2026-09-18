@@ -15,9 +15,9 @@ import { todayISO } from '../src/lib/dates';
 import { parseWeeklyFile } from '../src/lib/parse';
 import { ImportButton } from '../src/components/ImportButton';
 import { Checklist } from '../src/components/Checklist';
-import { StatCards } from '../src/components/StatCards';
-import { ObjectifBloc } from '../src/components/ObjectifBloc';
+import { SuiviHero } from '../src/components/SuiviHero';
 import { WeightChart } from '../src/components/WeightChart';
+import { ProgressRing } from '../src/components/ProgressRing';
 import { ShoppingList } from '../src/components/cuisine/ShoppingList';
 import { CoursesBudget, DepensesPanel } from '../src/components/cuisine/CoursesBudget';
 import { MenuView } from '../src/components/cuisine/MenuView';
@@ -25,6 +25,7 @@ import { BatchView } from '../src/components/cuisine/BatchView';
 import { CuisineView } from '../src/components/cuisine/CuisineView';
 import { ProfileView } from '../src/components/ProfileView';
 import { WeekBanner } from '../src/components/WeekBanner';
+import { SemaineSwitcher } from '../src/components/SemaineSwitcher';
 import { Icon } from '../src/components/Icon';
 
 const profileV2 = (
@@ -954,54 +955,7 @@ describe('BatchView v2 — rituel et micro-batch', () => {
   });
 });
 
-describe('StatCards — carte Poids (hero)', () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
-  it('affiche le poids actuel et la variation en kg vs 7 jours', () => {
-    addWeight('marc', '2026-09-02', 78);
-    addWeight('marc', '2026-09-08', 77.4);
-    render(<StatCards profile={profileV2('marc', { poidsObjectif: 70 })} />);
-
-    expect(screen.getByText('Poids')).toBeInTheDocument();
-    expect(screen.getByText('77,4')).toBeInTheDocument();
-    expect(screen.getByText(/-0,6 kg/)).toBeInTheDocument();
-    expect(screen.getByText('vs 7 jours')).toBeInTheDocument();
-    expect(screen.queryByText('Kcal du jour')).not.toBeInTheDocument();
-    expect(screen.queryByText('Séances')).not.toBeInTheDocument();
-    expect(screen.queryByText('Courses')).not.toBeInTheDocument();
-  });
-
-  it('variation dans le sens de l objectif → stat-delta-bon, à contre-sens → stat-delta-alerte', () => {
-    addWeight('marc', '2026-09-02', 78);
-    addWeight('marc', '2026-09-08', 77.4);
-    const { unmount } = render(
-      <StatCards profile={profileV2('marc', { poidsObjectif: 70 })} />,
-    );
-    expect(screen.getByText(/-0,6 kg/)).toHaveClass('stat-delta-bon');
-    unmount();
-
-    addWeight('marc', '2026-09-02', 78);
-    addWeight('marc', '2026-09-08', 78.5);
-    render(<StatCards profile={profileV2('marc', { poidsObjectif: 70 })} />);
-    expect(screen.getByText(/\+0,5 kg/)).toHaveClass('stat-delta-alerte');
-  });
-
-  it('sans poids objectif, la variation reste neutre', () => {
-    addWeight('marc', '2026-09-02', 78);
-    addWeight('marc', '2026-09-08', 77.4);
-    render(<StatCards profile={profileV2('marc')} />);
-    expect(screen.getByText(/-0,6 kg/)).toHaveClass('stat-delta-neutre');
-  });
-
-  it('sans pesée, le poids s affiche en tiret (aucun crash)', () => {
-    render(<StatCards profile={profileV2('melanie')} />);
-    expect(screen.getByText('—')).toBeInTheDocument();
-  });
-});
-
-describe('ObjectifBloc', () => {
+describe('SuiviHero — carte héro objectif', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.setSystemTime(new Date('2026-09-09T10:00:00'));
@@ -1011,86 +965,129 @@ describe('ObjectifBloc', () => {
     vi.useRealTimers();
   });
 
-  it('perte : kg restants, barre de progression et détail départ → cible', () => {
+  it('perte avec pesées : anneau, kg restants, cible, échéance', () => {
     addWeight('marc', '2026-08-12', 82.8);
     addWeight('marc', '2026-09-07', 79.1);
     addWeight('marc', '2026-09-09', 78.4);
-    render(<ObjectifBloc profile={profileV2('marc', { poidsObjectif: 74 })} />);
+    render(<SuiviHero profile={profileV2('marc', { poidsObjectif: 74 })} />);
 
-    expect(screen.getByText(/Perte de poids/)).toBeInTheDocument();
-    expect(screen.getByText(/4,4/)).toBeInTheDocument();
-    expect(screen.getByText(/restants/)).toBeInTheDocument();
-    expect(screen.getByText(/Départ 82,8 kg/)).toHaveTextContent(
-      'Départ 82,8 kg · 82,8 → 78,4 → cible 74,0 kg',
-    );
-    const barre = document.querySelector('.obj-bar span') as HTMLElement;
-    expect(barre.style.width).toBe('50%');
+    expect(
+      screen.getByRole('img', { name: "Progression : 50 % de l'objectif" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('4,4')).toBeInTheDocument();
+    expect(screen.getByText('kg restants')).toBeInTheDocument();
+    expect(screen.getByText(/Cible 74,0 kg/)).toBeInTheDocument();
     expect(screen.getByText(/Échéance :/)).toHaveTextContent('15 déc. · dans 97 jours');
   });
 
   it('échéance dépassée : mention « dépassée » et classe late', () => {
     render(
-      <ObjectifBloc
+      <SuiviHero
         profile={profileV2('marc', { poidsObjectif: 74, objectif: { type: 'perte', echeance: '2026-06-15' } })}
       />,
     );
     expect(screen.getByText(/dépassée/)).toBeInTheDocument();
-    expect(document.querySelector('.obj-echeance')).toHaveClass('late');
+    expect(document.querySelector('.suivi-hero-echeance')).toHaveClass('late');
+  });
+
+  it('échéance aujourd’hui : mention du jour, pas de classe late', () => {
+    render(
+      <SuiviHero
+        profile={profileV2('marc', { poidsObjectif: 74, objectif: { type: 'perte', echeance: '2026-09-09' } })}
+      />,
+    );
+    expect(screen.getByText(/Échéance :/)).toHaveTextContent('aujourd’hui');
+    expect(document.querySelector('.suivi-hero-echeance')).not.toHaveClass('late');
   });
 
   it('sans échéance, pas de ligne échéance', () => {
     render(
-      <ObjectifBloc
-        profile={profileV2('marc', { poidsObjectif: 74, objectif: { type: 'perte' } })}
-      />,
+      <SuiviHero profile={profileV2('marc', { poidsObjectif: 74, objectif: { type: 'perte' } })} />,
     );
     expect(screen.queryByText(/Échéance :/)).not.toBeInTheDocument();
   });
 
-  it('masse : kg à prendre, sens de la barre inversé', () => {
+  it('masse : kg à prendre', () => {
     addWeight('marc', '2026-08-12', 74);
     addWeight('marc', '2026-09-09', 75.8);
     render(
-      <ObjectifBloc
+      <SuiviHero
         profile={profileV2('marc', { poidsObjectif: 82, objectif: { type: 'masse' } })}
       />,
     );
     expect(screen.getByText(/6,2/)).toBeInTheDocument();
-    expect(screen.getByText(/à prendre/)).toBeInTheDocument();
+    expect(screen.getByText('kg à prendre')).toBeInTheDocument();
   });
 
-  it('maintien : pas de barre, ligne poids actuel (+ cible si présente)', () => {
+  it('maintien : pas d’anneau, poids actuel à la place', () => {
     addWeight('marc', '2026-09-09', 78.4);
     render(
-      <ObjectifBloc
+      <SuiviHero
         profile={profileV2('marc', { poidsObjectif: 74, objectif: { type: 'maintien' } })}
       />,
     );
-    expect(document.querySelector('.obj-bar')).toBeNull();
-    // Le libellé est morcelé par des <b> (maquette) : on teste le texte de la ligne.
-    expect(document.querySelector('.obj-plain')).toHaveTextContent(
-      'Poids actuel 78,4 kg · cible 74,0 kg',
-    );
+    expect(screen.queryByRole('img', { name: /Progression/ })).not.toBeInTheDocument();
+    expect(screen.getByText('78,4')).toBeInTheDocument();
+    expect(screen.getByText(/Cible 74,0 kg/)).toBeInTheDocument();
   });
 
-  it('sans pesée : aucun crash, pas de barre ni de poids', () => {
-    render(<ObjectifBloc profile={profileV2('marc', { poidsObjectif: 74 })} />);
-    expect(document.querySelector('.obj-bar')).toBeNull();
-    expect(screen.queryByText(/Poids actuel/)).not.toBeInTheDocument();
+  it('sans pesée : tiret, aucun crash', () => {
+    render(<SuiviHero profile={profileV2('melanie')} />);
+    expect(screen.getByText('—')).toBeInTheDocument();
   });
 
-  it('affiche la pill régime sauf si « aucun », et les compléments en chips', () => {
+  it('perte avec cible sans pesée : tiret, cible affichée, pas d’anneau', () => {
+    render(<SuiviHero profile={profileV2('marc', { poidsObjectif: 74 })} />);
+    expect(screen.getByText('—')).toBeInTheDocument();
+    expect(screen.getByText(/Cible 74,0 kg/)).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: /Progression/ })).not.toBeInTheDocument();
+  });
+
+  it('masse avec cible sans pesée : tiret, cible affichée, pas d’anneau', () => {
     render(
-      <ObjectifBloc
-        profile={profileV2('marc', { complements: ['Whey', 'Zinc'], regime: 'keto' })}
+      <SuiviHero
+        profile={profileV2('marc', { poidsObjectif: 82, objectif: { type: 'masse' } })}
       />,
     );
-    expect(screen.getByText('Keto')).toBeInTheDocument();
-    expect(screen.getByText('Whey')).toBeInTheDocument();
-    expect(screen.getByText('Zinc')).toBeInTheDocument();
+    expect(screen.getByText('—')).toBeInTheDocument();
+    expect(screen.getByText(/Cible 82,0 kg/)).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: /Progression/ })).not.toBeInTheDocument();
+  });
 
-    render(<ObjectifBloc profile={profileV2('melanie', { regime: 'aucun' })} />);
-    expect(screen.queryByText('Aucun')).not.toBeInTheDocument();
+  it('delta 7 j : bon dans le sens de l objectif, alerte à contre-sens, neutre sans cible', () => {
+    addWeight('marc', '2026-09-02', 78);
+    addWeight('marc', '2026-09-08', 77.4);
+    const { unmount } = render(<SuiviHero profile={profileV2('marc', { poidsObjectif: 70 })} />);
+    expect(screen.getByText(/-0,6 kg/)).toHaveClass('stat-delta-bon');
+    unmount();
+
+    addWeight('marc', '2026-09-02', 78);
+    addWeight('marc', '2026-09-08', 78.5);
+    const { unmount: unmount2 } = render(
+      <SuiviHero profile={profileV2('marc', { poidsObjectif: 70 })} />,
+    );
+    expect(screen.getByText(/\+0,5 kg/)).toHaveClass('stat-delta-alerte');
+    unmount2();
+
+    // addWeight fait un upsert par date : on ré-tablit l'état du 1er bloc
+    // (78 → 77,4) pour le cas sans cible.
+    addWeight('marc', '2026-09-02', 78);
+    addWeight('marc', '2026-09-08', 77.4);
+    render(<SuiviHero profile={profileV2('marc')} />);
+    expect(screen.getByText(/-0,6 kg/)).toHaveClass('stat-delta-neutre');
+  });
+
+  it('chips : régime (sauf aucun) + compteur de compléments', () => {
+    const { unmount } = render(
+      <SuiviHero profile={profileV2('marc', { complements: ['Whey', 'Zinc'], regime: 'keto' })} />,
+    );
+    expect(screen.getByText('Keto')).toBeInTheDocument();
+    expect(screen.getByText('2 compléments')).toBeInTheDocument();
+    unmount();
+
+    render(<SuiviHero profile={profileV2('melanie', { regime: 'aucun' })} />);
+    expect(screen.queryByText(/Aucun/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/complément/)).not.toBeInTheDocument();
   });
 });
 
@@ -1280,32 +1277,109 @@ describe('ProfileView', () => {
 describe('WeekBanner', () => {
   const meta = { semaine: '2026-S39', menu: 'A', du: '2026-09-21', au: '2026-09-27' };
 
-  it('affiche le menu courant en pill à côté du titre', () => {
-    render(<WeekBanner meta={meta} />);
-    const pill = screen.getByText('Menu A');
-    expect(pill).toHaveClass('menu-pill');
-    expect(pill.parentElement).toHaveClass('week-title-row');
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Semaine 2026-S39');
+  it('titre court « Semaine 39 » + dates + pill menu brute', () => {
+    render(<WeekBanner meta={meta} onSwitcher={() => {}} />);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Semaine 39');
+    expect(screen.getByText('21/09 → 27/09')).toBeInTheDocument();
+    expect(screen.getByText('A')).toHaveClass('menu-pill');
   });
 
-  it('chevrons absents sans callbacks (une seule semaine)', () => {
+  it('chevrons toujours visibles, désactivés aux bornes', () => {
     render(<WeekBanner meta={meta} />);
-    expect(screen.queryByRole('button', { name: 'Semaine précédente' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Semaine suivante' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Semaine précédente' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Semaine suivante' })).toBeDisabled();
   });
 
-  it('navigue par chevrons et désactive aux bornes', async () => {
+  it('navigue par chevrons quand les bornes le permettent', async () => {
     const user = userEvent.setup();
     const onPrev = vi.fn();
     const onNext = vi.fn();
     render(<WeekBanner meta={meta} onPrev={onPrev} onNext={onNext} hasPrev={false} hasNext />);
-    const prev = screen.getByRole('button', { name: 'Semaine précédente' });
+    expect(screen.getByRole('button', { name: 'Semaine précédente' })).toBeDisabled();
     const next = screen.getByRole('button', { name: 'Semaine suivante' });
-    expect(prev).toBeDisabled();
     expect(next).toBeEnabled();
     await user.click(next);
     expect(onNext).toHaveBeenCalledTimes(1);
     expect(onPrev).not.toHaveBeenCalled();
+  });
+
+  it('tap sur le titre ouvre le changeur de semaine', async () => {
+    const user = userEvent.setup();
+    const onSwitcher = vi.fn();
+    render(<WeekBanner meta={meta} onSwitcher={onSwitcher} />);
+    await user.click(screen.getByRole('button', { name: 'Semaine 39 — changer de semaine' }));
+    expect(onSwitcher).toHaveBeenCalledTimes(1);
+  });
+
+  it('chip sync : « Local » hors foyer (tap = profil), « Duo » connecté (tap = resync)', async () => {
+    const user = userEvent.setup();
+    const onOpenProfile = vi.fn();
+    const onSyncTap = vi.fn();
+    const { rerender } = render(
+      <WeekBanner meta={meta} syncEtat="off" onOpenProfile={onOpenProfile} onSyncTap={onSyncTap} />,
+    );
+    const chip = screen.getByRole('button', { name: 'Hors foyer — ouvrir le profil pour connecter' });
+    expect(chip).toHaveTextContent('Local');
+    await user.click(chip);
+    expect(onOpenProfile).toHaveBeenCalledTimes(1);
+    expect(onSyncTap).not.toHaveBeenCalled();
+
+    rerender(
+      <WeekBanner meta={meta} syncEtat="sync" onOpenProfile={onOpenProfile} onSyncTap={onSyncTap} />,
+    );
+    const duo = screen.getByRole('button', { name: 'Duo — synchronisé, appuyer pour resynchroniser' });
+    expect(duo).toHaveTextContent('Duo');
+    await user.click(duo);
+    expect(onSyncTap).toHaveBeenCalledTimes(1);
+    expect(onOpenProfile).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('SemaineSwitcher', () => {
+  const semaine = (id: string, du: string, au: string, menu = 'A') => {
+    const raw = mdSemaine(id, du, au, menu);
+    return { raw, data: parseWeeklyFile(raw).data, importedAt: '' };
+  };
+  const semaines = [
+    semaine('2026-S37', '2026-09-07', '2026-09-13', 'A'),
+    semaine('2026-S38', '2026-09-14', '2026-09-20', 'B'),
+  ];
+
+  it('liste les semaines, marque l\u2019active, sélectionne au clic', async () => {
+    const user = userEvent.setup();
+    const onSelect = vi.fn();
+    render(<SemaineSwitcher semaines={semaines} active="2026-S38" onSelect={onSelect} onClose={() => {}} />);
+    expect(screen.getByRole('dialog', { name: 'Choisir une semaine' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Semaine 37/ })).toBeInTheDocument();
+    const active = screen.getByRole('button', { name: /Semaine 38/ });
+    expect(active).toHaveClass('actif');
+    expect(active).toHaveAttribute('aria-current', 'true');
+    await user.click(active);
+    expect(onSelect).toHaveBeenCalledWith('2026-S38');
+  });
+
+  it('tap sur le voile ferme, tap sur la sheet non', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    const { container } = render(
+      <SemaineSwitcher semaines={semaines} active="2026-S38" onSelect={vi.fn()} onClose={onClose} />,
+    );
+    const veil = container.querySelector('.switcher-veil');
+    expect(veil).not.toBeNull();
+    await user.click(veil as HTMLElement);
+    expect(onClose).toHaveBeenCalledTimes(1);
+
+    onClose.mockClear();
+    await user.click(screen.getByRole('dialog', { name: 'Choisir une semaine' }));
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('Escape ferme la sheet', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    render(<SemaineSwitcher semaines={semaines} active="2026-S38" onSelect={vi.fn()} onClose={onClose} />);
+    await user.keyboard('{Escape}');
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -1696,5 +1770,30 @@ describe('DepensesPanel — saisie, par magasin, historique', () => {
     expect(onRetour).toHaveBeenCalled();
     await user.click(screen.getByRole('button', { name: /Retour/ }));
     expect(onRetour).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('ProgressRing', () => {
+  it('50 % : arc à mi-course, bourgeon en bas de l’anneau', () => {
+    const { container } = render(
+      <ProgressRing progress={0.5} ariaLabel="Progression : 50 % de l'objectif">
+        <b>-4,2</b>
+      </ProgressRing>,
+    );
+    expect(screen.getByRole('img', { name: "Progression : 50 % de l'objectif" })).toBeInTheDocument();
+    const arc = container.querySelector('.ring-arc') as SVGCircleElement;
+    expect(arc.getAttribute('stroke-dasharray')).toMatch(/^150\.79/);
+    const bud = container.querySelector('.ring-bud') as SVGCircleElement;
+    expect(bud.getAttribute('cy')).toBe('108'); // 60 + 48 (bas de l'anneau)
+    expect(screen.getByText('-4,2')).toBeInTheDocument();
+  });
+
+  it('clamp 0-1 ; boucle fermée (≥ 98,5 %) : plus de bourgeon', () => {
+    const { container } = render(
+      <ProgressRing progress={2} ariaLabel="Progression : 100 % de l'objectif" />,
+    );
+    const arc = container.querySelector('.ring-arc') as SVGCircleElement;
+    expect(arc.getAttribute('stroke-dasharray')).toMatch(/^301\.59/);
+    expect(container.querySelector('.ring-bud')).toBeNull();
   });
 });

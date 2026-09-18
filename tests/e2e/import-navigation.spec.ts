@@ -11,7 +11,7 @@ async function assertPasDeDebordement(page: import('@playwright/test').Page) {
 }
 
 test.describe('Import du cycle & navigation semaines', () => {
-  // Profil seul : la semaine d'exemple se charge en fallback, sans chevrons.
+  // Profil seul : la semaine d'exemple se charge en fallback, chevrons désactivés.
   test.use({
     storageState: {
       cookies: [],
@@ -36,11 +36,11 @@ test.describe('Import du cycle & navigation semaines', () => {
     },
   });
 
-  test('une seule semaine : pas de chevrons', async ({ page }) => {
+  test('une seule semaine : chevrons désactivés', async ({ page }) => {
     await page.goto(ORIGIN);
-    await expect(page.getByText('Semaine 2026-S37')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Semaine précédente' })).toHaveCount(0);
-    await expect(page.getByRole('button', { name: 'Semaine suivante' })).toHaveCount(0);
+    await expect(page.getByText('Semaine 37')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Semaine précédente' })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'Semaine suivante' })).toBeDisabled();
     await assertPasDeDebordement(page);
   });
 
@@ -55,8 +55,8 @@ test.describe('Import du cycle & navigation semaines', () => {
 
     // Le profil se referme, la semaine affichée est celle contenant aujourd'hui
     // (E2E-S1 : du plus ancien, contient toujours aujourd'hui).
-    await expect(page.getByText('Semaine E2E-S1')).toBeVisible();
-    await expect(page.locator('.menu-pill')).toHaveText('Menu A');
+    await expect(page.getByText('Semaine 1')).toBeVisible();
+    await expect(page.locator('.menu-pill')).toHaveText('A');
 
     // Les 2 semaines sont stockées
     const ids = await page.evaluate(
@@ -66,18 +66,18 @@ test.describe('Import du cycle & navigation semaines', () => {
 
     // Navigation : suivante -> E2E-S2 (Menu Z), précédente -> retour, bornes
     await page.getByRole('button', { name: 'Semaine suivante' }).click();
-    await expect(page.getByText('Semaine E2E-S2')).toBeVisible();
-    await expect(page.locator('.menu-pill')).toHaveText('Menu Z');
+    await expect(page.getByText('Semaine 2')).toBeVisible();
+    await expect(page.locator('.menu-pill')).toHaveText('Z');
     await expect(page.getByRole('button', { name: 'Semaine suivante' })).toBeDisabled();
     await page.getByRole('button', { name: 'Semaine précédente' }).click();
-    await expect(page.getByText('Semaine E2E-S1')).toBeVisible();
+    await expect(page.getByText('Semaine 1')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Semaine précédente' })).toBeDisabled();
 
     // La navigation est en session : rechargement -> retour à l'auto (E2E-S1)
     await page.getByRole('button', { name: 'Semaine suivante' }).click();
-    await expect(page.getByText('Semaine E2E-S2')).toBeVisible();
+    await expect(page.getByText('Semaine 2')).toBeVisible();
     await page.reload();
-    await expect(page.getByText('Semaine E2E-S1')).toBeVisible();
+    await expect(page.getByText('Semaine 1')).toBeVisible();
 
     await assertPasDeDebordement(page);
   });

@@ -170,7 +170,7 @@ describe('App shell', () => {
     initProfile();
     render(<App />);
 
-    expect(screen.getByText('Semaine 2026-S37')).toBeInTheDocument();
+    expect(screen.getByText('Semaine 37')).toBeInTheDocument();
     expect(screen.getByText('07/09 → 13/09')).toBeInTheDocument();
     expect(screen.queryByText(/Importer/)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Charger la semaine/ })).not.toBeInTheDocument();
@@ -183,7 +183,7 @@ describe('App shell', () => {
     saveWeek(fixture(), parsed.data);
     render(<App />);
 
-    expect(screen.getByText('Semaine 2026-S37')).toBeInTheDocument();
+    expect(screen.getByText('Semaine 37')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Cuisine' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Mon suivi' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Marc' })).not.toBeInTheDocument();
@@ -222,7 +222,7 @@ describe('App shell', () => {
 
     render(<App />);
 
-    expect(screen.getByText('Semaine 2026-S37')).toBeInTheDocument();
+    expect(screen.getByText('Semaine 37')).toBeInTheDocument();
     expect(screen.queryByText('Importer un .md')).not.toBeInTheDocument();
   });
 });
@@ -253,7 +253,7 @@ describe('Design system & sémantique', () => {
     initProfile();
     render(<App />);
 
-    const h1 = screen.getByRole('heading', { level: 1, name: 'Semaine 2026-S37' });
+    const h1 = screen.getByRole('heading', { level: 1, name: 'Semaine 37' });
     expect(h1).toHaveClass('week-title');
   });
 
@@ -320,7 +320,7 @@ describe('Onboarding v2 — persistance via App', () => {
       complements: ['Créatine'],
       regime: 'keto',
     });
-    expect(screen.getByText('Semaine 2026-S37')).toBeInTheDocument();
+    expect(screen.getByText('Semaine 37')).toBeInTheDocument();
   });
 });
 
@@ -357,7 +357,7 @@ describe('Migration profil v1 → v2', () => {
       objectif: { type: 'perte' },
       regime: 'aucun',
     });
-    expect(screen.getByText('Semaine 2026-S37')).toBeInTheDocument();
+    expect(screen.getByText('Semaine 37')).toBeInTheDocument();
   });
 });
 
@@ -454,15 +454,15 @@ describe('App — multi-semaines', () => {
     upsertWeek(raw38, parseWeeklyFile(raw38).data);
     upsertWeek(raw39, parseWeeklyFile(raw39).data);
     render(<App />);
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Semaine 2026-S38');
-    expect(screen.getByText('Menu B')).toBeVisible();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Semaine 38');
+    expect(screen.getByText('B')).toBeVisible();
     await user.click(screen.getByRole('button', { name: 'Semaine suivante' }));
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Semaine 2026-S39');
-    expect(screen.getByText('Menu C')).toBeVisible();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Semaine 39');
+    expect(screen.getByText('C')).toBeVisible();
     // Dernière semaine : chevron suivant désactivé
     expect(screen.getByRole('button', { name: 'Semaine suivante' })).toBeDisabled();
     await user.click(screen.getByRole('button', { name: 'Semaine précédente' }));
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Semaine 2026-S38');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Semaine 38');
     expect(screen.getByRole('button', { name: 'Semaine suivante' })).toBeEnabled();
   });
 
@@ -474,7 +474,7 @@ describe('App — multi-semaines', () => {
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
     const contenu = fixtureSemaine('2026-S40', '2026-09-28', '2026-10-04', 'D', 'Boulettes');
     await user.upload(input, new File([contenu], '2026-S40-menu-d.md', { type: 'text/markdown' }));
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Semaine 2026-S40');
-    expect(screen.getByText('Menu D')).toBeVisible();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Semaine 40');
+    expect(screen.getByText('D')).toBeVisible();
   });
 });

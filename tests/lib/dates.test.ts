@@ -5,6 +5,7 @@ import {
   formatJourMoisCourt,
   jourAbrege,
   joursRestants,
+  libelleSemaineCourt,
 } from '../../src/lib/dates';
 
 describe('dates: ageDepuis', () => {
@@ -84,5 +85,19 @@ describe('dates: extraireJourLabel', () => {
 
   it('ne coupe pas un libellé sans préfixe jour', () => {
     expect(extraireJourLabel('Full body')).toEqual({ jour: null, reste: 'Full body' });
+  });
+});
+
+describe('libelleSemaineCourt', () => {
+  it('tronque l\u2019année : 2026-S37 → Semaine 37', () => {
+    expect(libelleSemaineCourt('2026-S37')).toBe('Semaine 37');
+  });
+
+  it('id sans année : S12 → Semaine 12', () => {
+    expect(libelleSemaineCourt('S12')).toBe('Semaine 12');
+  });
+
+  it('id non conforme : ne crash pas, affiche l\u2019id', () => {
+    expect(libelleSemaineCourt('bizarr')).toBe('Semaine bizarr');
   });
 });

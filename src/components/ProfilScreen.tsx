@@ -326,7 +326,8 @@ export function ProfilScreen({
   return (
     <div className="profil-screen">
       <button type="button" className="profil-back" onClick={onBack}>
-        ← Retour
+        <Icon name="chev-left" size={16} />
+        Retour
       </button>
       <h1>Profil</h1>
 
