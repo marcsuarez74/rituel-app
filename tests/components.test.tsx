@@ -18,6 +18,7 @@ import { Checklist } from '../src/components/Checklist';
 import { StatCards } from '../src/components/StatCards';
 import { ObjectifBloc } from '../src/components/ObjectifBloc';
 import { WeightChart } from '../src/components/WeightChart';
+import { ProgressRing } from '../src/components/ProgressRing';
 import { ShoppingList } from '../src/components/cuisine/ShoppingList';
 import { CoursesBudget, DepensesPanel } from '../src/components/cuisine/CoursesBudget';
 import { MenuView } from '../src/components/cuisine/MenuView';
@@ -1774,5 +1775,30 @@ describe('DepensesPanel — saisie, par magasin, historique', () => {
     expect(onRetour).toHaveBeenCalled();
     await user.click(screen.getByRole('button', { name: /Retour/ }));
     expect(onRetour).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('ProgressRing', () => {
+  it('50 % : arc à mi-course, bourgeon en bas de l’anneau', () => {
+    const { container } = render(
+      <ProgressRing progress={0.5} ariaLabel="Progression : 50 % de l'objectif">
+        <b>-4,2</b>
+      </ProgressRing>,
+    );
+    expect(screen.getByRole('img', { name: "Progression : 50 % de l'objectif" })).toBeInTheDocument();
+    const arc = container.querySelector('.ring-arc') as SVGCircleElement;
+    expect(arc.getAttribute('stroke-dasharray')).toMatch(/^150\.79/);
+    const bud = container.querySelector('.ring-bud') as SVGCircleElement;
+    expect(bud.getAttribute('cy')).toBe('108'); // 60 + 48 (bas de l'anneau)
+    expect(screen.getByText('-4,2')).toBeInTheDocument();
+  });
+
+  it('clamp 0-1 ; boucle fermée (≥ 98,5 %) : plus de bourgeon', () => {
+    const { container } = render(
+      <ProgressRing progress={2} ariaLabel="Progression : 100 % de l'objectif" />,
+    );
+    const arc = container.querySelector('.ring-arc') as SVGCircleElement;
+    expect(arc.getAttribute('stroke-dasharray')).toMatch(/^301\.59/);
+    expect(container.querySelector('.ring-bud')).toBeNull();
   });
 });
