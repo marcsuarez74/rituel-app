@@ -126,3 +126,50 @@ Procédure de rotation du code :
 2. Recréer le foyer avec le nouveau code (section 3) et redéployer si besoin.
 3. Reconnecter chaque téléphone avec le nouveau code (la fusion union
    repartira des données locales de chaque téléphone).
+
+## 7. Notifications push (optionnel, VAPID Web Push)
+
+Le serveur envoie le texte final (`{ title, body }`) — le SW n'interprète
+jamais le contenu. Sans `VITE_VAPID_PUBLIC_KEY`, la fonctionnalité est
+inexistante (bloc caché, zéro appel réseau).
+
+Composants :
+
+- **Table `push_subscriptions`** — migration `0002` : une row par appareil
+  (PK `household_id, device_id`), `config` JSONB (toggles événements +
+  rappels), `derniers_creneaux` JSONB (dédup cron). RLS foyer.
+- **Edge functions** — `push-register` (POST upsert / DELETE désabonnement,
+  JWT foyer), `push-notifier` (événements : exclusion du device appelant +
+  toggle par destinataire, purge 404/410), `push-rappels` (appelé par
+  pg_cron toutes les 5 min, auth `Bearer CRON_SECRET`, tz locale, dédup
+  1 envoi/jour/type), partagé `_shared/webpush.ts` (WebCrypto pur : VAPID
+  ES256 + aes128gcm RFC 8291) + `_shared/jwt.ts` + `_shared/rappels.ts`.
+- **Secrets** : `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`,
+  `CRON_SECRET` (`openssl rand -hex 24`) — côté front : `VITE_VAPID_PUBLIC_KEY`
+  (secret GitHub `VITE_*` + `.env.local`).
+- **Cron** — pg_cron **activé via le Dashboard** (Database → Extensions ;
+  `create extension` en SQL échoue : « schema cron does not exist »), puis :
+
+```sql
+select cron.schedule('push-rappels', '*/5 * * * *', $cron$
+  select net.http_post(
+    url := 'https://<REF>.supabase.co/functions/v1/push-rappels',
+    headers := jsonb_build_object('Content-Type', 'application/json',
+      'Authorization', 'Bearer <CRON_SECRET>'),
+    body := '{}'::jsonb);
+$cron$);
+```
+
+Événements envoyés par l'app de l'auteur **après flush confirmée** (jamais
+en optimiste) : dîner coché → « C'est prêt ! », pesée, dépenses réelles
+(1 push par séance de courses, pas par produit). Le device appelant ne se
+notifie jamais lui-même.
+
+Pièges connus :
+
+- `fr-CA` formate l'heure `08 h 03` (comparaisons faussées) → l'heure vient
+  de `fr-FR` dans `_shared/rappels.ts` ; la date ISO vient de `fr-CA`.
+- Une souscription aux clés illisibles ne doit pas faire lever l'envoi :
+  `envoyerPush` renvoie statut 0 (skip) ; seuls 404/410 purgent la row.
+- Chrome en dev local : Proxyman (proxy 127.0.0.1:9090) intercepte FCM et
+  casse la souscription — le fermer pendant les tests.

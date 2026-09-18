@@ -7,7 +7,8 @@ const MENUS = {
   mardi: 'Salade keto',
 };
 
-const menuLabel = (jour: string): string | null => MENUS[jour as keyof typeof MENUS] ?? null;
+const menuLabel = (semaine: string, jour: string): string | null =>
+  semaine === '2026-S39' ? MENUS[jour as keyof typeof MENUS] ?? null : null;
 
 const check = (id: string, done: boolean): MutationSync => ({
   op: 'upsert',

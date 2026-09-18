@@ -18,7 +18,7 @@ const fr = (n: number): string => String(n).replace('.', ',');
 
 export const evenementsDepuisMutations = (
   mutations: MutationSync[],
-  menuLabel: (jour: string, cle: string) => string | null,
+  menuLabel: (semaine: string, jour: string, cle: string) => string | null,
 ): EvenementDetecte[] => {
   const evenements: EvenementDetecte[] = [];
   for (const m of mutations) {
@@ -27,7 +27,7 @@ export const evenementsDepuisMutations = (
       const id = m.key.check_id;
       const match = typeof id === 'string' ? MENU_DINER.exec(id) : null;
       if (!match || m.payload.done !== true) continue;
-      const label = menuLabel(match[1]!, match[2] === 'Famille' ? 'dinerFamille' : 'dinerMelanie');
+      const label = menuLabel(m.key.semaine, match[1]!, match[2] === 'Famille' ? 'dinerFamille' : 'dinerMelanie');
       if (label) evenements.push({ type: 'diner', label });
     } else if (m.table === 'weights') {
       const kg = m.payload.kg;

@@ -8,6 +8,7 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 ### Ajouté
 
+- Notifications push (2 Android, opt-in au Profil) : « Dîner coché », « Pesée ajoutée », « Courses faites » (contenu personnalisé par membre : « C'est prêt ! Mélanie a fait la recette "…" ») + rappels planifiés (séance / pesée / rituel dimanche, jours et heure au choix, envoi horaire toutes les 5 min en fuseau local, 1 notification/jour/rappel). Infrastructure : souscriptions par appareil (RLS foyer), edge functions `push-register` / `push-notifier` / `push-rappels` + pg_cron, Web Push VAPID en WebCrypto pur (aucune dépendance), service worker custom (`injectManifest`) — handlers push + clic. Sans env `VITE_VAPID_PUBLIC_KEY`, tout est no-op.
 - Synchronisation optionnelle entre les 2 téléphones (Supabase) : semaines, coches, pesées, dépenses et profils ; file d'attente hors ligne, realtime, code de foyer, effacement du foyer.
 - « Copier le prompt IA » au Profil : un geste copie le prompt complet de génération de cycle — contexte personnel (prénom, âge, dernière pesée, taille, objectif, régime, compléments, courses/budget, personnes à table, préférences) + squelette du format .md et règles dures inline. Remplace le bloc « Paramètres » à recoller à la main.
 
