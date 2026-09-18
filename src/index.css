@@ -194,7 +194,6 @@ p {
 
 /* ---------- Cartes partagées ---------- */
 
-.week-banner,
 .course-group,
 .profile-section {
   background: var(--surface);
@@ -212,16 +211,17 @@ p {
 
 /* ---------- Bannière semaine ---------- */
 
+/* Compacte validée (maquette 2026-09-18) : une seule ligne, fond page, éléments
+   nerveux. Les cibles tactiles ≥ 48 px passent par la marge de frappe : padding
+   transparent + marge négative égale — la mise en page reste petite, le tap
+   reste large (les zones de frappe se chevauchent dans le vide, pas sur un
+   voisin interactif). */
 .week-banner {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-12);
-}
-
-.week-banner p {
-  margin: var(--sp-2) 0;
+  gap: var(--sp-8);
+  padding: var(--sp-8) var(--sp-12);
+  margin-bottom: var(--sp-12);
 }
 
 .week-banner-main {
@@ -231,47 +231,42 @@ p {
 
 .banner-nav {
   flex-shrink: 0;
-  min-width: 48px;
-  min-height: 48px;
   display: grid;
   place-items: center;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  color: var(--text);
-  font: inherit;
-  font-size: var(--fs-h1);
-  line-height: var(--lh-none);
+  padding: var(--sp-16);
+  margin: calc(var(--sp-16) * -1);
+  border: none;
+  background: none;
+  color: var(--accent);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
 
 .banner-nav:disabled {
-  opacity: 0.35;
+  color: var(--muted);
+  opacity: 0.4;
+  cursor: default;
 }
 
 .banner-nav:not(:disabled):active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #ffffff;
+  transform: scale(0.9);
 }
 
-/* Titre = bouton : tap = changeur de semaine. Zones 48 px via min-height. */
+/* Titre = bouton : tap = changeur de semaine. Marge de frappe 14 px : la ligne
+   visuelle reste ~17 px, la zone de tap ~45 px + les dates juste en dessous. */
 .week-head {
   display: inline-flex;
   align-items: center;
-  min-height: 48px;
-  padding: var(--sp-4) 0;
+  padding: var(--sp-14) var(--sp-6);
+  margin: calc(var(--sp-14) * -1) calc(var(--sp-6) * -1);
   border: none;
   background: none;
   color: inherit;
   font: inherit;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.01em;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: opacity 0.2s;
 }
 
 .week-head:disabled {
@@ -279,39 +274,78 @@ p {
   opacity: 1;
 }
 
+/* Le pill passe sous le titre si la ligne manque de place (petits écrans). */
 .week-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-6);
   margin: 0;
-  font-size: var(--fs-h2);
-  font-weight: 700;
+  font-size: var(--fs-sec);
+  font-weight: 600;
+  color: var(--text);
   line-height: var(--lh-tight);
   min-width: 0;
 }
 
-.week-dates-row {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--sp-6);
-}
-
-.week-dates {
-  font-size: var(--fs-meta);
-  color: var(--muted);
-}
-
-.week-titre-md {
-  font-size: var(--fs-meta);
-}
-
-.menu-pill {
+.cycle-pill {
   flex-shrink: 0;
-  padding: var(--sp-4) var(--sp-12);
+  padding: var(--sp-2) var(--sp-8);
   background: var(--accent);
   color: #ffffff;
   border-radius: 999px;
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  line-height: var(--lh-tight);
+}
+
+.week-dates {
+  margin: var(--sp-2) 0 0;
   font-size: var(--fs-meta);
-  font-weight: 700;
-  box-shadow: 0 3px 10px color-mix(in srgb, var(--accent) 35%, transparent);
+  color: var(--muted);
+  line-height: var(--lh-tight);
+  white-space: nowrap;
+}
+
+.week-titre-md {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-meta);
+}
+
+/* Cercle basilic 30 px (maquette) dessiné en ::before ; le bouton fait 50 px
+   avec marge négative : le tap couvre 48 px sans gonfler la mise en page. */
+.profile-icon-btn {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  margin: calc(var(--sp-10) * -1);
+  border: none;
+  background: none;
+  color: #ffffff;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.profile-icon-btn::before {
+  content: '';
+  position: absolute;
+  inset: var(--sp-10);
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+/* L'icône (static) passerait sous le ::before positionné sans ce relatif. */
+.profile-icon-btn svg {
+  position: relative;
+}
+
+.profile-icon-btn:active {
+  transform: scale(0.94);
 }
 
 /* ---------- Changeur de semaine ---------- */
@@ -2073,24 +2107,6 @@ progress {
 
 /* ---------- Écran Profil ---------- */
 
-.profile-icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  padding: 0;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface-2);
-  color: var(--muted);
-  cursor: pointer;
-}
-
-.profile-icon-btn:active {
-  transform: scale(0.97);
-}
-
 .profil-back {
   display: inline-flex;
   align-items: center;
@@ -2639,52 +2655,62 @@ progress {
 
 /* ---------- Chip foyer (bannière) ---------- */
 
+/* Compacte (maquette) : pastille claire teintée basilic, sans bordure. La marge
+   de frappe (48 px) est posée en ::after absolu : le fond visuel reste petit. */
 .sync-chip {
+  position: relative;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  gap: var(--sp-6);
-  min-height: 48px;
-  padding: var(--sp-10) var(--sp-14);
-  border: 1px solid var(--border);
+  gap: var(--sp-4);
+  padding: var(--sp-6) var(--sp-8);
+  border: none;
   border-radius: 999px;
-  background: var(--surface);
-  color: var(--muted);
-  font: 600 var(--fs-meta) Poppins, sans-serif;
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  color: var(--accent);
+  font: inherit;
+  font-size: var(--fs-meta);
+  font-weight: 500;
+  line-height: var(--lh-none);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.sync-chip::after {
+  content: '';
+  position: absolute;
+  inset: calc(var(--sp-12) * -1);
 }
 
 .sync-chip-dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 999px;
-  background: var(--muted);
+  background: currentColor;
 }
 
 .sync-chip-sync,
 .sync-chip-attente {
   color: var(--accent);
-  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
-}
-
-.sync-chip-sync .sync-chip-dot,
-.sync-chip-attente .sync-chip-dot {
-  background: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
 }
 
 .sync-chip-erreur {
   color: var(--danger);
-  border-color: color-mix(in srgb, var(--danger) 35%, var(--border));
+  background: color-mix(in srgb, var(--danger) 12%, var(--surface));
 }
 
 .sync-chip-erreur .sync-chip-dot {
   background: var(--danger);
 }
 
-.sync-chip:active {
+.sync-chip-local {
+  color: var(--muted);
   background: var(--surface-2);
+}
+
+.sync-chip:active {
+  transform: scale(0.96);
 }
 
 /* ---------- Sync (bloc profil) ---------- */
