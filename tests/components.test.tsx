@@ -996,7 +996,7 @@ describe('BatchView v2 — rituel et micro-batch', () => {
     const ligne = container.querySelector('.reserve-ligne')!;
     expect(ligne).not.toHaveClass('consomme');
     expect(ligne.querySelector('.reserve-etat')).toHaveTextContent('Disponible');
-    await user.click(screen.getByRole('checkbox', { name: 'Poulet-riz — marquer consommé' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Lundi — Poulet-riz — marquer consommé' }));
     expect(getChecks('2026-S39')).toEqual({ 'reserve:lundi:poulet-riz': true });
     expect(ligne.querySelector('.reserve-etat')).toHaveTextContent('Consommé');
     expect(ligne).toHaveClass('consomme');
@@ -1031,6 +1031,62 @@ describe('BatchView v2 — rituel et micro-batch', () => {
       />,
     );
     expect(document.querySelector('.reserve-etat')).toHaveTextContent('Disponible');
+  });
+
+  it('réserve : décocher remet l état à Disponible', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <BatchView
+        rituel={RITUEL}
+        microBatch={[]}
+        reserve={[{ cle: 'lundi', plat: 'Poulet-riz', conservation: 'frigo, 2 j max' }]}
+        semaine="2026-S39"
+      />,
+    );
+    const box = screen.getByRole('checkbox', { name: 'Lundi — Poulet-riz — marquer consommé' });
+    await user.click(box);
+    await user.click(box);
+    // setCheck conserve la clé à false (pas de suppression) — l'état visible est ce qui compte.
+    expect(getChecks('2026-S39')).toEqual({ 'reserve:lundi:poulet-riz': false });
+    expect(box).not.toBeChecked();
+    expect(container.querySelector('.reserve-etat')).toHaveTextContent('Disponible');
+  });
+
+  it('réserve : resynchronise sur syncVersion seul (sync remote)', () => {
+    const { rerender } = render(
+      <BatchView
+        rituel={RITUEL}
+        microBatch={[]}
+        reserve={[{ cle: 'lundi', plat: 'Poulet-riz', conservation: 'frigo, 2 j max' }]}
+        semaine="2026-S39"
+      />,
+    );
+    setCheck('2026-S39', 'reserve:lundi:poulet-riz', true);
+    rerender(
+      <BatchView
+        rituel={RITUEL}
+        microBatch={[]}
+        reserve={[{ cle: 'lundi', plat: 'Poulet-riz', conservation: 'frigo, 2 j max' }]}
+        semaine="2026-S39"
+        syncVersion={1}
+      />,
+    );
+    // La sync remote a écrit la coche (engine.ts) puis bumpé syncVersion :
+    // le render-phase reset relit le storage → l'UI reflète « Consommé ».
+    expect(document.querySelector('.reserve-etat')).toHaveTextContent('Consommé');
+  });
+
+  it('réserve : coche déjà présente au montage → Consommé', () => {
+    setCheck('2026-S39', 'reserve:lundi:poulet-riz', true);
+    render(
+      <BatchView
+        rituel={RITUEL}
+        microBatch={[]}
+        reserve={[{ cle: 'lundi', plat: 'Poulet-riz', conservation: 'frigo, 2 j max' }]}
+        semaine="2026-S39"
+      />,
+    );
+    expect(document.querySelector('.reserve-etat')).toHaveTextContent('Consommé');
   });
 
   it('« Lancer le rituel » est un bouton pleine largeur sous la timeline (plus de pilule dans le head)', () => {

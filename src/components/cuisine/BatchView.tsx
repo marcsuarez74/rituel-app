@@ -250,7 +250,7 @@ function Reserve({
                 type="checkbox"
                 checked={consomme}
                 onChange={() => toggle(id)}
-                aria-label={`${l.plat} — marquer consommé`}
+                aria-label={`${l.cle === 'mel' ? 'Mél' : capitalize(l.cle)} — ${l.plat} — marquer consommé`}
               />
               <span className="reserve-ic">
                 <Icon name={iconeReserve(l)} size={16} />

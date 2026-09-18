@@ -1412,8 +1412,10 @@ progress {
   display: flex;
   align-items: center;
   gap: var(--sp-12);
+  min-height: 48px;
   padding: var(--sp-10) 0;
   border-top: 1px solid var(--border);
+  cursor: pointer;
 }
 
 .reserve-ligne:first-child {
@@ -1457,10 +1459,6 @@ progress {
   line-height: var(--lh-body);
 }
 
-.reserve-ligne {
-  cursor: pointer;
-}
-
 .reserve-ligne input {
   width: 18px;
   height: 18px;
@@ -1468,10 +1466,13 @@ progress {
   flex-shrink: 0;
 }
 
-.reserve-ligne.consomme .reserve-nom,
-.reserve-ligne.consomme .reserve-cons {
+.reserve-ligne.consomme .reserve-nom {
   text-decoration: line-through;
   opacity: 0.7;
+}
+
+.reserve-ligne.consomme .reserve-cons {
+  text-decoration: line-through;
 }
 
 .reserve-etat {
@@ -1487,8 +1488,8 @@ progress {
 }
 
 .reserve-etat.fait {
-  background: color-mix(in srgb, var(--accent) 15%, var(--surface));
-  color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
 }
 
 .micro-dots {
