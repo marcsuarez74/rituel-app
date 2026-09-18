@@ -990,6 +990,16 @@ describe('SuiviHero — carte héro objectif', () => {
     expect(document.querySelector('.suivi-hero-echeance')).toHaveClass('late');
   });
 
+  it('échéance aujourd’hui : mention du jour, pas de classe late', () => {
+    render(
+      <SuiviHero
+        profile={profileV2('marc', { poidsObjectif: 74, objectif: { type: 'perte', echeance: '2026-09-09' } })}
+      />,
+    );
+    expect(screen.getByText(/Échéance :/)).toHaveTextContent("aujourd'hui");
+    expect(document.querySelector('.suivi-hero-echeance')).not.toHaveClass('late');
+  });
+
   it('sans échéance, pas de ligne échéance', () => {
     render(
       <SuiviHero profile={profileV2('marc', { poidsObjectif: 74, objectif: { type: 'perte' } })} />,
@@ -1024,6 +1034,24 @@ describe('SuiviHero — carte héro objectif', () => {
   it('sans pesée : tiret, aucun crash', () => {
     render(<SuiviHero profile={profileV2('melanie')} />);
     expect(screen.getByText('—')).toBeInTheDocument();
+  });
+
+  it('perte avec cible sans pesée : tiret, cible affichée, pas d’anneau', () => {
+    render(<SuiviHero profile={profileV2('marc', { poidsObjectif: 74 })} />);
+    expect(screen.getByText('—')).toBeInTheDocument();
+    expect(screen.getByText(/Cible 74,0 kg/)).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: /Progression/ })).not.toBeInTheDocument();
+  });
+
+  it('masse avec cible sans pesée : tiret, cible affichée, pas d’anneau', () => {
+    render(
+      <SuiviHero
+        profile={profileV2('marc', { poidsObjectif: 82, objectif: { type: 'masse' } })}
+      />,
+    );
+    expect(screen.getByText('—')).toBeInTheDocument();
+    expect(screen.getByText(/Cible 82,0 kg/)).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: /Progression/ })).not.toBeInTheDocument();
   });
 
   it('delta 7 j : bon dans le sens de l objectif, alerte à contre-sens, neutre sans cible', () => {
