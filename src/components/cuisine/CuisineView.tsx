@@ -73,6 +73,7 @@ export function CuisineView({
           menu={data.menu}
           recettes={data.recettes}
           bases={data.bases}
+          reserve={data.reserve}
           semaine={semaine}
           syncVersion={syncVersion}
         />

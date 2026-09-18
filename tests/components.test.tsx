@@ -7,6 +7,7 @@ import type {
   MenuDay,
   ProfileData,
   Recette,
+  ReserveLigne,
   UserProfile,
   WeeklyData,
 } from '../src/lib/model';
@@ -704,6 +705,47 @@ describe('MenuView v3 — onglets par recette', () => {
   it('menu vide : état vide', () => {
     render(<MenuView menu={[]} recettes={[]} semaine="2026-S40" />);
     expect(screen.getByText('Aucun menu pour cette semaine.')).toBeInTheDocument();
+  });
+
+  const MENU_JOKER: MenuDay[] = [
+    { jour: 'Lundi', dinerFamille: 'Chili + riz' },
+    { jour: 'Mardi', dejeunerMarc: 'Restes' },
+  ];
+  const RESERVE_JOKER: ReserveLigne[] = [
+    { cle: 'mardi', plat: 'Chili ×2', conservation: 'congélateur' },
+  ];
+
+  it('joker : un soir sans dîner prévu avec une ligne de réserve → encart « Sors la réserve »', async () => {
+    const user = userEvent.setup();
+    render(<MenuView menu={MENU_JOKER} reserve={RESERVE_JOKER} semaine="2026-S40" />);
+    const joker = document.querySelector('.menu-joker');
+    expect(joker).not.toBeNull();
+    expect(joker).toHaveTextContent('Soir sans dîner prévu · Mardi');
+    expect(joker).toHaveTextContent('Sors la réserve :');
+    expect(joker).toHaveTextContent('Chili ×2');
+    expect(joker).toHaveTextContent('(congélateur)');
+    await user.click(screen.getByRole('button', { name: 'Sortie ✓' }));
+    expect(getChecks('2026-S40')).toEqual({ 'reserve:mardi:chili-2': true });
+    expect(document.querySelector('.joker-ligne.fait')).not.toBeNull();
+    expect(screen.getByRole('button', { name: 'Soirée gérée ✓' })).toBeInTheDocument();
+  });
+
+  it('pas d encart quand tous les soirs ont un dîner', () => {
+    render(
+      <MenuView menu={[{ jour: 'Lundi', dinerFamille: 'Chili' }]} reserve={RESERVE_JOKER} semaine="2026-S40" />,
+    );
+    expect(document.querySelector('.menu-joker')).toBeNull();
+  });
+
+  it('pas d encart sans ligne de réserve correspondante', () => {
+    render(
+      <MenuView
+        menu={MENU_JOKER}
+        reserve={[{ cle: 'mercredi', plat: 'Chili', conservation: 'congel' }]}
+        semaine="2026-S40"
+      />,
+    );
+    expect(document.querySelector('.menu-joker')).toBeNull();
   });
 });
 
