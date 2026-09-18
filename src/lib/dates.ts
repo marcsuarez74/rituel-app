@@ -44,10 +44,29 @@ export const formatJourMoisCourt = (iso: string): string => {
   return `${Number(d)} ${MOIS_ABBR[Number(m) - 1] ?? ''}`.trim();
 };
 
+// Période de semaine en format court pour la bannière : « 21 → 27 sept. » (même
+// mois) ou « 30 sept. → 3 oct. » (mois différents). Réutilise MOIS_ABBR.
+export const periodeCourte = (du: string, au: string): string => {
+  const [, mDu, jDu] = du.split('-');
+  const [, mAu, jAu] = au.split('-');
+  const fin = `${Number(jAu)} ${MOIS_ABBR[Number(mAu) - 1] ?? ''}`.trim();
+  if (mDu === mAu) return `${Number(jDu)} → ${fin}`;
+  return `${Number(jDu)} ${MOIS_ABBR[Number(mDu) - 1] ?? ''} → ${fin}`;
+};
+
 // '2026-S37' -> 'Semaine 37' (bannière compacte : l'année est superflue à l'écran).
 export const libelleSemaineCourt = (semaine: string): string => {
   const m = semaine.match(/S(\d+)$/);
   return m ? `Semaine ${m[1]}` : `Semaine ${semaine}`;
+};
+
+// Position dans la rotation de 4 semaines (pill « Cycle N » de la bannière).
+// Sémantique : les menus A/B/C/D tournent chaque semaine, S37 = menu A = cycle 1
+// → N = ((numéro de semaine - 1) % 4) + 1. Sans numéro parsable (id non
+// conforme), retourne null : la pill est masquée plutôt que faussée.
+export const numeroCycle = (semaine: string): number | null => {
+  const m = semaine.match(/S(\d+)$/);
+  return m ? ((Number(m[1]) - 1) % 4) + 1 : null;
 };
 
 const JOURS_ABBR: Record<string, string> = {
