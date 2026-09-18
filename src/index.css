@@ -439,6 +439,83 @@ p {
   color: var(--muted);
 }
 
+/* ---------- Suivi : carte héro (objectif + poids) ---------- */
+
+.suivi-hero {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: var(--sp-16);
+  box-shadow: var(--shadow);
+  margin-bottom: var(--sp-16);
+}
+
+.suivi-hero-main {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-16);
+}
+
+.suivi-hero-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+.suivi-hero-label {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+.suivi-hero-cible {
+  font-size: var(--fs-h2);
+  color: var(--text);
+}
+
+.suivi-hero-echeance {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-6);
+  margin: 0;
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+.suivi-hero-echeance.late {
+  color: var(--danger);
+}
+
+.suivi-hero-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-6);
+  margin-top: var(--sp-12);
+}
+
+.suivi-hero-poids {
+  width: 118px;
+  height: 118px;
+  flex-shrink: 0;
+  border-radius: 999px;
+  background: var(--surface-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  color: var(--muted);
+}
+
+.suivi-hero-poids b {
+  font-size: var(--fs-h2);
+  color: var(--text);
+}
+
 /* ---------- Nav segmented (sous la bannière) ---------- */
 
 .tabbar-segmented {
@@ -1939,40 +2016,13 @@ progress {
   cursor: pointer;
 }
 
-/* ---------- Stat-cards (Mon suivi) ---------- */
+/* ---------- Suivi : delta poids de la carte héro ---------- */
 
-.stat-cards {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--sp-8);
-  margin-bottom: var(--sp-12);
-}
-
-.stat-card-hero {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-10);
-}
-.stat-card-hero .stat-value {
-  font-size: var(--fs-hero);
-  margin-top: 0;
-}
 .stat-delta small {
   display: block;
   font-weight: 600;
   color: var(--muted);
   margin-top: var(--sp-2);
-}
-
-.stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: var(--sp-12);
-  display: flex;
-  flex-direction: column;
-  gap: var(--sp-4);
 }
 
 .stat-label {
@@ -1981,18 +2031,6 @@ progress {
   gap: var(--sp-6);
   color: var(--muted);
   font-size: var(--fs-micro);
-  font-weight: 500;
-}
-
-.stat-value {
-  font-size: var(--fs-h2);
-  font-weight: 600;
-  line-height: var(--lh-tight);
-}
-
-.stat-value small {
-  font-size: var(--fs-micro);
-  color: var(--muted);
   font-weight: 500;
 }
 
@@ -2023,121 +2061,7 @@ progress {
   font-weight: 700;
 }
 
-/* ——— Bloc objectif (tête de Mon suivi) ——— */
-.obj-bloc {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: var(--sp-16);
-}
-.obj-pills {
-  display: flex;
-  gap: var(--sp-8);
-  flex-wrap: wrap;
-}
-.obj-pill-type {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-6);
-  font-size: var(--fs-micro);
-  font-weight: 700;
-  border-radius: 999px;
-  padding: var(--sp-4) var(--sp-10);
-  background: var(--accent);
-  color: #fff;
-}
-.obj-pill-reg {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-6);
-  font-size: var(--fs-micro);
-  font-weight: 700;
-  border-radius: 999px;
-  padding: var(--sp-4) var(--sp-10);
-  background: color-mix(in srgb, var(--accent-2) 60%, var(--surface));
-  color: var(--text);
-}
-.obj-echeance {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-6);
-  font-size: var(--fs-meta);
-  color: var(--muted);
-  margin-top: var(--sp-10);
-}
-.obj-echeance b {
-  color: var(--text);
-}
-.obj-echeance.late b {
-  color: var(--danger);
-}
-.obj-prog {
-  margin-top: var(--sp-12);
-}
-.obj-kg {
-  font-size: var(--fs-h1);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-.obj-kg small {
-  font-size: var(--fs-meta);
-  font-weight: 600;
-  color: var(--muted);
-  margin-left: var(--sp-2);
-}
-.obj-kg span {
-  font-size: var(--fs-meta);
-  font-weight: 600;
-  color: var(--muted);
-  margin-left: var(--sp-2);
-}
-.obj-bar {
-  height: 7px;
-  border-radius: 99px;
-  background: var(--surface-2);
-  margin-top: var(--sp-10);
-  overflow: hidden;
-}
-.obj-bar span {
-  display: block;
-  height: 100%;
-  border-radius: 99px;
-  background: var(--accent);
-}
-.obj-det {
-  font-size: var(--fs-micro);
-  color: var(--muted);
-  margin-top: var(--sp-6);
-  line-height: var(--lh-body);
-}
-.obj-plain {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-8);
-  font-size: var(--fs-meta);
-  color: var(--muted);
-  margin-top: var(--sp-12);
-}
-.obj-plain b {
-  color: var(--text);
-}
-.obj-comps {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-6);
-  align-items: center;
-  margin-top: var(--sp-12);
-  padding-top: var(--sp-12);
-  border-top: 1px dashed var(--border);
-}
-.obj-comps-label {
-  width: 100%;
-  font-size: var(--fs-micro);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-}
+/* Chips (régime, compléments — carte héro suivi) */
 .cchip {
   font-size: var(--fs-micro);
   font-weight: 600;

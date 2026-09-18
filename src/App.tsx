@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { ProfilScreen } from './components/ProfilScreen';
 import { ProfileView } from './components/ProfileView';
-import { StatCards } from './components/StatCards';
-import { ObjectifBloc } from './components/ObjectifBloc';
+import { SuiviHero } from './components/SuiviHero';
 import { TabBar } from './components/TabBar';
 import type { TabId } from './components/TabBar';
 import { Onboarding } from './components/onboarding/Onboarding';
@@ -46,8 +45,8 @@ function App() {
   const [selection, setSelection] = useState<string | null>(null);
   const [profilOuvert, setProfilOuvert] = useState(false);
   const [switcherOuvert, setSwitcherOuvert] = useState(false);
-  // StatCards et ObjectifBloc lisent le storage au montage : onWeightsChanged (pesée
-  // ajoutée) incrémente weightsBump pour les remonter et relire les pesées.
+  // SuiviHero lit les pesées au montage : onWeightsChanged (pesée ajoutée)
+  // incrémente weightsBump pour le remonter et relire les pesées.
   const [weightsBump, setWeightsBump] = useState(0);
   const [tab, setTab] = useState<TabId>('cuisine');
   // Sync optionnelle : état (point bannière + bloc profil) et version de
@@ -187,8 +186,7 @@ function App() {
         {tab === 'suivi' && (
           <>
             <p className="greeting">Salut {PRENOMS[profile.id]} 👋</p>
-            <ObjectifBloc key={`obj-${weightsBump}-${syncVersion}`} profile={profile} />
-            <StatCards key={weightsBump + syncVersion} profile={profile} />
+            <SuiviHero key={`hero-${weightsBump}-${syncVersion}`} profile={profile} />
             <ProfileView
               profile={profile}
               data={affichee.data.profiles[profile.id]}

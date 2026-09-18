@@ -49,17 +49,16 @@ test.describe('Mon suivi — bloc objectif et carte Poids', () => {
     await expect(page.getByText('Semaine 37')).toBeVisible();
     await page.getByRole('button', { name: 'Mon suivi' }).click();
 
-    const obj = page.locator('.obj-bloc');
+    const obj = page.locator('.suivi-hero');
     await expect(obj).toBeVisible();
     await expect(obj).toContainText('Perte de poids');
     await expect(obj).toContainText('Keto');
     await expect(obj).toContainText('Échéance :');
     await expect(obj).toContainText('restants');
 
-    // carte Poids seule (les autres stat-cards ont disparu)
-    await expect(page.locator('.stat-card-hero')).toBeVisible();
+    // delta 7 j dans la carte héro ; les anciennes stat-cards ont disparu
+    await expect(obj).toContainText('vs 7 jours');
     await expect(page.getByText('Kcal du jour')).toHaveCount(0);
-    await expect(page.getByText('Courses')).toHaveCount(0);
 
     // séances : pastilles conseillé, compte dans le titre
     await expect(page.locator('.seance-rec').first()).toContainText(/conseillé/);
@@ -75,8 +74,8 @@ test.describe('Mon suivi — bloc objectif et carte Poids', () => {
       await page.evaluate(() => document.fonts.ready);
       await page.getByRole('button', { name: 'Mon suivi' }).click();
 
-      // le contenu dense est rendu avant l'assert : bloc objectif + pastilles
-      await expect(page.locator('.obj-bloc')).toBeVisible();
+      // le contenu dense est rendu avant l'assert : carte héro + pastilles
+      await expect(page.locator('.suivi-hero')).toBeVisible();
       await expect(page.locator('.seance-rec').first()).toBeVisible();
       await assertPasDeDebordement(page);
     });

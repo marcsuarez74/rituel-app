@@ -15,8 +15,7 @@ import { todayISO } from '../src/lib/dates';
 import { parseWeeklyFile } from '../src/lib/parse';
 import { ImportButton } from '../src/components/ImportButton';
 import { Checklist } from '../src/components/Checklist';
-import { StatCards } from '../src/components/StatCards';
-import { ObjectifBloc } from '../src/components/ObjectifBloc';
+import { SuiviHero } from '../src/components/SuiviHero';
 import { WeightChart } from '../src/components/WeightChart';
 import { ProgressRing } from '../src/components/ProgressRing';
 import { ShoppingList } from '../src/components/cuisine/ShoppingList';
@@ -956,54 +955,7 @@ describe('BatchView v2 — rituel et micro-batch', () => {
   });
 });
 
-describe('StatCards — carte Poids (hero)', () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
-  it('affiche le poids actuel et la variation en kg vs 7 jours', () => {
-    addWeight('marc', '2026-09-02', 78);
-    addWeight('marc', '2026-09-08', 77.4);
-    render(<StatCards profile={profileV2('marc', { poidsObjectif: 70 })} />);
-
-    expect(screen.getByText('Poids')).toBeInTheDocument();
-    expect(screen.getByText('77,4')).toBeInTheDocument();
-    expect(screen.getByText(/-0,6 kg/)).toBeInTheDocument();
-    expect(screen.getByText('vs 7 jours')).toBeInTheDocument();
-    expect(screen.queryByText('Kcal du jour')).not.toBeInTheDocument();
-    expect(screen.queryByText('Séances')).not.toBeInTheDocument();
-    expect(screen.queryByText('Courses')).not.toBeInTheDocument();
-  });
-
-  it('variation dans le sens de l objectif → stat-delta-bon, à contre-sens → stat-delta-alerte', () => {
-    addWeight('marc', '2026-09-02', 78);
-    addWeight('marc', '2026-09-08', 77.4);
-    const { unmount } = render(
-      <StatCards profile={profileV2('marc', { poidsObjectif: 70 })} />,
-    );
-    expect(screen.getByText(/-0,6 kg/)).toHaveClass('stat-delta-bon');
-    unmount();
-
-    addWeight('marc', '2026-09-02', 78);
-    addWeight('marc', '2026-09-08', 78.5);
-    render(<StatCards profile={profileV2('marc', { poidsObjectif: 70 })} />);
-    expect(screen.getByText(/\+0,5 kg/)).toHaveClass('stat-delta-alerte');
-  });
-
-  it('sans poids objectif, la variation reste neutre', () => {
-    addWeight('marc', '2026-09-02', 78);
-    addWeight('marc', '2026-09-08', 77.4);
-    render(<StatCards profile={profileV2('marc')} />);
-    expect(screen.getByText(/-0,6 kg/)).toHaveClass('stat-delta-neutre');
-  });
-
-  it('sans pesée, le poids s affiche en tiret (aucun crash)', () => {
-    render(<StatCards profile={profileV2('melanie')} />);
-    expect(screen.getByText('—')).toBeInTheDocument();
-  });
-});
-
-describe('ObjectifBloc', () => {
+describe('SuiviHero — carte héro objectif', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.setSystemTime(new Date('2026-09-09T10:00:00'));
@@ -1013,86 +965,101 @@ describe('ObjectifBloc', () => {
     vi.useRealTimers();
   });
 
-  it('perte : kg restants, barre de progression et détail départ → cible', () => {
+  it('perte avec pesées : anneau, kg restants, cible, échéance', () => {
     addWeight('marc', '2026-08-12', 82.8);
     addWeight('marc', '2026-09-07', 79.1);
     addWeight('marc', '2026-09-09', 78.4);
-    render(<ObjectifBloc profile={profileV2('marc', { poidsObjectif: 74 })} />);
+    render(<SuiviHero profile={profileV2('marc', { poidsObjectif: 74 })} />);
 
-    expect(screen.getByText(/Perte de poids/)).toBeInTheDocument();
-    expect(screen.getByText(/4,4/)).toBeInTheDocument();
-    expect(screen.getByText(/restants/)).toBeInTheDocument();
-    expect(screen.getByText(/Départ 82,8 kg/)).toHaveTextContent(
-      'Départ 82,8 kg · 82,8 → 78,4 → cible 74,0 kg',
-    );
-    const barre = document.querySelector('.obj-bar span') as HTMLElement;
-    expect(barre.style.width).toBe('50%');
+    expect(
+      screen.getByRole('img', { name: "Progression : 50 % de l'objectif" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('4,4')).toBeInTheDocument();
+    expect(screen.getByText('kg restants')).toBeInTheDocument();
+    expect(screen.getByText(/Cible 74,0 kg/)).toBeInTheDocument();
     expect(screen.getByText(/Échéance :/)).toHaveTextContent('15 déc. · dans 97 jours');
   });
 
   it('échéance dépassée : mention « dépassée » et classe late', () => {
     render(
-      <ObjectifBloc
+      <SuiviHero
         profile={profileV2('marc', { poidsObjectif: 74, objectif: { type: 'perte', echeance: '2026-06-15' } })}
       />,
     );
     expect(screen.getByText(/dépassée/)).toBeInTheDocument();
-    expect(document.querySelector('.obj-echeance')).toHaveClass('late');
+    expect(document.querySelector('.suivi-hero-echeance')).toHaveClass('late');
   });
 
   it('sans échéance, pas de ligne échéance', () => {
     render(
-      <ObjectifBloc
-        profile={profileV2('marc', { poidsObjectif: 74, objectif: { type: 'perte' } })}
-      />,
+      <SuiviHero profile={profileV2('marc', { poidsObjectif: 74, objectif: { type: 'perte' } })} />,
     );
     expect(screen.queryByText(/Échéance :/)).not.toBeInTheDocument();
   });
 
-  it('masse : kg à prendre, sens de la barre inversé', () => {
+  it('masse : kg à prendre', () => {
     addWeight('marc', '2026-08-12', 74);
     addWeight('marc', '2026-09-09', 75.8);
     render(
-      <ObjectifBloc
+      <SuiviHero
         profile={profileV2('marc', { poidsObjectif: 82, objectif: { type: 'masse' } })}
       />,
     );
     expect(screen.getByText(/6,2/)).toBeInTheDocument();
-    expect(screen.getByText(/à prendre/)).toBeInTheDocument();
+    expect(screen.getByText('kg à prendre')).toBeInTheDocument();
   });
 
-  it('maintien : pas de barre, ligne poids actuel (+ cible si présente)', () => {
+  it('maintien : pas d’anneau, poids actuel à la place', () => {
     addWeight('marc', '2026-09-09', 78.4);
     render(
-      <ObjectifBloc
+      <SuiviHero
         profile={profileV2('marc', { poidsObjectif: 74, objectif: { type: 'maintien' } })}
       />,
     );
-    expect(document.querySelector('.obj-bar')).toBeNull();
-    // Le libellé est morcelé par des <b> (maquette) : on teste le texte de la ligne.
-    expect(document.querySelector('.obj-plain')).toHaveTextContent(
-      'Poids actuel 78,4 kg · cible 74,0 kg',
+    expect(screen.queryByRole('img', { name: /Progression/ })).not.toBeInTheDocument();
+    expect(screen.getByText('78,4')).toBeInTheDocument();
+    expect(screen.getByText(/Cible 74,0 kg/)).toBeInTheDocument();
+  });
+
+  it('sans pesée : tiret, aucun crash', () => {
+    render(<SuiviHero profile={profileV2('melanie')} />);
+    expect(screen.getByText('—')).toBeInTheDocument();
+  });
+
+  it('delta 7 j : bon dans le sens de l objectif, alerte à contre-sens, neutre sans cible', () => {
+    addWeight('marc', '2026-09-02', 78);
+    addWeight('marc', '2026-09-08', 77.4);
+    const { unmount } = render(<SuiviHero profile={profileV2('marc', { poidsObjectif: 70 })} />);
+    expect(screen.getByText(/-0,6 kg/)).toHaveClass('stat-delta-bon');
+    unmount();
+
+    addWeight('marc', '2026-09-02', 78);
+    addWeight('marc', '2026-09-08', 78.5);
+    const { unmount: unmount2 } = render(
+      <SuiviHero profile={profileV2('marc', { poidsObjectif: 70 })} />,
     );
+    expect(screen.getByText(/\+0,5 kg/)).toHaveClass('stat-delta-alerte');
+    unmount2();
+
+    // addWeight fait un upsert par date : on ré-tablit l'état du 1er bloc
+    // (78 → 77,4) pour le cas sans cible.
+    addWeight('marc', '2026-09-02', 78);
+    addWeight('marc', '2026-09-08', 77.4);
+    render(<SuiviHero profile={profileV2('marc')} />);
+    expect(screen.getByText(/-0,6 kg/)).toHaveClass('stat-delta-neutre');
   });
 
-  it('sans pesée : aucun crash, pas de barre ni de poids', () => {
-    render(<ObjectifBloc profile={profileV2('marc', { poidsObjectif: 74 })} />);
-    expect(document.querySelector('.obj-bar')).toBeNull();
-    expect(screen.queryByText(/Poids actuel/)).not.toBeInTheDocument();
-  });
-
-  it('affiche la pill régime sauf si « aucun », et les compléments en chips', () => {
-    render(
-      <ObjectifBloc
-        profile={profileV2('marc', { complements: ['Whey', 'Zinc'], regime: 'keto' })}
-      />,
+  it('chips : régime (sauf aucun) + compteur de compléments', () => {
+    const { unmount } = render(
+      <SuiviHero profile={profileV2('marc', { complements: ['Whey', 'Zinc'], regime: 'keto' })} />,
     );
     expect(screen.getByText('Keto')).toBeInTheDocument();
-    expect(screen.getByText('Whey')).toBeInTheDocument();
-    expect(screen.getByText('Zinc')).toBeInTheDocument();
+    expect(screen.getByText('2 compléments')).toBeInTheDocument();
+    unmount();
 
-    render(<ObjectifBloc profile={profileV2('melanie', { regime: 'aucun' })} />);
-    expect(screen.queryByText('Aucun')).not.toBeInTheDocument();
+    render(<SuiviHero profile={profileV2('melanie', { regime: 'aucun' })} />);
+    expect(screen.queryByText(/Aucun/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/complément/)).not.toBeInTheDocument();
   });
 });
 
