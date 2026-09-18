@@ -59,14 +59,17 @@ heure: 'HH:MM' }` avec type parmi `seance` | `pesee` | `rituel`. Le cron
 compare en **fuseau du téléphone** (`tz` IANA stockée avec la subscription,
 comparaison via Intl). Un push selon le type — « 💪 C'est l'heure de ta
 séance », « ⚖️ C'est l'heure de ta pesée », « 🧅 C'est l'heure du rituel du
-dimanche » — un seul envoi par créneau (dédup par `dernier_envoye` sur la row).
+dimanche » — un seul envoi par jour/type (dédup par `derniers_creneaux` sur la row).
 
 ## Backend Supabase
 
 - **Table `push_subscriptions`** (RLS par `household_id`, pattern des 5 tables
-  sync) : `endpoint` (PK), `p256dh`, `auth`, `profil` ('marc'|'melanie'),
+  sync) : `endpoint`, `p256dh`, `auth`, `profil` ('marc'|'melanie'),
   `device_id` (uuid par installation), `tz`, `config` (JSONB, ci-dessous),
-  `dernier_envoye` (timestamptz, dédup cron).
+  `derniers_creneaux` (JSONB : `{ type: 'YYYY-MM-DD' }` en tz locale — dédup
+  cron : 1 envoi/jour/type). Clé primaire `(household_id, device_id)` — la
+  ré-inscription met à jour l'endpoint ; les endpoints morts sont purgés à
+  l'envoi (404/410).
 - **`config` JSONB** : `{ evenements: { diner: bool, pesee: bool, courses: bool },
   rappels: [{ type, jours, heure }] }`.
 - **Edge functions** :
