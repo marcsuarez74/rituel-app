@@ -17,8 +17,8 @@ Source de vérité : `src/index.css` (section `:root`). Toute valeur ici doit y 
 | Token | Valeur | Usage |
 |---|---|---|
 | `--bg` | `#f0f2eb` | fond de page (sauge clair) |
-| `--surface` | `#fcfdf9` | cartes (`.week-banner`, `.course-group`, `.profile-section`, `.batch-section`) et blocs Menu v3 (`.onglet-prepa`, `.file-dejeuners`) |
-| `--surface-2` | `#e7eae0` | surfaces secondaires (`.banner-nav`, inputs, `.weight-chip`, `.meta-pill`, `.recette-bchip`) |
+| `--surface` | `#fcfdf9` | cartes (`.course-group`, `.profile-section`, `.batch-section`) et blocs Menu v3 (`.onglet-prepa`, `.file-dejeuners`) |
+| `--surface-2` | `#e7eae0` | surfaces secondaires (inputs, `.weight-chip`, `.meta-pill`, `.recette-bchip`, chip foyer locale `.sync-chip-local`) |
 | `--border` | `#e1e6da` | bordures de cartes, rail timeline, dots inactifs |
 | `--text` | `#26312b` | texte principal — encre (≈ 13,2:1 sur surface) |
 | `--muted` | `#6e7a6c` | texte secondaire (≈ 4,4:1 sur surface, ≈ 3,99:1 sur bg — les compteurs/notes principales utilisent `color-mix(in srgb, var(--muted) 70%, var(--text))`) |
@@ -39,7 +39,7 @@ Source de vérité : `src/index.css` (section `:root`). Toute valeur ici doit y 
 | `--radius` | `18px` | cartes |
 | `--shadow` | `0 4px 16px rgb(38 49 43 / 0.08)` | élévation |
 
-Rayons dérivés : boutons et cartes compactes `12px`, pills `999px` (`.menu-pill`, `.rtab`, `.mtag`, `.mm`, `.lancer-btn`, `.btn-ghost`).
+Rayons dérivés : boutons et cartes compactes `12px`, pills `999px` (`.cycle-pill`, `.rtab`, `.mtag`, `.mm`, `.lancer-btn`, `.btn-ghost`).
 
 ---
 
@@ -95,7 +95,8 @@ Padding standard des cartes : `var(--sp-16)`. Gouttières page : `var(--sp-16)`.
 | `.weight-chart` + `.weight-*` | courbe de poids SVG (WeightChart) dans la carte citron `.pesee-card` | chips Départ/Actuel/Objectif, aire dégradée `--accent` 22 %→0, ligne lissée Catmull-Rom, ligne objectif, points départ/actuel ; labels SVG 8-9px mix muted ≥ 4,5:1 sur fond citron mixé |
 | `.tabbar-segmented` / `.seg-tab` / `.seg-tab-active` | **nav segmented sous la bannière** (2 onglets : Cuisine / Mon suivi) | grid 2 colonnes égales, gap 4px, padding 4px ; fond `--surface-2` + bordure, pill `999px` ; **pilule glissante** = `::before` (fond `--surface` + ombre), `transform: translateX(calc(100% + 4px))` quand `data-active='suivi'`, transition `0.32s cubic-bezier(0.34, 1.56, 0.64, 1)` (rebond élastique) ; **actif** = texte encre + `aria-current="page"` ; **inactif** = muted ; ≥ 48 px |
 | `.cuisine-tabs .tab` | sous-onglets Cuisine (Courses / Menu / Batch) | filets (`border-bottom`), actif = encre + barre basilic 2,5px |
-| `.week-title-row` + `.menu-pill` | bannière semaine : titre + pill du menu courant | row flex wrap (gap 10px) ; pill = fond `--accent`, texte blanc 12px/700, radius 999px, glow `color-mix(--accent 35%)` — visible au-dessus des 3 sous-onglets |
+| `.week-banner` (+ `.week-banner-main` `.banner-nav` `.week-head` `.cycle-pill` `.week-dates` `.week-titre-md`) | bannière semaine compacte validée (maquette 2026-09-18) : fond page, une ligne, hauteur ~64-70px | flex gap 8px, padding 8/12px, sans bordure ni carte ; chevrons nus basilic 18px (grisés aux bornes) ; titre 14px/600 tappable = changeur de semaine, pill « Cycle N » basilic texte blanc 11px inline (masquée si l'id n'a pas de numéro) ; dates courtes « 21 → 27 sept. » muted 12px sur une ligne ; titre .md optionnel dessous. **Cibles tactiles 48px par marge de frappe** (padding transparent + marge négative égale : chevrons et avatar en padding/margin ±10-16px, chip en `::after` inset −12px) |
+| `.sync-chip` (+ `.sync-chip-dot` `-{sync,attente,erreur,local}`) | chip foyer de la bannière (« ● Duo » / « ● Local ») | pill compacte sans bordure : fond `color-mix(--accent 12%, --surface)`, texte basilic 12px/500, dot 8px `currentColor` ; variante `.sync-chip-local` = gris (`--surface-2` + muted), `.sync-chip-erreur` = danger mixé ; frappe 48px via `::after` |
 | `.batch-banner` | rappel rituel (Courses) / « Ce soir » (Batch) | médaillon + texte centrés verticalement ; fond `--accent` 9% (`color-mix`), icône ronde `.bb-ic`, texte 13px ; version Courses : budget « X estimés. » en fin de phrase |
 | `.course-group-header` + `img` | en-tête de groupe de courses | miniature 72×54 (`object-fit: cover`, radius 10px) via `imagePourRayon` (`src/lib/rayons.ts`), `loading="lazy"`, alt = libellé du rayon |
 | `.rayon-cnt` | compteur d'items d'un rayon | muted 13px/700, collé à droite (`margin-left: auto`) |
@@ -105,7 +106,7 @@ Padding standard des cartes : `var(--sp-16)`. Gouttières page : `var(--sp-16)`.
 | `.bsoft` / `.blink` | boutons sobres des écrans maison & courses (le gros basilic reste réservé au CTA onboarding et aux « Enregistrer » du Profil) | `.bsoft` = pill bordure accent 35 %, texte basilic, 48px ; `.blink` = lien basilic sans bordure |
 | `.dep-panel` (+ `.dep-head` `.dep-back` `.dep-form` `.dep-sec-label` `.dep-sum` `.dep-list` `.dep-hint`) | panneau « Mes dépenses réelles » (écran poussé de l'onglet Courses) | retour muted en tête, h1 20px ; form `.dep-form` (frow 3 colonnes date/magasin/total, total tabulaire aligné droite — frow passe en 1 colonne empilée < 360px), actions « Annuler » + `.bgo` basilic 38px ; résumé « Par magasin » = grid 2 cartes (total + moyenne tabulaires) ; historique = lignes date/magasin/total + suppression ✕ 32px |
 | `.keto-box` / `.keto-title` | encadré keto de Mélanie (rayon `### Keto`) | fond `--accent-2` 12% + bordure 45% (`color-mix`), titre encre 15px/700 (icône leaf basilic) — affiché en dernier |
-| `.profile-icon-btn` | accès écran Profil | 48px, surface-2, icône SVG person `currentColor` |
+| `.profile-icon-btn` | accès écran Profil (bannière) | cercle basilic 30px (dessiné en `::before`, icône user blanche 16px), frappe 48px via padding/marge ±10px |
 | `.profil-screen` / `.profil-switch` | écran Profil | sections `.profile-section` ; switch = bordure `--danger` (action sensible) |
 | `.profil-ghost` | bouton secondaire du Profil (« Copier le prompt IA ») | ghost bordure `--border`, pill pleine largeur 48px, texte encre |
 | `.greeting` | accueil personnalisé Mon suivi | muted, 14px/700 |
