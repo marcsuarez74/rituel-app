@@ -44,6 +44,11 @@ describe('assemblePromptIa', () => {
     expect(texte).toContain("Objectif : affiner la silhouette vers 72 kg d'ici mars 2027.");
   });
 
+  it('utilise le prénom édité (profil v2.2) dans l ouverture', () => {
+    const texte = assemblePromptIa({ ...profilComplet, prenom: 'Jean' }, pesee);
+    expect(texte).toContain('Tu es un nutritionniste. Jean (41 ans,');
+  });
+
   it('assemble le bloc contexte avec les données maison', () => {
     const texte = assemblePromptIa(profilComplet, pesee);
     expect(texte).toContain('- Régime particulier : keto');
