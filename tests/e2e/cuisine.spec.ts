@@ -63,11 +63,11 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
     },
   });
 
-  test('bannière : pill « A » visible', async ({ page }) => {
+  test('bannière : pill « Cycle 1 » visible', async ({ page }) => {
     await page.goto(ORIGIN);
     await expect(page.getByText('Semaine 37')).toBeVisible();
-    await expect(page.locator('.menu-pill')).toBeVisible();
-    await expect(page.locator('.menu-pill')).toHaveText('A');
+    await expect(page.locator('.cycle-pill')).toBeVisible();
+    await expect(page.locator('.cycle-pill')).toHaveText('Cycle 1');
   });
 
   test('menu v3 : onglets par recette, coche dîner persistée, file de déjeuners', async ({ page }) => {
