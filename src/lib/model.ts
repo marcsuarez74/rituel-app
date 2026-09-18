@@ -29,6 +29,7 @@ export interface MenuDay {
 export interface ChecklistItem {
   id: string;
   label: string;
+  ref?: string; // ref recette (batch v4) — jamais dans l'id de coche
 }
 
 export interface Recette {

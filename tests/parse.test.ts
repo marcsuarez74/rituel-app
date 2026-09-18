@@ -1164,3 +1164,73 @@ ${batch}
     expect(warnings.some((w) => w.includes('production/termine'))).toBe(true);
   });
 });
+
+describe('Batch v4 — refs recette sur les tâches', () => {
+  const md = (batch: string): string => `---
+semaine: 2026-S38
+menu: B
+du: 2026-09-14
+au: 2026-09-20
+---
+
+## Courses
+### Frais
+- Œufs
+
+## Menu
+### Lundi
+- dejeuner-marc: Boîte
+
+## Recettes
+### R7 · Rôti de dinde + gratin courgettes + quinoa
+temps: 60 min · four 180°
+
+## Batch
+${batch}
+
+## Marc
+### Cibles
+- 2 450 kcal
+### Séances
+- [ ] Lundi — Muscu
+### Rappels
+- Pesée lun
+## Melanie
+### Cibles
+- 1 450 kcal
+### Séances
+- [ ] Lundi — Danse
+### Rappels
+- Jeûne
+`;
+
+  it('tâche avec ref valide : label net, ref portée, id sans la ref', () => {
+    const { data, warnings } = parseWeeklyFile(
+      md('- [ ] Egg muffins ×10 → R7\n- [ ] Légumes lavés\n'),
+    );
+    expect(data.batch[0]).toEqual({ id: 'batch:egg-muffins-10', label: 'Egg muffins ×10', ref: 'R7' });
+    expect(data.batch[1]).toEqual({ id: 'batch:legumes-laves', label: 'Légumes lavés' });
+    expect(warnings).toEqual([]);
+  });
+
+  it('« → prose » sans recette correspondante : reste dans le libellé, id inchangé', () => {
+    const { data, warnings } = parseWeeklyFile(md('- [ ] Doubler dinde + quinoa → boîte lundi Marc\n'));
+    expect(data.batch[0].label).toBe('Doubler dinde + quinoa → boîte lundi Marc');
+    expect(data.batch[0].ref).toBeUndefined();
+    expect(data.batch[0].id).toBe('batch:doubler-dinde-quinoa-boite-lundi-marc');
+    expect(warnings).toEqual([]);
+  });
+
+  it('stabilité d id : ajouter une ref ne change pas l id de coche', () => {
+    const sans = parseWeeklyFile(md('- [ ] Egg muffins ×10\n')).data.batch[0].id;
+    const avec = parseWeeklyFile(md('- [ ] Egg muffins ×10 → R7\n')).data.batch[0].id;
+    expect(avec).toBe(sans);
+  });
+
+  it('ref inconnue (R99) : conservée dans le libellé, pas de warning', () => {
+    const { data, warnings } = parseWeeklyFile(md('- [ ] Sauce tomate → R99\n'));
+    expect(data.batch[0].label).toBe('Sauce tomate → R99');
+    expect(data.batch[0].ref).toBeUndefined();
+    expect(warnings).toEqual([]);
+  });
+});

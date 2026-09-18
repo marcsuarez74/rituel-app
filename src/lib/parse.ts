@@ -50,6 +50,22 @@ function registerId(id: string, section: string, seen: Set<string>, warnings: st
   seen.add(id);
 }
 
+// Ref recette en fin de ligne : « → slug ». Une ref n'est retenue que si le slug
+// correspond à une recette du fichier (égalité, ou préfixe « slug- ») — sinon le
+// « → … » reste dans le texte (prose légitime : « → boîte lundi Marc »).
+const REF_SHAPE = /\s*→\s*(\S+)\s*$/;
+
+function refConnue(ref: string, recettes: Recette[]): boolean {
+  const cible = ref.toLowerCase();
+  return recettes.some((r) => r.id === cible || r.id.startsWith(`${cible}-`));
+}
+
+function extraireRef(texte: string, recettes: Recette[]): { texte: string; ref?: string } {
+  const m = texte.match(REF_SHAPE);
+  if (!m || !refConnue(m[1], recettes)) return { texte };
+  return { texte: texte.slice(0, m.index).trimEnd(), ref: m[1] };
+}
+
 export function parseWeeklyFile(raw: string): ParseResult {
   const content = raw.replace(/^\uFEFF/, '');
   const m = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
@@ -83,14 +99,16 @@ export function parseWeeklyFile(raw: string): ParseResult {
   const coursesParse = parseCourses(sections.get('courses') ?? '', 'courses', warnings, seen);
   const courses = coursesParse.items;
   const menu = parseMenu(sections.get('menu') ?? '', 'menu', warnings);
+  // Recettes et bases AVANT le batch : les refs « → slug » des tâches, étapes
+  // et micro-batch sont validées contre les recettes du fichier.
+  const recettes = parseRecettes(sections.get('recettes') ?? '', warnings, seen);
+  const bases = parseBases(sections.get('bases') ?? '', warnings, seen);
   const lignes = lignesBatch(sections.get('batch') ?? '', warnings);
-  const batch = parseBatch(lignes, warnings, seen);
+  const batch = parseBatch(lignes, warnings, seen, recettes);
   const rituelParse = parseRituel(lignes, 'batch', warnings, seen);
   const rituel = rituelParse.etapes;
   const microBatch = parseMicroBatch(lignes, warnings);
   const reserve = parseReserve(lignes, warnings);
-  const recettes = parseRecettes(sections.get('recettes') ?? '', warnings, seen);
-  const bases = parseBases(sections.get('bases') ?? '', warnings, seen);
   const profiles = {
     marc: parseProfile(sections.get('marc') ?? '', 'marc', warnings, seen),
     melanie: parseProfile(sections.get('melanie') ?? '', 'melanie', warnings, seen),
@@ -247,7 +265,12 @@ const RITUEL_SHAPE = /^\s*[-*]\s+(\S.*?min)\s*·\s*(.+?)(?:\s*—\s*(.+?))?\s*$/
 const MICRO_SHAPE =
   /^\s*[-*]\s+(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\s*:\s*(.+?)\s*$/;
 
-function parseBatch(lignes: LigneBatch[], warnings: string[], seen: Set<string>): ChecklistItem[] {
+function parseBatch(
+  lignes: LigneBatch[],
+  warnings: string[],
+  seen: Set<string>,
+  recettes: Recette[],
+): ChecklistItem[] {
   const out: ChecklistItem[] = [];
   for (const [line, cur] of lignes) {
     if (cur) continue;
@@ -271,10 +294,13 @@ function parseBatch(lignes: LigneBatch[], warnings: string[], seen: Set<string>)
         continue;
       }
     }
-    const label = withBox ? withBox[2] : plain[1];
+    const brut = withBox ? withBox[2] : plain[1];
+    // Ref optionnelle « → slug », retirée AVANT le slug d'id : l'état de coche
+    // survit à l'ajout ou au retrait d'une ref.
+    const { texte: label, ref } = extraireRef(brut, recettes);
     const id = `batch:${slugify(label)}`;
     registerId(id, 'batch', seen, warnings);
-    out.push({ id, label });
+    out.push({ id, label, ...(ref ? { ref } : {}) });
   }
   return out;
 }
