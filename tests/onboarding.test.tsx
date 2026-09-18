@@ -467,3 +467,84 @@ describe('Onboarding — migration (prefill ancienne forme)', () => {
     expect(getWeights('marc')).toEqual([]);
   });
 });
+
+describe('Onboarding — CTA « Passer » (tout sautable sauf l étape 1)', () => {
+  it('l étape 2 peut être passée : on arrive à l objectif sans rien remplir', async () => {
+    const user = userEvent.setup();
+    render(<Onboarding onDone={() => {}} />);
+    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+
+    expect(screen.getByRole('heading', { name: /Ton objectif/ })).toBeInTheDocument();
+  });
+
+  it('les étapes 3 et 4 peuvent être passées', async () => {
+    const user = userEvent.setup();
+    render(<Onboarding onDone={onDone} />);
+    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+
+    expect(screen.getByRole('heading', { name: /Maison & courses/ })).toBeInTheDocument();
+  });
+
+  it('parcours tout sauté : profil minimal sans date ni taille ni poids', async () => {
+    const user = userEvent.setup();
+    render(<Onboarding onDone={onDone} />);
+    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    soumettre();
+
+    await waitFor(() =>
+      expect(onDone).toHaveBeenCalledWith({
+        id: 'melanie',
+        prenom: 'Mélanie',
+        objectif: { type: 'perte' },
+        complements: [],
+        regime: 'aucun',
+      } satisfies UserProfile),
+    );
+    expect(getWeights('melanie')).toEqual([]);
+  });
+
+  it('champs présents = validés même en parcours sauté (poids saisi puis Passer)', async () => {
+    const user = userEvent.setup();
+    render(<Onboarding onDone={() => {}} />);
+    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    await user.type(screen.getByLabelText('Poids (kg)'), '500');
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    soumettre();
+
+    expect(screen.getByRole('alert')).toHaveTextContent(/Poids invalide/i);
+    expect(loadProfile()).toBeNull();
+  });
+
+  it('date seule : profil avec date, sans taille, sans pesée', async () => {
+    const user = userEvent.setup();
+    render(<Onboarding onDone={onDone} />);
+    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    saisirDate('Date de naissance', '1987-03-02');
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    soumettre();
+
+    await waitFor(() =>
+      expect(onDone).toHaveBeenCalledWith(
+        expect.objectContaining({ dateNaissance: '1987-03-02' }),
+      ),
+    );
+    expect(onDone.mock.calls[0][0]).not.toHaveProperty('taille');
+    expect(getWeights('melanie')).toEqual([]);
+  });
+});

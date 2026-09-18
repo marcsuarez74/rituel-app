@@ -2106,6 +2106,15 @@ progress {
 .onb-next:active {
   transform: scale(0.97);
 }
+.onb-skip {
+  min-height: 44px;
+  margin-left: auto;
+  padding: 0 var(--sp-12);
+  border: none;
+  background: none;
+  color: var(--muted);
+  font: 600 var(--fs-sec) Poppins, sans-serif;
+}
 .onb-back {
   min-height: 48px;
   border: 1.5px solid var(--border);

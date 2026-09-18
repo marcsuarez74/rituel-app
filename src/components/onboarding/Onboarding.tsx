@@ -197,9 +197,31 @@ export function Onboarding({
     return true;
   };
 
+  // Enregistrement final tolérant : chaque champ présent est validé (mêmes
+  // bornes que les « Continuer »), chaque champ absent est simplement omis —
+  // l'onboarding est tout sautable, le profil peut rester partiel.
   const valider = () => {
-    const infos = validerInfos();
-    if (!infos) return;
+    const cm = taille ? Number.parseInt(taille, 10) : undefined;
+    if (taille && (cm === undefined || cm < 120 || cm > 230)) {
+      setError('Taille invalide : entre 120 et 230 cm.');
+      return;
+    }
+    if (dateNaissance) {
+      if (dateNaissance > todayISO()) {
+        setError('La date de naissance ne peut pas être dans le futur.');
+        return;
+      }
+      const ans = ageDepuis(dateNaissance);
+      if (ans < 10 || ans > 100) {
+        setError('Âge calculé invalide : entre 10 et 100 ans.');
+        return;
+      }
+    }
+    const kg = poids ? Number.parseFloat(poids.replace(',', '.')) : undefined;
+    if (poids && (kg === undefined || kg < 30 || kg > 250)) {
+      setError('Poids invalide : entre 30 et 250 kg.');
+      return;
+    }
     const obj = poidsObjectif ? Number.parseFloat(poidsObjectif.replace(',', '.')) : undefined;
     if (poidsObjectif && (obj === undefined || obj < 30 || obj > 250)) {
       setError('Poids objectif invalide : entre 30 et 250 kg.');
@@ -211,8 +233,8 @@ export function Onboarding({
     const repas = repasJour ? Number.parseInt(repasJour, 10) : undefined;
     const profile: UserProfile = {
       id,
-      dateNaissance,
-      taille: infos.cm,
+      ...(dateNaissance ? { dateNaissance } : {}),
+      ...(cm != null ? { taille: cm } : {}),
       ...(prenom.trim() ? { prenom: prenom.trim() } : {}),
       ...(obj != null ? { poidsObjectif: obj } : {}),
       objectif: { type: objectifType, ...(echeance ? { echeance } : {}) },
@@ -225,7 +247,7 @@ export function Onboarding({
       ...(repas != null ? { repasJour: repas } : {}),
     };
     saveProfile(profile);
-    if (infos.kg != null) addWeight(id, todayISO(), infos.kg);
+    if (kg != null) addWeight(id, todayISO(), kg);
     // Sync active sans session foyer (première installation) : étape 6
     // optionnelle avant de terminer — sinon on termine comme avant.
     if (syncActif() && !lireSession()) {
@@ -421,6 +443,13 @@ export function Onboarding({
                     Retour
                   </button>
                 )}
+                <button
+                  type="button"
+                  className="onb-skip"
+                  onClick={() => aller((step + 1) as 1 | 2 | 3 | 4 | 5 | 6)}
+                >
+                  Passer
+                </button>
                 <button type="button" className="onb-next" onClick={continuerInfos}>
                   Continuer <Icon name="chev-right" size={14} />
                 </button>
@@ -487,6 +516,13 @@ export function Onboarding({
               <div className="onb-btnrow">
                 <button type="button" className="onb-back" onClick={retour}>
                   Retour
+                </button>
+                <button
+                  type="button"
+                  className="onb-skip"
+                  onClick={() => aller((step + 1) as 1 | 2 | 3 | 4 | 5 | 6)}
+                >
+                  Passer
                 </button>
                 <button type="button" className="onb-next" onClick={continuerObjectif}>
                   Continuer <Icon name="chev-right" size={14} />
@@ -574,6 +610,13 @@ export function Onboarding({
               <div className="onb-btnrow">
                 <button type="button" className="onb-back" onClick={retour}>
                   Retour
+                </button>
+                <button
+                  type="button"
+                  className="onb-skip"
+                  onClick={() => aller((step + 1) as 1 | 2 | 3 | 4 | 5 | 6)}
+                >
+                  Passer
                 </button>
                 <button type="button" className="onb-next" onClick={() => aller(5)}>
                   Continuer <Icon name="chev-right" size={14} />
