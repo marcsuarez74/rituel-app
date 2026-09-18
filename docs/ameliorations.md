@@ -102,9 +102,9 @@ pour des chantiers ultérieurs :
   rattachée** (cook libre) — le menu v2 part de cartes recette ; le cas
   « repas hors liste » n'est pas couvert
 - **Batch** : scoring/budget par recette, vue matériel (cf. axe 2)
-- **Joker réserve** : l'early-return « Aucun menu » masquerait l'encart pour
-  une semaine sans aucun repas (cas pathologique) ; plusieurs lignes de
-  réserve le même soir → seule la première est suggérée (choix doc)
+- **Joker réserve** : la sortie anticipée « Aucun menu » masquerait l'encart
+  pour une semaine sans aucun repas (cas pathologique) ; plusieurs lignes de
+  réserve le même soir → seule la première est suggérée (choix assumé)
 
 ## 5. Onglet Suivi
 

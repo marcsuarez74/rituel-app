@@ -16,7 +16,9 @@ et src/lib/parse.ts. Règles absolues :
   carne + riz » → r8-chili-con-carne-riz).
 - Refs recette dans ## Batch : « → slug » en fin de tâche `- [ ]` et d'étape du
   rituel, et sur la quantité du micro-batch — la ref vise un slug de
-  ## Recettes ; sans correspondance le texte reste dans le libellé. La ref
+  ## Recettes — l'étiquette courte (`R7`) comme le slug complet
+  (`r7-roti-de-dinde-…`) sont acceptés (préfixe) ; sans correspondance le
+  texte reste dans le libellé (ou le détail du micro-batch). La ref
   n'entre JAMAIS dans l'id de coche : l'ajouter ou la retirer conserve l'état.
 - Portions recette en MESURES MAISON (pièces, poignées, c. à soupe, louches) ;
   les grammes vont entre parenthèses pour caler l'œil : « 1 poignée de riz
@@ -102,14 +104,16 @@ bases: {{B#, B#}}
 - 5-30 min · Cuissons en double — {{dîner du soir ×2 + féculent ×2 → boîte lundi}} → {{slug-recette si ref}}
 - 30-35 min · Œufs durs ×6-8 — boxes de la semaine pour Mél
 - 35-50 min · Légumes + vinaigrette — laver, couper, ranger
-- 50-60 min · Montage des boxes — boîte lundi Marc + 1 box keto Mél
+- 50-60 min · Montage des boxes — boîte lundi Marc + 1 box keto Mél → {{slug-recette si ref}}
 - termine: {{message de fin du mode guidé — ex. « 4 boîtes prêtes — la semaine est servie. Prochain rituel : dimanche prochain, 13h45. »}}
 
 ### Micro-batch
 - lundi: {{quoi}} | {{durée — ex. 10 min}} | {{quantité → slug-recette si ref — ex. 2 boîtes → R7}} | {{détail optionnel}}
 - mardi: {{...}} | {{détail optionnel}}
 <!-- Uniquement les jours du menu ; samedi = œufs durs ; un seul item par jour ;
-la durée et la quantité sont optionnelles (v1 « | détail » seul acceptée) -->
+la durée et la quantité sont optionnelles (v1 « | détail » seul acceptée) ;
+durée simple : `10 min`, `1 h` — une forme composée (`1h30`) resterait un
+détail -->
 
 ### Réserve
 - lundi: {{plat}} | {{conservation — ex. « frigo, 2 j max · réchauffage 2 min bien chaud »}}

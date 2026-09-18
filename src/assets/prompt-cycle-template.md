@@ -47,9 +47,12 @@ Suis EXACTEMENT le process et les règles dures ci-dessous, puis l'auto-contrôl
    3-5 tâches `- [ ]` du gros batch.
    Refs recette dans le batch : une tâche `- [ ]` ou une étape du rituel qui
    produit une recette du fichier porte `→ slug` en fin de ligne
-   (`- [ ] Egg muffins ×10 → R7`) ; dans le micro-batch, la quantité porte la
-   ref (`- mardi: précuire brocolis | 10 min | 2 boîtes → R7 | détail`) — la
-   forme v1 (` | détail` seul) reste acceptée.
+   (`- [ ] Egg muffins ×10 → R7`) ; l'étiquette courte (`R7`) comme le slug
+   complet (`r7-roti-de-dinde-…`) sont acceptés (préfixe). Dans le
+   micro-batch, la quantité porte la ref
+   (`- mardi: précuire brocolis | 10 min | 2 boîtes → R7 | détail`) — la
+   forme v1 (` | détail` seul) reste acceptée. Durée du micro-batch : forme
+   simple (`10 min`, `1 h`) — une forme composée (`1h30`) resterait un détail.
 5. **Recettes** : uniquement celles du menu, titres EXACTS du carnet,
    enrichies : `temps`, `kcal`, `proteines`, `glucides`, `lipides` (estimations
    réalistes par personne), `score` (0-10), `image` (URL Unsplash https),
@@ -136,7 +139,7 @@ bases: {{B#, B#}}
 - 5-30 min · Cuissons en double — {{dîner du soir ×2 + féculent ×2 → boîte lundi}} → {{slug-recette si ref}}
 - 30-35 min · Œufs durs ×6-8 — boxes de la semaine pour Mél
 - 35-50 min · Légumes + vinaigrette — laver, couper, ranger
-- 50-60 min · Montage des boxes — boîte lundi Marc + 1 box keto Mél
+- 50-60 min · Montage des boxes — boîte lundi Marc + 1 box keto Mél → {{slug-recette si ref}}
 - termine: {{message de fin du mode guidé — ex. « 4 boîtes prêtes — la semaine est servie. Prochain rituel : dimanche prochain, 13h45. »}}
 
 ### Micro-batch
