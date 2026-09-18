@@ -30,6 +30,9 @@ export function Onboarding({
   // si la sync est active et qu'aucune session foyer n'existe encore.
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(prefill ? 2 : 1);
   const [id, setId] = useState<ProfileKey | null>(prefill?.id ?? null);
+  // Prénom édité à l'étape 1 ('' en migration — l'étape 1 n'existe pas) ;
+  // vide ⇒ salutation et profil retombent sur le défaut PROFILS_META[id].nom.
+  const [prenom, setPrenom] = useState('');
   const [poids, setPoids] = useState(() => {
     if (!prefill) return '';
     const list = getWeights(prefill.id);
@@ -65,8 +68,9 @@ export function Onboarding({
   };
 
   const choisir = (p: ProfileKey) => {
+    setError(null);
     setId(p);
-    aller(2);
+    setPrenom(PROFILS_META[p].nom);
   };
 
   const retour = () => aller(Math.max(1, step - 1) as 1 | 2 | 3 | 4 | 5 | 6);
@@ -209,6 +213,7 @@ export function Onboarding({
       id,
       dateNaissance,
       taille: infos.cm,
+      ...(prenom.trim() ? { prenom: prenom.trim() } : {}),
       ...(obj != null ? { poidsObjectif: obj } : {}),
       objectif: { type: objectifType, ...(echeance ? { echeance } : {}) },
       complements: [...complements],
@@ -281,7 +286,7 @@ export function Onboarding({
                 <button
                   key={pid}
                   type="button"
-                  className={`onboarding-card onboarding-card-${pid}`}
+                  className={`onboarding-card onboarding-card-${pid}${id === pid ? ' sel' : ''}`}
                   onClick={() => choisir(pid)}
                 >
                   <span className="onboarding-card-emoji" aria-hidden="true">
@@ -293,6 +298,29 @@ export function Onboarding({
               );
             })}
           </div>
+          {id && (
+            <>
+              <div className="onboarding-field">
+                <label htmlFor="ob-prenom">C'est ton prénom ?</label>
+                <input
+                  id="ob-prenom"
+                  type="text"
+                  maxLength={20}
+                  value={prenom}
+                  onChange={(e) => {
+                    setError(null);
+                    setPrenom(e.target.value);
+                  }}
+                />
+                <p className="onb-hint">Utilisé pour te saluer — modifiable plus tard dans le profil.</p>
+              </div>
+              <div className="onb-btnrow">
+                <button type="button" className="onb-next" onClick={() => aller(2)}>
+                  Continuer <Icon name="chev-right" size={14} />
+                </button>
+              </div>
+            </>
+          )}
         </>
       )}
 
@@ -310,14 +338,14 @@ export function Onboarding({
         >
           {step === 2 && (
             <>
-              <h1>Salut {id ? PROFILS_META[id].nom : ''} 👋</h1>
+              <h1>Salut {prenom.trim() || PROFILS_META[id].nom} 👋</h1>
               <p className="onboarding-sub">
                 {migration ? 'On met ton profil à niveau.' : 'Tes bases, pour tes suivis.'}
               </p>
               {migration && (
                 <p className="mig-prof">
                   <span>
-                    Profil : {id ? PROFILS_META[id].nom : ''} {id ? PROFILS_META[id].emoji : ''}
+                    Profil : {prenom.trim() || PROFILS_META[id].nom} {PROFILS_META[id].emoji}
                   </span>
                   <span>non modifiable ici</span>
                 </p>

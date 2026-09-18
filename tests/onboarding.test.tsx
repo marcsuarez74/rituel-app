@@ -31,6 +31,7 @@ const allerEtape2 = async () => {
   const user = userEvent.setup();
   render(<Onboarding onDone={onDone} />);
   await user.click(screen.getByRole('button', { name: /Mélanie/ }));
+  await user.click(screen.getByRole('button', { name: /Continuer/ }));
   return user;
 };
 
@@ -84,16 +85,61 @@ describe('Onboarding — étape 1 (choix du profil)', () => {
     expect(screen.queryByLabelText('Poids (kg)')).not.toBeInTheDocument();
   });
 
-  it('le choix du profil passe à l étape 2 et le retour ramène à l étape 1', async () => {
+  it('choisir une carte la sélectionne, préremplit le prénom et affiche Continuer', async () => {
     const user = userEvent.setup();
     render(<Onboarding onDone={() => {}} />);
 
     await user.click(screen.getByRole('button', { name: /Mélanie/ }));
+    const carte = screen.getByRole('button', { name: /Mélanie/ });
+    expect(carte).toHaveClass('sel');
+    expect(screen.getByLabelText("C'est ton prénom ?")).toHaveValue('Mélanie');
+
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
     expect(screen.getByRole('heading', { name: /Salut Mélanie/ })).toBeInTheDocument();
-    expect(screen.getByLabelText('Date de naissance')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /Retour/ }));
-    expect(screen.getByRole('heading', { name: /Qui est derrière l'écran/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Mélanie/ })).toHaveClass('sel');
+  });
+
+  it('le prénom édité est utilisé dans la salutation puis enregistré', async () => {
+    const user = userEvent.setup();
+    render(<Onboarding onDone={onDone} />);
+    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
+    await user.clear(screen.getByLabelText("C'est ton prénom ?"));
+    await user.type(screen.getByLabelText("C'est ton prénom ?"), 'Mel');
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    expect(screen.getByRole('heading', { name: /Salut Mel/ })).toBeInTheDocument();
+
+    // Mêmes actions qu'allerEtape5, en poursuivant l'état courant (prénom édité).
+    await remplirEtape2(user);
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    expect(screen.getByRole('heading', { name: /Maison & courses/ })).toBeInTheDocument();
+    soumettre();
+
+    await waitFor(() =>
+      expect(onDone).toHaveBeenCalledWith(expect.objectContaining({ prenom: 'Mel' })),
+    );
+  });
+
+  it('prénom vidé : salutation et profil retombent sur le défaut', async () => {
+    const user = userEvent.setup();
+    render(<Onboarding onDone={onDone} />);
+    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
+    await user.clear(screen.getByLabelText("C'est ton prénom ?"));
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    expect(screen.getByRole('heading', { name: /Salut Mélanie/ })).toBeInTheDocument();
+  });
+
+  it('changer de carte réinitialise le prénom au défaut de la nouvelle carte', async () => {
+    const user = userEvent.setup();
+    render(<Onboarding onDone={() => {}} />);
+    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
+    await user.clear(screen.getByLabelText("C'est ton prénom ?"));
+    await user.type(screen.getByLabelText("C'est ton prénom ?"), 'X');
+    await user.click(screen.getByRole('button', { name: /Marc/ }));
+    expect(screen.getByLabelText("C'est ton prénom ?")).toHaveValue('Marc');
   });
 });
 
@@ -293,6 +339,7 @@ describe('Onboarding — étape 5 (maison & courses)', () => {
         id: 'melanie',
         dateNaissance: '1987-03-02',
         taille: 165,
+        prenom: 'Mélanie',
         objectif: { type: 'perte' },
         complements: ['Créatine'],
         regime: 'keto',
@@ -314,6 +361,7 @@ describe('Onboarding — étape 5 (maison & courses)', () => {
         id: 'melanie',
         dateNaissance: '1987-03-02',
         taille: 165,
+        prenom: 'Mélanie',
         objectif: { type: 'perte' },
         complements: [],
         regime: 'aucun',

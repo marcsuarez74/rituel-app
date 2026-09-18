@@ -36,6 +36,7 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     // document.fonts.ready fixe le layout avant les mesures (pattern dock.spec).
     await page.evaluate(() => document.fonts.ready);
     await page.getByRole('button', { name: /Mélanie/ }).click();
+    await page.getByRole('button', { name: /Continuer/ }).click();
 
     await expect(page.getByLabel('Date de naissance')).toBeVisible();
     await assertPasDeDebordement(page);
@@ -56,6 +57,7 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     await page.goto('/');
     await page.evaluate(() => document.fonts.ready);
     await page.getByRole('button', { name: /Mélanie/ }).click();
+    await page.getByRole('button', { name: /Continuer/ }).click();
 
     await page.getByLabel('Poids (kg)').fill('62.4');
     await page.getByLabel('Date de naissance').fill('1987-03-02');
@@ -82,6 +84,7 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     // document.fonts.ready fixe le layout avant les mesures (pattern dock.spec).
     await page.evaluate(() => document.fonts.ready);
     await page.getByRole('button', { name: /Mélanie/ }).click();
+    await page.getByRole('button', { name: /Continuer/ }).click();
 
     await page.getByLabel('Poids (kg)').fill('62.4');
     await page.getByLabel('Date de naissance').fill('1987-03-02');
@@ -117,6 +120,7 @@ test.describe('Onboarding 5 étapes — mobile', () => {
       id: 'melanie',
       dateNaissance: '1987-03-02',
       taille: 165,
+      prenom: 'Mélanie',
       objectif: { type: 'affiner' },
       complements: ['Créatine'],
       regime: 'keto',

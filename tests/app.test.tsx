@@ -321,6 +321,7 @@ describe('Onboarding v2 — persistance via App', () => {
     render(<App />);
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: /Marc/ }));
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
     await user.type(screen.getByLabelText('Poids (kg)'), '85');
     fireEvent.change(screen.getByLabelText('Date de naissance'), { target: { value: '1985-04-12' } });
     await user.type(screen.getByLabelText('Taille (cm)'), '178');
