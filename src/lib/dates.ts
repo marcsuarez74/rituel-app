@@ -44,6 +44,12 @@ export const formatJourMoisCourt = (iso: string): string => {
   return `${Number(d)} ${MOIS_ABBR[Number(m) - 1] ?? ''}`.trim();
 };
 
+// '2026-S37' -> 'Semaine 37' (bannière compacte : l'année est superflue à l'écran).
+export const libelleSemaineCourt = (semaine: string): string => {
+  const m = semaine.match(/S(\d+)$/);
+  return m ? `Semaine ${m[1]}` : `Semaine ${semaine}`;
+};
+
 const JOURS_ABBR: Record<string, string> = {
   lundi: 'lun.',
   mardi: 'mar.',
