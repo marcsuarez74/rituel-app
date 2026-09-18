@@ -13,7 +13,10 @@ import { PRENOMS } from './lib/model';
 import type { ImportedWeek, UserProfile } from './lib/model';
 import { parseWeeklyFile } from './lib/parse';
 import { loadProfile, loadProfilLegacy, loadWeeks, removeProfile } from './lib/storage';
-import { initSync, ressynchroniser, type SyncEtat } from './lib/sync/engine';
+import { enregistrerSurEnvoye, initSync, ressynchroniser, type SyncEtat } from './lib/sync/engine';
+import { evenementsDepuisMutations } from './lib/push/evenements';
+import { envoyerEvenement } from './lib/push/module';
+import { pushActif } from './lib/push/config';
 import { indexSemaineCourante, semainesTriees } from './lib/weeks';
 import { todayISO } from './lib/dates';
 import sampleRaw from './assets/semaine-exemple.md?raw';
@@ -61,6 +64,24 @@ function App() {
         setSyncVersion((v) => v + 1);
       },
     });
+  }, []);
+
+  // Push : après flush confirmée, détection des événements (dîner coché,
+  // pesée, courses) et envoi au serveur — qui filtre les destinataires.
+  // Le hook lit l'état courant via un ref miroir (posé une seule fois).
+  const semainesRef = useRef(semaines);
+  semainesRef.current = semaines;
+  useEffect(() => {
+    enregistrerSurEnvoye((mutations) => {
+      if (!pushActif()) return;
+      const evenements = evenementsDepuisMutations(mutations, (semaine, jour, cle) => {
+        const w = semainesRef.current.find((s) => s.data.meta.semaine === semaine);
+        const jourTrouve = w?.data.menu.find((d) => d.jour === jour);
+        return (jourTrouve?.[cle as keyof typeof jourTrouve] as string | undefined) ?? null;
+      });
+      for (const e of evenements) void envoyerEvenement(e.type, e.label);
+    });
+    return () => enregistrerSurEnvoye(null);
   }, []);
 
   // Swipe Cuisine ↔ Suivi (pointer events). Chaque pointerdown repart d'un état

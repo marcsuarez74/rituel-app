@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { MAGASINS_PRESETS, OBJECTIF_TYPES, PRENOMS, REGIMES, normaliseComplement } from '../lib/model';
 import type { ObjectifType, Regime, UserProfile } from '../lib/model';
 import { parseEuro } from '../lib/prix';
@@ -13,6 +13,14 @@ import {
 } from '../lib/sync/engine';
 import type { SyncEtat } from '../lib/sync/engine';
 import { messageConnexion } from '../lib/sync/messages';
+import { configDefaut } from '../lib/push/module';
+import type { PushConfig, RappelPush } from '../lib/push/module';
+import {
+  desabonner,
+  majConfig,
+  souscrireEtEnregistrer,
+} from '../lib/push/module';
+import { pushActif } from '../lib/push/config';
 import { ImportButton } from './ImportButton';
 import { Icon } from './Icon';
 
@@ -68,10 +76,64 @@ export function ProfilScreen({
   const [syncOccupe, setSyncOccupe] = useState(false);
   const [purgeEnCours, setPurgeEnCours] = useState(false);
 
+  // Notifications push : config locale du device (la vérité serveur = ce
+  // qu'on POSTe), `pushOn` = souscription existante (survit au rechargement).
+  const pushVisible = pushActif();
+  const [pushOn, setPushOn] = useState(false);
+  const [pushConfig, setPushConfig] = useState<PushConfig>(configDefaut());
+  useEffect(() => {
+    // Pas de SW (navigateur sans support, tests) : l'état reste « off ».
+    if (!pushVisible || !navigator.serviceWorker) return;
+    navigator.serviceWorker.ready
+      .then((reg) => reg.pushManager.getSubscription())
+      .then((sub) => setPushOn(!!sub))
+      .catch(() => {});
+  }, [pushVisible]);
+
   const maj = (section: Section, updated: UserProfile) => {
     saveProfile(updated);
     onProfileSaved?.(updated);
     setSavedSection(section);
+  };
+
+  const pushActive = (config: PushConfig): void => {
+    setPushConfig(config);
+    if (pushOn) void majConfig(config);
+  };
+
+  const pushBasculer = async (): Promise<void> => {
+    if (pushOn) {
+      await desabonner();
+      setPushOn(false);
+      return;
+    }
+    if (await souscrireEtEnregistrer(pushConfig)) setPushOn(true);
+  };
+
+  const pushToggleEvenement = (cle: 'diner' | 'pesee' | 'courses'): void => {
+    pushActive({ ...pushConfig, evenements: { ...pushConfig.evenements, [cle]: !pushConfig.evenements[cle] } });
+  };
+
+  const pushAjouterRappel = (): void => {
+    pushActive({ ...pushConfig, rappels: [...pushConfig.rappels, { type: 'seance', jours: [1], heure: '08:00' }] });
+  };
+
+  const pushSupprimerRappel = (index: number): void => {
+    pushActive({ ...pushConfig, rappels: pushConfig.rappels.filter((_, i) => i !== index) });
+  };
+
+  const pushMajRappel = (index: number, patch: Partial<RappelPush>): void => {
+    pushActive({
+      ...pushConfig,
+      rappels: pushConfig.rappels.map((r, i) => (i === index ? { ...r, ...patch } : r)),
+    });
+  };
+
+  const pushToggleJour = (index: number, jour: number): void => {
+    const r = pushConfig.rappels[index];
+    if (!r) return;
+    const jours = r.jours.includes(jour) ? r.jours.filter((j) => j !== jour) : [...r.jours, jour].sort((a, b) => a - b);
+    pushMajRappel(index, { jours });
   };
 
   const clearErreur = (section: SectionAvecErreur) =>
@@ -612,6 +674,105 @@ export function ProfilScreen({
           )}
           <p className="onb-hint">
             Données synchronisées chez Supabase — région UE, accès limité au foyer.
+          </p>
+        </section>
+      )}
+
+      {pushVisible && (
+        <section className="profile-section push-bloc">
+          <h3>Notifications</h3>
+          <button type="button" className="profil-ghost" aria-pressed={pushOn} onClick={() => void pushBasculer()}>
+            {pushOn ? 'Désactiver les notifications' : 'Activer les notifications'}
+          </button>
+
+          <p className="push-sous-titre">Quand mon coéquipier agit</p>
+          <div className="chips">
+            <button
+              type="button"
+              className={`chip${pushConfig.evenements.diner ? ' on' : ''}`}
+              aria-pressed={pushConfig.evenements.diner}
+              onClick={() => pushToggleEvenement('diner')}
+            >
+              Dîner coché
+            </button>
+            <button
+              type="button"
+              className={`chip${pushConfig.evenements.pesee ? ' on' : ''}`}
+              aria-pressed={pushConfig.evenements.pesee}
+              onClick={() => pushToggleEvenement('pesee')}
+            >
+              Pesée ajoutée
+            </button>
+            <button
+              type="button"
+              className={`chip${pushConfig.evenements.courses ? ' on' : ''}`}
+              aria-pressed={pushConfig.evenements.courses}
+              onClick={() => pushToggleEvenement('courses')}
+            >
+              Courses faites
+            </button>
+          </div>
+
+          <p className="push-sous-titre">Mes rappels</p>
+          {pushConfig.rappels.map((rappel, i) => (
+            <div className="push-rappel" key={i}>
+              <div className="push-rappel-row">
+                <label>
+                  <span className="onb-hint">Type de rappel</span>
+                  <select
+                    aria-label={`Type de rappel ${i + 1}`}
+                    value={rappel.type}
+                    onChange={(e) => pushMajRappel(i, { type: e.target.value as RappelPush['type'] })}
+                  >
+                    <option value="seance">Séance</option>
+                    <option value="pesee">Pesée</option>
+                    <option value="rituel">Rituel dimanche</option>
+                  </select>
+                </label>
+                <input
+                  aria-label={`Heure du rappel ${i + 1}`}
+                  type="time"
+                  value={rappel.heure}
+                  onChange={(e) => pushMajRappel(i, { heure: e.target.value })}
+                />
+                <button
+                  type="button"
+                  className="chip push-suppr"
+                  aria-label={`Supprimer le rappel ${i + 1}`}
+                  onClick={() => pushSupprimerRappel(i)}
+                >
+                  Supprimer
+                </button>
+              </div>
+              <div className="chips push-puces">
+                {[
+                  [1, 'Lundi', 'L'],
+                  [2, 'Mardi', 'M'],
+                  [3, 'Mercredi', 'M'],
+                  [4, 'Jeudi', 'J'],
+                  [5, 'Vendredi', 'V'],
+                  [6, 'Samedi', 'S'],
+                  [0, 'Dimanche', 'D'],
+                ].map(([j, label, lettre]) => (
+                  <button
+                    key={j}
+                    type="button"
+                    className={`chip${rappel.jours.includes(j as number) ? ' on' : ''}`}
+                    aria-pressed={rappel.jours.includes(j as number)}
+                    aria-label={label as string}
+                    onClick={() => pushToggleJour(i, j as number)}
+                  >
+                    {lettre}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+          <button type="button" className="profil-ghost push-ajout" onClick={pushAjouterRappel}>
+            Ajouter un rappel
+          </button>
+          <p className="onb-hint">
+            Notifications sur cet appareil, envoyées par le serveur du foyer (Supabase). Désactivation immédiate.
           </p>
         </section>
       )}

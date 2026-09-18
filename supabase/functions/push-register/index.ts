@@ -1,7 +1,8 @@
 // Edge function — enregistrement d'une souscription push. JWT foyer requis
 // (vérifié par la plateforme + claim household_id lue ici).
 // POST { endpoint, p256dh, auth, profil, device_id, tz, config? } → 200.
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+// DELETE { device_id } → désabonnement.
+import { createClient, type SupabaseClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { foyerDuJwt } from '../_shared/jwt.ts';
 
 const CORS = {
@@ -9,12 +10,34 @@ const CORS = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const admin = (): SupabaseClient =>
+  createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
+    auth: { persistSession: false },
+  });
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
-  if (req.method !== 'POST') return new Response('method not allowed', { status: 405, headers: CORS });
+  if (req.method !== 'POST' && req.method !== 'DELETE') {
+    return new Response('method not allowed', { status: 405, headers: CORS });
+  }
   try {
     const foyerId = foyerDuJwt(req);
     if (!foyerId) return new Response('unauthorized', { status: 401, headers: CORS });
+
+    if (req.method === 'DELETE') {
+      const { device_id } = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+      if (typeof device_id !== 'string' || !device_id) {
+        return new Response('bad request', { status: 400, headers: CORS });
+      }
+      const { error } = await admin()
+        .from('push_subscriptions')
+        .delete()
+        .eq('household_id', foyerId)
+        .eq('device_id', device_id);
+      if (error) return new Response('erreur serveur', { status: 500, headers: CORS });
+      return new Response('ok', { headers: CORS });
+    }
+
     const { endpoint, p256dh, auth, profil, device_id, tz, config } = (await req.json()) as Record<string, unknown>;
     if (
       typeof endpoint !== 'string' || !endpoint ||
@@ -26,12 +49,7 @@ Deno.serve(async (req) => {
     ) {
       return new Response('bad request', { status: 400, headers: CORS });
     }
-    const admin = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-      { auth: { persistSession: false } },
-    );
-    const { error } = await admin.from('push_subscriptions').upsert(
+    const { error } = await admin().from('push_subscriptions').upsert(
       {
         household_id: foyerId,
         device_id,
