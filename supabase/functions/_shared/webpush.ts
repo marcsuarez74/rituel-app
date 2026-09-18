@@ -88,7 +88,7 @@ export const envoyerPush = async (
     b64urlVersBytes(sub.keys.p256dh) as BufferSource,
     { name: 'ECDH', namedCurve: 'P-256' },
     false,
-    ['deriveBits'],
+    [], // clé publique ECDH : usages vides — le deriveBits porte sur la clé privée
   );
   const secretPartage = new Uint8Array(
     await crypto.subtle.deriveBits({ name: 'ECDH', public: cleDest }, eph.privateKey, 256),
