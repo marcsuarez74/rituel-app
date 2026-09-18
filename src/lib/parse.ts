@@ -50,6 +50,25 @@ function registerId(id: string, section: string, seen: Set<string>, warnings: st
   seen.add(id);
 }
 
+// Ref recette en fin de ligne : « → slug ». Une ref n'est retenue que si le slug
+// correspond à une recette du fichier (égalité, ou préfixe « slug- ») — sinon le
+// « → … » reste dans le texte (prose légitime : « → boîte lundi Marc »).
+const REF_SHAPE = /\s*→\s*(\S+)\s*$/;
+
+function refConnue(ref: string, recettes: Recette[]): boolean {
+  const cible = ref.toLowerCase();
+  return recettes.some((r) => r.id === cible || r.id.startsWith(`${cible}-`));
+}
+
+function extraireRef(texte: string, recettes: Recette[]): { texte: string; ref?: string } {
+  const m = texte.match(REF_SHAPE);
+  if (!m || !refConnue(m[1], recettes)) return { texte };
+  const net = texte.slice(0, m.index).trimEnd();
+  // Entrée dégénérée (« → R7 » seul) : pas de label vide — on garde le texte d'origine.
+  if (!net) return { texte };
+  return { texte: net, ref: m[1] };
+}
+
 export function parseWeeklyFile(raw: string): ParseResult {
   const content = raw.replace(/^\uFEFF/, '');
   const m = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
@@ -83,14 +102,16 @@ export function parseWeeklyFile(raw: string): ParseResult {
   const coursesParse = parseCourses(sections.get('courses') ?? '', 'courses', warnings, seen);
   const courses = coursesParse.items;
   const menu = parseMenu(sections.get('menu') ?? '', 'menu', warnings);
-  const lignes = lignesBatch(sections.get('batch') ?? '', warnings);
-  const batch = parseBatch(lignes, warnings, seen);
-  const rituelParse = parseRituel(lignes, 'batch', warnings, seen);
-  const rituel = rituelParse.etapes;
-  const microBatch = parseMicroBatch(lignes, warnings);
-  const reserve = parseReserve(lignes, warnings);
+  // Recettes et bases AVANT le batch : les refs « → slug » des tâches, étapes
+  // et micro-batch sont validées contre les recettes du fichier.
   const recettes = parseRecettes(sections.get('recettes') ?? '', warnings, seen);
   const bases = parseBases(sections.get('bases') ?? '', warnings, seen);
+  const lignes = lignesBatch(sections.get('batch') ?? '', warnings);
+  const batch = parseBatch(lignes, warnings, seen, recettes);
+  const rituelParse = parseRituel(lignes, 'batch', warnings, seen, recettes);
+  const rituel = rituelParse.etapes;
+  const microBatch = parseMicroBatch(lignes, warnings, recettes);
+  const reserve = parseReserve(lignes, warnings, seen);
   const profiles = {
     marc: parseProfile(sections.get('marc') ?? '', 'marc', warnings, seen),
     melanie: parseProfile(sections.get('melanie') ?? '', 'melanie', warnings, seen),
@@ -195,7 +216,7 @@ function parseMenu(text: string, section: string, warnings: string[]): MenuDay[]
     if (kv && day) {
       const key = MENU_KEYS[kv[1]];
       if (key) {
-        const ref = kv[2].match(/\s*→\s*(\S+)\s*$/);
+        const ref = kv[2].match(REF_SHAPE);
         const texte = ref ? kv[2].slice(0, ref.index).trimEnd() : kv[2];
         (day as MenuDay & Record<string, string | undefined>)[key] = texte;
         if (ref) {
@@ -247,7 +268,12 @@ const RITUEL_SHAPE = /^\s*[-*]\s+(\S.*?min)\s*·\s*(.+?)(?:\s*—\s*(.+?))?\s*$/
 const MICRO_SHAPE =
   /^\s*[-*]\s+(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\s*:\s*(.+?)\s*$/;
 
-function parseBatch(lignes: LigneBatch[], warnings: string[], seen: Set<string>): ChecklistItem[] {
+function parseBatch(
+  lignes: LigneBatch[],
+  warnings: string[],
+  seen: Set<string>,
+  recettes: Recette[],
+): ChecklistItem[] {
   const out: ChecklistItem[] = [];
   for (const [line, cur] of lignes) {
     if (cur) continue;
@@ -271,10 +297,13 @@ function parseBatch(lignes: LigneBatch[], warnings: string[], seen: Set<string>)
         continue;
       }
     }
-    const label = withBox ? withBox[2] : plain[1];
+    const brut = withBox ? withBox[2] : plain[1];
+    // Ref optionnelle « → slug », retirée AVANT le slug d'id : l'état de coche
+    // survit à l'ajout ou au retrait d'une ref.
+    const { texte: label, ref } = extraireRef(brut, recettes);
     const id = `batch:${slugify(label)}`;
     registerId(id, 'batch', seen, warnings);
-    out.push({ id, label });
+    out.push({ id, label, ...(ref ? { ref } : {}) });
   }
   return out;
 }
@@ -304,6 +333,7 @@ function parseRituel(
   section: string,
   warnings: string[],
   seen: Set<string>,
+  recettes: Recette[],
 ): { etapes: RituelEtape[]; production?: string; termine?: string } {
   const etapes: RituelEtape[] = [];
   let production: string | undefined;
@@ -327,7 +357,9 @@ function parseRituel(
       else termine = fin[1];
       continue;
     }
-    const m = line.match(RITUEL_SHAPE);
+    // Ref optionnelle en fin de ligne, avant le découpage créneau · label — détail.
+    const { texte: ligneNet, ref } = extraireRef(line, recettes);
+    const m = ligneNet.match(RITUEL_SHAPE);
     if (!m) {
       warnings.push(`Ligne ignorée (${section}/rituel) : « ${preview(line)} »`);
       continue;
@@ -335,7 +367,13 @@ function parseRituel(
     const [, creneau, label, detail] = m;
     const id = `batch:rituel:${slugify(label)}`;
     registerId(id, `${section}/rituel`, seen, warnings);
-    etapes.push({ id, creneau, label, ...(detail ? { detail } : {}) });
+    etapes.push({
+      id,
+      creneau,
+      label,
+      ...(detail ? { detail } : {}),
+      ...(ref ? { ref } : {}),
+    });
   }
   return {
     etapes,
@@ -344,7 +382,14 @@ function parseRituel(
   };
 }
 
-function parseMicroBatch(lignes: LigneBatch[], warnings: string[]): MicroBatchJour[] {
+// Segment « durée » strict du micro-batch : « 10 min », « 1 h ». Un segment plus long (« 10 min · détail ») ou une durée composée (« 1h30 ») reste un détail.
+const DUREE_SEG = /^\d+\s*(?:min|h|minutes?|heures?)\s*$/i;
+
+function parseMicroBatch(
+  lignes: LigneBatch[],
+  warnings: string[],
+  recettes: Recette[],
+): MicroBatchJour[] {
   const out: MicroBatchJour[] = [];
   for (const [line, cur] of lignes) {
     if (cur !== 'micro-batch') continue;
@@ -354,17 +399,43 @@ function parseMicroBatch(lignes: LigneBatch[], warnings: string[]): MicroBatchJo
       warnings.push(`Ligne ignorée (batch/micro-batch) : « ${preview(line)} »`);
       continue;
     }
-    const pipe = m[2].indexOf('|');
-    const gauche = pipe === -1 ? m[2].trim() : m[2].slice(0, pipe).trim();
-    const droite = pipe === -1 ? undefined : m[2].slice(pipe + 1).trim();
-    out.push({ jour: m[1], quoi: gauche, ...(droite ? { detail: droite } : {}) });
+    const segs = m[2].split(/\s*\|\s*/).filter((s) => s.length > 0);
+    const quoi = segs[0] ?? '';
+    const rest = segs.slice(1);
+    let i = 0;
+    let duree: string | undefined;
+    let quantite: string | undefined;
+    let ref: string | undefined;
+    if (rest[i] && DUREE_SEG.test(rest[i])) {
+      duree = rest[i];
+      i++;
+    }
+    if (rest[i]) {
+      const ex = extraireRef(rest[i], recettes);
+      // La quantité n'est reconnue qu'accompagnée de sa ref recette
+      // (« 2 boîtes → r2 ») — un segment libre reste un détail (v1).
+      if (ex.ref) {
+        quantite = ex.texte;
+        ref = ex.ref;
+        i++;
+      }
+    }
+    const detail = rest[i] ? rest.slice(i).join(' | ') : undefined;
+    out.push({
+      jour: m[1],
+      quoi,
+      ...(duree ? { duree } : {}),
+      ...(quantite ? { quantite } : {}),
+      ...(ref ? { ref } : {}),
+      ...(detail ? { detail } : {}),
+    });
   }
   return out;
 }
 
 const JOURS_RESERVE = new Set(['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche', 'mel']);
 
-function parseReserve(lignes: LigneBatch[], warnings: string[]): ReserveLigne[] {
+function parseReserve(lignes: LigneBatch[], warnings: string[], seen: Set<string>): ReserveLigne[] {
   const out: ReserveLigne[] = [];
   for (const [line, cur] of lignes) {
     if (cur !== 'reserve') continue;
@@ -386,6 +457,9 @@ function parseReserve(lignes: LigneBatch[], warnings: string[]): ReserveLigne[] 
       warnings.push(`Ligne réserve ignorée (plat ou conservation vide) : « ${preview(line)} »`);
       continue;
     }
+    // Id de coche composé comme lib/batch.ts (reserveId) : dérive de la clé et du
+    // plat — deux lignes identiques partagent leur état → warning comme ailleurs.
+    registerId(`reserve:${cle}:${slugify(plat)}`, 'batch/réserve', seen, warnings);
     out.push({ cle, plat, conservation });
   }
   return out;

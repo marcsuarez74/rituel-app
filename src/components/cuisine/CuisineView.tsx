@@ -10,7 +10,7 @@ type CuisineTab = 'courses' | 'menu' | 'batch';
 const TABS: Array<{ id: CuisineTab; label: string }> = [
   { id: 'courses', label: 'Courses' },
   { id: 'menu', label: 'Menu' },
-  { id: 'batch', label: 'Batch' },
+  { id: 'batch', label: 'Mon Rituel' },
 ];
 
 export function CuisineView({
@@ -73,6 +73,7 @@ export function CuisineView({
           menu={data.menu}
           recettes={data.recettes}
           bases={data.bases}
+          reserve={data.reserve}
           semaine={semaine}
           syncVersion={syncVersion}
         />
@@ -84,6 +85,7 @@ export function CuisineView({
           reserve={data.reserve}
           production={data.rituelProduction}
           termine={data.rituelTermine}
+          recettes={data.recettes}
           semaine={semaine}
           syncVersion={syncVersion}
         />

@@ -4,6 +4,12 @@ Toutes les évolutions notables de l'app sont documentées dans ce fichier.
 
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le versionnement sémantique ([semver](https://semver.org/lang/fr/)) : **majeur** = changement cassant (contrat .md, migration storage), **mineur** = nouvelle fonctionnalité, **correctif** = bugfix. La source de vérité est le champ `version` de `package.json`.
 
+## [Non publié]
+
+### Ajouté
+
+- Mon Rituel (ex-onglet Batch) : références recette sur les tâches et les étapes du rituel (`- [ ] Egg muffins ×10 → R7`, extension rétrocompatible du contrat .md), fiche recette dépliable à chaque étape du mode guidé, micro-batch enrichi (durée, quantité, recette liée), réserve avec état disponible/consommé et joker interactif dans le Menu (un soir sans dîner prévu → « Sors la réserve : … », coche = consommée).
+
 ## [1.3.0] - 2026-09-18
 
 ### Ajouté

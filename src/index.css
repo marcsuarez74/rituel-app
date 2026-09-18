@@ -628,7 +628,7 @@ p {
   }
 }
 
-/* ---------- Sous-onglets Cuisine (Courses / Menu / Batch) ---------- */
+/* ---------- Sous-onglets Cuisine (Courses / Menu / Mon Rituel) ---------- */
 
 .cuisine-tabs {
   display: flex;
@@ -704,7 +704,7 @@ p {
   color: var(--text);
 }
 
-/* ---------- Bannière rituel (Courses + Batch « Ce soir ») ---------- */
+/* ---------- Bannière rituel (Courses + Mon Rituel « Ce soir ») ---------- */
 
 .batch-banner {
   display: flex;
@@ -838,7 +838,7 @@ input[type='checkbox'] {
   accent-color: var(--accent);
 }
 
-/* ---------- Progression (Courses / Batch — règles partagées) ---------- */
+/* ---------- Progression (Courses / Mon Rituel — règles partagées) ---------- */
 
 .progress {
   display: flex;
@@ -897,6 +897,66 @@ progress {
   background: var(--accent);
   /* Décorative ; couverte par le kill-switch prefers-reduced-motion global. */
   transition: width 0.2s ease;
+}
+
+.menu-joker {
+  display: grid;
+  gap: var(--sp-8);
+  margin-bottom: var(--sp-10);
+}
+
+.joker-ligne {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-8);
+  padding: var(--sp-10) var(--sp-12);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.joker-ligne.fait {
+  border-left-color: var(--border);
+  opacity: 0.75;
+}
+
+.joker-corps {
+  min-width: 0;
+  flex: 1 1 180px;
+}
+
+.joker-titre {
+  display: block;
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+
+.joker-suggestion {
+  display: block;
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sec);
+  line-height: var(--lh-body);
+}
+
+.joker-cta {
+  flex-shrink: 0;
+  min-height: 48px;
+  padding: 0 var(--sp-16);
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #ffffff;
+  font: 700 var(--fs-sec) Poppins, sans-serif;
+}
+
+.joker-cta.fait {
+  background: var(--surface-2);
+  color: var(--text);
 }
 
 .rtabs {
@@ -1208,7 +1268,7 @@ progress {
   text-decoration: none; /* la pastille reste lisible quand la séance est cochée */
 }
 
-/* ---------- Batch ---------- */
+/* ---------- Mon Rituel ---------- */
 
 .batch-section {
   background: var(--surface);
@@ -1363,6 +1423,40 @@ progress {
   margin-top: var(--sp-8);
 }
 
+.micro-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  margin-top: var(--sp-6);
+}
+
+.micro-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-2) var(--sp-8);
+  border-radius: 7px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  line-height: var(--lh-tight);
+  white-space: nowrap;
+}
+
+.micro-ref {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--sp-2) var(--sp-8);
+  border-radius: 7px;
+  border: 1px dashed var(--accent);
+  color: var(--accent);
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  line-height: var(--lh-tight);
+  white-space: nowrap;
+}
+
 .micro-jour-detail {
   font-size: var(--fs-micro);
   color: var(--muted);
@@ -1378,8 +1472,10 @@ progress {
   display: flex;
   align-items: center;
   gap: var(--sp-12);
+  min-height: 48px;
   padding: var(--sp-10) 0;
   border-top: 1px solid var(--border);
+  cursor: pointer;
 }
 
 .reserve-ligne:first-child {
@@ -1416,6 +1512,46 @@ progress {
   margin-top: var(--sp-2);
 }
 
+.reserve-note {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-micro);
+  color: var(--muted);
+  line-height: var(--lh-body);
+}
+
+.reserve-ligne input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+
+.reserve-ligne.consomme .reserve-nom {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.reserve-ligne.consomme .reserve-cons {
+  text-decoration: line-through;
+}
+
+.reserve-etat {
+  margin-left: auto;
+  padding: var(--sp-2) var(--sp-8);
+  border-radius: 999px;
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  line-height: var(--lh-tight);
+  white-space: nowrap;
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.reserve-etat.fait {
+  background: var(--accent);
+  color: #ffffff;
+}
+
 .micro-dots {
   display: flex;
   gap: var(--sp-4);
@@ -1434,7 +1570,7 @@ progress {
   background: var(--accent);
 }
 
-/* ---------- Batch : lancer + mode guidé ---------- */
+/* ---------- Mon Rituel : lancer + mode guidé ---------- */
 
 .rituel-badge {
   display: inline-flex;
@@ -1486,6 +1622,62 @@ progress {
   font-size: var(--fs-sec);
   color: color-mix(in srgb, var(--muted) 70%, var(--text));
   line-height: var(--lh-body);
+}
+.guide-fiche {
+  width: 100%;
+}
+.guide-fiche-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  min-height: 48px;
+  padding: var(--sp-8) var(--sp-14);
+  border: 1px dashed var(--accent);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--accent);
+  font: 600 var(--fs-sec) Poppins, sans-serif;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.guide-fiche-btn:active {
+  transform: scale(0.97);
+}
+.fiche-corps {
+  width: 100%;
+  padding: var(--sp-12);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg);
+}
+.fiche-soustitre {
+  margin: 0 0 var(--sp-4);
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+.fiche-temps {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  margin: 0 0 var(--sp-8);
+  font-size: var(--fs-sec);
+  font-weight: 600;
+}
+.fiche-pour {
+  margin: 0;
+  font-size: var(--fs-sec);
+  line-height: var(--lh-body);
+}
+.fiche-etapes {
+  margin: 0;
+  padding-left: var(--sp-20);
+  font-size: var(--fs-sec);
+  line-height: var(--lh-body);
+  display: grid;
+  gap: var(--sp-4);
 }
 .batch-guide progress {
   width: 100%;

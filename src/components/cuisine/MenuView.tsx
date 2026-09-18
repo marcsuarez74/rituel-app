@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { KeyboardEvent } from 'react';
-import type { BaseCuisine, MenuDay, Recette } from '../../lib/model';
+import type { BaseCuisine, MenuDay, Recette, ReserveLigne } from '../../lib/model';
+import { reserveId, soirsSansDiner } from '../../lib/batch';
 import {
   construireOnglets,
   construirePaires,
@@ -12,6 +13,7 @@ import {
 } from '../../lib/menu';
 import type { OngletDiner, PaireDejeuners } from '../../lib/menu';
 import { getChecks, setCheck } from '../../lib/storage';
+import { capitalize } from '../../lib/text';
 import { Icon } from '../Icon';
 
 // Menu v3 : 1 onglet par recette/dîner + 🍱 Déjeuners (file dynamique).
@@ -21,12 +23,14 @@ export function MenuView({
   menu,
   recettes = [],
   bases = [],
+  reserve,
   semaine,
   syncVersion = 0,
 }: {
   menu: MenuDay[];
   recettes?: Recette[];
   bases?: BaseCuisine[];
+  reserve?: ReserveLigne[];
   semaine: string;
   syncVersion?: number;
 }) {
@@ -34,6 +38,7 @@ export function MenuView({
   const onglets = construireOnglets(menu, recettes);
   const paires = construirePaires(menu, recettes);
   const faits = faitsParRecette(menu);
+  const jokers = soirsSansDiner(menu, reserve ?? []);
 
   // Pattern render-phase reset — cf. Checklist.tsx : un changement remote
   // (syncVersion) ou de semaine relit le storage et recalcule l'onglet actif.
@@ -65,6 +70,14 @@ export function MenuView({
       next[id] = cible;
     }
     setChecks(next);
+  };
+
+  // Joker réserve : cocher = réserve consommée (même id que la section Réserve
+  // de Mon Rituel — les deux vues restent synchronisées).
+  const basculerJoker = (id: string) => {
+    const next = !checks[id];
+    setCheck(semaine, id, next);
+    setChecks((prev) => ({ ...prev, [id]: next }));
   };
 
   const dFaites = onglets.filter((o) => checks[o.cleCoche]).length;
@@ -102,6 +115,32 @@ export function MenuView({
           </span>
         </p>
       </div>
+      {jokers.length > 0 && (
+        <div className="menu-joker" role="group" aria-label="Réserve à sortir">
+          {jokers.map((j) => {
+            const id = reserveId(j.ligne);
+            const sorti = !!checks[id];
+            return (
+              <div className={sorti ? 'joker-ligne fait' : 'joker-ligne'} key={id}>
+                <span className="joker-corps">
+                  <span className="joker-titre">Soir sans dîner prévu · {capitalize(j.jour)}</span>
+                  <span className="joker-suggestion">
+                    Sors la réserve : <b>{j.ligne.plat}</b> ({j.ligne.conservation})
+                  </span>
+                </span>
+                <button
+                  type="button"
+                  className={sorti ? 'joker-cta fait' : 'joker-cta'}
+                  aria-pressed={sorti}
+                  onClick={() => basculerJoker(id)}
+                >
+                  {sorti ? 'Soirée gérée ✓' : 'Sortie ✓'}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
       <div
         className="rtabs"
         role="tablist"

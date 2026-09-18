@@ -29,6 +29,7 @@ export interface MenuDay {
 export interface ChecklistItem {
   id: string;
   label: string;
+  ref?: string; // ref recette (batch v4) — jamais dans l'id de coche
 }
 
 export interface Recette {
@@ -61,12 +62,16 @@ export interface RituelEtape {
   creneau: string;
   label: string;
   detail?: string;
+  ref?: string; // ref recette (batch v4) — le mode guidé affiche sa fiche
 }
 
 export interface MicroBatchJour {
   jour: string;
   quoi: string;
   detail?: string; // suffixe ` | détail` — 3e ligne de la carte micro-batch
+  duree?: string; // segment strict « 10 min » / « 1 h » (v4)
+  quantite?: string; // segment accompagné de sa ref (v4)
+  ref?: string; // ref recette (v4) — chip recette sur la carte
 }
 
 export interface ReserveLigne {

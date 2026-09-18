@@ -1,9 +1,11 @@
 import { useRef, useState } from 'react';
-import type { MicroBatchJour, ReserveLigne, RituelEtape } from '../../lib/model';
+import type { MicroBatchJour, Recette, ReserveLigne, RituelEtape } from '../../lib/model';
 import { getChecks, setCheck } from '../../lib/storage';
 import { todayKey } from '../../lib/dates';
 import { capitalize } from '../../lib/text';
-import { dureeRituel, iconeReserve } from '../../lib/batch';
+import { dureeRituel, iconeReserve, reserveId } from '../../lib/batch';
+import { recetteParRef } from '../../lib/stats';
+import { nomCourt } from '../../lib/menu';
 import { Icon } from '../Icon';
 
 export function BatchView({
@@ -12,6 +14,7 @@ export function BatchView({
   reserve,
   production,
   termine,
+  recettes = [],
   semaine,
   syncVersion = 0,
 }: {
@@ -20,6 +23,7 @@ export function BatchView({
   reserve?: ReserveLigne[];
   production?: string;
   termine?: string;
+  recettes?: Recette[];
   semaine: string;
   syncVersion?: number;
 }) {
@@ -36,6 +40,10 @@ export function BatchView({
   const hasMicro = !!microBatch?.length;
   const hasReserve = !!reserve?.length;
   const ceSoir = microBatch?.find((m) => m.jour === todayKey());
+
+  // Fiche recette de l'étape en cours (mode guidé) — ref cassée → undefined.
+  const etape = rituel?.[idx];
+  const recetteEtape = mode === 'run' && etape?.ref ? recetteParRef(etape.ref, recettes) : undefined;
 
   return (
     <>
@@ -68,13 +76,14 @@ export function BatchView({
           </div>
           <h3 className="guide-titre">{rituel[idx].label}</h3>
           {rituel[idx].detail && <p className="guide-detail">{rituel[idx].detail}</p>}
+          {recetteEtape && <FicheRecette key={idx} recette={recetteEtape} />}
           <progress value={idx} max={rituel.length} aria-hidden="true" />
           <button
             type="button"
             className="btn"
             onClick={() => (idx + 1 < rituel.length ? setIdx(idx + 1) : setMode('fini'))}
           >
-            {idx + 1 < rituel.length ? 'Étape terminée →' : 'Terminer le batch ✓'}
+            {idx + 1 < rituel.length ? 'Étape terminée →' : 'Terminer le rituel ✓'}
           </button>
           <button
             type="button"
@@ -93,21 +102,65 @@ export function BatchView({
           <span className="guide-done-ic">
             <Icon name="check" size={38} strokeWidth={2.5} />
           </span>
-          <h3 className="guide-titre">Batch terminé !</h3>
+          <h3 className="guide-titre">Rituel terminé !</h3>
           <p className="guide-detail">{termine ?? 'Tout est prêt pour la semaine.'}</p>
           <button type="button" className="btn-ghost" onClick={() => setMode('apercu')}>
             Revoir l'aperçu
           </button>
         </section>
       )}
-      {hasMicro && mode === 'apercu' && microBatch && <MicroBatch jours={microBatch} />}
-      {mode === 'apercu' && hasReserve && reserve && <Reserve lignes={reserve} />}
-      {!hasRituel && !hasMicro && !hasReserve && <p className="muted">Aucun batch prévu cette semaine.</p>}
+      {hasMicro && mode === 'apercu' && microBatch && <MicroBatch jours={microBatch} recettes={recettes} />}
+      {mode === 'apercu' && hasReserve && reserve && (
+        <Reserve lignes={reserve} semaine={semaine} syncVersion={syncVersion} />
+      )}
+      {!hasRituel && !hasMicro && !hasReserve && <p className="muted">Aucun rituel prévu cette semaine.</p>}
     </>
   );
 }
 
-function MicroBatch({ jours }: { jours: MicroBatchJour[] }) {
+function FicheRecette({ recette }: { recette: Recette }) {
+  const [ouverte, setOuverte] = useState(false);
+  return (
+    <div className="guide-fiche">
+      <button
+        type="button"
+        className="guide-fiche-btn"
+        aria-expanded={ouverte}
+        onClick={() => setOuverte(!ouverte)}
+      >
+        <Icon name="box" size={14} />
+        {ouverte ? 'Masquer la fiche' : 'Voir la fiche recette'}
+      </button>
+      {ouverte && (
+        <div className="fiche-corps">
+          {recette.temps && (
+            <p className="fiche-temps">
+              <Icon name="clock" size={14} /> {recette.temps}
+            </p>
+          )}
+          {recette.pour && (
+            <>
+              <p className="fiche-soustitre">Ingrédients</p>
+              <p className="fiche-pour">{recette.pour}</p>
+            </>
+          )}
+          {recette.etapes && recette.etapes.length > 0 && (
+            <>
+              <p className="fiche-soustitre">Étapes</p>
+              <ol className="fiche-etapes">
+                {recette.etapes.map((e, i) => (
+                  <li key={i}>{e}</li>
+                ))}
+              </ol>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MicroBatch({ jours, recettes = [] }: { jours: MicroBatchJour[]; recettes?: Recette[] }) {
   const [actif, setActif] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   const auScroll = () => {
@@ -121,13 +174,33 @@ function MicroBatch({ jours }: { jours: MicroBatchJour[] }) {
     <section className="batch-section">
       <h3>Micro-batch en semaine</h3>
       <div className="micro-batch" ref={ref} onScroll={auScroll}>
-        {jours.map((m) => (
-          <div className="micro-jour" key={m.jour}>
-            <div className="micro-jour-nom">{capitalize(m.jour)}</div>
-            <div className="micro-jour-quoi">{m.quoi}</div>
-            {m.detail && <div className="micro-jour-detail">{m.detail}</div>}
-          </div>
-        ))}
+        {jours.map((m) => {
+          const recette = m.ref ? recetteParRef(m.ref, recettes) : undefined;
+          return (
+            <div className="micro-jour" key={m.jour}>
+              <div className="micro-jour-nom">{capitalize(m.jour)}</div>
+              <div className="micro-jour-quoi">{m.quoi}</div>
+              {(m.duree || m.quantite || m.ref) && (
+                <div className="micro-meta">
+                  {m.duree && (
+                    <span className="micro-pill">
+                      <Icon name="clock" size={14} /> {m.duree}
+                    </span>
+                  )}
+                  {m.quantite && (
+                    <span className="micro-pill">
+                      <Icon name="box" size={14} /> {m.quantite}
+                    </span>
+                  )}
+                  {m.ref && (
+                    <span className="micro-ref">{recette ? nomCourt(recette.nom) : m.ref}</span>
+                  )}
+                </div>
+              )}
+              {m.detail && <div className="micro-jour-detail">{m.detail}</div>}
+            </div>
+          );
+        })}
       </div>
       <div className="micro-dots" aria-hidden="true">
         {jours.map((_, i) => (
@@ -138,24 +211,62 @@ function MicroBatch({ jours }: { jours: MicroBatchJour[] }) {
   );
 }
 
-function Reserve({ lignes }: { lignes: ReserveLigne[] }) {
+function Reserve({
+  lignes,
+  semaine,
+  syncVersion = 0,
+}: {
+  lignes: ReserveLigne[];
+  semaine: string;
+  syncVersion?: number;
+}) {
+  const [checks, setChecks] = useState<Record<string, boolean>>(() => getChecks(semaine));
+  // Pattern render-phase reset — cf. RituelTimeline : un changement remote
+  // (syncVersion) ou de semaine relit le storage.
+  const [synced, setSynced] = useState({ semaine, version: syncVersion });
+  if (synced.semaine !== semaine || synced.version !== syncVersion) {
+    setSynced({ semaine, version: syncVersion });
+    setChecks(getChecks(semaine));
+  }
+  const toggle = (id: string) => {
+    const next = !checks[id];
+    setCheck(semaine, id, next);
+    setChecks((prev) => ({ ...prev, [id]: next }));
+  };
   return (
     <section className="batch-section">
       <h3>La réserve — au frigo cette semaine</h3>
+      <p className="reserve-note">Les plats d’avance qui attendent leur soir.</p>
       <div className="reserve-list">
-        {lignes.map((l, i) => (
-          <div className="reserve-ligne" key={`${l.cle}-${i}`}>
-            <span className="reserve-ic">
-              <Icon name={iconeReserve(l)} size={16} />
-            </span>
-            <span className="reserve-corps">
-              <span className="reserve-nom">
-                {l.cle === 'mel' ? 'Mél' : capitalize(l.cle)} — {l.plat}
+        {lignes.map((l, i) => {
+          const id = reserveId(l);
+          const consomme = !!checks[id];
+          return (
+            <label
+              className={consomme ? 'reserve-ligne consomme' : 'reserve-ligne'}
+              key={`${l.cle}-${i}`}
+            >
+              <input
+                type="checkbox"
+                checked={consomme}
+                onChange={() => toggle(id)}
+                aria-label={`${l.cle === 'mel' ? 'Mél' : capitalize(l.cle)} — ${l.plat} — marquer consommé`}
+              />
+              <span className="reserve-ic">
+                <Icon name={iconeReserve(l)} size={16} />
               </span>
-              <span className="reserve-cons">{l.conservation}</span>
-            </span>
-          </div>
-        ))}
+              <span className="reserve-corps">
+                <span className="reserve-nom">
+                  {l.cle === 'mel' ? 'Mél' : capitalize(l.cle)} — {l.plat}
+                </span>
+                <span className="reserve-cons">{l.conservation}</span>
+              </span>
+              <span className={consomme ? 'reserve-etat fait' : 'reserve-etat'}>
+                {consomme ? 'Consommé' : 'Disponible'}
+              </span>
+            </label>
+          );
+        })}
       </div>
     </section>
   );
@@ -222,7 +333,7 @@ function RituelTimeline({
         ))}
       </ol>
       <button type="button" className="btn lancer-btn" onClick={onLancer}>
-        <Icon name="play" size={14} /> Lancer le batch
+        <Icon name="play" size={14} /> Lancer le rituel
       </button>
     </section>
   );

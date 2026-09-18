@@ -1,5 +1,6 @@
-import type { ReserveLigne, RituelEtape } from './model';
+import type { MenuDay, ReserveLigne, RituelEtape } from './model';
 import { normaliseComplement } from './model';
+import { slugify } from './parse';
 
 // Durée totale du rituel = somme des créneaux « A-B min ». Un créneau non
 // parsable est ignoré ; aucune minute exploitable → pas de badge (null).
@@ -29,4 +30,28 @@ export function iconeReserve(ligne: ReserveLigne): ReserveIcone {
   if (/pates/.test(t)) return 'pasta';
   if (/salade/.test(t)) return 'bowl';
   return 'box';
+}
+
+// Id de coche d'une ligne de réserve — stable : dérive de la clé et du plat,
+// jamais de l'ordre du fichier (renommer le plat perd l'état, comme partout).
+export const reserveId = (ligne: ReserveLigne): string =>
+  `reserve:${ligne.cle}:${slugify(ligne.plat)}`;
+
+export interface SoirJoker {
+  jour: string;
+  ligne: ReserveLigne;
+}
+
+// Soirs sans dîner planifié (ni diner-famille ni diner-melanie) ayant une ligne
+// de réserve dédiée → suggestion « Sors la réserve » dans l'onglet Menu.
+// La clé « mel » n'est jamais suggérée (elle n'est pas un soir).
+export function soirsSansDiner(menu: MenuDay[], reserve: ReserveLigne[]): SoirJoker[] {
+  const out: SoirJoker[] = [];
+  for (const day of menu) {
+    if (day.dinerFamille || day.dinerMelanie) continue;
+    const cle = day.jour.trim().toLowerCase();
+    const ligne = reserve.find((l) => l.cle === cle);
+    if (ligne) out.push({ jour: day.jour, ligne });
+  }
+  return out;
 }

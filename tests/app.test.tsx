@@ -205,7 +205,7 @@ describe('App shell', () => {
     expect(document.querySelector('.rtab')).not.toBeNull();
     expect(screen.getByRole('tab', { selected: true })).toHaveTextContent('Poulet rôti');
 
-    await user.click(screen.getByRole('button', { name: 'Batch' }));
+    await user.click(screen.getByRole('button', { name: 'Mon Rituel' }));
     expect(screen.getByText(/muffins/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Mon suivi' }));
@@ -402,6 +402,8 @@ describe("Semaine d'exemple — contenu réel (Menu A, S37)", () => {
 
     expect(data.batch).toHaveLength(5);
     expect(data.batch[0].label).toBe('Egg muffins ×10');
+    expect(data.batch[0].ref).toBe('R7');
+    expect(data.rituel?.filter((e) => e.ref).length).toBeGreaterThanOrEqual(2);
 
     expect(data.profiles.marc.cibles).toHaveLength(4);
     expect(data.profiles.marc.seances).toHaveLength(6);

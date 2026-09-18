@@ -11,6 +11,8 @@ import { expect, test } from '@playwright/test';
 // tests fiche + coche, la note de verrouillage cite « Pâtes bolognaise ».
 // Le clic « Boxes faites » vise la 1ʳᵉ paire prête (mardi, ← R1) — ordre du fichier.
 // Les coches menu partent d'un storageState vierge.
+// Le run guidé du batch lit les refs rituel du fixture : étape 1 → R7 (fiche
+// dépliée), étape 2 → R1 (fiche fermée), étape 3 sans ref — ne pas réordonner.
 // Le test dépenses sème aussi une dépense datée 2026-09-09 (∈ S37) et épingle
 // le total « Payé cette semaine » à 73,30 € — déplacer les deux au refresh.
 // La saisie du formulaire épingle en plus la « Date » à 2026-09-10 (∈ S37) — au refresh, déplacer les trois.
@@ -189,7 +191,7 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
     await page.goto(ORIGIN);
     await expect(page.getByText('Semaine 37')).toBeVisible();
 
-    await page.getByRole('button', { name: 'Batch' }).click();
+    await page.getByRole('button', { name: 'Mon Rituel' }).click();
     await expect(page.locator('.rituel-timeline')).toBeVisible();
     await expect(page.locator('.rituel-etape')).toHaveCount(5);
     await expect(page.locator('.rituel-creneau').first()).toBeVisible();
@@ -209,15 +211,31 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
     await expect(page.locator('.micro-batch')).toBeVisible();
     await expect(page.locator('.micro-jour')).toHaveCount(3);
     await expect(page.locator('.micro-dots i')).toHaveCount(3);
+    // Micro-batch enrichi (v4) : lundi porte la seule ref recette du fixture
+    // (« 2 boîtes → R1 ») → 1 chip recette, 2 pills (durée + quantité).
+    await expect(page.locator('.micro-pill').first()).toBeVisible();
+    await expect(page.locator('.micro-ref')).toHaveCount(1);
+    // Réserve : note d'entête + état initial « Disponible » (storage vierge).
+    await expect(page.locator('.reserve-note')).toContainText('plats d’avance');
+    await expect(page.locator('.reserve-etat').first()).toContainText('Disponible');
 
-    // Parcours guidé : le run ne coche aucune étape — au retour à l'aperçu,
-    // la timeline retrouve ses 5 étapes dans leur état d'origine.
-    await page.getByRole('button', { name: 'Lancer le batch' }).click();
-    for (let i = 0; i < 4; i++) {
+    // Parcours guidé : l'étape 1 (Four à 180° → R7) affiche la fiche recette
+    // dépliable ; le run ne coche aucune étape — au retour à l'aperçu, la
+    // timeline retrouve ses 5 étapes dans leur état d'origine.
+    await page.getByRole('button', { name: 'Lancer le rituel' }).click();
+    await page.getByRole('button', { name: 'Voir la fiche recette' }).click();
+    await expect(page.locator('.fiche-corps')).toContainText('four 180°');
+    await page.getByRole('button', { name: 'Étape terminée →' }).click();
+    // Étape 2 (Cuissons en double → R1) : la fiche suit la ref, remontée fermée.
+    await expect(page.getByRole('button', { name: 'Voir la fiche recette' })).toBeVisible();
+    await page.getByRole('button', { name: 'Étape terminée →' }).click();
+    // Étape 3 (Œufs durs) sans ref : plus de fiche.
+    await expect(page.getByRole('button', { name: 'Voir la fiche recette' })).toHaveCount(0);
+    for (let i = 0; i < 2; i++) {
       await page.getByRole('button', { name: 'Étape terminée →' }).click();
     }
-    await page.getByRole('button', { name: 'Terminer le batch ✓' }).click();
-    await expect(page.locator('.batch-guide')).toContainText('Batch terminé');
+    await page.getByRole('button', { name: 'Terminer le rituel ✓' }).click();
+    await expect(page.locator('.batch-guide')).toContainText('Rituel terminé');
     await page.getByRole('button', { name: "Revoir l'aperçu" }).click();
     await expect(page.locator('.rituel-timeline')).toBeVisible();
     await expect(page.locator('.rituel-etape.done')).toHaveCount(0);
@@ -232,7 +250,7 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
       // sans lui, la mesure peut tomber pendant le swap de police (flake CI).
       await page.evaluate(() => document.fonts.ready);
 
-      for (const onglet of ['Courses', 'Menu', 'Batch']) {
+      for (const onglet of ['Courses', 'Menu', 'Mon Rituel']) {
         await page.getByRole('button', { name: onglet }).click();
         await assertPasDeDebordement(page);
       }

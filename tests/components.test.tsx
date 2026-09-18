@@ -7,6 +7,7 @@ import type {
   MenuDay,
   ProfileData,
   Recette,
+  ReserveLigne,
   UserProfile,
   WeeklyData,
 } from '../src/lib/model';
@@ -489,7 +490,7 @@ describe('CuisineView — sous-onglets', () => {
     render(<CuisineView data={data} profile={profileV2('marc')} />);
     expect(screen.getByRole('button', { name: 'Courses' })).toHaveClass('tab', 'active');
     expect(screen.getByRole('button', { name: 'Menu' })).toHaveClass('tab');
-    expect(screen.getByRole('button', { name: 'Batch' })).toHaveClass('tab');
+    expect(screen.getByRole('button', { name: 'Mon Rituel' })).toHaveClass('tab');
     expect(screen.queryByRole('button', { name: /🛒/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /📅/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /📦/ })).not.toBeInTheDocument();
@@ -705,6 +706,47 @@ describe('MenuView v3 — onglets par recette', () => {
     render(<MenuView menu={[]} recettes={[]} semaine="2026-S40" />);
     expect(screen.getByText('Aucun menu pour cette semaine.')).toBeInTheDocument();
   });
+
+  const MENU_JOKER: MenuDay[] = [
+    { jour: 'Lundi', dinerFamille: 'Chili + riz' },
+    { jour: 'Mardi', dejeunerMarc: 'Restes' },
+  ];
+  const RESERVE_JOKER: ReserveLigne[] = [
+    { cle: 'mardi', plat: 'Chili ×2', conservation: 'congélateur' },
+  ];
+
+  it('joker : un soir sans dîner prévu avec une ligne de réserve → encart « Sors la réserve »', async () => {
+    const user = userEvent.setup();
+    render(<MenuView menu={MENU_JOKER} reserve={RESERVE_JOKER} semaine="2026-S40" />);
+    const joker = document.querySelector('.menu-joker');
+    expect(joker).not.toBeNull();
+    expect(joker).toHaveTextContent('Soir sans dîner prévu · Mardi');
+    expect(joker).toHaveTextContent('Sors la réserve :');
+    expect(joker).toHaveTextContent('Chili ×2');
+    expect(joker).toHaveTextContent('(congélateur)');
+    await user.click(screen.getByRole('button', { name: 'Sortie ✓' }));
+    expect(getChecks('2026-S40')).toEqual({ 'reserve:mardi:chili-2': true });
+    expect(document.querySelector('.joker-ligne.fait')).not.toBeNull();
+    expect(screen.getByRole('button', { name: 'Soirée gérée ✓' })).toBeInTheDocument();
+  });
+
+  it('pas d encart quand tous les soirs ont un dîner', () => {
+    render(
+      <MenuView menu={[{ jour: 'Lundi', dinerFamille: 'Chili' }]} reserve={RESERVE_JOKER} semaine="2026-S40" />,
+    );
+    expect(document.querySelector('.menu-joker')).toBeNull();
+  });
+
+  it('pas d encart sans ligne de réserve correspondante', () => {
+    render(
+      <MenuView
+        menu={MENU_JOKER}
+        reserve={[{ cle: 'mercredi', plat: 'Chili', conservation: 'congel' }]}
+        semaine="2026-S40"
+      />,
+    );
+    expect(document.querySelector('.menu-joker')).toBeNull();
+  });
 });
 
 describe('BatchView v2 — rituel et micro-batch', () => {
@@ -724,6 +766,19 @@ describe('BatchView v2 — rituel et micro-batch', () => {
     { jour: 'lundi', quoi: 'doubler le plat' },
     { jour: 'mardi', quoi: 'doubler la sauce' },
   ];
+
+  const RECETTE_BATCH: Recette = {
+    id: 'r7-roti-de-dinde-gratin-courgettes-quinoa',
+    nom: 'R7 · Rôti de dinde + gratin courgettes + quinoa',
+    temps: '60 min · four 180°',
+    pour: 'rôti de dinde ~800 g · 4 courgettes · 15 cl crème + 80 g râpé · 300 g quinoa',
+    etapes: [
+      'Four 180°. Rôti : huile + herbes + sel, 50-55 min.',
+      'Gratin : courgettes précuites + crème + fromage, 25 min.',
+      'Quinoa 15 min — en double.',
+    ],
+  };
+  const RITUEL_AVEC_REF = [{ ...RITUEL[0], ref: 'r7' }, ...RITUEL.slice(1)];
 
   it('affiche le rituel en timeline avec créneaux, détails et badge de durée', () => {
     render(<BatchView rituel={RITUEL} microBatch={MICRO} semaine="2026-S39" />);
@@ -749,6 +804,33 @@ describe('BatchView v2 — rituel et micro-batch', () => {
     expect(dots).toHaveLength(2);
     expect(dots[0]).toHaveClass('on');
     expect(dots[1]).not.toHaveClass('on');
+  });
+
+  it('micro-batch enrichi : pills durée/quantité + chip recette', () => {
+    render(
+      <BatchView
+        rituel={RITUEL}
+        recettes={[RECETTE_BATCH]}
+        microBatch={[{ jour: 'mardi', quoi: 'précuire brocolis', duree: '10 min', quantite: '2 boîtes', ref: 'r7' }]}
+        semaine="2026-S39"
+      />,
+    );
+    expect(document.querySelectorAll('.micro-pill')).toHaveLength(2);
+    expect(screen.getByText('10 min')).toBeInTheDocument();
+    expect(screen.getByText('2 boîtes')).toBeInTheDocument();
+    expect(document.querySelector('.micro-ref')).toHaveTextContent('Rôti de dinde');
+    expect(document.querySelector('.micro-jour-detail')).toBeNull();
+  });
+
+  it('micro-batch avec ref cassée : la ref brute s affiche (repli)', () => {
+    render(
+      <BatchView
+        rituel={RITUEL}
+        microBatch={[{ jour: 'lundi', quoi: 'X', ref: 'r99' }]}
+        semaine="2026-S39"
+      />,
+    );
+    expect(document.querySelector('.micro-ref')).toHaveTextContent('r99');
   });
 
   it('cocher une étape du rituel persiste sous l’id batch:rituel:*', async () => {
@@ -787,17 +869,17 @@ describe('BatchView v2 — rituel et micro-batch', () => {
     vi.useRealTimers();
   });
 
-  it('mode guidé : Lancer le batch → étape par étape → écran terminé → retour aperçu (sans cocher)', async () => {
+  it('mode guidé : Lancer le rituel → étape par étape → écran terminé → retour aperçu (sans cocher)', async () => {
     const user = userEvent.setup();
     render(<BatchView rituel={RITUEL} microBatch={[]} semaine="2026-S39" />);
-    await user.click(screen.getByRole('button', { name: /Lancer le batch/ }));
+    await user.click(screen.getByRole('button', { name: /Lancer le rituel/ }));
     expect(document.querySelector('.guide-etape-num')).toHaveTextContent('Étape 1/5');
     expect(document.querySelector('.guide-titre')).toHaveTextContent('Four à 180°');
     await user.click(screen.getByRole('button', { name: 'Étape terminée →' }));
     expect(document.querySelector('.guide-etape-num')).toHaveTextContent('Étape 2/5');
     for (let i = 0; i < 3; i++) await user.click(screen.getByRole('button', { name: 'Étape terminée →' }));
-    await user.click(screen.getByRole('button', { name: /Terminer le batch/ }));
-    expect(screen.getByText('Batch terminé !')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Terminer le rituel/ }));
+    expect(screen.getByText('Rituel terminé !')).toBeInTheDocument();
     // présentation pure : aucune coche de timeline posée
     expect(screen.queryByRole('checkbox')).toBeNull();
     await user.click(screen.getByRole('button', { name: /Revoir l'aperçu/ }));
@@ -808,20 +890,20 @@ describe('BatchView v2 — rituel et micro-batch', () => {
   it('garde anti-crash : rituel plus court pendant un run → retour aperçu (render-phase reset)', async () => {
     const user = userEvent.setup();
     const { rerender } = render(<BatchView rituel={RITUEL} microBatch={[]} semaine="2026-S39" />);
-    await user.click(screen.getByRole('button', { name: /Lancer le batch/ }));
+    await user.click(screen.getByRole('button', { name: /Lancer le rituel/ }));
     await user.click(screen.getByRole('button', { name: 'Étape terminée →' }));
     await user.click(screen.getByRole('button', { name: 'Étape terminée →' }));
     await user.click(screen.getByRole('button', { name: 'Étape terminée →' }));
     expect(document.querySelector('.guide-etape-num')).toHaveTextContent('Étape 4/5');
     // changement de semaine : le nouveau rituel n'a qu'une étape (idx 3 hors bornes)
     rerender(<BatchView rituel={[RITUEL[0]]} microBatch={[]} semaine="2026-S40" />);
-    expect(screen.getByRole('button', { name: /Lancer le batch/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Lancer le rituel/ })).toBeInTheDocument();
     expect(screen.queryByText(/Étape /)).not.toBeInTheDocument();
   });
 
   it('sans rituel ni micro-batch : message muted seul', () => {
     const { container } = render(<BatchView semaine="2026-S39" />);
-    expect(screen.getByText('Aucun batch prévu cette semaine.')).toBeInTheDocument();
+    expect(screen.getByText('Aucun rituel prévu cette semaine.')).toBeInTheDocument();
     expect(container.querySelector('.batch-banner')).toBeNull();
     expect(container.querySelector('.rituel-timeline')).toBeNull();
     expect(container.querySelector('.micro-batch')).toBeNull();
@@ -831,7 +913,7 @@ describe('BatchView v2 — rituel et micro-batch', () => {
     const { container } = render(
       <BatchView rituel={[]} microBatch={[]} semaine="2026-S39" />,
     );
-    expect(screen.getByText('Aucun batch prévu cette semaine.')).toBeInTheDocument();
+    expect(screen.getByText('Aucun rituel prévu cette semaine.')).toBeInTheDocument();
     expect(container.querySelector('.batch-banner')).toBeNull();
     expect(container.querySelector('.rituel-timeline')).toBeNull();
     expect(container.querySelector('.micro-batch')).toBeNull();
@@ -917,8 +999,8 @@ describe('BatchView v2 — rituel et micro-batch', () => {
         semaine="2026-S39"
       />,
     );
-    await user.click(screen.getByRole('button', { name: /Lancer le batch/ }));
-    await user.click(screen.getByRole('button', { name: /Terminer le batch/ }));
+    await user.click(screen.getByRole('button', { name: /Lancer le rituel/ }));
+    await user.click(screen.getByRole('button', { name: /Terminer le rituel/ }));
     expect(screen.getByText('4 boîtes prêtes — la semaine est servie.')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Revoir l'aperçu/ }));
     expect(document.querySelector('.rituel-timeline')).not.toBeNull();
@@ -927,8 +1009,8 @@ describe('BatchView v2 — rituel et micro-batch', () => {
   it('sans termine : texte par défaut à l’état final', async () => {
     const user = userEvent.setup();
     render(<BatchView rituel={[{ id: 'batch:rituel:x', creneau: '0-5 min', label: 'X' }]} microBatch={[]} semaine="2026-S39" />);
-    await user.click(screen.getByRole('button', { name: /Lancer le batch/ }));
-    await user.click(screen.getByRole('button', { name: /Terminer le batch/ }));
+    await user.click(screen.getByRole('button', { name: /Lancer le rituel/ }));
+    await user.click(screen.getByRole('button', { name: /Terminer le rituel/ }));
     expect(screen.getByText('Tout est prêt pour la semaine.')).toBeInTheDocument();
   });
 
@@ -940,18 +1022,178 @@ describe('BatchView v2 — rituel et micro-batch', () => {
       />,
     );
     expect(container.querySelector('.reserve-list')).not.toBeNull();
-    expect(screen.queryByText('Aucun batch prévu cette semaine.')).toBeNull();
+    expect(screen.queryByText('Aucun rituel prévu cette semaine.')).toBeNull();
   });
 
-  it('« Lancer le batch » est un bouton pleine largeur sous la timeline (plus de pilule dans le head)', () => {
+  it('réserve : état disponible/consommé persisté sous reserve:{cle}:{plat}', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <BatchView
+        rituel={RITUEL}
+        microBatch={[]}
+        reserve={[{ cle: 'lundi', plat: 'Poulet-riz', conservation: 'frigo, 2 j max' }]}
+        semaine="2026-S39"
+      />,
+    );
+    const ligne = container.querySelector('.reserve-ligne')!;
+    expect(ligne).not.toHaveClass('consomme');
+    expect(ligne.querySelector('.reserve-etat')).toHaveTextContent('Disponible');
+    await user.click(screen.getByRole('checkbox', { name: 'Lundi — Poulet-riz — marquer consommé' }));
+    expect(getChecks('2026-S39')).toEqual({ 'reserve:lundi:poulet-riz': true });
+    expect(ligne.querySelector('.reserve-etat')).toHaveTextContent('Consommé');
+    expect(ligne).toHaveClass('consomme');
+  });
+
+  it('la réserve porte l explication d une ligne', () => {
+    render(
+      <BatchView
+        reserve={[{ cle: 'mel', plat: 'Box keto', conservation: 'à part' }]}
+        semaine="2026-S39"
+      />,
+    );
+    expect(screen.getByText('Les plats d’avance qui attendent leur soir.')).toBeInTheDocument();
+  });
+
+  it('réserve : resynchronise l état au changement de semaine (render-phase reset)', () => {
+    const { rerender } = render(
+      <BatchView
+        rituel={RITUEL}
+        microBatch={[]}
+        reserve={[{ cle: 'lundi', plat: 'Poulet-riz', conservation: 'frigo, 2 j max' }]}
+        semaine="2026-S39"
+      />,
+    );
+    setCheck('2026-S39', 'reserve:lundi:poulet-riz', true);
+    rerender(
+      <BatchView
+        rituel={RITUEL}
+        microBatch={[]}
+        reserve={[{ cle: 'lundi', plat: 'Poulet-riz', conservation: 'frigo, 2 j max' }]}
+        semaine="2026-S40"
+      />,
+    );
+    expect(document.querySelector('.reserve-etat')).toHaveTextContent('Disponible');
+  });
+
+  it('réserve : décocher remet l état à Disponible', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <BatchView
+        rituel={RITUEL}
+        microBatch={[]}
+        reserve={[{ cle: 'lundi', plat: 'Poulet-riz', conservation: 'frigo, 2 j max' }]}
+        semaine="2026-S39"
+      />,
+    );
+    const box = screen.getByRole('checkbox', { name: 'Lundi — Poulet-riz — marquer consommé' });
+    await user.click(box);
+    await user.click(box);
+    // setCheck conserve la clé à false (pas de suppression) — l'état visible est ce qui compte.
+    expect(getChecks('2026-S39')).toEqual({ 'reserve:lundi:poulet-riz': false });
+    expect(box).not.toBeChecked();
+    expect(container.querySelector('.reserve-etat')).toHaveTextContent('Disponible');
+  });
+
+  it('réserve : resynchronise sur syncVersion seul (sync remote)', () => {
+    const { rerender } = render(
+      <BatchView
+        rituel={RITUEL}
+        microBatch={[]}
+        reserve={[{ cle: 'lundi', plat: 'Poulet-riz', conservation: 'frigo, 2 j max' }]}
+        semaine="2026-S39"
+      />,
+    );
+    setCheck('2026-S39', 'reserve:lundi:poulet-riz', true);
+    rerender(
+      <BatchView
+        rituel={RITUEL}
+        microBatch={[]}
+        reserve={[{ cle: 'lundi', plat: 'Poulet-riz', conservation: 'frigo, 2 j max' }]}
+        semaine="2026-S39"
+        syncVersion={1}
+      />,
+    );
+    // La sync remote a écrit la coche (engine.ts) puis bumpé syncVersion :
+    // le render-phase reset relit le storage → l'UI reflète « Consommé ».
+    expect(document.querySelector('.reserve-etat')).toHaveTextContent('Consommé');
+  });
+
+  it('réserve : coche déjà présente au montage → Consommé', () => {
+    setCheck('2026-S39', 'reserve:lundi:poulet-riz', true);
+    render(
+      <BatchView
+        rituel={RITUEL}
+        microBatch={[]}
+        reserve={[{ cle: 'lundi', plat: 'Poulet-riz', conservation: 'frigo, 2 j max' }]}
+        semaine="2026-S39"
+      />,
+    );
+    expect(document.querySelector('.reserve-etat')).toHaveTextContent('Consommé');
+  });
+
+  it('« Lancer le rituel » est un bouton pleine largeur sous la timeline (plus de pilule dans le head)', () => {
     const { container } = render(<BatchView rituel={RITUEL} microBatch={MICRO} semaine="2026-S39" />);
     expect(container.querySelector('.lancer-wrap')).toBeNull();
-    const btn = screen.getByRole('button', { name: /Lancer le batch/ });
+    const btn = screen.getByRole('button', { name: /Lancer le rituel/ });
     expect(btn).toHaveClass('lancer-btn');
     const section = container.querySelector('.batch-section')!;
     expect(section.contains(btn)).toBe(true);
     const timeline = container.querySelector('.rituel-timeline')!;
     expect(timeline.compareDocumentPosition(btn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('mode guidé : une étape avec ref affiche la fiche recette dépliable', async () => {
+    const user = userEvent.setup();
+    render(
+      <BatchView rituel={RITUEL_AVEC_REF} recettes={[RECETTE_BATCH]} microBatch={[]} semaine="2026-S39" />,
+    );
+    await user.click(screen.getByRole('button', { name: /Lancer le rituel/ }));
+    const btn = screen.getByRole('button', { name: 'Voir la fiche recette' });
+    expect(btn).toHaveAttribute('aria-expanded', 'false');
+    await user.click(btn);
+    expect(btn).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('60 min · four 180°')).toBeInTheDocument();
+    expect(screen.getByText('Gratin : courgettes précuites + crème + fromage, 25 min.')).toBeInTheDocument();
+    expect(screen.getByText('Ingrédients')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Masquer la fiche' }));
+    expect(screen.queryByText('60 min · four 180°')).toBeNull();
+  });
+
+  it('deux étapes avec ref : la fiche repart fermée à chaque étape', async () => {
+    const user = userEvent.setup();
+    const RITUEL_DEUX_REFS = [{ ...RITUEL[0], ref: 'r7' }, { ...RITUEL[1], ref: 'r7' }, ...RITUEL.slice(2)];
+    render(
+      <BatchView rituel={RITUEL_DEUX_REFS} recettes={[RECETTE_BATCH]} microBatch={[]} semaine="2026-S39" />,
+    );
+    await user.click(screen.getByRole('button', { name: /Lancer le rituel/ }));
+    await user.click(screen.getByRole('button', { name: 'Voir la fiche recette' }));
+    await user.click(screen.getByRole('button', { name: 'Étape terminée →' }));
+    expect(screen.getByRole('button', { name: 'Voir la fiche recette' })).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('étape sans ref : pas de fiche recette', async () => {
+    const user = userEvent.setup();
+    render(
+      <BatchView rituel={RITUEL_AVEC_REF} recettes={[RECETTE_BATCH]} microBatch={[]} semaine="2026-S39" />,
+    );
+    await user.click(screen.getByRole('button', { name: /Lancer le rituel/ }));
+    await user.click(screen.getByRole('button', { name: 'Étape terminée →' }));
+    expect(screen.queryByRole('button', { name: /fiche recette/ })).toBeNull();
+  });
+
+  it('ref cassée : repli silencieux (pas de fiche, pas de crash)', async () => {
+    const user = userEvent.setup();
+    render(
+      <BatchView
+        rituel={[{ ...RITUEL[0], ref: 'r99' }]}
+        recettes={[RECETTE_BATCH]}
+        microBatch={[]}
+        semaine="2026-S39"
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: /Lancer le rituel/ }));
+    expect(screen.queryByRole('button', { name: /fiche recette/ })).toBeNull();
+    expect(document.querySelector('.guide-titre')).toHaveTextContent('Four à 180°');
   });
 });
 
