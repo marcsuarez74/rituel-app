@@ -1277,11 +1277,16 @@ describe('ProfileView', () => {
 describe('WeekBanner', () => {
   const meta = { semaine: '2026-S39', menu: 'A', du: '2026-09-21', au: '2026-09-27' };
 
-  it('titre court « Semaine 39 » + dates + pill menu brute', () => {
+  it('titre court « Semaine 39 » + dates courtes + pill cycle', () => {
     render(<WeekBanner meta={meta} onSwitcher={() => {}} />);
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Semaine 39');
-    expect(screen.getByText('21/09 → 27/09')).toBeInTheDocument();
-    expect(screen.getByText('A')).toHaveClass('menu-pill');
+    expect(screen.getByText('21 → 27 sept.')).toBeInTheDocument();
+    expect(screen.getByText('Cycle 3')).toHaveClass('cycle-pill');
+  });
+
+  it('id sans numéro de semaine : pas de pill cycle', () => {
+    render(<WeekBanner meta={{ ...meta, semaine: 'bizarr' }} />);
+    expect(screen.queryByText(/Cycle/)).not.toBeInTheDocument();
   });
 
   it('chevrons toujours visibles, désactivés aux bornes', () => {

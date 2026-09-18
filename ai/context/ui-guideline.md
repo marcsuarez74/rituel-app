@@ -37,7 +37,7 @@ Complète `design-system.md` (les tokens) avec les règles d'usage. Source de v�
 
 ## Onglet Cuisine (Courses / Menu / Batch)
 
-- **Pill du menu** : `.menu-pill` dans la bannière, à côté du `h1` — le menu courant reste visible sur les 3 sous-onglets (toujours un seul `h1`)
+- **Pill cycle** : `.cycle-pill` dans la bannière, à côté du `h1` — la position dans la rotation de 4 semaines (menus A/B/C/D) reste visible sur les 3 sous-onglets (toujours un seul `h1`)
 - **Menu v2 (réserve de recettes)** : 1 ligne repas = 1 occurrence cochable (`.menu-card`, coche « c'est fait »), aucun jour imposé — le .md reste la source, l'ordre du fichier est conseillé (batch/frigo d'abord, frais en dernier)
 - **Fiches recettes dépliables** : état local par carte (plusieurs ouvertes possibles), `aria-expanded` sur le bouton ET sur les chips de bases
 - **Tags de profil** : chaque repas porte un tag coloré (Marc / Mé / Famille / Batch) — jamais la couleur seule comme information

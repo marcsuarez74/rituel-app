@@ -56,7 +56,7 @@ test.describe('Import du cycle & navigation semaines', () => {
     // Le profil se referme, la semaine affichée est celle contenant aujourd'hui
     // (E2E-S1 : du plus ancien, contient toujours aujourd'hui).
     await expect(page.getByText('Semaine 1')).toBeVisible();
-    await expect(page.locator('.menu-pill')).toHaveText('A');
+    await expect(page.locator('.cycle-pill')).toHaveText('Cycle 1');
 
     // Les 2 semaines sont stockées
     const ids = await page.evaluate(
@@ -64,10 +64,10 @@ test.describe('Import du cycle & navigation semaines', () => {
     );
     expect(ids.sort()).toEqual(['E2E-S1', 'E2E-S2']);
 
-    // Navigation : suivante -> E2E-S2 (Menu Z), précédente -> retour, bornes
+    // Navigation : suivante -> E2E-S2 (Cycle 2), précédente -> retour, bornes
     await page.getByRole('button', { name: 'Semaine suivante' }).click();
     await expect(page.getByText('Semaine 2')).toBeVisible();
-    await expect(page.locator('.menu-pill')).toHaveText('Z');
+    await expect(page.locator('.cycle-pill')).toHaveText('Cycle 2');
     await expect(page.getByRole('button', { name: 'Semaine suivante' })).toBeDisabled();
     await page.getByRole('button', { name: 'Semaine précédente' }).click();
     await expect(page.getByText('Semaine 1')).toBeVisible();

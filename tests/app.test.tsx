@@ -171,7 +171,7 @@ describe('App shell', () => {
     render(<App />);
 
     expect(screen.getByText('Semaine 37')).toBeInTheDocument();
-    expect(screen.getByText('07/09 → 13/09')).toBeInTheDocument();
+    expect(screen.getByText('7 → 13 sept.')).toBeInTheDocument();
     expect(screen.queryByText(/Importer/)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Charger la semaine/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Changer de semaine/ })).not.toBeInTheDocument();
@@ -253,7 +253,7 @@ describe('Design system & sémantique', () => {
     initProfile();
     render(<App />);
 
-    const h1 = screen.getByRole('heading', { level: 1, name: 'Semaine 37' });
+    const h1 = screen.getByRole('heading', { level: 1, name: /Semaine 37/ });
     expect(h1).toHaveClass('week-title');
   });
 
@@ -455,10 +455,10 @@ describe('App — multi-semaines', () => {
     upsertWeek(raw39, parseWeeklyFile(raw39).data);
     render(<App />);
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Semaine 38');
-    expect(screen.getByText('B')).toBeVisible();
+    expect(screen.getByText('Cycle 2')).toBeVisible();
     await user.click(screen.getByRole('button', { name: 'Semaine suivante' }));
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Semaine 39');
-    expect(screen.getByText('C')).toBeVisible();
+    expect(screen.getByText('Cycle 3')).toBeVisible();
     // Dernière semaine : chevron suivant désactivé
     expect(screen.getByRole('button', { name: 'Semaine suivante' })).toBeDisabled();
     await user.click(screen.getByRole('button', { name: 'Semaine précédente' }));
@@ -475,6 +475,6 @@ describe('App — multi-semaines', () => {
     const contenu = fixtureSemaine('2026-S40', '2026-09-28', '2026-10-04', 'D', 'Boulettes');
     await user.upload(input, new File([contenu], '2026-S40-menu-d.md', { type: 'text/markdown' }));
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Semaine 40');
-    expect(screen.getByText('D')).toBeVisible();
+    expect(screen.getByText('Cycle 4')).toBeVisible();
   });
 });

@@ -1,6 +1,6 @@
 import type { WeekMeta } from '../lib/model';
 import type { SyncEtat } from '../lib/sync/engine';
-import { formatDayMonth, libelleSemaineCourt } from '../lib/dates';
+import { libelleSemaineCourt, numeroCycle, periodeCourte } from '../lib/dates';
 import { Icon } from './Icon';
 
 const ETIQUETTES: Record<Exclude<SyncEtat, 'off' | 'hors-foyer'>, string> = {
@@ -10,8 +10,10 @@ const ETIQUETTES: Record<Exclude<SyncEtat, 'off' | 'hors-foyer'>, string> = {
 };
 
 // Bannière compacte validée (maquette 2026-09-18) : chevrons toujours visibles
-// (grisés aux bornes), titre court tappable = changeur de semaine, dates + pill
-// menu, chip « Duo/Local » et avatar. Nettement plus compacte que l'ancienne bannière.
+// (grisés aux bornes), titre court tappable = changeur de semaine, pill
+// « Cycle N » inline après le titre (masquée sans numéro parsable), dates
+// courtes sur une ligne, chip « Duo/Local » et avatar. Nettement plus compacte
+// que l'ancienne bannière.
 export function WeekBanner({
   meta,
   onOpenProfile,
@@ -34,6 +36,7 @@ export function WeekBanner({
   onSyncTap?: () => void;
 }) {
   const foyer = !!syncEtat && syncEtat !== 'off' && syncEtat !== 'hors-foyer';
+  const cycle = numeroCycle(meta.semaine);
   return (
     <header className="week-banner">
       <button
@@ -43,7 +46,7 @@ export function WeekBanner({
         onClick={onPrev}
         disabled={!onPrev || !hasPrev}
       >
-        <Icon name="chev-left" size={16} />
+        <Icon name="chev-left" size={18} />
       </button>
       <div className="week-banner-main">
         <h1 className="week-title">
@@ -56,13 +59,9 @@ export function WeekBanner({
           >
             {libelleSemaineCourt(meta.semaine)}
           </button>
+          {cycle != null && <span className="cycle-pill">Cycle {cycle}</span>}
         </h1>
-        <div className="week-dates-row">
-          <span className="week-dates">
-            {formatDayMonth(meta.du)} → {formatDayMonth(meta.au)}
-          </span>
-          <span className="menu-pill">{meta.menu}</span>
-        </div>
+        <p className="week-dates">{periodeCourte(meta.du, meta.au)}</p>
         {meta.titre && <p className="muted week-titre-md">{meta.titre}</p>}
       </div>
       <button
@@ -72,7 +71,7 @@ export function WeekBanner({
         onClick={onNext}
         disabled={!onNext || !hasNext}
       >
-        <Icon name="chev-right" size={16} />
+        <Icon name="chev-right" size={18} />
       </button>
       <button
         type="button"
@@ -85,7 +84,7 @@ export function WeekBanner({
       </button>
       {onOpenProfile && (
         <button type="button" className="profile-icon-btn" aria-label="Mon profil" onClick={onOpenProfile}>
-          <Icon name="user" size={22} />
+          <Icon name="user" size={16} />
         </button>
       )}
     </header>
