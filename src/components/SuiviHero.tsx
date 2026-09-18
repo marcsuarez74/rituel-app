@@ -82,7 +82,7 @@ export function SuiviHero({ profile }: { profile: UserProfile }) {
                 {restants > 0
                   ? `dans ${restants} jours`
                   : restants === 0
-                    ? "aujourd'hui"
+                    ? 'aujourd’hui'
                     : 'dépassée'}
               </b>
             </p>

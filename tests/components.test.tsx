@@ -996,7 +996,7 @@ describe('SuiviHero — carte héro objectif', () => {
         profile={profileV2('marc', { poidsObjectif: 74, objectif: { type: 'perte', echeance: '2026-09-09' } })}
       />,
     );
-    expect(screen.getByText(/Échéance :/)).toHaveTextContent("aujourd'hui");
+    expect(screen.getByText(/Échéance :/)).toHaveTextContent('aujourd’hui');
     expect(document.querySelector('.suivi-hero-echeance')).not.toHaveClass('late');
   });
 
