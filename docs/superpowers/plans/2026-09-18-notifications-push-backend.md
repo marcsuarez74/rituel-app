@@ -1,5 +1,11 @@
 # Notifications push — plan phase 2 (backend)
 
+> **Verdict (2026-09-18) — phase 2 exécutée et validée :**
+> - 17/17 étapes faites. Table + RLS posées par Marc (SQL Editor) ; 3 fonctions déployées ; cron `push-rappels` actif (pg_cron + pg_net activés via Dashboard).
+> - Validations réelles : register 200/400/401 · notifier `envoyes:1` sur le Mac + auto-exclusion `0` + toggle OFF `0` · rappels `1` puis `0` (dédup jour/type) · purge 404 (row supprimée) · souscription corrompue → skip sans purge.
+> - **Écart au plan** : `webpush.ts` n'est pas resté inchangé — une souscription avec clés illisibles faisait lever `envoyerPush` (400 côté appelant). Fix : `envoyerPush` ne lève jamais (statut 0), les 404/410 seuls purgent (commit `2660d47`).
+> - Pièges : pg_cron s'active via Dashboard (pas SQL) ; `fr-CA` formate l'heure `08 h 03` → `heure` vient de `fr-FR` (fix avant commit) ; token foyer fabriqué via `connexion-foyer` (desktop sans sync).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Backend complet des notifications push : table `push_subscriptions` + 3 edge functions (`push-register`, `push-notifier`, `push-rappels`) + cron pg_cron, validées de bout en bout par curl (notification réelle sur la souscription desktop).
@@ -31,7 +37,7 @@ Note : `supabase/` est hors tsconfig — les edge functions ne passent ni par ty
 **Files:**
 - Create: `supabase/migrations/0002_push_subscriptions.sql`
 
-- [ ] **Step 1: Écrire la migration** (pattern RLS calqué sur `0001_sync_init.sql`)
+- [x] **Step 1: Écrire la migration** (pattern RLS calqué sur `0001_sync_init.sql`)
 
 ```sql
 -- Rituel — souscriptions push (spec 2026-09-18). Exécutable dans l'éditeur SQL Supabase.
@@ -62,7 +68,7 @@ create policy foyer_push_subscriptions on push_subscriptions for all
 
 (Pas de publication realtime — la table ne sert qu'aux fonctions serveur.)
 
-- [ ] **Step 2: Commit + exécution réelle (avec Marc)**
+- [x] **Step 2: Commit + exécution réelle (avec Marc)**
 
 ```bash
 git add supabase/migrations/0002_push_subscriptions.sql
@@ -79,7 +85,7 @@ Puis Marc colle le contenu du fichier dans **SQL Editor** (Supabase Dashboard) �
 - Create: `supabase/functions/_shared/jwt.ts`
 - Create: `supabase/functions/_shared/rappels.ts`
 
-- [ ] **Step 1: `supabase/functions/_shared/jwt.ts`**
+- [x] **Step 1: `supabase/functions/_shared/jwt.ts`**
 
 ```ts
 // Décodage du JWT foyer : la signature est déjà vérifiée par Supabase
@@ -106,7 +112,7 @@ export const foyerDuJwt = (req: Request): string | null => {
 };
 ```
 
-- [ ] **Step 2: `supabase/functions/_shared/rappels.ts`** (logique pure — aucune API Deno)
+- [x] **Step 2: `supabase/functions/_shared/rappels.ts`** (logique pure — aucune API Deno)
 
 ```ts
 // Logique pure des rappels : calcul "du" en fuseau local (Intl), messages, validation.
@@ -157,7 +163,7 @@ export const localeCourante = (tz: string, maintenant: Date): Locale => {
     new Intl.DateTimeFormat('fr-CA', { timeZone: tz, ...opts });
   return {
     date: f({ year: 'numeric', month: '2-digit', day: '2-digit' }).format(maintenant),
-    heure: f({ hour: '2-digit', minute: '2-digit', hour12: false }).format(maintenant),
+    heure: new Intl.DateTimeFormat('fr-FR', { timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false }).format(maintenant), // fr-CA : '08 h 03'
     jour: JOURS[f({ weekday: 'long' }).format(maintenant)] ?? 0,
   };
 };
@@ -182,7 +188,7 @@ export const rappelsDus = (
 };
 ```
 
-- [ ] **Step 3: Vecteurs (script node temporaire, non commité)** — `/tmp/verify-rappels.mjs` :
+- [x] **Step 3: Vecteurs (script node temporaire, non commité)** — `/tmp/verify-rappels.mjs` :
 
 ```js
 // Reproduit _shared/rappels.ts (copie) et vérifie les cas limites.
@@ -192,7 +198,7 @@ const estRappel = (v) => !!v && typeof v === 'object' && TYPES.includes(v.type) 
   Array.isArray(v.jours) && v.jours.every((j) => Number.isInteger(j) && j >= 0 && j <= 6) &&
   typeof v.heure === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(v.heure);
 const localeCourante = (tz, maintenant) => {
-  const f = (o) => new Intl.DateTimeFormat('fr-CA', { timeZone: tz, ...o });
+  const f = (o) => new Intl.DateTimeFormat('fr-CA', { timeZone: tz, ...o }); // fr-CA : date ISO
   return {
     date: f({ year: 'numeric', month: '2-digit', day: '2-digit' }).format(maintenant),
     heure: f({ hour: '2-digit', minute: '2-digit', hour12: false }).format(maintenant),
@@ -222,7 +228,7 @@ check('rappel valide accepté', true, estRappel(r));
 process.exit(ok ? 0 : 1);
 ```
 
-- [ ] **Step 4: Vérifier les vecteurs puis commit**
+- [x] **Step 4: Vérifier les vecteurs puis commit**
 
 ```bash
 node /tmp/verify-rappels.mjs   # attendu : 7 × ✓, exit 0
@@ -237,7 +243,7 @@ git commit -m "feat: modules partagés push (jwt + logique rappels)"
 **Files:**
 - Create: `supabase/functions/push-register/index.ts`
 
-- [ ] **Step 1: Écrire la fonction**
+- [x] **Step 1: Écrire la fonction**
 
 ```ts
 // Edge function — enregistrement d'une souscription push. JWT foyer requis
@@ -295,13 +301,13 @@ Deno.serve(async (req) => {
 });
 ```
 
-- [ ] **Step 2: Deploy (verify_jwt ON — signature vérifiée par la plateforme)**
+- [x] **Step 2: Deploy (verify_jwt ON — signature vérifiée par la plateforme)**
 
 ```bash
 supabase functions deploy push-register --project-ref dkprqbfpjspvknbjwgcg
 ```
 
-- [ ] **Step 3: Test réel par curl (avec Marc)**
+- [x] **Step 3: Test réel par curl (avec Marc)**
 
 JWT foyer : console du navigateur sur l'app en prod → `localStorage.getItem('sportapp:sync:token')` (le token de session sync, JWT foyer). Puis :
 
@@ -321,7 +327,7 @@ curl -s -o /dev/null -w "%{http_code}\n" -X POST "https://dkprqbfpjspvknbjwgcg.s
 
 Attendu : `401`.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add supabase/functions/push-register/index.ts
@@ -335,7 +341,7 @@ git commit -m "feat: edge function push-register (JWT foyer, upsert par device)"
 **Files:**
 - Create: `supabase/functions/push-notifier/index.ts`
 
-- [ ] **Step 1: Écrire la fonction**
+- [x] **Step 1: Écrire la fonction**
 
 ```ts
 // Edge function — événements du foyer. JWT foyer requis.
@@ -413,7 +419,7 @@ Deno.serve(async (req) => {
 });
 ```
 
-- [ ] **Step 2: Deploy + test réel de bout en bout (avec Marc)**
+- [x] **Step 2: Deploy + test réel de bout en bout (avec Marc)**
 
 ```bash
 supabase functions deploy push-notifier --project-ref dkprqbfpjspvknbjwgcg
@@ -431,7 +437,7 @@ curl -s -X POST "https://dkprqbfpjspvknbjwgcg.supabase.co/functions/v1/push-noti
 
 Attendu : `{"envoyes":1}` **ET la notification « ⚖️ Nouvelle pesée / Mélanie a ajouté une pesée : 82,4 kg » sur le Mac**. Re-test avec `"device_id":"test-desktop"` → `{"envoyes":0}` (auto-exclusion ✓) et avec toggle désactivé → `{"envoyes":0}`.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add supabase/functions/push-notifier/index.ts
@@ -445,7 +451,7 @@ git commit -m "feat: edge function push-notifier (événements foyer, exclusion 
 **Files:**
 - Create: `supabase/functions/push-rappels/index.ts`
 
-- [ ] **Step 1: Écrire la fonction**
+- [x] **Step 1: Écrire la fonction**
 
 ```ts
 // Edge function — rappels planifiés, appelée par pg_cron (*/5 min).
@@ -515,7 +521,7 @@ Deno.serve(async (req) => {
 });
 ```
 
-- [ ] **Step 2: Secret + deploy + job cron (avec Marc)**
+- [x] **Step 2: Secret + deploy + job cron (avec Marc)**
 
 ```bash
 supabase secrets set CRON_SECRET="$(openssl rand -hex 24)" --project-ref dkprqbfpjspvknbjwgcg
@@ -544,14 +550,14 @@ select cron.schedule(
 );
 ```
 
-- [ ] **Step 3: Test réel (avec Marc)**
+- [x] **Step 3: Test réel (avec Marc)**
 
 1. Re-register la subscription desktop avec un rappel dû **dans 1-2 min** (config `{ "rappels": [{ "type": "rituel", "jours": [0,1,2,3,4,5,6], "heure": "HH:MM(dans 2 min)" }] }`).
 2. Attendre le prochain tick cron (≤ 5 min) — ou déclencher manuellement : `curl -s -X POST ".../functions/v1/push-rappels" -H "Authorization: Bearer <CRON_SECRET>"` → `{"envoyes":1}` **ET notification « 🧅 C’est l’heure du rituel du dimanche »**.
 3. Re-appel immédiat → `{"envoyes":0}` (dédup du jour ✓).
 4. Sans secret → 401.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add supabase/functions/push-rappels/index.ts
