@@ -1020,6 +1020,12 @@ describe('semaine-exemple.md — la sample réelle (v2, semaine courante)', () =
     expect(data.reserve?.length).toBeGreaterThanOrEqual(4);
     expect(warnings).toEqual([]);
   });
+
+  it('porte les refs recette batch v4 (tâches, étapes, micro-batch) — 0 warning', () => {
+    expect(data.batch.find((t) => t.label === 'Egg muffins ×10')?.ref).toBeTruthy();
+    expect(data.rituel?.filter((e) => e.ref).length).toBeGreaterThanOrEqual(2);
+    expect(data.microBatch?.some((m) => m.duree && m.quantite && m.ref)).toBe(true);
+  });
 });
 
 describe('Batch v3 — production, termine, micro détail, Réserve', () => {

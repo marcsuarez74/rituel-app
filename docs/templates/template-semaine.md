@@ -14,6 +14,10 @@ et src/lib/parse.ts. Règles absolues :
   libellé, le renommer perd l'état.
 - Refs recette : « → slug » = slugify du titre exact (ex. « R8 · Chili con
   carne + riz » → r8-chili-con-carne-riz).
+- Refs recette dans ## Batch : « → slug » en fin de tâche `- [ ]` et d'étape du
+  rituel, et sur la quantité du micro-batch — la ref vise un slug de
+  ## Recettes ; sans correspondance le texte reste dans le libellé. La ref
+  n'entre JAMAIS dans l'id de coche : l'ajouter ou la retirer conserve l'état.
 - Portions recette en MESURES MAISON (pièces, poignées, c. à soupe, louches) ;
   les grammes vont entre parenthèses pour caler l'œil : « 1 poignée de riz
   (~150 g cuit) ». Jamais de portion qui exige une balance.
@@ -94,17 +98,18 @@ bases: {{B#, B#}}
 
 ### Rituel dimanche
 - production: {{ce que le batch produit + conservation — ex. « 2 boîtes frigo · 1 boîte congélateur — le riz : 2 jours max au frigo »}}
-- 0-5 min · Four à 180° — egg muffins ×10 lancés, on fait le reste
-- 5-30 min · Cuissons en double — {{dîner du soir ×2 + féculent ×2 → boîte lundi}}
+- 0-5 min · Four à 180° — egg muffins ×10 lancés, on fait le reste → {{slug-recette si ref, ex. R7}}
+- 5-30 min · Cuissons en double — {{dîner du soir ×2 + féculent ×2 → boîte lundi}} → {{slug-recette si ref}}
 - 30-35 min · Œufs durs ×6-8 — boxes de la semaine pour Mél
 - 35-50 min · Légumes + vinaigrette — laver, couper, ranger
 - 50-60 min · Montage des boxes — boîte lundi Marc + 1 box keto Mél
 - termine: {{message de fin du mode guidé — ex. « 4 boîtes prêtes — la semaine est servie. Prochain rituel : dimanche prochain, 13h45. »}}
 
 ### Micro-batch
-- lundi: {{...}} | {{détail optionnel — ex. « 10 min · la boîte de mardi passe au frigo »}}
-- mardi: {{...}}
-<!-- Uniquement les jours du menu ; samedi = œufs durs ; un seul item par jour ; le suffixe « | détail » est optionnel -->
+- lundi: {{quoi}} | {{durée — ex. 10 min}} | {{quantité → slug-recette si ref — ex. 2 boîtes → R7}} | {{détail optionnel}}
+- mardi: {{...}} | {{détail optionnel}}
+<!-- Uniquement les jours du menu ; samedi = œufs durs ; un seul item par jour ;
+la durée et la quantité sont optionnelles (v1 « | détail » seul acceptée) -->
 
 ### Réserve
 - lundi: {{plat}} | {{conservation — ex. « frigo, 2 j max · réchauffage 2 min bien chaud »}}
@@ -112,7 +117,7 @@ bases: {{B#, B#}}
 - mel: {{plat}} | {{la clé « mel » = la box keto de Mélanie}}
 <!-- Une ligne par plat stocké ; clé = jour (lundi..dimanche) ou « mel » ; jamais de déduction par l'app -->
 
-- [ ] Egg muffins ×10
+- [ ] Egg muffins ×10 → {{slug-recette si ref, ex. R7}}
 - [ ] {{tâches du gros batch (3-5)}}
 
 ## Marc

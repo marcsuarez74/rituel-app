@@ -402,6 +402,8 @@ describe("Semaine d'exemple — contenu réel (Menu A, S37)", () => {
 
     expect(data.batch).toHaveLength(5);
     expect(data.batch[0].label).toBe('Egg muffins ×10');
+    expect(data.batch[0].ref).toBe('R7');
+    expect(data.rituel?.filter((e) => e.ref).length).toBeGreaterThanOrEqual(2);
 
     expect(data.profiles.marc.cibles).toHaveLength(4);
     expect(data.profiles.marc.seances).toHaveLength(6);

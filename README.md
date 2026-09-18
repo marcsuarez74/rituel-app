@@ -66,20 +66,20 @@ image: https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80&auto
 ## Batch
 ### Rituel dimanche
 - production: 2 boîtes frigo · 1 boîte congélateur · 1 sauce · 6 œufs durs — le riz : 2 jours au frigo max
-- 0-5 min · Four à 180° — egg muffins ×10 lancés, on fait le reste
-- 5-30 min · Cuissons en double — dîner du soir ×2 + féculent ×2 → boîte lundi
+- 0-5 min · Four à 180° — egg muffins ×10 lancés, on fait le reste → R7
+- 5-30 min · Cuissons en double — dîner du soir ×2 + féculent ×2 → boîte lundi → R1
 - termine: 4 boîtes prêtes — la semaine est servie.
 
 ### Micro-batch
-- lundi: doubler le plat (boîtes mar/mer) | 10 min · la boîte de mardi passe au frigo
+- lundi: doubler le plat (boîtes mar/mer) | 10 min | 2 boîtes → R1 | la boîte de mardi passe au frigo
 - mardi: doubler la sauce + courgettes en julienne (5 min le soir)
 
 ### Réserve
 - lundi: Boîte dinde-quinoa | frigo, 2 j max
 - mel: Box keto (œufs durs + crudités) | à monter au rituel
 
-- [ ] Egg muffins ×10
-- [ ] Doubler dinde + quinoa → boîte lundi Marc
+- [ ] Egg muffins ×10 → R7
+- [ ] Doubler dinde + quinoa → boîte lundi Marc → R7
 
 ## Marc
 ### Cibles
@@ -108,10 +108,10 @@ Règles du format :
   - `score:` (optionnel, entier 0-10 — Score n/10 en barre segmentée)
   - `image:` (optionnel, URL https — photo du plat, mise en cache PWA après 1ʳᵉ vue)
 - `## Bases` (optionnel) : une `### B4 · Nom` par base + un texte court (technique réutilisable).
-- `## Batch` : la checklist `- [ ]`, plus trois blocs optionnels — `### Rituel dimanche` (étapes `- <créneau> · <label> — <détail>`, cochables en timeline, plus les lignes-clés `- production:` et `- termine:` — badge de durée calculé par l'app), `### Micro-batch` (`- jour: quoi` avec suffixe optionnel ` | détail`, carrousel horizontal) et `### Réserve` (`- <jour|mel>: <plat> | <conservation>`, liste des plats stockés).
+- `## Batch` : la checklist `- [ ]`, plus trois blocs optionnels — `### Rituel dimanche` (étapes `- <créneau> · <label> — <détail>`, cochables en timeline, plus les lignes-clés `- production:` et `- termine:` — badge de durée calculé par l'app), `### Micro-batch` (`- jour: quoi | durée | quantité → slug | détail` — la forme v1 ` | détail` reste acceptée, carrousel horizontal) et `### Réserve` (`- <jour|mel>: <plat> | <conservation>`, plats stockés, état disponible/consommé cochable). Une référence `→ slug` en fin de tâche ou d'étape (ou sur la quantité du micro-batch) lie l'étape à une recette : le mode guidé affiche alors sa fiche.
 - Puis `## Marc` et `## Melanie` (accents acceptés — `Mélanie` == `Melanie`), chacune avec les sous-sections `### Cibles`, `### Séances`, `### Rappels`.
 - Les items `- [ ]` (batch, rituel, séances) sont cochables dans l'app.
-- **Ids de coches stables**, dérivés du contenu : `courses:…`, `batch:…`, `batch:rituel:…`, `seances:…` — renommer un item = perdre son état coché.
+- **Ids de coches stables**, dérivés du contenu : `courses:…`, `batch:…`, `batch:rituel:…`, `reserve:…`, `seances:…` — renommer un item = perdre son état coché. La ref `→ slug` n'entre jamais dans l'id : l'ajouter ou la retirer conserve l'état.
 - **Rétrocompatible** : une semaine v1 (sans Recettes/Bases/Rituel/Micro-batch) s'affiche comme avant — les blocs optionnels n'apparaissent que s'ils existent.
 
 Exemple canonique complet : [`src/assets/semaine-exemple.md`](src/assets/semaine-exemple.md).
@@ -142,14 +142,14 @@ utilisée — le slug dérive du libellé, le renommer perd l'état cochée.
 
 ## L'écran Cuisine
 
-Trois sous-onglets partagés (Courses · Menu · Batch), en segmented control (onglet actif en lime) :
+Trois sous-onglets partagés (Courses · Menu · Mon Rituel), en segmented control (onglet actif en lime) :
 
 - **Bannière** : le menu courant (« Menu A ») reste visible en pill à côté du titre de semaine.
 - **Menu** : une barre d'onglets par **recette** (les 7 dîners du fichier + 🍱 Déjeuners) — aucun jour affiché, l'ordre du fichier est l'ordre conseillé (batch/frigo d'abord, frais ensuite) ; l'onglet du jour courant est présélectionné. La progression lit « Dîners X/N · Boxes X/N ».
 - **Onglet recette** : la fiche complète d'un bloc (temps, kcal, Score n/10, fraîcheur), « Qui mange quoi » (dîner famille + adaptation keto de Mél), « Portions — par personne » en **mesures maison** (pièces, poignées, c. à soupe, louches — les grammes entre parenthèses ne servent qu'à caler l'œil), la préparation (ingrédients « pour 4 », étapes, bases cliquables), le batch du jour en info, et la coche unique « C'est fait — dîner fini » (l'onglet se grise, nom barré + ✓).
 - **Déjeuners dynamiques** : une paire de boxes devient « prête » quand la recette qui la produit (`→ R#` sur la ligne déjeuner) est cochée ; verrouillée sinon (« débloquée quand … est fait ») ; une box sans ref est toujours disponible. Une coche par paire (« Boxes faites ») coche les lignes Marc + Mél du jour.
 - **Courses** : compteurs d'items par rayon, et le rayon `### Keto` devient un encadré dédié en fin de liste.
-- **Batch** : le rituel du dimanche s'affiche en **timeline cochable**, le micro-batch en **carrousel** horizontal par jour.
+- **Mon Rituel** : le rituel du dimanche s'affiche en **timeline cochable** et se lance en **mode guidé** — chaque étape portant une ref recette déplie sa fiche (ingrédients, étapes, temps, four) ; le micro-batch en **carrousel** enrichi (durée, quantité, recette liée) ; la réserve affiche son état (disponible/consommé). Un soir sans dîner prévu déclenche l'encart « Sors la réserve » dans le Menu.
 
 ## Développement
 
