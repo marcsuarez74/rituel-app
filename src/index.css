@@ -2108,12 +2108,14 @@ progress {
 }
 .onb-skip {
   min-height: 48px;
-  margin-left: auto;
   padding: 0 var(--sp-12);
   border: none;
   background: none;
-  color: var(--muted);
+  color: color-mix(in srgb, var(--muted) 70%, var(--text));
   font: 600 var(--fs-sec) Poppins, sans-serif;
+}
+.onb-skip:active {
+  transform: scale(0.97);
 }
 .onb-back {
   min-height: 48px;

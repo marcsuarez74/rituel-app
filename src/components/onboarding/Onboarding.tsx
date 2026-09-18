@@ -217,8 +217,8 @@ export function Onboarding({
         return;
       }
     }
-    const kg = poids ? Number.parseFloat(poids.replace(',', '.')) : undefined;
-    if (poids && (kg === undefined || kg < 30 || kg > 250)) {
+    const kg = poids ? Number.parseFloat(poids.replace(',', '.')) : Number.NaN;
+    if (poids && (Number.isNaN(kg) || kg < 30 || kg > 250)) {
       setError('Poids invalide : entre 30 et 250 kg.');
       return;
     }
@@ -247,7 +247,7 @@ export function Onboarding({
       ...(repas != null ? { repasJour: repas } : {}),
     };
     saveProfile(profile);
-    if (kg != null) addWeight(id, todayISO(), kg);
+    if (!Number.isNaN(kg)) addWeight(id, todayISO(), kg);
     // Sync active sans session foyer (première installation) : étape 6
     // optionnelle avant de terminer — sinon on termine comme avant.
     if (syncActif() && !lireSession()) {

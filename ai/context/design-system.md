@@ -84,7 +84,7 @@ Padding standard des cartes : `var(--sp-16)`. Gouttières page : `var(--sp-16)`.
 | `.onboarding-dots` / `.onboarding-dot-active` | progression 5 étapes | pill 12→22px, active = `--accent` |
 | `.onboarding-card-marc` / `-melanie` | choix du profil | dégradés 135deg (basilic `#3e7a46`→`#2e5d35` texte blanc ; citron `#f2dc7b`→`#d9bc4f` texte encre) + glow coloré, émoji 38px, prénom 19px/700, active `scale(0.97)` |
 | `.onboarding-cta` (+ `.onb-full`) | CTA final « C'est parti ! 🚀 » (étape 5) | fond `--accent`, texte blanc, 48px, glow, pleine largeur |
-| `.onb-btnrow` / `.onb-next` / `.onb-back` | navigation entre les étapes 2-5 (retour seul à l'étape 5) | row flex ; next = pill basilic (flex: 1) texte blanc 48px ; back = ghost bordure `--border` 48px — ≥ 48px partout |
+| `.onb-btnrow` / `.onb-next` / `.onb-back` / `.onb-skip` | navigation entre les étapes 2-5 (Passer aux étapes 2-4, retour seul à l'étape 5) | row flex ; next = pill basilic (flex: 1) texte blanc 48px ; back = ghost bordure `--border` 48px ; skip = tertiaire discret « Passer », texte muted mixé (`color-mix` ≥ 4,5:1), 48px — ≥ 48px partout |
 | `.onb-label` / `.onb-hint` / `.onb-row2` | étiquette de bloc, hint muted et row 2 champs (personnes / repas par jour — onboarding étape 5 et Profil) | label 12px/700 uppercase muted ; row2 = flex, chaque champ `flex: 1` + `min-width: 0` |
 | `.profil-back` | navigation retour écran Profil | ghost, ≥ 48px (encre 14px/600) |
 | `.btn` | action principale | fond `--accent`, texte blanc, 700, min-height 48 px, active `scale(0.97)` |

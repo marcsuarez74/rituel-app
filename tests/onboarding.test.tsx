@@ -547,4 +547,29 @@ describe('Onboarding — CTA « Passer » (tout sautable sauf l étape 1)', () =
     expect(onDone.mock.calls[0][0]).not.toHaveProperty('taille');
     expect(getWeights('melanie')).toEqual([]);
   });
+
+  it('migration tout sautée : aucune donnée perdue (poids objectif, taille, pesée du jour)', async () => {
+    const legacy: ProfilLegacy = { id: 'marc', age: 41, taille: 178, poidsObjectif: 74 };
+    addWeight('marc', '2026-09-01', 79.1);
+    addWeight('marc', '2026-09-09', 78.4);
+    const user = userEvent.setup();
+    render(<Onboarding onDone={onDone} prefill={legacy} />);
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    soumettre();
+
+    await waitFor(() =>
+      expect(onDone).toHaveBeenCalledWith(
+        expect.objectContaining({ taille: 178, poidsObjectif: 74 }),
+      ),
+    );
+    // Rien n'est perdu : les 2 pesées préexistantes + la pesée du jour
+    // (poids prérempli de la migration) — addWeight upsert par date, tri asc.
+    expect(getWeights('marc')).toEqual([
+      { date: '2026-09-01', kg: 79.1 },
+      { date: '2026-09-09', kg: 78.4 },
+      { date: todayISO(), kg: 78.4 },
+    ]);
+  });
 });
