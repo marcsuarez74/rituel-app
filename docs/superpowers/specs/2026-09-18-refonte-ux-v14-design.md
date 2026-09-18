@@ -153,7 +153,7 @@ Rituel part de 2 utilisateurs (Marc & Mélanie) mais doit accueillir d'autres fo
 ## 6. Détails transversaux
 
 - **Alignement des icônes** : audit de tous les patterns icône+texte (`← Retour`, tuiles, actions, tabs). Standard : `display:flex; align-items:center; gap:6px`, icônes 18 px dans un boîte de 24 px, texte `line-height` aligné. Correctif ciblé sur `.profil-back` et les `.action` du hub
-- **Token nouveau** : `--accent-surface` (teint basilic ~12 %, candidat `#e2ede1` / foncé `#d4e4d2`) déclaré dans `:root` — utilisé par les fonds d'accent discrets ; couvert par `tests/css-tokens.test.ts`
+- **Tokens nouveaux** : `--citron-surface` (`#fdf6d8`) et `--citron-line` (`#e3c94f`) — les couleurs du traitement « pot citron » (items rituel des courses). (Le `--accent-surface` initialement envisagé pour les tuiles est abandonné : les tuiles validées sont blanches.)
 - **Citron = rituel** : le citron (`--accent-2`) devient sémantiquement « ce qui nourrit le rituel » (zone rituel courses, bourgeon anneau, coche du bloc). La carte budget (qui l'utilisait) disparaît de la page — pas de conflit
 - Les émojis restent confinés aux salutations/onboarding (règle AGENTS.md) ; l'UI passe par `Icon.tsx` — les vignettes rayon et pots utilisent les miniatures existantes ou de nouvelles icônes SVG
 
