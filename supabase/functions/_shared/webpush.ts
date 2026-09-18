@@ -94,21 +94,22 @@ export const envoyerPush = async (
     await crypto.subtle.deriveBits({ name: 'ECDH', public: cleDest }, eph.privateKey, 256),
   );
 
-  // 2. HKDF (RFC 8291 §3.3) : prk_key (32) puis cek (16) + nonce (12)
+  // 2. Dérivation des clés (RFC 8291 §3.4, validée contre les vecteurs Annexe A) :
+  //    étape 1 : HKDF(salt=auth_secret, IKM=ecdh_secret, key_info, 32) → IKM
+  //    étape 2 (RFC 8188) : HKDF(salt, IKM, cek_info/nonce_info) → cek + nonce
   const salt = crypto.getRandomValues(new Uint8Array(16));
-  const ikm = concat(b64urlVersBytes(sub.keys.auth), secretPartage);
   const infoPrk = concat(
     enc.encode('WebPush: info'),
     new Uint8Array([0]),
-    b64urlVersBytes(sub.keys.p256dh),
-    pubEphemere,
+    b64urlVersBytes(sub.keys.p256dh), // ua_public
+    pubEphemere, // as_public
   );
-  const prk = await hkdf(ikm, salt, infoPrk, 32);
-  const cek = await hkdf(prk, salt, enc.encode('Content-Encoding: aes128gcm\0'), 16);
-  const nonce = await hkdf(prk, salt, enc.encode('Content-Encoding: nonce\0'), 12);
+  const ikm = await hkdf(secretPartage, b64urlVersBytes(sub.keys.auth), infoPrk, 32);
+  const cek = await hkdf(ikm, salt, enc.encode('Content-Encoding: aes128gcm\0'), 16);
+  const nonce = await hkdf(ikm, salt, enc.encode('Content-Encoding: nonce\0'), 12);
 
-  // 3. AES-128-GCM : padding (2 octets, longueur 0) | payload
-  const clair = concat(new Uint8Array([0, 0]), enc.encode(payload));
+  // 3. AES-128-GCM : plaintext = payload || 0x02 (délimiteur de padding, à la fin)
+  const clair = concat(enc.encode(payload), new Uint8Array([0x02]));
   const cleAes = await crypto.subtle.importKey('raw', cek as BufferSource, 'AES-GCM', false, ['encrypt']);
   const chiffre = new Uint8Array(
     await crypto.subtle.encrypt(
