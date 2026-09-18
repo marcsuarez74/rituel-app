@@ -38,9 +38,12 @@ au champignons » vient du menu/`## Recettes`, pas du `check_id`).
 
 | Événement local | Push reçu par l'autre téléphone |
 |---|---|
-| Coche dîner (`menu:%` passe à fait) | « C'est prêt ! Mélanie a fait la recette "Omelette au champignons" » |
-| Pesée ajoutée | « Marc a ajouté une pesée : 82,4 kg » |
-| Dépense réelle ajoutée | « Mélanie a fait les courses : 23,40 € chez Lidl » |
+| Coche dîner (`menu:%` passe à fait) | « 🍳 C'est prêt ! Mélanie a fait la recette "Omelette au champignons" » |
+| Pesée ajoutée | « ⚖️ Marc a ajouté une pesée : 82,4 kg » |
+| Dépense réelle ajoutée | « 🛒 Mélanie a fait les courses : 23,40 € chez Lidl » |
+
+NB : les émojis des notifications sont rendus par l'OS — hors périmètre de la
+règle « pas d'émoji dans l'UI » d'AGENTS.md (qui concerne le DOM de l'app).
 
 - Les coches de courses produit par produit ne déclenchent **rien** (anti-spam
   en Mode magasin) — la dépense conclut la visite (granularité validée).
@@ -54,8 +57,9 @@ au champignons » vient du menu/`## Recettes`, pas du `check_id`).
 Chaque appareil configure une liste de rappels `{ type, jours: 0-6 (0=dim.),
 heure: 'HH:MM' }` avec type parmi `seance` | `pesee` | `rituel`. Le cron
 compare en **fuseau du téléphone** (`tz` IANA stockée avec la subscription,
-comparaison via Intl). Un push « C'est l'heure de ta séance » (texte selon le
-type) — un seul envoi par créneau (dédup par `dernier_envoye` sur la row).
+comparaison via Intl). Un push selon le type — « 💪 C'est l'heure de ta
+séance », « ⚖️ C'est l'heure de ta pesée », « 🧅 C'est l'heure du rituel du
+dimanche » — un seul envoi par créneau (dédup par `dernier_envoye` sur la row).
 
 ## Backend Supabase
 
