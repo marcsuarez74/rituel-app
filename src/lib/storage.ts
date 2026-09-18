@@ -171,6 +171,7 @@ const normaliseChampsLibres = (list: string[]): string[] => {
 export const saveProfile = (profile: UserProfile): void => {
   const net: UserProfile = {
     ...profile,
+    ...(profile.prenom !== undefined ? { prenom: profile.prenom.trim() } : {}),
     ...(profile.magasin !== undefined ? { magasin: profile.magasin.trim() } : {}),
     ...(profile.preferences !== undefined
       ? { preferences: normaliseChampsLibres(profile.preferences) }
@@ -187,20 +188,22 @@ export const removeProfile = (): void => {
 const OBJECTIF_TYPES_VALIDES = ['perte', 'affiner', 'masse', 'maintien'];
 const REGIMES_VALIDES = ['keto', 'vegetarien', 'vegan', 'sans-gluten', 'aucun'];
 
-// Garde de forme du profil v2.1 — partagée entre la lecture locale (loadProfile)
+// Garde de forme du profil v2.2 — partagée entre la lecture locale (loadProfile)
 // et le merge remote (engine) : un payload invalide n'est jamais persisté.
+// dateNaissance/taille restent typés strictement quand présents ; prenom et
+// poidsObjectif sont lâchés champ par champ à la reconstruction s'ils sont illégaux.
 export const estProfilValide = (v: unknown): v is UserProfile => {
   const isNum = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
   const isStr = (x: unknown): x is string => typeof x === 'string';
   const optionalNum = (x: unknown): boolean => x === undefined || isNum(x);
+  const optionalStr = (x: unknown): boolean => x === undefined || isStr(x);
   const obj = isPlainObject(v) ? v.objectif : undefined;
   const complements = isPlainObject(v) ? v.complements : undefined;
   return (
     isPlainObject(v) &&
     (v.id === 'marc' || v.id === 'melanie') &&
-    isStr(v.dateNaissance) &&
-    isNum(v.taille) &&
-    optionalNum(v.poidsObjectif) &&
+    optionalStr(v.dateNaissance) &&
+    optionalNum(v.taille) &&
     isPlainObject(obj) &&
     OBJECTIF_TYPES_VALIDES.includes(obj.type as string) &&
     (obj.echeance === undefined || isStr(obj.echeance)) &&
@@ -230,8 +233,9 @@ export const loadProfile = (): UserProfile | null => {
   // (retirés), le profil reste valide — et les clés inconnues sont lâchées.
   return {
     id: p.id,
-    dateNaissance: p.dateNaissance,
-    taille: p.taille,
+    ...(isStr(p.prenom) && p.prenom.trim() ? { prenom: p.prenom.trim() } : {}),
+    ...(isStr(p.dateNaissance) && p.dateNaissance ? { dateNaissance: p.dateNaissance } : {}),
+    ...(isNum(p.taille) && p.taille > 0 ? { taille: p.taille } : {}),
     ...(optionalNum(p.poidsObjectif) && p.poidsObjectif !== undefined
       ? { poidsObjectif: p.poidsObjectif }
       : {}),

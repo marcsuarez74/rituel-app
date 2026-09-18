@@ -112,8 +112,9 @@ export interface ImportedWeek {
 
 export interface UserProfile {
   id: ProfileKey;
-  dateNaissance: string; // AAAA-MM-JJ — l'âge s'affiche calculé (ageDepuis)
-  taille: number;
+  prenom?: string; // v2.2 — prénom édité ; défaut = PROFILS_META[id].nom
+  dateNaissance?: string; // v2.2 — optionnel (onboarding sautable) ; âge calculé si présent
+  taille?: number; // v2.2 — optionnel (onboarding sautable)
   poidsObjectif?: number;
   objectif: Objectif;
   complements: string[];

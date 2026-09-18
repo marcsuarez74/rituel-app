@@ -126,4 +126,22 @@ describe('assemblePromptIa', () => {
     expect(texte).not.toContain('{{OUVERTURE}}');
     expect(texte).not.toContain('{{CONTEXTE}}');
   });
+
+  it('profil partiel (onboarding sauté) : ouverture sans âge ni taille', () => {
+    const texte = assemblePromptIa(
+      { ...profilComplet, dateNaissance: undefined, taille: undefined },
+      pesee,
+    );
+    expect(texte).toContain(
+      'Tu es un nutritionniste. Marc (82,4 kg — dernière pesée du 14/09) te demande',
+    );
+  });
+
+  it('profil partiel sans pesée : le prénom seul dans l ouverture', () => {
+    const texte = assemblePromptIa(
+      { ...profilComplet, dateNaissance: undefined, taille: undefined },
+      null,
+    );
+    expect(texte).toContain('Tu es un nutritionniste. Marc te demande');
+  });
 });
