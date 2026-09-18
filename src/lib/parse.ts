@@ -382,8 +382,7 @@ function parseRituel(
   };
 }
 
-// Segment « durée » strict du micro-batch : « 10 min », « 1 h ». Un segment plus
-// long (« 10 min · la boîte passe au frigo ») reste un détail (v1 acceptée).
+// Segment « durée » strict du micro-batch : « 10 min », « 1 h ». Un segment plus long (« 10 min · détail ») ou une durée composée (« 1h30 ») reste un détail.
 const DUREE_SEG = /^\d+\s*(?:min|h|minutes?|heures?)\s*$/i;
 
 function parseMicroBatch(
@@ -416,7 +415,7 @@ function parseMicroBatch(
       // La quantité n'est reconnue qu'accompagnée de sa ref recette
       // (« 2 boîtes → r2 ») — un segment libre reste un détail (v1).
       if (ex.ref) {
-        quantite = ex.texte || undefined;
+        quantite = ex.texte;
         ref = ex.ref;
         i++;
       }

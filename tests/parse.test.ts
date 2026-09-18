@@ -1356,4 +1356,22 @@ ${batch}
       { jour: 'samedi', quoi: 'œufs durs', duree: '10 min', detail: 'collations prêtes' },
     ]);
   });
+
+  it('micro-batch : un segment portant une ref connue devient le slot quantité, même en prose', () => {
+    const { data } = parseWeeklyFile(md(`### Micro-batch
+- mardi: sauce | 10 min | voir la fiche → R7
+`));
+    expect(data.microBatch).toEqual([
+      { jour: 'mardi', quoi: 'sauce', duree: '10 min', quantite: 'voir la fiche', ref: 'R7' },
+    ]);
+  });
+
+  it('micro-batch : durée traînante en fin de ligne = détail', () => {
+    const { data } = parseWeeklyFile(md(`### Micro-batch
+- jeudi: doubler quinoa | 2 boîtes → R7 | 10 min
+`));
+    expect(data.microBatch).toEqual([
+      { jour: 'jeudi', quoi: 'doubler quinoa', quantite: '2 boîtes', ref: 'R7', detail: '10 min' },
+    ]);
+  });
 });
