@@ -76,6 +76,21 @@ export const envoyerPush = async (
   payload: string,
   vapid: VapidConfig,
 ): Promise<{ ok: boolean; status: number; body: string }> => {
+  // Une souscription stockée peut être corrompue (clé illisible, endpoint
+  // bidon) ou le réseau absent : l'envoi ne doit JAMAIS lever — les appelants
+  // décident avec le statut (0 = erreur locale, 404/410 = à purger).
+  try {
+    return await envoyerPushBrut(sub, payload, vapid);
+  } catch (e) {
+    return { ok: false, status: 0, body: String(e) };
+  }
+};
+
+const envoyerPushBrut = async (
+  sub: SubscriptionPush,
+  payload: string,
+  vapid: VapidConfig,
+): Promise<{ ok: boolean; status: number; body: string }> => {
   // 1. ECDH éphémère + secret partagé (coordonnée X, 32 octets)
   const eph = (await crypto.subtle.generateKey(
     { name: 'ECDH', namedCurve: 'P-256' },
