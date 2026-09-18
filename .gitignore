@@ -32,3 +32,6 @@ playwright-report/
 # Worktrees (workspaces isolés)
 .worktrees/
 .playwright-mcp/
+
+# CLI Supabase (état local)
+supabase/.temp/
