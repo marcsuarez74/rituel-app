@@ -189,7 +189,7 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
     await page.goto(ORIGIN);
     await expect(page.getByText('Semaine 37')).toBeVisible();
 
-    await page.getByRole('button', { name: 'Batch' }).click();
+    await page.getByRole('button', { name: 'Mon Rituel' }).click();
     await expect(page.locator('.rituel-timeline')).toBeVisible();
     await expect(page.locator('.rituel-etape')).toHaveCount(5);
     await expect(page.locator('.rituel-creneau').first()).toBeVisible();
@@ -212,12 +212,12 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
 
     // Parcours guidé : le run ne coche aucune étape — au retour à l'aperçu,
     // la timeline retrouve ses 5 étapes dans leur état d'origine.
-    await page.getByRole('button', { name: 'Lancer le batch' }).click();
+    await page.getByRole('button', { name: 'Lancer le rituel' }).click();
     for (let i = 0; i < 4; i++) {
       await page.getByRole('button', { name: 'Étape terminée →' }).click();
     }
-    await page.getByRole('button', { name: 'Terminer le batch ✓' }).click();
-    await expect(page.locator('.batch-guide')).toContainText('Batch terminé');
+    await page.getByRole('button', { name: 'Terminer le rituel ✓' }).click();
+    await expect(page.locator('.batch-guide')).toContainText('Rituel terminé');
     await page.getByRole('button', { name: "Revoir l'aperçu" }).click();
     await expect(page.locator('.rituel-timeline')).toBeVisible();
     await expect(page.locator('.rituel-etape.done')).toHaveCount(0);
@@ -232,7 +232,7 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
       // sans lui, la mesure peut tomber pendant le swap de police (flake CI).
       await page.evaluate(() => document.fonts.ready);
 
-      for (const onglet of ['Courses', 'Menu', 'Batch']) {
+      for (const onglet of ['Courses', 'Menu', 'Mon Rituel']) {
         await page.getByRole('button', { name: onglet }).click();
         await assertPasDeDebordement(page);
       }
