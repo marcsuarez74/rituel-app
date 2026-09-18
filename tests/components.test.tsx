@@ -764,6 +764,33 @@ describe('BatchView v2 — rituel et micro-batch', () => {
     expect(dots[1]).not.toHaveClass('on');
   });
 
+  it('micro-batch enrichi : pills durée/quantité + chip recette', () => {
+    render(
+      <BatchView
+        rituel={RITUEL}
+        recettes={[RECETTE_BATCH]}
+        microBatch={[{ jour: 'mardi', quoi: 'précuire brocolis', duree: '10 min', quantite: '2 boîtes', ref: 'r7' }]}
+        semaine="2026-S39"
+      />,
+    );
+    expect(document.querySelectorAll('.micro-pill')).toHaveLength(2);
+    expect(screen.getByText('10 min')).toBeInTheDocument();
+    expect(screen.getByText('2 boîtes')).toBeInTheDocument();
+    expect(document.querySelector('.micro-ref')).toHaveTextContent('Rôti de dinde');
+    expect(document.querySelector('.micro-jour-detail')).toBeNull();
+  });
+
+  it('micro-batch avec ref cassée : la ref brute s affiche (repli)', () => {
+    render(
+      <BatchView
+        rituel={RITUEL}
+        microBatch={[{ jour: 'lundi', quoi: 'X', ref: 'r99' }]}
+        semaine="2026-S39"
+      />,
+    );
+    expect(document.querySelector('.micro-ref')).toHaveTextContent('r99');
+  });
+
   it('cocher une étape du rituel persiste sous l’id batch:rituel:*', async () => {
     const user = userEvent.setup();
     render(<BatchView rituel={RITUEL} microBatch={MICRO} semaine="2026-S39" />);

@@ -1363,6 +1363,40 @@ progress {
   margin-top: var(--sp-8);
 }
 
+.micro-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  margin-top: var(--sp-6);
+}
+
+.micro-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-2) var(--sp-8);
+  border-radius: 7px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  line-height: var(--lh-tight);
+  white-space: nowrap;
+}
+
+.micro-ref {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--sp-2) var(--sp-8);
+  border-radius: 7px;
+  border: 1px dashed var(--accent);
+  color: var(--accent);
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  line-height: var(--lh-tight);
+  white-space: nowrap;
+}
+
 .micro-jour-detail {
   font-size: var(--fs-micro);
   color: var(--muted);

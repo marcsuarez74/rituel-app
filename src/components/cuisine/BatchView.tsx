@@ -5,6 +5,7 @@ import { todayKey } from '../../lib/dates';
 import { capitalize } from '../../lib/text';
 import { dureeRituel, iconeReserve } from '../../lib/batch';
 import { recetteParRef } from '../../lib/stats';
+import { nomCourt } from '../../lib/menu';
 import { Icon } from '../Icon';
 
 export function BatchView({
@@ -108,7 +109,7 @@ export function BatchView({
           </button>
         </section>
       )}
-      {hasMicro && mode === 'apercu' && microBatch && <MicroBatch jours={microBatch} />}
+      {hasMicro && mode === 'apercu' && microBatch && <MicroBatch jours={microBatch} recettes={recettes} />}
       {mode === 'apercu' && hasReserve && reserve && <Reserve lignes={reserve} />}
       {!hasRituel && !hasMicro && !hasReserve && <p className="muted">Aucun rituel prévu cette semaine.</p>}
     </>
@@ -157,7 +158,7 @@ function FicheRecette({ recette }: { recette: Recette }) {
   );
 }
 
-function MicroBatch({ jours }: { jours: MicroBatchJour[] }) {
+function MicroBatch({ jours, recettes = [] }: { jours: MicroBatchJour[]; recettes?: Recette[] }) {
   const [actif, setActif] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   const auScroll = () => {
@@ -171,13 +172,33 @@ function MicroBatch({ jours }: { jours: MicroBatchJour[] }) {
     <section className="batch-section">
       <h3>Micro-batch en semaine</h3>
       <div className="micro-batch" ref={ref} onScroll={auScroll}>
-        {jours.map((m) => (
-          <div className="micro-jour" key={m.jour}>
-            <div className="micro-jour-nom">{capitalize(m.jour)}</div>
-            <div className="micro-jour-quoi">{m.quoi}</div>
-            {m.detail && <div className="micro-jour-detail">{m.detail}</div>}
-          </div>
-        ))}
+        {jours.map((m) => {
+          const recette = m.ref ? recetteParRef(m.ref, recettes) : undefined;
+          return (
+            <div className="micro-jour" key={m.jour}>
+              <div className="micro-jour-nom">{capitalize(m.jour)}</div>
+              <div className="micro-jour-quoi">{m.quoi}</div>
+              {(m.duree || m.quantite || m.ref) && (
+                <div className="micro-meta">
+                  {m.duree && (
+                    <span className="micro-pill">
+                      <Icon name="clock" size={14} /> {m.duree}
+                    </span>
+                  )}
+                  {m.quantite && (
+                    <span className="micro-pill">
+                      <Icon name="box" size={14} /> {m.quantite}
+                    </span>
+                  )}
+                  {m.ref && (
+                    <span className="micro-ref">{recette ? nomCourt(recette.nom) : m.ref}</span>
+                  )}
+                </div>
+              )}
+              {m.detail && <div className="micro-jour-detail">{m.detail}</div>}
+            </div>
+          );
+        })}
       </div>
       <div className="micro-dots" aria-hidden="true">
         {jours.map((_, i) => (
