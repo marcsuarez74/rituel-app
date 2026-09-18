@@ -571,39 +571,6 @@ export function Onboarding({
                   </button>
                 ))}
               </div>
-              <p className="onb-label">Objectif</p>
-              <div className="rline" role="radiogroup" aria-label="Type d'objectif">
-                {OBJECTIF_TYPES.map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={objectifType === t.id}
-                    className={`rl${objectifType === t.id ? ' sel' : ''}`}
-                    onClick={() => {
-                      setError(null);
-                      setObjectifType(t.id);
-                    }}
-                  >
-                    <span className="rl-dot" aria-hidden="true" />
-                    {t.nom}
-                  </button>
-                ))}
-              </div>
-              <div className="onboarding-field">
-                <label htmlFor={`ob-obj-poids-${step}`}>Poids objectif (kg)</label>
-                <input
-                  id={`ob-obj-poids-${step}`}
-                  type="number"
-                  inputMode="decimal"
-                  step="0.1"
-                  value={poidsObjectif}
-                  onChange={(e) => {
-                    setError(null);
-                    setPoidsObjectif(e.target.value);
-                  }}
-                />
-              </div>
               <div className="onb-btnrow">
                 <button type="button" className="onb-back" onClick={retour}>
                   Retour

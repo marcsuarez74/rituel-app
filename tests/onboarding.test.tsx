@@ -242,7 +242,25 @@ describe('Onboarding — navigation clavier (Entrée = Continuer)', () => {
   });
 });
 
-describe('Onboarding — étape 4 (compléments et régime)', () => {
+describe('Onboarding — étape 4 (compléments, régime — sans doublon d objectif)', () => {
+  it('ne propose plus le doublon d objectif (ni type ni poids objectif)', async () => {
+    await allerEtape4();
+
+    expect(screen.queryByRole('radio', { name: /Perte de poids/ })).toBeNull();
+    expect(screen.queryByLabelText('Poids objectif (kg)')).toBeNull();
+    expect(screen.getByRole('radio', { name: 'Aucun' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Whey' })).toBeInTheDocument();
+  });
+
+  it('l objectif choisi à l étape 3 survit au passage à l étape 4', async () => {
+    const user = await allerEtape3();
+    await user.click(screen.getByRole('radio', { name: /Prise de masse/ }));
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    // L'étape 4 n'affiche plus d'objectif mais l'état est conservé pour l'enregistrement.
+    soumettre();
+    expect(screen.getByRole('heading', { name: /Maison & courses/ })).toBeInTheDocument();
+  });
+
   it('bascule les compléments presets', async () => {
     const user = await allerEtape4();
     const whey = screen.getByRole('button', { name: 'Whey' });
