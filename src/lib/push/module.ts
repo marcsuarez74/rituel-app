@@ -103,33 +103,54 @@ interface PushManagerJS {
   };
 }
 
+export interface ResultatPush {
+  ok: boolean;
+  erreur?: string; // texte brut de l'échec — affiché tel quel dans le bloc Profil
+}
+
+const ERREURS: Record<string, string> = {
+  permission: 'Permission refusée — réessaie depuis les réglages du navigateur.',
+  indisponible: 'Notifications indisponibles sur cet appareil.',
+  serveur: 'Enregistrement serveur impossible — vérifie la connexion.',
+};
+
 // Permission sur geste utilisateur → souscription → POST push-register.
-export const souscrireEtEnregistrer = async (config: PushConfig): Promise<boolean> => {
-  if (!pushActif() || !VAPID_PUBLIC_KEY) return false;
+export const souscrireEtEnregistrer = async (config: PushConfig): Promise<ResultatPush> => {
+  if (!pushActif() || !VAPID_PUBLIC_KEY) return { ok: false, erreur: ERREURS.indisponible };
   try {
-    if ((await Notification.requestPermission()) !== 'granted') return false;
+    if ((await Notification.requestPermission()) !== 'granted') {
+      return { ok: false, erreur: ERREURS.permission };
+    }
     const reg = await registrationActive();
     const sub = await reg.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: b64urlVersBytes(VAPID_PUBLIC_KEY),
     });
-    return await enregistrer(sub, config);
-  } catch {
-    return false;
+    return (await enregistrer(sub, config))
+      ? { ok: true }
+      : { ok: false, erreur: ERREURS.serveur };
+  } catch (e) {
+    // L'erreur brute est diagnostique (AbortError « permission denied »,
+    // « push service error »…) — on la garde intégralement.
+    return { ok: false, erreur: String(e) };
   }
 };
 
 // Re-POST de la config sur la souscription existante ; sans souscription,
 // bascule sur la souscription complète (idempotent).
-export const majConfig = async (config: PushConfig): Promise<boolean> => {
-  if (!pushActif()) return false;
+export const majConfig = async (config: PushConfig): Promise<ResultatPush> => {
+  if (!pushActif()) return { ok: false, erreur: ERREURS.indisponible };
   try {
     const reg = await registrationActive();
     const existante = await reg.pushManager.getSubscription();
-    if (existante) return await enregistrer(existante, config);
+    if (existante) {
+      return (await enregistrer(existante, config))
+        ? { ok: true }
+        : { ok: false, erreur: ERREURS.serveur };
+    }
     return await souscrireEtEnregistrer(config);
-  } catch {
-    return false;
+  } catch (e) {
+    return { ok: false, erreur: String(e) };
   }
 };
 

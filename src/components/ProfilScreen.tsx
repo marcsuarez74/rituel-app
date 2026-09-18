@@ -81,6 +81,7 @@ export function ProfilScreen({
   const pushVisible = pushActif();
   const [pushOn, setPushOn] = useState(false);
   const [pushConfig, setPushConfig] = useState<PushConfig>(configDefaut());
+  const [pushErreur, setPushErreur] = useState<string | null>(null);
   useEffect(() => {
     // Pas de SW (navigateur sans support, tests) : l'état reste « off ».
     if (!pushVisible || !navigator.serviceWorker) return;
@@ -102,12 +103,20 @@ export function ProfilScreen({
   };
 
   const pushBasculer = async (): Promise<void> => {
+    setPushErreur(null);
     if (pushOn) {
       await desabonner();
       setPushOn(false);
       return;
     }
-    if (await souscrireEtEnregistrer(pushConfig)) setPushOn(true);
+    const res = await souscrireEtEnregistrer(pushConfig);
+    if (res.ok) {
+      setPushOn(true);
+    } else {
+      // Diagnostic visible : l'erreur brute du navigateur porte la cause réelle.
+      setPushErreur(res.erreur ?? 'Échec de l’activation.');
+      console.error('[push] activation impossible :', res.erreur);
+    }
   };
 
   const pushToggleEvenement = (cle: 'diner' | 'pesee' | 'courses'): void => {
@@ -684,6 +693,11 @@ export function ProfilScreen({
           <button type="button" className="profil-ghost" aria-pressed={pushOn} onClick={() => void pushBasculer()}>
             {pushOn ? 'Désactiver les notifications' : 'Activer les notifications'}
           </button>
+          {pushErreur && (
+            <p className="error" role="alert">
+              {pushErreur}
+            </p>
+          )}
 
           <p className="push-sous-titre">Quand mon coéquipier agit</p>
           <div className="chips">

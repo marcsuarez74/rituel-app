@@ -105,8 +105,9 @@ describe('push: configDefaut', () => {
 describe('push: souscrireEtEnregistrer', () => {
   it('souscrit puis POST push-register avec la souscription et le foyer', async () => {
     prepare();
-    const ok = await souscrireEtEnregistrer(configDefaut());
-    expect(ok).toBe(true);
+    const res = await souscrireEtEnregistrer(configDefaut());
+    expect(res.ok).toBe(true);
+    expect(res.erreur).toBeUndefined();
     expect(Notification.requestPermission).toHaveBeenCalled();
     expect(registration.pushManager.subscribe).toHaveBeenCalledWith({
       userVisibleOnly: true,
@@ -127,18 +128,29 @@ describe('push: souscrireEtEnregistrer', () => {
     expect(corps.device_id).toMatch(/^[0-9a-f-]{36}$/);
   });
 
-  it('refus de permission → pas de souscription, pas de fetch', async () => {
+  it('refus de permission → pas de souscription, pas de fetch, erreur expliquée', async () => {
     prepare();
     vi.stubGlobal('Notification', { requestPermission: vi.fn(async () => 'denied') });
-    expect(await souscrireEtEnregistrer(configDefaut())).toBe(false);
+    const res = await souscrireEtEnregistrer(configDefaut());
+    expect(res.ok).toBe(false);
+    expect(res.erreur).toMatch(/permission/i);
     expect(registration.pushManager.subscribe).not.toHaveBeenCalled();
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('subscribe qui lève → l’erreur brute est remontée', async () => {
+    prepare();
+    registration.pushManager.subscribe.mockRejectedValueOnce(new Error('Registration failed - test'));
+    const res = await souscrireEtEnregistrer(configDefaut());
+    expect(res.ok).toBe(false);
+    expect(res.erreur).toMatch(/Registration failed - test/);
   });
 
   it('push inactif → no-op silencieux', async () => {
     prepare();
     vi.mocked(pushActif).mockReturnValue(false);
-    expect(await souscrireEtEnregistrer(configDefaut())).toBe(false);
+    const res = await souscrireEtEnregistrer(configDefaut());
+    expect(res.ok).toBe(false);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });
@@ -146,8 +158,8 @@ describe('push: souscrireEtEnregistrer', () => {
 describe('push: majConfig', () => {
   it('réutilise la souscription existante (pas de re-subscribe)', async () => {
     prepare();
-    const ok = await majConfig({ ...configDefaut(), evenements: { diner: true, pesee: false, courses: false } });
-    expect(ok).toBe(true);
+    const res = await majConfig({ ...configDefaut(), evenements: { diner: true, pesee: false, courses: false } });
+    expect(res.ok).toBe(true);
     expect(registration.pushManager.subscribe).not.toHaveBeenCalled();
     const corps = JSON.parse(dernierAppel()[1].body as string);
     expect(corps.config.evenements.diner).toBe(true);
