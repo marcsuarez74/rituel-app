@@ -95,6 +95,14 @@ const ICONS = {
     </>
   ),
   play: <path d="M8 5.5v13l10-6.5z" />,
+  // Seul glyphe en remplissage (pas de trait) : stroke="none" neutralise
+  // le stroke courant hérité du <svg> racine.
+  user: (
+    <>
+      <circle cx="12" cy="8" r="4" fill="currentColor" stroke="none" />
+      <path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor" stroke="none" />
+    </>
+  ),
 } satisfies Record<string, ReactNode>;
 
 export type IconName = keyof typeof ICONS;
