@@ -84,6 +84,7 @@ export function CuisineView({
           reserve={data.reserve}
           production={data.rituelProduction}
           termine={data.rituelTermine}
+          recettes={data.recettes}
           semaine={semaine}
           syncVersion={syncVersion}
         />

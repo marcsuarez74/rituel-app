@@ -725,6 +725,19 @@ describe('BatchView v2 — rituel et micro-batch', () => {
     { jour: 'mardi', quoi: 'doubler la sauce' },
   ];
 
+  const RECETTE_BATCH: Recette = {
+    id: 'r7-roti-de-dinde-gratin-courgettes-quinoa',
+    nom: 'R7 · Rôti de dinde + gratin courgettes + quinoa',
+    temps: '60 min · four 180°',
+    pour: 'rôti de dinde ~800 g · 4 courgettes · 15 cl crème + 80 g râpé · 300 g quinoa',
+    etapes: [
+      'Four 180°. Rôti : huile + herbes + sel, 50-55 min.',
+      'Gratin : courgettes précuites + crème + fromage, 25 min.',
+      'Quinoa 15 min — en double.',
+    ],
+  };
+  const RITUEL_AVEC_REF = [{ ...RITUEL[0], ref: 'r7' }, ...RITUEL.slice(1)];
+
   it('affiche le rituel en timeline avec créneaux, détails et badge de durée', () => {
     render(<BatchView rituel={RITUEL} microBatch={MICRO} semaine="2026-S39" />);
     expect(screen.getByText('Rituel dimanche')).toBeInTheDocument();
@@ -952,6 +965,47 @@ describe('BatchView v2 — rituel et micro-batch', () => {
     expect(section.contains(btn)).toBe(true);
     const timeline = container.querySelector('.rituel-timeline')!;
     expect(timeline.compareDocumentPosition(btn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('mode guidé : une étape avec ref affiche la fiche recette dépliable', async () => {
+    const user = userEvent.setup();
+    render(
+      <BatchView rituel={RITUEL_AVEC_REF} recettes={[RECETTE_BATCH]} microBatch={[]} semaine="2026-S39" />,
+    );
+    await user.click(screen.getByRole('button', { name: /Lancer le rituel/ }));
+    const btn = screen.getByRole('button', { name: 'Voir la fiche recette' });
+    expect(btn).toHaveAttribute('aria-expanded', 'false');
+    await user.click(btn);
+    expect(btn).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('60 min · four 180°')).toBeInTheDocument();
+    expect(screen.getByText('Gratin : courgettes précuites + crème + fromage, 25 min.')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Masquer la fiche' }));
+    expect(screen.queryByText('60 min · four 180°')).toBeNull();
+  });
+
+  it('étape sans ref : pas de fiche recette', async () => {
+    const user = userEvent.setup();
+    render(
+      <BatchView rituel={RITUEL_AVEC_REF} recettes={[RECETTE_BATCH]} microBatch={[]} semaine="2026-S39" />,
+    );
+    await user.click(screen.getByRole('button', { name: /Lancer le rituel/ }));
+    await user.click(screen.getByRole('button', { name: 'Étape terminée →' }));
+    expect(screen.queryByRole('button', { name: /fiche recette/ })).toBeNull();
+  });
+
+  it('ref cassée : repli silencieux (pas de fiche, pas de crash)', async () => {
+    const user = userEvent.setup();
+    render(
+      <BatchView
+        rituel={[{ ...RITUEL[0], ref: 'r99' }]}
+        recettes={[RECETTE_BATCH]}
+        microBatch={[]}
+        semaine="2026-S39"
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: /Lancer le rituel/ }));
+    expect(screen.queryByRole('button', { name: /fiche recette/ })).toBeNull();
+    expect(document.querySelector('.guide-titre')).toHaveTextContent('Four à 180°');
   });
 });
 

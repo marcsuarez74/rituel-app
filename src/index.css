@@ -628,7 +628,7 @@ p {
   }
 }
 
-/* ---------- Sous-onglets Cuisine (Courses / Menu / Batch) ---------- */
+/* ---------- Sous-onglets Cuisine (Courses / Menu / Mon Rituel) ---------- */
 
 .cuisine-tabs {
   display: flex;
@@ -704,7 +704,7 @@ p {
   color: var(--text);
 }
 
-/* ---------- Bannière rituel (Courses + Batch « Ce soir ») ---------- */
+/* ---------- Bannière rituel (Courses + Mon Rituel « Ce soir ») ---------- */
 
 .batch-banner {
   display: flex;
@@ -838,7 +838,7 @@ input[type='checkbox'] {
   accent-color: var(--accent);
 }
 
-/* ---------- Progression (Courses / Batch — règles partagées) ---------- */
+/* ---------- Progression (Courses / Mon Rituel — règles partagées) ---------- */
 
 .progress {
   display: flex;
@@ -1208,7 +1208,7 @@ progress {
   text-decoration: none; /* la pastille reste lisible quand la séance est cochée */
 }
 
-/* ---------- Batch ---------- */
+/* ---------- Mon Rituel ---------- */
 
 .batch-section {
   background: var(--surface);
@@ -1434,7 +1434,7 @@ progress {
   background: var(--accent);
 }
 
-/* ---------- Batch : lancer + mode guidé ---------- */
+/* ---------- Mon Rituel : lancer + mode guidé ---------- */
 
 .rituel-badge {
   display: inline-flex;
@@ -1486,6 +1486,57 @@ progress {
   font-size: var(--fs-sec);
   color: color-mix(in srgb, var(--muted) 70%, var(--text));
   line-height: var(--lh-body);
+}
+.guide-fiche {
+  width: 100%;
+}
+.guide-fiche-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  min-height: 42px;
+  padding: var(--sp-8) var(--sp-14);
+  border: 1px dashed var(--accent);
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--accent);
+  font: 600 var(--fs-sec) Poppins, sans-serif;
+}
+.fiche-corps {
+  width: 100%;
+  padding: var(--sp-12);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg);
+}
+.fiche-soustitre {
+  margin: 0 0 var(--sp-4);
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+.fiche-temps {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  margin: 0 0 var(--sp-8);
+  font-size: var(--fs-sec);
+  font-weight: 600;
+}
+.fiche-pour {
+  margin: 0;
+  font-size: var(--fs-sec);
+  line-height: var(--lh-body);
+}
+.fiche-etapes {
+  margin: 0;
+  padding-left: var(--sp-20);
+  font-size: var(--fs-sec);
+  line-height: var(--lh-body);
+  display: grid;
+  gap: var(--sp-4);
 }
 .batch-guide progress {
   width: 100%;

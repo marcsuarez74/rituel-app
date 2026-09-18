@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react';
-import type { MicroBatchJour, ReserveLigne, RituelEtape } from '../../lib/model';
+import type { MicroBatchJour, Recette, ReserveLigne, RituelEtape } from '../../lib/model';
 import { getChecks, setCheck } from '../../lib/storage';
 import { todayKey } from '../../lib/dates';
 import { capitalize } from '../../lib/text';
 import { dureeRituel, iconeReserve } from '../../lib/batch';
+import { recetteParRef } from '../../lib/stats';
 import { Icon } from '../Icon';
 
 export function BatchView({
@@ -12,6 +13,7 @@ export function BatchView({
   reserve,
   production,
   termine,
+  recettes = [],
   semaine,
   syncVersion = 0,
 }: {
@@ -20,6 +22,7 @@ export function BatchView({
   reserve?: ReserveLigne[];
   production?: string;
   termine?: string;
+  recettes?: Recette[];
   semaine: string;
   syncVersion?: number;
 }) {
@@ -36,6 +39,10 @@ export function BatchView({
   const hasMicro = !!microBatch?.length;
   const hasReserve = !!reserve?.length;
   const ceSoir = microBatch?.find((m) => m.jour === todayKey());
+
+  // Fiche recette de l'étape en cours (mode guidé) — ref cassée → undefined.
+  const etape = rituel?.[idx];
+  const recetteEtape = mode === 'run' && etape?.ref ? recetteParRef(etape.ref, recettes) : undefined;
 
   return (
     <>
@@ -68,6 +75,7 @@ export function BatchView({
           </div>
           <h3 className="guide-titre">{rituel[idx].label}</h3>
           {rituel[idx].detail && <p className="guide-detail">{rituel[idx].detail}</p>}
+          {recetteEtape && <FicheRecette recette={recetteEtape} />}
           <progress value={idx} max={rituel.length} aria-hidden="true" />
           <button
             type="button"
@@ -104,6 +112,48 @@ export function BatchView({
       {mode === 'apercu' && hasReserve && reserve && <Reserve lignes={reserve} />}
       {!hasRituel && !hasMicro && !hasReserve && <p className="muted">Aucun rituel prévu cette semaine.</p>}
     </>
+  );
+}
+
+function FicheRecette({ recette }: { recette: Recette }) {
+  const [ouverte, setOuverte] = useState(false);
+  return (
+    <div className="guide-fiche">
+      <button
+        type="button"
+        className="guide-fiche-btn"
+        aria-expanded={ouverte}
+        onClick={() => setOuverte(!ouverte)}
+      >
+        <Icon name="box" size={14} />
+        {ouverte ? 'Masquer la fiche' : 'Voir la fiche recette'}
+      </button>
+      {ouverte && (
+        <div className="fiche-corps">
+          {recette.temps && (
+            <p className="fiche-temps">
+              <Icon name="clock" size={14} /> {recette.temps}
+            </p>
+          )}
+          {recette.pour && (
+            <>
+              <p className="fiche-soustitre">Ingrédients</p>
+              <p className="fiche-pour">{recette.pour}</p>
+            </>
+          )}
+          {recette.etapes && recette.etapes.length > 0 && (
+            <>
+              <p className="fiche-soustitre">Étapes</p>
+              <ol className="fiche-etapes">
+                {recette.etapes.map((e, i) => (
+                  <li key={i}>{e}</li>
+                ))}
+              </ol>
+            </>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
