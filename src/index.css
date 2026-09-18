@@ -258,22 +258,50 @@ p {
   color: #ffffff;
 }
 
+/* Titre = bouton : tap = changeur de semaine. Zones 48 px via min-height. */
+.week-head {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: var(--sp-4) 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.2s;
+}
+
+.week-head:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
 .week-title {
   margin: 0;
   font-size: var(--fs-h2);
   font-weight: 700;
-  letter-spacing: 0.01em;
+  line-height: var(--lh-tight);
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-.week-title-row {
+.week-dates-row {
   display: flex;
   align-items: center;
-  gap: var(--sp-10);
   flex-wrap: wrap;
+  gap: var(--sp-6);
+}
+
+.week-dates {
+  font-size: var(--fs-meta);
+  color: var(--muted);
+}
+
+.week-titre-md {
+  font-size: var(--fs-meta);
 }
 
 .menu-pill {
@@ -1997,20 +2025,6 @@ progress {
 
 /* ---------- Écran Profil ---------- */
 
-.week-banner {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: var(--sp-8);
-}
-
-.week-banner-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-8);
-  flex-shrink: 0;
-}
-
 .profile-icon-btn {
   display: inline-flex;
   align-items: center;
@@ -2572,42 +2586,57 @@ progress {
   }
 }
 
-/* ---------- Sync (point bannière + bloc profil) ---------- */
+/* ---------- Chip foyer (bannière) ---------- */
 
-.sync-dot {
-  width: 48px;
-  height: 48px;
-  display: grid;
-  place-items: center;
-  background: none;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
+.sync-chip {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  min-height: 48px;
+  padding: var(--sp-10) var(--sp-14);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font: 600 var(--fs-meta) Poppins, sans-serif;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
 
-.sync-dot::before {
-  content: '';
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-
-.sync-dot.sync-sync::before {
-  background: var(--accent);
-}
-
-.sync-dot.sync-attente::before {
+.sync-chip-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
   background: var(--muted);
 }
 
-.sync-dot.sync-erreur::before {
+.sync-chip-sync,
+.sync-chip-attente {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+}
+
+.sync-chip-sync .sync-chip-dot,
+.sync-chip-attente .sync-chip-dot {
+  background: var(--accent);
+}
+
+.sync-chip-erreur {
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 35%, var(--border));
+}
+
+.sync-chip-erreur .sync-chip-dot {
   background: var(--danger);
 }
 
-.sync-dot:active {
-  transform: scale(0.97);
+.sync-chip:active {
+  background: var(--surface-2);
 }
+
+/* ---------- Sync (bloc profil) ---------- */
 
 .sync-bloc .profil-ghost {
   margin-top: var(--sp-12);

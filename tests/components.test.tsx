@@ -1280,32 +1280,61 @@ describe('ProfileView', () => {
 describe('WeekBanner', () => {
   const meta = { semaine: '2026-S39', menu: 'A', du: '2026-09-21', au: '2026-09-27' };
 
-  it('affiche le menu courant en pill à côté du titre', () => {
-    render(<WeekBanner meta={meta} />);
-    const pill = screen.getByText('Menu A');
-    expect(pill).toHaveClass('menu-pill');
-    expect(pill.parentElement).toHaveClass('week-title-row');
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Semaine 2026-S39');
+  it('titre court « Semaine 39 » + dates + pill menu brute', () => {
+    render(<WeekBanner meta={meta} onSwitcher={() => {}} />);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Semaine 39');
+    expect(screen.getByText('21/09 → 27/09')).toBeInTheDocument();
+    expect(screen.getByText('A')).toHaveClass('menu-pill');
   });
 
-  it('chevrons absents sans callbacks (une seule semaine)', () => {
+  it('chevrons toujours visibles, désactivés aux bornes', () => {
     render(<WeekBanner meta={meta} />);
-    expect(screen.queryByRole('button', { name: 'Semaine précédente' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Semaine suivante' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Semaine précédente' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Semaine suivante' })).toBeDisabled();
   });
 
-  it('navigue par chevrons et désactive aux bornes', async () => {
+  it('navigue par chevrons quand les bornes le permettent', async () => {
     const user = userEvent.setup();
     const onPrev = vi.fn();
     const onNext = vi.fn();
     render(<WeekBanner meta={meta} onPrev={onPrev} onNext={onNext} hasPrev={false} hasNext />);
-    const prev = screen.getByRole('button', { name: 'Semaine précédente' });
+    expect(screen.getByRole('button', { name: 'Semaine précédente' })).toBeDisabled();
     const next = screen.getByRole('button', { name: 'Semaine suivante' });
-    expect(prev).toBeDisabled();
     expect(next).toBeEnabled();
     await user.click(next);
     expect(onNext).toHaveBeenCalledTimes(1);
     expect(onPrev).not.toHaveBeenCalled();
+  });
+
+  it('tap sur le titre ouvre le changeur de semaine', async () => {
+    const user = userEvent.setup();
+    const onSwitcher = vi.fn();
+    render(<WeekBanner meta={meta} onSwitcher={onSwitcher} />);
+    await user.click(screen.getByRole('button', { name: 'Semaine 39 — changer de semaine' }));
+    expect(onSwitcher).toHaveBeenCalledTimes(1);
+  });
+
+  it('chip sync : « Local » hors foyer (tap = profil), « Duo » connecté (tap = resync)', async () => {
+    const user = userEvent.setup();
+    const onOpenProfile = vi.fn();
+    const onSyncTap = vi.fn();
+    const { rerender } = render(
+      <WeekBanner meta={meta} syncEtat="off" onOpenProfile={onOpenProfile} onSyncTap={onSyncTap} />,
+    );
+    const chip = screen.getByRole('button', { name: 'Hors foyer — ouvrir le profil pour connecter' });
+    expect(chip).toHaveTextContent('Local');
+    await user.click(chip);
+    expect(onOpenProfile).toHaveBeenCalledTimes(1);
+    expect(onSyncTap).not.toHaveBeenCalled();
+
+    rerender(
+      <WeekBanner meta={meta} syncEtat="sync" onOpenProfile={onOpenProfile} onSyncTap={onSyncTap} />,
+    );
+    const duo = screen.getByRole('button', { name: 'Duo — synchronisé, appuyer pour resynchroniser' });
+    expect(duo).toHaveTextContent('Duo');
+    await user.click(duo);
+    expect(onSyncTap).toHaveBeenCalledTimes(1);
+    expect(onOpenProfile).toHaveBeenCalledTimes(1);
   });
 });
 
