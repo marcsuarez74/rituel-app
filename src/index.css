@@ -2672,7 +2672,7 @@ progress {
   padding: var(--sp-6);
   border: none;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
   color: var(--accent);
   font: inherit;
   font-size: var(--fs-meta);
@@ -2698,20 +2698,22 @@ progress {
 .sync-chip-sync,
 .sync-chip-attente {
   color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
 }
 
 .sync-chip-erreur {
   color: var(--danger);
-  background: color-mix(in srgb, var(--danger) 12%, var(--surface));
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface));
 }
 
 .sync-chip-erreur .sync-chip-dot {
   background: var(--danger);
 }
 
+/* Texte encre sur gris (même paire que .cchip) : muted sur surface-2 serait
+   sous 4,5:1. */
 .sync-chip-local {
-  color: var(--muted);
+  color: var(--text);
   background: var(--surface-2);
 }
 
