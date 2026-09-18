@@ -1357,8 +1357,33 @@ describe('SemaineSwitcher', () => {
     expect(screen.getByRole('button', { name: /Semaine 37/ })).toBeInTheDocument();
     const active = screen.getByRole('button', { name: /Semaine 38/ });
     expect(active).toHaveClass('actif');
+    expect(active).toHaveAttribute('aria-current', 'true');
     await user.click(active);
     expect(onSelect).toHaveBeenCalledWith('2026-S38');
+  });
+
+  it('tap sur le voile ferme, tap sur la sheet non', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    const { container } = render(
+      <SemaineSwitcher semaines={semaines} active="2026-S38" onSelect={vi.fn()} onClose={onClose} />,
+    );
+    const veil = container.querySelector('.switcher-veil');
+    expect(veil).not.toBeNull();
+    await user.click(veil as HTMLElement);
+    expect(onClose).toHaveBeenCalledTimes(1);
+
+    onClose.mockClear();
+    await user.click(screen.getByRole('dialog', { name: 'Choisir une semaine' }));
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('Escape ferme la sheet', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    render(<SemaineSwitcher semaines={semaines} active="2026-S38" onSelect={vi.fn()} onClose={onClose} />);
+    await user.keyboard('{Escape}');
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });
 

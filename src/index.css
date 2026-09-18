@@ -333,7 +333,7 @@ p {
   overflow-y: auto;
   background: var(--surface);
   border-radius: 20px 20px 0 0;
-  padding: var(--sp-16) var(--sp-16) var(--sp-24);
+  padding: var(--sp-16) var(--sp-16) max(var(--sp-24), env(safe-area-inset-bottom));
 }
 
 .switcher-titre {

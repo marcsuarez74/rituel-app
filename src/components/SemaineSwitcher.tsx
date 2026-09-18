@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import type { ImportedWeek } from '../lib/model';
 import { formatDayMonth, libelleSemaineCourt } from '../lib/dates';
 
@@ -14,6 +15,13 @@ export function SemaineSwitcher({
   onSelect: (semaine: string) => void;
   onClose: () => void;
 }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
   return (
     <div className="switcher-veil" onClick={onClose}>
       <div
