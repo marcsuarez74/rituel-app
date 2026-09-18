@@ -153,6 +153,24 @@ describe('push: souscrireEtEnregistrer', () => {
     expect(res.ok).toBe(false);
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  it('POST en échec HTTP → le statut apparaît dans l’erreur', async () => {
+    prepare();
+    fetchMock.mockImplementationOnce(async () => new Response('erreur serveur', { status: 500 }));
+    const res = await souscrireEtEnregistrer(configDefaut());
+    expect(res.ok).toBe(false);
+    expect(res.erreur).toContain('HTTP 500');
+  });
+
+  it('POST en échec réseau → l’exception apparaît dans l’erreur', async () => {
+    prepare();
+    fetchMock.mockImplementationOnce(async () => {
+      throw new TypeError('Failed to fetch');
+    });
+    const res = await souscrireEtEnregistrer(configDefaut());
+    expect(res.ok).toBe(false);
+    expect(res.erreur).toContain('Failed to fetch');
+  });
 });
 
 describe('push: majConfig', () => {
