@@ -215,8 +215,11 @@ p {
    nerveux. Padding 8px et gap 6px (maquette : 10-12px/8px) pour tenir le budget
    de largeur à 320px — chip Local + 2 chevrons + avatar + 4 gaps. Les cibles
    tactiles ≥ 48 px passent par la marge de frappe : padding transparent + marge
-   négative égale — la mise en page reste petite, le tap reste large (les zones
-   de frappe se chevauchent dans le vide, pas sur un voisin interactif). */
+   négative égale — la mise en page reste petite, le tap reste large. À cette
+   densité les zones étendues se chevauchent forcément : l'ordre DOM et z-index
+   arbitrent — les boutons interactifs (.banner-nav, .week-head) passent
+   au-dessus des étendeurs de voisins (::after de la chip, texte des lignes
+   suivantes, cf. pointer-events: none plus bas). */
 .week-banner {
   display: flex;
   align-items: center;
@@ -231,6 +234,8 @@ p {
 }
 
 .banner-nav {
+  position: relative;
+  z-index: 1;
   flex-shrink: 0;
   display: grid;
   place-items: center;
@@ -301,21 +306,29 @@ p {
   line-height: var(--lh-tight);
 }
 
+/* Dates sous le titre : muted pur sur --bg serait 3,99:1 (< 4,5) — le vieux
+   bandeau posait sur une carte --surface. Mix prescrit par design-system.md
+   pour les notes muted sur fond page. pointer-events: none : la zone de frappe
+   étendue du bouton titre (.week-head) doit passer à travers. */
 .week-dates {
   margin: var(--sp-2) 0 0;
   font-size: var(--fs-meta);
-  color: var(--muted);
+  color: color-mix(in srgb, var(--muted) 70%, var(--text));
   line-height: var(--lh-tight);
   white-space: nowrap;
+  pointer-events: none;
 }
 
-/* Titre optionnel du .md : une ligne sous les dates (ellipsis s'il est long). */
+/* Titre optionnel du .md : une ligne sous les dates (ellipsis s'il est long).
+   Même paire de couleurs que .week-dates (muted seul serait sous 4,5:1). */
 .week-titre-md {
   margin: var(--sp-2) 0 0;
   font-size: var(--fs-meta);
+  color: color-mix(in srgb, var(--muted) 70%, var(--text));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  pointer-events: none;
 }
 
 /* Cercle basilic 30 px (maquette) dessiné en ::before ; le bouton fait 50 px
