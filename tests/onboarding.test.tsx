@@ -92,7 +92,9 @@ describe('Onboarding — étape 1 (choix du profil)', () => {
     await user.click(screen.getByRole('button', { name: /Mélanie/ }));
     const carte = screen.getByRole('button', { name: /Mélanie/ });
     expect(carte).toHaveClass('sel');
+    expect(carte).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByLabelText("C'est ton prénom ?")).toHaveValue('Mélanie');
+    expect(screen.getByLabelText("C'est ton prénom ?")).toHaveAttribute('maxLength', '20');
 
     await user.click(screen.getByRole('button', { name: /Continuer/ }));
     expect(screen.getByRole('heading', { name: /Salut Mélanie/ })).toBeInTheDocument();

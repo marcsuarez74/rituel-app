@@ -286,6 +286,7 @@ export function Onboarding({
                 <button
                   key={pid}
                   type="button"
+                  aria-pressed={id === pid}
                   className={`onboarding-card onboarding-card-${pid}${id === pid ? ' sel' : ''}`}
                   onClick={() => choisir(pid)}
                 >
