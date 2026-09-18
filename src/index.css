@@ -2107,7 +2107,7 @@ progress {
   transform: scale(0.97);
 }
 .onb-skip {
-  min-height: 44px;
+  min-height: 48px;
   margin-left: auto;
   padding: 0 var(--sp-12);
   border: none;
