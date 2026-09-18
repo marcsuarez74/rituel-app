@@ -9,7 +9,8 @@ import { ProgressRing } from './ProgressRing';
 import { Icon } from './Icon';
 
 // Carte héro du suivi : ObjectifBloc + StatCards fusionnés. Anneau de
-// progression quand perte/masse avec cible + pesées, poids simple sinon.
+// progression dès qu'une cible + des pesées existent (sens auto-détecté),
+// poids simple sinon.
 export function SuiviHero({ profile }: { profile: UserProfile }) {
   // Invariant : le profil actif ne change jamais en place — un changement passe
   // par removeProfile → Onboarding, qui démonte tout le sous-arbre suivi. Côté
@@ -21,12 +22,11 @@ export function SuiviHero({ profile }: { profile: UserProfile }) {
   const depart = weights.length > 0 ? weights[0] : null;
   const cible = profile.poidsObjectif;
 
+  // Le sens ne dépend pas du type d'objectif (juste une étiquette) : il est
+  // auto-détecté des données — cible < départ = perte, sinon masse.
   const calc =
-    (profile.objectif.type === 'perte' || profile.objectif.type === 'masse') &&
-    cible != null &&
-    depart &&
-    actuel
-      ? progressionPoids(profile.objectif.type, depart.kg, actuel.kg, cible)
+    cible != null && depart && actuel
+      ? progressionPoids(cible < depart.kg ? 'perte' : 'masse', depart.kg, actuel.kg, cible)
       : null;
 
   // La variation est « bonne » si elle va dans le sens de l'objectif.

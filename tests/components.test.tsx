@@ -1019,16 +1019,55 @@ describe('SuiviHero — carte héro objectif', () => {
     expect(screen.getByText('kg à prendre')).toBeInTheDocument();
   });
 
-  it('maintien : pas d’anneau, poids actuel à la place', () => {
+  it('maintien avec cible : anneau quand même', () => {
+    addWeight('marc', '2026-08-12', 82.8);
     addWeight('marc', '2026-09-09', 78.4);
     render(
       <SuiviHero
         profile={profileV2('marc', { poidsObjectif: 74, objectif: { type: 'maintien' } })}
       />,
     );
+    expect(
+      screen.getByRole('img', { name: "Progression : 50 % de l'objectif" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('4,4')).toBeInTheDocument();
+    expect(screen.getByText('kg restants')).toBeInTheDocument();
+  });
+
+  it('maintien sans cible : cercle balance', () => {
+    addWeight('marc', '2026-09-09', 78.4);
+    render(<SuiviHero profile={profileV2('marc', { objectif: { type: 'maintien' } })} />);
     expect(screen.queryByRole('img', { name: /Progression/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Poids actuel' })).toBeInTheDocument();
     expect(screen.getByText('78,4')).toBeInTheDocument();
-    expect(screen.getByText(/Cible 74,0 kg/)).toBeInTheDocument();
+  });
+
+  it('affiner avec cible : anneau', () => {
+    addWeight('marc', '2026-08-12', 82.8);
+    addWeight('marc', '2026-09-09', 78.4);
+    render(
+      <SuiviHero
+        profile={profileV2('marc', { poidsObjectif: 74, objectif: { type: 'affiner' } })}
+      />,
+    );
+    expect(
+      screen.getByRole('img', { name: "Progression : 50 % de l'objectif" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText('4,4')).toBeInTheDocument();
+    expect(screen.getByText('kg restants')).toBeInTheDocument();
+  });
+
+  it('cible au-dessus du départ : kg à prendre', () => {
+    addWeight('marc', '2026-08-12', 74);
+    addWeight('marc', '2026-09-09', 75.8);
+    render(
+      <SuiviHero
+        profile={profileV2('marc', { poidsObjectif: 82, objectif: { type: 'affiner' } })}
+      />,
+    );
+    expect(screen.getByRole('img', { name: /Progression/ })).toBeInTheDocument();
+    expect(screen.getByText('6,2')).toBeInTheDocument();
+    expect(screen.getByText('kg à prendre')).toBeInTheDocument();
   });
 
   it('sans pesée : tiret, aucun crash', () => {

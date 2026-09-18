@@ -143,7 +143,7 @@ Rituel part de 2 utilisateurs (Marc & Mélanie) mais doit accueillir d'autres fo
 └──────────────────────────────────┘
 ```
 
-- Composant **`ProgressRing`** (SVG maison, comme `WeightChart`) : `stroke-linecap="round"`, centre = « -4,2 / kg restants » (ou à prendre), le bourgeon **voyage** le long de l'arc à chaque pesée, boucle fermée à 100 % — animé (une transition d'arc, respecte `prefers-reduced-motion`)
+- Composant **`ProgressRing`** (SVG maison, comme `WeightChart`) : affiché **dès qu'une cible + des pesées existent** — le sens (restants / à prendre) est auto-détecté des données (cible vs départ), l'objectif n'étant qu'une étiquette ; `stroke-linecap="round"`, centre = « -4,2 / kg restants » (ou à prendre), le bourgeon **voyage** le long de l'arc à chaque pesée, boucle fermée à 100 % — animé (une transition d'arc, respecte `prefers-reduced-motion`)
 - Badge delta 7 j coloré selon le sens vs objectif (existant)
 - Échéance + régime + compléments : lignes/chips dessous
 - La ligne doublée « Départ X · X → Y → cible Z » est corrigée (départ une seule fois)
