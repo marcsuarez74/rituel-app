@@ -31,6 +31,7 @@ const allerEtape2 = async () => {
   const user = userEvent.setup();
   render(<Onboarding onDone={onDone} />);
   await user.click(screen.getByRole('button', { name: /Mélanie/ }));
+  await user.click(screen.getByRole('button', { name: /Continuer/ }));
   return user;
 };
 
@@ -84,16 +85,63 @@ describe('Onboarding — étape 1 (choix du profil)', () => {
     expect(screen.queryByLabelText('Poids (kg)')).not.toBeInTheDocument();
   });
 
-  it('le choix du profil passe à l étape 2 et le retour ramène à l étape 1', async () => {
+  it('choisir une carte la sélectionne, préremplit le prénom et affiche Continuer', async () => {
     const user = userEvent.setup();
     render(<Onboarding onDone={() => {}} />);
 
     await user.click(screen.getByRole('button', { name: /Mélanie/ }));
+    const carte = screen.getByRole('button', { name: /Mélanie/ });
+    expect(carte).toHaveClass('sel');
+    expect(carte).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByLabelText("C'est ton prénom ?")).toHaveValue('Mélanie');
+    expect(screen.getByLabelText("C'est ton prénom ?")).toHaveAttribute('maxLength', '20');
+
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
     expect(screen.getByRole('heading', { name: /Salut Mélanie/ })).toBeInTheDocument();
-    expect(screen.getByLabelText('Date de naissance')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /Retour/ }));
-    expect(screen.getByRole('heading', { name: /Qui est derrière l'écran/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Mélanie/ })).toHaveClass('sel');
+  });
+
+  it('le prénom édité est utilisé dans la salutation puis enregistré', async () => {
+    const user = userEvent.setup();
+    render(<Onboarding onDone={onDone} />);
+    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
+    await user.clear(screen.getByLabelText("C'est ton prénom ?"));
+    await user.type(screen.getByLabelText("C'est ton prénom ?"), 'Mel');
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    expect(screen.getByRole('heading', { name: /Salut Mel/ })).toBeInTheDocument();
+
+    // Mêmes actions qu'allerEtape5, en poursuivant l'état courant (prénom édité).
+    await remplirEtape2(user);
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    expect(screen.getByRole('heading', { name: /Maison & courses/ })).toBeInTheDocument();
+    soumettre();
+
+    await waitFor(() =>
+      expect(onDone).toHaveBeenCalledWith(expect.objectContaining({ prenom: 'Mel' })),
+    );
+  });
+
+  it('prénom vidé : salutation et profil retombent sur le défaut', async () => {
+    const user = userEvent.setup();
+    render(<Onboarding onDone={onDone} />);
+    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
+    await user.clear(screen.getByLabelText("C'est ton prénom ?"));
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    expect(screen.getByRole('heading', { name: /Salut Mélanie/ })).toBeInTheDocument();
+  });
+
+  it('changer de carte réinitialise le prénom au défaut de la nouvelle carte', async () => {
+    const user = userEvent.setup();
+    render(<Onboarding onDone={() => {}} />);
+    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
+    await user.clear(screen.getByLabelText("C'est ton prénom ?"));
+    await user.type(screen.getByLabelText("C'est ton prénom ?"), 'X');
+    await user.click(screen.getByRole('button', { name: /Marc/ }));
+    expect(screen.getByLabelText("C'est ton prénom ?")).toHaveValue('Marc');
   });
 });
 
@@ -194,7 +242,25 @@ describe('Onboarding — navigation clavier (Entrée = Continuer)', () => {
   });
 });
 
-describe('Onboarding — étape 4 (compléments et régime)', () => {
+describe('Onboarding — étape 4 (compléments, régime — sans doublon d objectif)', () => {
+  it('ne propose plus le doublon d objectif (ni type ni poids objectif)', async () => {
+    await allerEtape4();
+
+    expect(screen.queryByRole('radio', { name: /Perte de poids/ })).toBeNull();
+    expect(screen.queryByLabelText('Poids objectif (kg)')).toBeNull();
+    expect(screen.getByRole('radio', { name: 'Aucun' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Whey' })).toBeInTheDocument();
+  });
+
+  it('l objectif choisi à l étape 3 survit au passage à l étape 4', async () => {
+    const user = await allerEtape3();
+    await user.click(screen.getByRole('radio', { name: /Prise de masse/ }));
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    // L'étape 4 n'affiche plus d'objectif mais l'état est conservé pour l'enregistrement.
+    soumettre();
+    expect(screen.getByRole('heading', { name: /Maison & courses/ })).toBeInTheDocument();
+  });
+
   it('bascule les compléments presets', async () => {
     const user = await allerEtape4();
     const whey = screen.getByRole('button', { name: 'Whey' });
@@ -293,6 +359,7 @@ describe('Onboarding — étape 5 (maison & courses)', () => {
         id: 'melanie',
         dateNaissance: '1987-03-02',
         taille: 165,
+        prenom: 'Mélanie',
         objectif: { type: 'perte' },
         complements: ['Créatine'],
         regime: 'keto',
@@ -314,6 +381,7 @@ describe('Onboarding — étape 5 (maison & courses)', () => {
         id: 'melanie',
         dateNaissance: '1987-03-02',
         taille: 165,
+        prenom: 'Mélanie',
         objectif: { type: 'perte' },
         complements: [],
         regime: 'aucun',
@@ -397,5 +465,111 @@ describe('Onboarding — migration (prefill ancienne forme)', () => {
 
     await waitFor(() => expect(onDone).toHaveBeenCalled());
     expect(getWeights('marc')).toEqual([]);
+  });
+});
+
+describe('Onboarding — CTA « Passer » (tout sautable sauf l étape 1)', () => {
+  it('l étape 2 peut être passée : on arrive à l objectif sans rien remplir', async () => {
+    const user = userEvent.setup();
+    render(<Onboarding onDone={() => {}} />);
+    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+
+    expect(screen.getByRole('heading', { name: /Ton objectif/ })).toBeInTheDocument();
+  });
+
+  it('les étapes 3 et 4 peuvent être passées', async () => {
+    const user = userEvent.setup();
+    render(<Onboarding onDone={onDone} />);
+    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+
+    expect(screen.getByRole('heading', { name: /Maison & courses/ })).toBeInTheDocument();
+  });
+
+  it('parcours tout sauté : profil minimal sans date ni taille ni poids', async () => {
+    const user = userEvent.setup();
+    render(<Onboarding onDone={onDone} />);
+    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    soumettre();
+
+    await waitFor(() =>
+      expect(onDone).toHaveBeenCalledWith({
+        id: 'melanie',
+        prenom: 'Mélanie',
+        objectif: { type: 'perte' },
+        complements: [],
+        regime: 'aucun',
+      } satisfies UserProfile),
+    );
+    expect(getWeights('melanie')).toEqual([]);
+  });
+
+  it('champs présents = validés même en parcours sauté (poids saisi puis Passer)', async () => {
+    const user = userEvent.setup();
+    render(<Onboarding onDone={() => {}} />);
+    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    await user.type(screen.getByLabelText('Poids (kg)'), '500');
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    soumettre();
+
+    expect(screen.getByRole('alert')).toHaveTextContent(/Poids invalide/i);
+    expect(loadProfile()).toBeNull();
+  });
+
+  it('date seule : profil avec date, sans taille, sans pesée', async () => {
+    const user = userEvent.setup();
+    render(<Onboarding onDone={onDone} />);
+    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    saisirDate('Date de naissance', '1987-03-02');
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    soumettre();
+
+    await waitFor(() =>
+      expect(onDone).toHaveBeenCalledWith(
+        expect.objectContaining({ dateNaissance: '1987-03-02' }),
+      ),
+    );
+    expect(onDone.mock.calls[0][0]).not.toHaveProperty('taille');
+    expect(getWeights('melanie')).toEqual([]);
+  });
+
+  it('migration tout sautée : aucune donnée perdue (poids objectif, taille, pesée du jour)', async () => {
+    const legacy: ProfilLegacy = { id: 'marc', age: 41, taille: 178, poidsObjectif: 74 };
+    addWeight('marc', '2026-09-01', 79.1);
+    addWeight('marc', '2026-09-09', 78.4);
+    const user = userEvent.setup();
+    render(<Onboarding onDone={onDone} prefill={legacy} />);
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    soumettre();
+
+    await waitFor(() =>
+      expect(onDone).toHaveBeenCalledWith(
+        expect.objectContaining({ taille: 178, poidsObjectif: 74 }),
+      ),
+    );
+    // Rien n'est perdu : les 2 pesées préexistantes + la pesée du jour
+    // (poids prérempli de la migration) — addWeight upsert par date, tri asc.
+    expect(getWeights('marc')).toEqual([
+      { date: '2026-09-01', kg: 79.1 },
+      { date: '2026-09-09', kg: 78.4 },
+      { date: todayISO(), kg: 78.4 },
+    ]);
   });
 });

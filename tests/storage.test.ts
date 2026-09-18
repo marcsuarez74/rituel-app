@@ -602,3 +602,77 @@ describe('storage: profil — champs maison & courses', () => {
     warnSpy.mockRestore();
   });
 });
+
+describe('Profil v2.2 — prenom et champs optionnels', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  const base = {
+    objectif: { type: 'perte' as const },
+    complements: [],
+    regime: 'aucun' as const,
+  };
+
+  it('roundtrip : prenom trimé persisté et relu', () => {
+    saveProfile({ id: 'marc', prenom: '  Jean  ', dateNaissance: '1985-04-12', taille: 178, ...base });
+    expect(loadProfile()?.prenom).toBe('Jean');
+  });
+
+  it('prenom non-string : champ lâché, profil valide', () => {
+    localStorage.setItem(
+      'sportapp:profile',
+      JSON.stringify({ id: 'marc', dateNaissance: '1985-04-12', taille: 178, prenom: 42, ...base }),
+    );
+    expect(loadProfile()?.prenom).toBeUndefined();
+    expect(loadProfile()?.id).toBe('marc');
+  });
+
+  it('profil partiel (onboarding sauté) : sans date ni taille, loadProfile OK', () => {
+    localStorage.setItem(
+      'sportapp:profile',
+      JSON.stringify({ id: 'melanie', prenom: 'Mel', ...base }),
+    );
+    const p = loadProfile();
+    expect(p?.prenom).toBe('Mel');
+    expect(p?.dateNaissance).toBeUndefined();
+    expect(p?.taille).toBeUndefined();
+  });
+
+  it('champs illégaux lâchés sans invalider : date vide, taille <= 0, prenom espaces', () => {
+    localStorage.setItem(
+      'sportapp:profile',
+      JSON.stringify({
+        id: 'marc',
+        prenom: '   ',
+        dateNaissance: '',
+        taille: 0,
+        poidsObjectif: 'x',
+        ...base,
+      }),
+    );
+    const p = loadProfile();
+    expect(p?.prenom).toBeUndefined();
+    expect(p?.dateNaissance).toBeUndefined();
+    expect(p?.taille).toBeUndefined();
+    expect(p?.poidsObjectif).toBeUndefined();
+  });
+
+  it('saveProfile trime le prenom dans le payload sync', () => {
+    saveProfile({ id: 'marc', prenom: '  Jean ', dateNaissance: '1985-04-12', taille: 178, ...base });
+    const brut = JSON.parse(localStorage.getItem('sportapp:profile')!);
+    expect(brut.prenom).toBe('Jean');
+  });
+
+  it('saveProfile ne crash pas sur un prenom illégal (payload sync corrompu)', () => {
+    saveProfile({
+      id: 'marc',
+      dateNaissance: '1985-04-12',
+      taille: 178,
+      prenom: 42 as unknown as string,
+      ...base,
+    });
+    expect(loadProfile()?.prenom).toBeUndefined();
+    expect(loadProfile()?.id).toBe('marc');
+  });
+});

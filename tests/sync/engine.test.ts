@@ -428,6 +428,23 @@ describe('sync: pull / merge (outbox prime)', () => {
     expect(loadProfile()?.taille).toBe(181);
   });
 
+  it('profil actif remote partiel v2.2 (sans date ni taille) passe la garde et s\'applique', async () => {
+    saveProfile(profilMarc());
+    viderOutbox();
+    const partiel = {
+      ...profilMarc(),
+      dateNaissance: undefined,
+      taille: undefined,
+      prenom: 'Marc',
+    };
+    client.lues.profiles = [{ household_id: 'f', profil: 'marc', payload: partiel }];
+    await pull();
+    const p = loadProfile();
+    expect(p?.prenom).toBe('Marc');
+    expect(p?.dateNaissance).toBeUndefined();
+    expect(p?.taille).toBeUndefined();
+  });
+
   it('appliquerRemote retourne false sans changement', async () => {
     const vide = { weeks: [], checks: [], weights: [], depenses: [], profiles: [] };
     expect(await appliquerRemote(vide)).toBe(false);

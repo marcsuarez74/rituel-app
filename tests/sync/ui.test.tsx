@@ -240,6 +240,7 @@ describe('sync UI: onboarding étape 6', () => {
     const user = userEvent.setup();
     render(<Onboarding onDone={onDone} />);
     await user.click(screen.getByRole('button', { name: /Mélanie/ }));
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
     await user.type(screen.getByLabelText('Poids (kg)'), '62.4');
     saisirDate('Date de naissance', '1987-03-02');
     await user.type(screen.getByLabelText('Taille (cm)'), '165');

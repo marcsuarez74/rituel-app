@@ -44,6 +44,11 @@ describe('assemblePromptIa', () => {
     expect(texte).toContain("Objectif : affiner la silhouette vers 72 kg d'ici mars 2027.");
   });
 
+  it('utilise le prénom édité (profil v2.2) dans l ouverture', () => {
+    const texte = assemblePromptIa({ ...profilComplet, prenom: 'Jean' }, pesee);
+    expect(texte).toContain('Tu es un nutritionniste. Jean (41 ans,');
+  });
+
   it('assemble le bloc contexte avec les données maison', () => {
     const texte = assemblePromptIa(profilComplet, pesee);
     expect(texte).toContain('- Régime particulier : keto');
@@ -125,5 +130,28 @@ describe('assemblePromptIa', () => {
     expect(texte).toContain('{{EVENEMENTS}}');
     expect(texte).not.toContain('{{OUVERTURE}}');
     expect(texte).not.toContain('{{CONTEXTE}}');
+  });
+
+  it('profil partiel (onboarding sauté) : ouverture sans âge ni taille', () => {
+    const texte = assemblePromptIa(
+      { ...profilComplet, dateNaissance: undefined, taille: undefined },
+      pesee,
+    );
+    expect(texte).toContain(
+      'Tu es un nutritionniste. Marc (82,4 kg — dernière pesée du 14/09) te demande',
+    );
+  });
+
+  it('profil partiel sans pesée : le prénom seul dans l ouverture', () => {
+    const texte = assemblePromptIa(
+      { ...profilComplet, dateNaissance: undefined, taille: undefined },
+      null,
+    );
+    expect(texte).toContain('Tu es un nutritionniste. Marc te demande');
+  });
+
+  it('date présente, taille absente : âge affiché sans taille', () => {
+    const texte = assemblePromptIa({ ...profilComplet, taille: undefined }, null);
+    expect(texte).toContain('Tu es un nutritionniste. Marc (41 ans)');
   });
 });

@@ -1,6 +1,6 @@
 import template from '../assets/prompt-cycle-template.md?raw';
 import { ageDepuis, formatDayMonth } from './dates';
-import { PRENOMS, type ObjectifType, type UserProfile } from './model';
+import { prenomProfil, type ObjectifType, type UserProfile } from './model';
 import { formatEuro } from './prix';
 import type { WeightEntry } from './storage';
 
@@ -43,10 +43,16 @@ const objectifPhrase = (p: UserProfile): string => {
 };
 
 const ouverture = (p: UserProfile, dernierPoids: WeightEntry | null): string => {
-  const perso = dernierPoids
-    ? `${PRENOMS[p.id]} (${ageDepuis(p.dateNaissance)} ans, ${formatKg(dernierPoids.kg)} kg — dernière pesée du ${formatDayMonth(dernierPoids.date)}, ${p.taille} cm)`
-    : `${PRENOMS[p.id]} (${ageDepuis(p.dateNaissance)} ans, ${p.taille} cm)`;
-  return `Tu es un nutritionniste. ${perso} te demande de lui réaliser une rotation de menus sur 4 semaines pour installer une routine durable. Objectif : ${objectifPhrase(p)}.`;
+  const details = [
+    p.dateNaissance ? `${ageDepuis(p.dateNaissance)} ans` : '',
+    dernierPoids
+      ? `${formatKg(dernierPoids.kg)} kg — dernière pesée du ${formatDayMonth(dernierPoids.date)}`
+      : '',
+    p.taille != null ? `${p.taille} cm` : '',
+  ].filter(Boolean);
+  const qui =
+    details.length > 0 ? `${prenomProfil(p.id, p)} (${details.join(', ')})` : prenomProfil(p.id, p);
+  return `Tu es un nutritionniste. ${qui} te demande de lui réaliser une rotation de menus sur 4 semaines pour installer une routine durable. Objectif : ${objectifPhrase(p)}.`;
 };
 
 // Une ligne par donnée présente ; ligne omise si le champ ne l'est pas.

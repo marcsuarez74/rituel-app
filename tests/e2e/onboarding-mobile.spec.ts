@@ -36,6 +36,7 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     // document.fonts.ready fixe le layout avant les mesures (pattern dock.spec).
     await page.evaluate(() => document.fonts.ready);
     await page.getByRole('button', { name: /Mélanie/ }).click();
+    await page.getByRole('button', { name: /Continuer/ }).click();
 
     await expect(page.getByLabel('Date de naissance')).toBeVisible();
     await assertPasDeDebordement(page);
@@ -56,6 +57,7 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     await page.goto('/');
     await page.evaluate(() => document.fonts.ready);
     await page.getByRole('button', { name: /Mélanie/ }).click();
+    await page.getByRole('button', { name: /Continuer/ }).click();
 
     await page.getByLabel('Poids (kg)').fill('62.4');
     await page.getByLabel('Date de naissance').fill('1987-03-02');
@@ -82,6 +84,7 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     // document.fonts.ready fixe le layout avant les mesures (pattern dock.spec).
     await page.evaluate(() => document.fonts.ready);
     await page.getByRole('button', { name: /Mélanie/ }).click();
+    await page.getByRole('button', { name: /Continuer/ }).click();
 
     await page.getByLabel('Poids (kg)').fill('62.4');
     await page.getByLabel('Date de naissance').fill('1987-03-02');
@@ -117,11 +120,47 @@ test.describe('Onboarding 5 étapes — mobile', () => {
       id: 'melanie',
       dateNaissance: '1987-03-02',
       taille: 165,
+      prenom: 'Mélanie',
       objectif: { type: 'affiner' },
       complements: ['Créatine'],
       regime: 'keto',
       magasin: 'Lidl',
       budgetMax: 40,
+    });
+  });
+
+  test('parcours tout sauté : étape 1 seule obligatoire → shell sans crash', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => document.fonts.ready);
+    await page.getByRole('button', { name: /Mélanie/ }).click();
+    await page.getByRole('button', { name: /Continuer/ }).click();
+
+    // « Passer » sur les étapes infos / objectif / compléments & régime.
+    for (let i = 0; i < 3; i++) {
+      await page.getByRole('button', { name: 'Passer' }).click();
+    }
+    await page.getByRole('button', { name: /C'est parti/ }).click();
+
+    // Même tolérance à l'étape 6 optionnelle que le parcours complet.
+    const plusTard = page.getByRole('button', { name: 'Plus tard' });
+    await plusTard.or(page.getByText('Semaine 37')).first().waitFor();
+    if (await plusTard.isVisible()) await plusTard.click();
+
+    // L'app s'affiche sans crash : salutation (onglet Mon suivi) avec le prénom
+    // prérempli + semaine d'exemple dans l'onglet par défaut.
+    await page.getByRole('button', { name: 'Mon suivi' }).click();
+    await expect(page.getByText('Salut Mélanie 👋')).toBeVisible();
+    await expect(page.getByText('Semaine 37')).toBeVisible();
+    await assertPasDeDebordement(page);
+
+    // Profil partiel enregistré : aucun champ sauté n'apparaît dans le storage.
+    const profil = await page.evaluate(() => JSON.parse(localStorage.getItem('sportapp:profile')!));
+    expect(profil).toEqual({
+      id: 'melanie',
+      prenom: 'Mélanie',
+      objectif: { type: 'perte' },
+      complements: [],
+      regime: 'aucun',
     });
   });
 

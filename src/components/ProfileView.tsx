@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { PROFILS_META, prenomProfil } from '../lib/model';
 import type { ProfileData, UserProfile } from '../lib/model';
 import { addWeight, getChecks, getWeights } from '../lib/storage';
 import type { WeightEntry } from '../lib/storage';
@@ -7,11 +8,6 @@ import { extraireJourLabel, jourAbrege, todayISO, formatDayMonth } from '../lib/
 import { compteChecklist } from '../lib/stats';
 import { Checklist } from './Checklist';
 import { WeightChart } from './WeightChart';
-
-const TITLES: Record<UserProfile['id'], string> = {
-  marc: 'Marc — Diet & Sport',
-  melanie: 'Mélanie — Keto & Sport',
-};
 
 export function ProfileView({
   profile,
@@ -63,7 +59,9 @@ export function ProfileView({
 
   return (
     <>
-      <h2 className="profile-title">{TITLES[profile.id]}</h2>
+      <h2 className="profile-title">
+        {prenomProfil(profile.id, profile)} — {PROFILS_META[profile.id].tagline}
+      </h2>
       <section className="profile-section">
         <h3>Cibles</h3>
         <ul className="target-list">

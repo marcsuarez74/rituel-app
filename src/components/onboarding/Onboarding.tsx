@@ -4,6 +4,7 @@ import {
   MAGASINS_PRESETS,
   OBJECTIF_TYPES,
   PREFERENCES_PRESETS,
+  PROFILS_META,
   REGIMES,
   normaliseComplement,
 } from '../../lib/model';
@@ -17,11 +18,6 @@ import { messageConnexion } from '../../lib/sync/messages';
 import { lireSession } from '../../lib/sync/session';
 import { Icon } from '../Icon';
 
-const PROFILS: Array<{ id: ProfileKey; prenom: string; emoji: string; tagline: string }> = [
-  { id: 'marc', prenom: 'Marc', emoji: '💪', tagline: 'Diet & sport' },
-  { id: 'melanie', prenom: 'Mélanie', emoji: '🌿', tagline: 'Keto & sport' },
-];
-
 export function Onboarding({
   onDone,
   prefill,
@@ -34,6 +30,9 @@ export function Onboarding({
   // si la sync est active et qu'aucune session foyer n'existe encore.
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(prefill ? 2 : 1);
   const [id, setId] = useState<ProfileKey | null>(prefill?.id ?? null);
+  // Prénom édité à l'étape 1 ('' en migration — l'étape 1 n'existe pas) ;
+  // vide ⇒ salutation et profil retombent sur le défaut PROFILS_META[id].nom.
+  const [prenom, setPrenom] = useState('');
   const [poids, setPoids] = useState(() => {
     if (!prefill) return '';
     const list = getWeights(prefill.id);
@@ -62,7 +61,6 @@ export function Onboarding({
   const [syncOccupe, setSyncOccupe] = useState(false);
 
   const migration = prefill != null;
-  const profil = id ? PROFILS.find((p) => p.id === id) : undefined;
 
   const aller = (n: 1 | 2 | 3 | 4 | 5 | 6) => {
     setError(null);
@@ -70,8 +68,9 @@ export function Onboarding({
   };
 
   const choisir = (p: ProfileKey) => {
+    setError(null);
     setId(p);
-    aller(2);
+    setPrenom(PROFILS_META[p].nom);
   };
 
   const retour = () => aller(Math.max(1, step - 1) as 1 | 2 | 3 | 4 | 5 | 6);
@@ -198,9 +197,31 @@ export function Onboarding({
     return true;
   };
 
+  // Enregistrement final tolérant : chaque champ présent est validé (mêmes
+  // bornes que les « Continuer »), chaque champ absent est simplement omis —
+  // l'onboarding est tout sautable, le profil peut rester partiel.
   const valider = () => {
-    const infos = validerInfos();
-    if (!infos) return;
+    const cm = taille ? Number.parseInt(taille, 10) : undefined;
+    if (taille && (cm === undefined || cm < 120 || cm > 230)) {
+      setError('Taille invalide : entre 120 et 230 cm.');
+      return;
+    }
+    if (dateNaissance) {
+      if (dateNaissance > todayISO()) {
+        setError('La date de naissance ne peut pas être dans le futur.');
+        return;
+      }
+      const ans = ageDepuis(dateNaissance);
+      if (ans < 10 || ans > 100) {
+        setError('Âge calculé invalide : entre 10 et 100 ans.');
+        return;
+      }
+    }
+    const kg = poids ? Number.parseFloat(poids.replace(',', '.')) : Number.NaN;
+    if (poids && (Number.isNaN(kg) || kg < 30 || kg > 250)) {
+      setError('Poids invalide : entre 30 et 250 kg.');
+      return;
+    }
     const obj = poidsObjectif ? Number.parseFloat(poidsObjectif.replace(',', '.')) : undefined;
     if (poidsObjectif && (obj === undefined || obj < 30 || obj > 250)) {
       setError('Poids objectif invalide : entre 30 et 250 kg.');
@@ -212,8 +233,9 @@ export function Onboarding({
     const repas = repasJour ? Number.parseInt(repasJour, 10) : undefined;
     const profile: UserProfile = {
       id,
-      dateNaissance,
-      taille: infos.cm,
+      ...(dateNaissance ? { dateNaissance } : {}),
+      ...(cm != null ? { taille: cm } : {}),
+      ...(prenom.trim() ? { prenom: prenom.trim() } : {}),
       ...(obj != null ? { poidsObjectif: obj } : {}),
       objectif: { type: objectifType, ...(echeance ? { echeance } : {}) },
       complements: [...complements],
@@ -225,7 +247,7 @@ export function Onboarding({
       ...(repas != null ? { repasJour: repas } : {}),
     };
     saveProfile(profile);
-    if (infos.kg != null) addWeight(id, todayISO(), infos.kg);
+    if (!Number.isNaN(kg)) addWeight(id, todayISO(), kg);
     // Sync active sans session foyer (première installation) : étape 6
     // optionnelle avant de terminer — sinon on termine comme avant.
     if (syncActif() && !lireSession()) {
@@ -280,21 +302,48 @@ export function Onboarding({
           <h1>Qui est derrière l'écran ?</h1>
           <p className="onboarding-sub">Choisis ton profil, on s'occupe du reste.</p>
           <div className="onboarding-cards">
-            {PROFILS.map(({ id: pid, prenom, emoji, tagline }) => (
-              <button
-                key={pid}
-                type="button"
-                className={`onboarding-card onboarding-card-${pid}`}
-                onClick={() => choisir(pid)}
-              >
-                <span className="onboarding-card-emoji" aria-hidden="true">
-                  {emoji}
-                </span>
-                <span className="onboarding-card-prenom">{prenom}</span>
-                <span className="onboarding-card-tagline">{tagline}</span>
-              </button>
-            ))}
+            {(Object.keys(PROFILS_META) as ProfileKey[]).map((pid) => {
+              const meta = PROFILS_META[pid];
+              return (
+                <button
+                  key={pid}
+                  type="button"
+                  aria-pressed={id === pid}
+                  className={`onboarding-card onboarding-card-${pid}${id === pid ? ' sel' : ''}`}
+                  onClick={() => choisir(pid)}
+                >
+                  <span className="onboarding-card-emoji" aria-hidden="true">
+                    {meta.emoji}
+                  </span>
+                  <span className="onboarding-card-prenom">{meta.nom}</span>
+                  <span className="onboarding-card-tagline">{meta.tagline}</span>
+                </button>
+              );
+            })}
           </div>
+          {id && (
+            <>
+              <div className="onboarding-field">
+                <label htmlFor="ob-prenom">C'est ton prénom ?</label>
+                <input
+                  id="ob-prenom"
+                  type="text"
+                  maxLength={20}
+                  value={prenom}
+                  onChange={(e) => {
+                    setError(null);
+                    setPrenom(e.target.value);
+                  }}
+                />
+                <p className="onb-hint">Utilisé pour te saluer — modifiable plus tard dans le profil.</p>
+              </div>
+              <div className="onb-btnrow">
+                <button type="button" className="onb-next" onClick={() => aller(2)}>
+                  Continuer <Icon name="chev-right" size={14} />
+                </button>
+              </div>
+            </>
+          )}
         </>
       )}
 
@@ -312,14 +361,14 @@ export function Onboarding({
         >
           {step === 2 && (
             <>
-              <h1>Salut {profil?.prenom} 👋</h1>
+              <h1>Salut {prenom.trim() || PROFILS_META[id].nom} 👋</h1>
               <p className="onboarding-sub">
                 {migration ? 'On met ton profil à niveau.' : 'Tes bases, pour tes suivis.'}
               </p>
               {migration && (
                 <p className="mig-prof">
                   <span>
-                    Profil : {profil?.prenom} {profil?.emoji}
+                    Profil : {prenom.trim() || PROFILS_META[id].nom} {PROFILS_META[id].emoji}
                   </span>
                   <span>non modifiable ici</span>
                 </p>
@@ -394,6 +443,13 @@ export function Onboarding({
                     Retour
                   </button>
                 )}
+                <button
+                  type="button"
+                  className="onb-skip"
+                  onClick={() => aller((step + 1) as 1 | 2 | 3 | 4 | 5 | 6)}
+                >
+                  Passer
+                </button>
                 <button type="button" className="onb-next" onClick={continuerInfos}>
                   Continuer <Icon name="chev-right" size={14} />
                 </button>
@@ -460,6 +516,13 @@ export function Onboarding({
               <div className="onb-btnrow">
                 <button type="button" className="onb-back" onClick={retour}>
                   Retour
+                </button>
+                <button
+                  type="button"
+                  className="onb-skip"
+                  onClick={() => aller((step + 1) as 1 | 2 | 3 | 4 | 5 | 6)}
+                >
+                  Passer
                 </button>
                 <button type="button" className="onb-next" onClick={continuerObjectif}>
                   Continuer <Icon name="chev-right" size={14} />
@@ -544,42 +607,16 @@ export function Onboarding({
                   </button>
                 ))}
               </div>
-              <p className="onb-label">Objectif</p>
-              <div className="rline" role="radiogroup" aria-label="Type d'objectif">
-                {OBJECTIF_TYPES.map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={objectifType === t.id}
-                    className={`rl${objectifType === t.id ? ' sel' : ''}`}
-                    onClick={() => {
-                      setError(null);
-                      setObjectifType(t.id);
-                    }}
-                  >
-                    <span className="rl-dot" aria-hidden="true" />
-                    {t.nom}
-                  </button>
-                ))}
-              </div>
-              <div className="onboarding-field">
-                <label htmlFor={`ob-obj-poids-${step}`}>Poids objectif (kg)</label>
-                <input
-                  id={`ob-obj-poids-${step}`}
-                  type="number"
-                  inputMode="decimal"
-                  step="0.1"
-                  value={poidsObjectif}
-                  onChange={(e) => {
-                    setError(null);
-                    setPoidsObjectif(e.target.value);
-                  }}
-                />
-              </div>
               <div className="onb-btnrow">
                 <button type="button" className="onb-back" onClick={retour}>
                   Retour
+                </button>
+                <button
+                  type="button"
+                  className="onb-skip"
+                  onClick={() => aller((step + 1) as 1 | 2 | 3 | 4 | 5 | 6)}
+                >
+                  Passer
                 </button>
                 <button type="button" className="onb-next" onClick={() => aller(5)}>
                   Continuer <Icon name="chev-right" size={14} />

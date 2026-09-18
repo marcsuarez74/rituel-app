@@ -215,6 +215,25 @@ describe('App shell', () => {
     expect(screen.queryByText('Cardio')).not.toBeInTheDocument();
   });
 
+  it('affiche le prénom édité dans la salutation (profil v2.2)', async () => {
+    saveProfile({
+      id: 'marc',
+      prenom: 'Jean',
+      dateNaissance: '1985-04-12',
+      taille: 178,
+      objectif: { type: 'perte' },
+      complements: [],
+      regime: 'aucun',
+    });
+    const parsed = parseWeeklyFile(fixture());
+    saveWeek(fixture(), parsed.data);
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: 'Mon suivi' }));
+    expect(screen.getByText(/Salut Jean 👋/)).toBeInTheDocument();
+  });
+
   it('affiche directement la semaine persistée après un re-render complet', () => {
     const parsed = parseWeeklyFile(fixture());
     saveWeek(fixture(), parsed.data);
@@ -302,6 +321,7 @@ describe('Onboarding v2 — persistance via App', () => {
     render(<App />);
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: /Marc/ }));
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
     await user.type(screen.getByLabelText('Poids (kg)'), '85');
     fireEvent.change(screen.getByLabelText('Date de naissance'), { target: { value: '1985-04-12' } });
     await user.type(screen.getByLabelText('Taille (cm)'), '178');

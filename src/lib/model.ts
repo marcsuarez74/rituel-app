@@ -112,8 +112,9 @@ export interface ImportedWeek {
 
 export interface UserProfile {
   id: ProfileKey;
-  dateNaissance: string; // AAAA-MM-JJ — l'âge s'affiche calculé (ageDepuis)
-  taille: number;
+  prenom?: string; // v2.2 — prénom édité ; défaut = PROFILS_META[id].nom
+  dateNaissance?: string; // v2.2 — optionnel (onboarding sautable) ; âge calculé si présent
+  taille?: number; // v2.2 — optionnel (onboarding sautable)
   poidsObjectif?: number;
   objectif: Objectif;
   complements: string[];
@@ -155,7 +156,16 @@ export const PREFERENCES_PRESETS: readonly string[] = [
   'Batch-friendly',
 ];
 
-export const PRENOMS: Record<ProfileKey, string> = { marc: 'Marc', melanie: 'Mélanie' };
+// Source unique des métadonnées d'affichage des profils (cartes d'onboarding,
+// titres, salutations) — fusion des anciennes constantes profils/titres/prénoms.
+export const PROFILS_META: Record<ProfileKey, { nom: string; emoji: string; tagline: string }> = {
+  marc: { nom: 'Marc', emoji: '💪', tagline: 'Diet & Sport' },
+  melanie: { nom: 'Mélanie', emoji: '🌿', tagline: 'Keto & Sport' },
+};
+
+// Prénom affiché : le prénom édité (profil v2.2) sinon le nom par défaut.
+export const prenomProfil = (id: ProfileKey, p?: UserProfile): string =>
+  p?.prenom?.trim() || PROFILS_META[id].nom;
 
 // ——— Profil v2 (objectif, compléments, régime) ———
 

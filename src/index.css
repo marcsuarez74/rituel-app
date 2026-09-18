@@ -1928,6 +1928,10 @@ progress {
   cursor: pointer;
 }
 
+.onboarding-card.sel {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
 .onboarding-card-marc {
   background: linear-gradient(135deg, #3e7a46, #2e5d35);
   box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 35%, transparent);
@@ -2100,6 +2104,17 @@ progress {
   cursor: pointer;
 }
 .onb-next:active {
+  transform: scale(0.97);
+}
+.onb-skip {
+  min-height: 48px;
+  padding: 0 var(--sp-12);
+  border: none;
+  background: none;
+  color: color-mix(in srgb, var(--muted) 70%, var(--text));
+  font: 600 var(--fs-sec) Poppins, sans-serif;
+}
+.onb-skip:active {
   transform: scale(0.97);
 }
 .onb-back {
