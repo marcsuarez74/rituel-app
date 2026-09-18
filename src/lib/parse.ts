@@ -63,7 +63,10 @@ function refConnue(ref: string, recettes: Recette[]): boolean {
 function extraireRef(texte: string, recettes: Recette[]): { texte: string; ref?: string } {
   const m = texte.match(REF_SHAPE);
   if (!m || !refConnue(m[1], recettes)) return { texte };
-  return { texte: texte.slice(0, m.index).trimEnd(), ref: m[1] };
+  const net = texte.slice(0, m.index).trimEnd();
+  // Entrée dégénérée (« → R7 » seul) : pas de label vide — on garde le texte d'origine.
+  if (!net) return { texte };
+  return { texte: net, ref: m[1] };
 }
 
 export function parseWeeklyFile(raw: string): ParseResult {
@@ -105,9 +108,9 @@ export function parseWeeklyFile(raw: string): ParseResult {
   const bases = parseBases(sections.get('bases') ?? '', warnings, seen);
   const lignes = lignesBatch(sections.get('batch') ?? '', warnings);
   const batch = parseBatch(lignes, warnings, seen, recettes);
-  const rituelParse = parseRituel(lignes, 'batch', warnings, seen);
+  const rituelParse = parseRituel(lignes, 'batch', warnings, seen, recettes);
   const rituel = rituelParse.etapes;
-  const microBatch = parseMicroBatch(lignes, warnings);
+  const microBatch = parseMicroBatch(lignes, warnings, recettes);
   const reserve = parseReserve(lignes, warnings);
   const profiles = {
     marc: parseProfile(sections.get('marc') ?? '', 'marc', warnings, seen),
@@ -213,7 +216,7 @@ function parseMenu(text: string, section: string, warnings: string[]): MenuDay[]
     if (kv && day) {
       const key = MENU_KEYS[kv[1]];
       if (key) {
-        const ref = kv[2].match(/\s*→\s*(\S+)\s*$/);
+        const ref = kv[2].match(REF_SHAPE);
         const texte = ref ? kv[2].slice(0, ref.index).trimEnd() : kv[2];
         (day as MenuDay & Record<string, string | undefined>)[key] = texte;
         if (ref) {
@@ -330,6 +333,7 @@ function parseRituel(
   section: string,
   warnings: string[],
   seen: Set<string>,
+  recettes: Recette[],
 ): { etapes: RituelEtape[]; production?: string; termine?: string } {
   const etapes: RituelEtape[] = [];
   let production: string | undefined;
@@ -353,7 +357,9 @@ function parseRituel(
       else termine = fin[1];
       continue;
     }
-    const m = line.match(RITUEL_SHAPE);
+    // Ref optionnelle en fin de ligne, avant le découpage créneau · label — détail.
+    const { texte: ligneNet, ref } = extraireRef(line, recettes);
+    const m = ligneNet.match(RITUEL_SHAPE);
     if (!m) {
       warnings.push(`Ligne ignorée (${section}/rituel) : « ${preview(line)} »`);
       continue;
@@ -361,7 +367,13 @@ function parseRituel(
     const [, creneau, label, detail] = m;
     const id = `batch:rituel:${slugify(label)}`;
     registerId(id, `${section}/rituel`, seen, warnings);
-    etapes.push({ id, creneau, label, ...(detail ? { detail } : {}) });
+    etapes.push({
+      id,
+      creneau,
+      label,
+      ...(detail ? { detail } : {}),
+      ...(ref ? { ref } : {}),
+    });
   }
   return {
     etapes,
@@ -370,7 +382,15 @@ function parseRituel(
   };
 }
 
-function parseMicroBatch(lignes: LigneBatch[], warnings: string[]): MicroBatchJour[] {
+// Segment « durée » strict du micro-batch : « 10 min », « 1 h ». Un segment plus
+// long (« 10 min · la boîte passe au frigo ») reste un détail (v1 acceptée).
+const DUREE_SEG = /^\d+\s*(?:min|h|minutes?|heures?)\s*$/i;
+
+function parseMicroBatch(
+  lignes: LigneBatch[],
+  warnings: string[],
+  recettes: Recette[],
+): MicroBatchJour[] {
   const out: MicroBatchJour[] = [];
   for (const [line, cur] of lignes) {
     if (cur !== 'micro-batch') continue;
@@ -380,10 +400,36 @@ function parseMicroBatch(lignes: LigneBatch[], warnings: string[]): MicroBatchJo
       warnings.push(`Ligne ignorée (batch/micro-batch) : « ${preview(line)} »`);
       continue;
     }
-    const pipe = m[2].indexOf('|');
-    const gauche = pipe === -1 ? m[2].trim() : m[2].slice(0, pipe).trim();
-    const droite = pipe === -1 ? undefined : m[2].slice(pipe + 1).trim();
-    out.push({ jour: m[1], quoi: gauche, ...(droite ? { detail: droite } : {}) });
+    const segs = m[2].split(/\s*\|\s*/).filter((s) => s.length > 0);
+    const quoi = segs[0] ?? '';
+    const rest = segs.slice(1);
+    let i = 0;
+    let duree: string | undefined;
+    let quantite: string | undefined;
+    let ref: string | undefined;
+    if (rest[i] && DUREE_SEG.test(rest[i])) {
+      duree = rest[i];
+      i++;
+    }
+    if (rest[i]) {
+      const ex = extraireRef(rest[i], recettes);
+      // La quantité n'est reconnue qu'accompagnée de sa ref recette
+      // (« 2 boîtes → r2 ») — un segment libre reste un détail (v1).
+      if (ex.ref) {
+        quantite = ex.texte || undefined;
+        ref = ex.ref;
+        i++;
+      }
+    }
+    const detail = rest[i] ? rest.slice(i).join(' | ') : undefined;
+    out.push({
+      jour: m[1],
+      quoi,
+      ...(duree ? { duree } : {}),
+      ...(quantite ? { quantite } : {}),
+      ...(ref ? { ref } : {}),
+      ...(detail ? { detail } : {}),
+    });
   }
   return out;
 }

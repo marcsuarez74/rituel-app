@@ -1233,4 +1233,127 @@ ${batch}
     expect(data.batch[0].ref).toBeUndefined();
     expect(warnings).toEqual([]);
   });
+
+  it('refConnue : égalité avec le slug complet → ref extraite, label net', () => {
+    const { data, warnings } = parseWeeklyFile(
+      md('- [ ] Sauce → r7-roti-de-dinde-gratin-courgettes-quinoa\n'),
+    );
+    expect(data.batch[0]).toEqual({
+      id: 'batch:sauce',
+      label: 'Sauce',
+      ref: 'r7-roti-de-dinde-gratin-courgettes-quinoa',
+    });
+    expect(warnings).toEqual([]);
+  });
+
+  it('refConnue : préfixe insensible à la casse (→ r7) → ref extraite, label net', () => {
+    const { data, warnings } = parseWeeklyFile(md('- [ ] Sauce → r7\n'));
+    expect(data.batch[0]).toEqual({ id: 'batch:sauce', label: 'Sauce', ref: 'r7' });
+    expect(warnings).toEqual([]);
+  });
+
+  it('entrée dégénérée « → R7 » seul : libellé intact, id inchangé (pré-refs), pas de ref', () => {
+    const { data, warnings } = parseWeeklyFile(md('- [ ] → R7\n'));
+    expect(data.batch[0]).toEqual({ id: 'batch:r7', label: '→ R7' });
+    expect(warnings).toEqual([]);
+  });
+});
+
+describe('Batch v4 — refs sur le rituel et micro-batch enrichi', () => {
+  // … même fixture md() que le describe « Batch v4 — refs recette sur les tâches » …
+  const md = (batch: string): string => `---
+semaine: 2026-S38
+menu: B
+du: 2026-09-14
+au: 2026-09-20
+---
+
+## Courses
+### Frais
+- Œufs
+
+## Menu
+### Lundi
+- dejeuner-marc: Boîte
+
+## Recettes
+### R7 · Rôti de dinde + gratin courgettes + quinoa
+temps: 60 min · four 180°
+
+## Batch
+${batch}
+
+## Marc
+### Cibles
+- 2 450 kcal
+### Séances
+- [ ] Lundi — Muscu
+### Rappels
+- Pesée lun
+## Melanie
+### Cibles
+- 1 450 kcal
+### Séances
+- [ ] Lundi — Danse
+### Rappels
+- Jeûne
+`;
+
+  it('étape rituel avec ref : ref extraite, détail intact, id inchangé', () => {
+    const { data } = parseWeeklyFile(md(`### Rituel dimanche
+- 5-30 min · Cuissons en double — dîner du soir ×2 + féculent ×2 → boîte lundi → R7
+`));
+    expect(data.rituel).toEqual([
+      {
+        id: 'batch:rituel:cuissons-en-double',
+        creneau: '5-30 min',
+        label: 'Cuissons en double',
+        detail: 'dîner du soir ×2 + féculent ×2 → boîte lundi',
+        ref: 'R7',
+      },
+    ]);
+  });
+
+  it('étape sans ref : pas de clé ref', () => {
+    const { data } = parseWeeklyFile(md(`### Rituel dimanche
+- 0-5 min · Four à 180° — egg muffins
+`));
+    expect(data.rituel![0].ref).toBeUndefined();
+  });
+
+  it('micro-batch v4 : durée, quantité → ref, détail', () => {
+    const { data } = parseWeeklyFile(md(`### Micro-batch
+- mardi: précuire brocolis | 10 min | 2 boîtes → R7 | sortir la veille
+`));
+    expect(data.microBatch).toEqual([
+      { jour: 'mardi', quoi: 'précuire brocolis', duree: '10 min', quantite: '2 boîtes', ref: 'R7', detail: 'sortir la veille' },
+    ]);
+  });
+
+  it('micro-batch : quantité sans durée, ref seule', () => {
+    const { data } = parseWeeklyFile(md(`### Micro-batch
+- lundi: doubler le riz | 2 boîtes → R7
+`));
+    expect(data.microBatch).toEqual([
+      { jour: 'lundi', quoi: 'doubler le riz', quantite: '2 boîtes', ref: 'R7' },
+    ]);
+  });
+
+  it('micro-batch v1 : « | 10 min · détail » reste un détail entier (rétrocompatibilité)', () => {
+    const { data } = parseWeeklyFile(md(`### Micro-batch
+- lundi: doubler le plat | 10 min · la boîte de mardi passe au frigo
+`));
+    expect(data.microBatch).toEqual([
+      { jour: 'lundi', quoi: 'doubler le plat', detail: '10 min · la boîte de mardi passe au frigo' },
+    ]);
+  });
+
+  it('micro-batch : segment sans ref après une durée = détail (pas une quantité)', () => {
+    const { data } = parseWeeklyFile(md(`### Micro-batch
+- samedi: œufs durs | 10 min | collations prêtes
+`));
+    expect(data.microBatch).toEqual([
+      { jour: 'samedi', quoi: 'œufs durs', duree: '10 min', detail: 'collations prêtes' },
+    ]);
+  });
 });
