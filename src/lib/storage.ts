@@ -171,7 +171,9 @@ const normaliseChampsLibres = (list: string[]): string[] => {
 export const saveProfile = (profile: UserProfile): void => {
   const net: UserProfile = {
     ...profile,
-    ...(profile.prenom !== undefined ? { prenom: profile.prenom.trim() } : {}),
+    ...(typeof profile.prenom === 'string' && profile.prenom.trim()
+      ? { prenom: profile.prenom.trim() }
+      : {}),
     ...(profile.magasin !== undefined ? { magasin: profile.magasin.trim() } : {}),
     ...(profile.preferences !== undefined
       ? { preferences: normaliseChampsLibres(profile.preferences) }
@@ -189,9 +191,9 @@ const OBJECTIF_TYPES_VALIDES = ['perte', 'affiner', 'masse', 'maintien'];
 const REGIMES_VALIDES = ['keto', 'vegetarien', 'vegan', 'sans-gluten', 'aucun'];
 
 // Garde de forme du profil v2.2 — partagée entre la lecture locale (loadProfile)
-// et le merge remote (engine) : un payload invalide n'est jamais persisté.
-// dateNaissance/taille restent typés strictement quand présents ; prenom et
-// poidsObjectif sont lâchés champ par champ à la reconstruction s'ils sont illégaux.
+// et le merge remote (engine) : un payload invalide à la garde n'est jamais
+// persisté ; un champ optionnel illégal qui passe (prenom, poidsObjectif) est
+// lâché à la reconstruction puis réparé à la prochaine poussée.
 export const estProfilValide = (v: unknown): v is UserProfile => {
   const isNum = (x: unknown): x is number => typeof x === 'number' && Number.isFinite(x);
   const isStr = (x: unknown): x is string => typeof x === 'string';

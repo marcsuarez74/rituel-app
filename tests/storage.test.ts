@@ -663,4 +663,16 @@ describe('Profil v2.2 — prenom et champs optionnels', () => {
     const brut = JSON.parse(localStorage.getItem('sportapp:profile')!);
     expect(brut.prenom).toBe('Jean');
   });
+
+  it('saveProfile ne crash pas sur un prenom illégal (payload sync corrompu)', () => {
+    saveProfile({
+      id: 'marc',
+      dateNaissance: '1985-04-12',
+      taille: 178,
+      prenom: 42 as unknown as string,
+      ...base,
+    });
+    expect(loadProfile()?.prenom).toBeUndefined();
+    expect(loadProfile()?.id).toBe('marc');
+  });
 });

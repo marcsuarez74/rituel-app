@@ -144,4 +144,9 @@ describe('assemblePromptIa', () => {
     );
     expect(texte).toContain('Tu es un nutritionniste. Marc te demande');
   });
+
+  it('date présente, taille absente : âge affiché sans taille', () => {
+    const texte = assemblePromptIa({ ...profilComplet, taille: undefined }, null);
+    expect(texte).toContain('Tu es un nutritionniste. Marc (41 ans)');
+  });
 });
