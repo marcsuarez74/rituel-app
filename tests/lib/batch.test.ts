@@ -76,4 +76,17 @@ describe('soirsSansDiner', () => {
     const menu: MenuDay[] = [{ jour: 'Mardi', dinerMelanie: 'Wok keto' }];
     expect(soirsSansDiner(menu, RESERVE)).toEqual([]);
   });
+
+  it('menu et réserve vides → aucune suggestion', () => {
+    expect(soirsSansDiner([], [])).toEqual([]);
+  });
+
+  it('deux lignes de réserve même clé : la première gagne', () => {
+    const menu: MenuDay[] = [{ jour: 'Mardi' }];
+    const reserve = [
+      { cle: 'mardi', plat: 'Chili ×2', conservation: 'congélateur' },
+      { cle: 'mardi', plat: 'Soupe', conservation: 'frigo' },
+    ];
+    expect(soirsSansDiner(menu, reserve)).toEqual([{ jour: 'Mardi', ligne: reserve[0] }]);
+  });
 });

@@ -111,7 +111,7 @@ export function parseWeeklyFile(raw: string): ParseResult {
   const rituelParse = parseRituel(lignes, 'batch', warnings, seen, recettes);
   const rituel = rituelParse.etapes;
   const microBatch = parseMicroBatch(lignes, warnings, recettes);
-  const reserve = parseReserve(lignes, warnings);
+  const reserve = parseReserve(lignes, warnings, seen);
   const profiles = {
     marc: parseProfile(sections.get('marc') ?? '', 'marc', warnings, seen),
     melanie: parseProfile(sections.get('melanie') ?? '', 'melanie', warnings, seen),
@@ -435,7 +435,7 @@ function parseMicroBatch(
 
 const JOURS_RESERVE = new Set(['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche', 'mel']);
 
-function parseReserve(lignes: LigneBatch[], warnings: string[]): ReserveLigne[] {
+function parseReserve(lignes: LigneBatch[], warnings: string[], seen: Set<string>): ReserveLigne[] {
   const out: ReserveLigne[] = [];
   for (const [line, cur] of lignes) {
     if (cur !== 'reserve') continue;
@@ -457,6 +457,9 @@ function parseReserve(lignes: LigneBatch[], warnings: string[]): ReserveLigne[] 
       warnings.push(`Ligne réserve ignorée (plat ou conservation vide) : « ${preview(line)} »`);
       continue;
     }
+    // Id de coche composé comme lib/batch.ts (reserveId) : dérive de la clé et du
+    // plat — deux lignes identiques partagent leur état → warning comme ailleurs.
+    registerId(`reserve:${cle}:${slugify(plat)}`, 'batch/réserve', seen, warnings);
     out.push({ cle, plat, conservation });
   }
   return out;

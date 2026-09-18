@@ -1156,6 +1156,14 @@ ${batch}
     expect(warnings.filter((w) => w.includes('réserve')).length).toBe(4);
   });
 
+  it('réserve : id dupliqué → warning (comme les autres sections)', () => {
+    const { warnings } = parseWeeklyFile(md(`### Réserve
+- mardi: Chili | congélateur
+- mardi: Chili | congélateur
+`));
+    expect(warnings.some((w) => w.includes('dupliqué'))).toBe(true);
+  });
+
   it('production/termine hors sous-section Rituel dimanche → warning, pas une tâche batch', () => {
     const { data, warnings } = parseWeeklyFile(md(`- production: égarée
 - [ ] Egg muffins ×10
