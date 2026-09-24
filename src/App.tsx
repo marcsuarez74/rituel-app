@@ -106,7 +106,7 @@ function App() {
     if (!e.isPrimary) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const t = e.target as HTMLElement;
-    if (t.closest('button, input, textarea, select, label, a, .micro-batch')) return;
+    if (t.closest('button, input, textarea, select, label, a, .micro-batch, .rtabs')) return;
     swipeX.current = e.clientX;
     swipeY.current = e.clientY;
   };
