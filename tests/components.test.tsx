@@ -1799,7 +1799,7 @@ describe('Icon', () => {
     expect(document.querySelector('svg')).toHaveAttribute('stroke-width', '2.5');
   });
 
-  it('couvre les 22 noms du design system sans crash', () => {
+  it('couvre les icônes d\'origine sans crash (lock, user et les ajouts hub ont leur test dédié)', () => {
     for (const name of NAMES) {
       const { unmount } = render(<Icon name={name} />);
       expect(document.querySelector('svg')).not.toBeNull();
