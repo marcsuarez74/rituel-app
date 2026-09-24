@@ -499,4 +499,33 @@ describe('App — multi-semaines', () => {
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Semaine 40');
     expect(screen.getByText('Cycle 4')).toBeVisible();
   });
+
+  it('rouvre sur la dernière semaine consultée à la relance (sélection persistée)', async () => {
+    vi.setSystemTime(new Date('2026-09-15T10:00:00')); // mardi, dans S38
+    const user = userEvent.setup();
+    const raw38 = fixtureSemaine('2026-S38', '2026-09-14', '2026-09-20', 'B', 'Chili con carne');
+    const raw39 = fixtureSemaine('2026-S39', '2026-09-21', '2026-09-27', 'C', 'Quiche lorraine');
+    upsertWeek(raw38, parseWeeklyFile(raw38).data);
+    upsertWeek(raw39, parseWeeklyFile(raw39).data);
+    const { unmount } = render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Semaine suivante' }));
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Semaine 39');
+    unmount();
+    render(<App />); // « relance » : nouvelle instance, storage conservé
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Semaine 39');
+    expect(screen.getByText('Cycle 3')).toBeVisible();
+  });
+
+  it('sélection obsolète (semaine absente du stockage) : retombe sur la semaine du jour', () => {
+    vi.setSystemTime(new Date('2026-09-22T10:00:00')); // mardi, dans S39
+    const raw38 = fixtureSemaine('2026-S38', '2026-09-14', '2026-09-20', 'B', 'Chili con carne');
+    const raw39 = fixtureSemaine('2026-S39', '2026-09-21', '2026-09-27', 'C', 'Quiche lorraine');
+    upsertWeek(raw38, parseWeeklyFile(raw38).data);
+    upsertWeek(raw39, parseWeeklyFile(raw39).data);
+    localStorage.setItem('sportapp:selection', JSON.stringify('2026-S99'));
+    render(<App />);
+    // Pas la 1re semaine stockée (S38) mais bien la semaine du jour (S39).
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Semaine 39');
+    expect(screen.getByText('Cycle 3')).toBeVisible();
+  });
 });

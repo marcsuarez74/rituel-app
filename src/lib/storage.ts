@@ -100,6 +100,31 @@ export const upsertWeek = (raw: string, data: WeeklyData): void => {
   });
 };
 
+const SELECTION_KEY = 'sportapp:selection';
+
+// Semaine consultée (chevrons / commutateur) : restaurée au lancement pour
+// retrouver la consultation en cours. Absente → null silencieux (l'app
+// retombe sur la semaine du jour) ; non reconnue → réparée (warn + remove).
+export const lireSelection = (): string | null => {
+  const raw = localStorage.getItem(SELECTION_KEY);
+  if (raw === null) return null;
+  const parsed = safeParse<unknown>(SELECTION_KEY, raw, null);
+  if (typeof parsed === 'string' && parsed) return parsed;
+  if (parsed !== null) {
+    console.warn(`Sélection corrompue ignorée : ${SELECTION_KEY}`);
+    localStorage.removeItem(SELECTION_KEY);
+  }
+  return null;
+};
+
+export const sauverSelection = (semaine: string): void => {
+  localStorage.setItem(SELECTION_KEY, JSON.stringify(semaine));
+};
+
+export const effacerSelection = (): void => {
+  localStorage.removeItem(SELECTION_KEY);
+};
+
 export const getChecks = (semaine: string): Record<string, boolean> => {
   const key = checksKey(semaine);
   const raw = localStorage.getItem(key);

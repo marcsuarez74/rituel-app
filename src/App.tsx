@@ -12,7 +12,7 @@ import { CuisineView } from './components/cuisine/CuisineView';
 import { prenomProfil } from './lib/model';
 import type { ImportedWeek, UserProfile } from './lib/model';
 import { parseWeeklyFile } from './lib/parse';
-import { loadProfile, loadProfilLegacy, loadWeeks, removeProfile } from './lib/storage';
+import { effacerSelection, lireSelection, loadProfile, loadProfilLegacy, loadWeeks, removeProfile, sauverSelection } from './lib/storage';
 import { enregistrerSurEnvoye, initSync, ressynchroniser, type SyncEtat } from './lib/sync/engine';
 import { evenementsDepuisMutations } from './lib/push/evenements';
 import { envoyerEvenement } from './lib/push/module';
@@ -41,8 +41,14 @@ function App() {
   );
   const [semaines, setSemaines] = useState<ImportedWeek[]>(semainesInitiales);
   // Navigation en session : null = auto (semaine du jour) ; sinon l'id de la
-  // semaine consultée via les chevrons. Rien n'est persisté.
-  const [selection, setSelection] = useState<string | null>(null);
+  // semaine consultée via les chevrons. Persistée (sportapp:selection) pour
+  // retrouver la consultation à la relance — fallback auto si elle a disparu
+  // du stockage.
+  const [selection, setSelection] = useState<string | null>(() => lireSelection());
+  const selectionner = (id: string): void => {
+    setSelection(id);
+    sauverSelection(id);
+  };
   const [profilOuvert, setProfilOuvert] = useState(false);
   const [switcherOuvert, setSwitcherOuvert] = useState(false);
   // SuiviHero lit les pesées au montage : onWeightsChanged (pesée ajoutée)
@@ -136,6 +142,7 @@ function App() {
           onImported={() => {
             setSemaines(semainesInitiales());
             setSelection(null);
+            effacerSelection();
             setProfilOuvert(false);
           }}
         />
@@ -144,11 +151,11 @@ function App() {
   }
 
   const idx = indexSemaineCourante(semaines, todayISO());
-  const selectionIdx =
-    selection != null
-      ? Math.max(0, semaines.findIndex((w) => w.data.meta.semaine === selection))
-      : idx;
-  const idxAffiche = Math.min(Math.max(selectionIdx, 0), semaines.length - 1);
+  // Sélection obsolète (semaine retirée du stockage, ex. purge du foyer) :
+  // repli sur la semaine du jour, jamais sur la 1re semaine stockée.
+  const trouve =
+    selection != null ? semaines.findIndex((w) => w.data.meta.semaine === selection) : -1;
+  const idxAffiche = Math.min(Math.max(trouve >= 0 ? trouve : idx, 0), semaines.length - 1);
   const affichee = semaines[idxAffiche];
   if (!affichee) return null;
 
@@ -160,9 +167,9 @@ function App() {
         onSwitcher={() => setSwitcherOuvert(true)}
         syncEtat={syncEtat}
         onSyncTap={() => ressynchroniser()}
-        onPrev={() => setSelection(semaines[Math.max(0, idxAffiche - 1)].data.meta.semaine)}
+        onPrev={() => selectionner(semaines[Math.max(0, idxAffiche - 1)].data.meta.semaine)}
         onNext={() =>
-          setSelection(semaines[Math.min(semaines.length - 1, idxAffiche + 1)].data.meta.semaine)
+          selectionner(semaines[Math.min(semaines.length - 1, idxAffiche + 1)].data.meta.semaine)
         }
         hasPrev={idxAffiche > 0}
         hasNext={idxAffiche < semaines.length - 1}
@@ -172,7 +179,7 @@ function App() {
           semaines={semaines}
           active={affichee.data.meta.semaine}
           onSelect={(id) => {
-            setSelection(id);
+            selectionner(id);
             setSwitcherOuvert(false);
           }}
           onClose={() => setSwitcherOuvert(false)}

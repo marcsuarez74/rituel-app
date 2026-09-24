@@ -1,5 +1,5 @@
 import type { DepenseEntry, UserProfile, WeeklyData } from '../src/lib/model';
-import { addWeight, deleteDepense, getChecks, getDepenses, getWeights, loadProfile, loadProfilLegacy, loadWeek, loadWeeks, removeProfile, saveDepense, saveProfile, saveWeek, setCheck, upsertWeek, type WeightEntry } from '../src/lib/storage';
+import { addWeight, deleteDepense, effacerSelection, getChecks, getDepenses, getWeights, lireSelection, loadProfile, loadProfilLegacy, loadWeek, loadWeeks, removeProfile, saveDepense, saveProfile, saveWeek, sauverSelection, setCheck, upsertWeek, type WeightEntry } from '../src/lib/storage';
 import { todayKey } from '../src/lib/dates';
 
 const week = (): WeeklyData => ({
@@ -674,5 +674,41 @@ describe('Profil v2.2 — prenom et champs optionnels', () => {
     });
     expect(loadProfile()?.prenom).toBeUndefined();
     expect(loadProfile()?.id).toBe('marc');
+  });
+});
+
+describe('storage: sélection de semaine consultée', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('sauvegarde et relit la semaine consultée', () => {
+    sauverSelection('2026-S39');
+    expect(lireSelection()).toBe('2026-S39');
+  });
+
+  it('clé absente : null, silencieux', () => {
+    expect(lireSelection()).toBeNull();
+  });
+
+  it('JSON corrompu : null, clé réparée (retirée)', () => {
+    localStorage.setItem('sportapp:selection', '{pas du json');
+    expect(lireSelection()).toBeNull();
+    expect(localStorage.getItem('sportapp:selection')).toBeNull();
+  });
+
+  it('valeur non-string ou vide : null, clé réparée', () => {
+    localStorage.setItem('sportapp:selection', '42');
+    expect(lireSelection()).toBeNull();
+    localStorage.setItem('sportapp:selection', '""');
+    expect(lireSelection()).toBeNull();
+    expect(localStorage.getItem('sportapp:selection')).toBeNull();
+  });
+
+  it('effacerSelection retire la clé', () => {
+    sauverSelection('2026-S39');
+    effacerSelection();
+    expect(lireSelection()).toBeNull();
+    expect(localStorage.getItem('sportapp:selection')).toBeNull();
   });
 });
