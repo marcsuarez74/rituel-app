@@ -962,14 +962,36 @@ progress {
 
 .rtabs {
   display: flex;
+  align-items: flex-start;
   gap: var(--sp-8);
-  overflow-x: auto;
-  padding: var(--sp-2) var(--sp-2) var(--sp-8);
+  padding: var(--sp-2) 0 var(--sp-8);
   margin-bottom: var(--sp-8);
+}
+/* Zone scrollable des pills recettes — « Mes box » reste épinglée hors de
+   cette zone (spec v14 §4.1) : le scroll ne déborde jamais sur la page. */
+.rtabs-jours {
+  display: flex;
+  gap: var(--sp-8);
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  padding-bottom: var(--sp-8); /* l'air du glow actif, dans la zone de scroll */
   scrollbar-width: none;
 }
-.rtabs::-webkit-scrollbar {
+.rtabs-jours::-webkit-scrollbar {
   display: none;
+}
+/* Trait vertical entre les recettes scrollables et la pill épinglée. */
+.rtabs-sep {
+  width: 1px;
+  height: 26px;
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: var(--sp-8); /* centré sur la pill : 42/2 − 26/2 */
+  background: var(--border);
+}
+.rtab-epingle {
+  flex-shrink: 0;
 }
 .rtab {
   flex-shrink: 0;

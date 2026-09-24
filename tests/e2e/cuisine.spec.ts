@@ -76,9 +76,9 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
     await page.goto(ORIGIN);
     await expect(page.getByText('Semaine 37')).toBeVisible();
     await page.getByRole('button', { name: 'Menu' }).click();
-    await expect(page.locator('.rtab')).toHaveCount(8); // 7 dîners + 🍱 Déjeuners
+    await expect(page.locator('.rtab')).toHaveCount(8); // 7 dîners + 🍱 Mes box épinglée
     // Les pills n'affichent aucun jour : pas de « lundi » ni équivalent.
-    await expect(page.locator('.rtab').first()).not.toContainText(/lundi/i);
+    await expect(page.locator('.rtabs-jours .rtab').first()).not.toContainText(/lundi/i);
     await expect(page.locator('.menu-progress')).toContainText('Dîners 0/7');
     await expect(page.locator('.menu-progress')).toContainText('Boxes 0/7');
 
@@ -104,7 +104,7 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
     // File de déjeuners : 3 paires verrouillées — lundi (← R7), mercredi (← R2)
     // et jeudi (← R2 + R3). Mardi (← R1) est déjà prête : le dîner de lundi
     // (R1) a été coché plus haut dans ce test.
-    await page.getByRole('tab', { name: '🍱 Déjeuners' }).click();
+    await page.getByRole('tab', { name: '🍱 Mes box' }).click();
     await expect(page.locator('.box-pair.locked')).toHaveCount(3);
     // La 2e verrouillée (ordre du fichier) est celle du mercredi : elle attend
     // le dîner de mardi (R2), sa note cite « Pâtes bolognaise ».
@@ -115,7 +115,7 @@ test.describe('Onglets Cuisine v2 — mobile', () => {
     // (restent verrouillées : lundi ← R7, jeudi ← R3).
     await page.getByRole('tab', { name: 'Pâtes bolognaise' }).click();
     await page.getByRole('button', { name: /C'est fait/ }).click();
-    await page.getByRole('tab', { name: '🍱 Déjeuners' }).click();
+    await page.getByRole('tab', { name: '🍱 Mes box' }).click();
     await expect(page.locator('.box-pair.locked')).toHaveCount(2);
     await expect(page.locator('.menu-progress')).toContainText('Dîners 2/7');
 
