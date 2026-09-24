@@ -362,13 +362,14 @@ describe('profil: bloc Notifications', () => {
     pushActifMock.mockReturnValue(false);
     render(<ProfilScreen profile={profilBase()} onBack={() => {}} onChangeProfile={() => {}} onImported={() => {}} />);
     expect(screen.queryByRole('heading', { name: 'Notifications' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Notifications/ })).not.toBeInTheDocument();
   });
 
   it('visible avec push actif : toggle, 3 événements, ajout de rappel', async () => {
     const user = userEvent.setup();
     await renderProfil();
     await user.click(screen.getByRole('button', { name: /Notifications/ }));
-    expect(screen.getByRole('heading', { name: 'Notifications' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Notifications', level: 2 })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Activer les notifications' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Dîner coché' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Pesée ajoutée' })).toBeInTheDocument();

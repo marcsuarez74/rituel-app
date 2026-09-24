@@ -1,4 +1,5 @@
 import type { PushConfig, RappelPush } from '../../lib/push/module';
+import { Alerte } from './presente';
 
 // Page détail « Notifications » — les états push restent dans ProfilScreen
 // (le hub en a besoin pour la tuile + son résumé).
@@ -30,11 +31,7 @@ export function ProfilNotifs({
         <button type="button" className="profil-ghost" aria-pressed={pushOn} onClick={() => void pushBasculer()}>
           {pushOn ? 'Désactiver les notifications' : 'Activer les notifications'}
         </button>
-        {pushErreur && (
-          <p className="error" role="alert">
-            {pushErreur}
-          </p>
-        )}
+        <Alerte texte={pushErreur} />
 
         <p className="push-sous-titre">Quand mon coéquipier agit</p>
         <div className="chips">
