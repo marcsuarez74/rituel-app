@@ -1,4 +1,5 @@
 import { ageDepuis } from './dates';
+import { fmtKg } from './text';
 import { OBJECTIF_TYPES } from './model';
 import type { UserProfile } from './model';
 import type { WeightEntry } from './storage';
@@ -7,9 +8,6 @@ import type { SyncEtat } from './sync/engine';
 
 // Résumés d'état des tuiles du hub Profil (une ligne) — fonctions pures :
 // l'UI (ProfilScreen) ne fait qu'afficher. KISS : pas d'abstraction.
-
-// Nombre français « 4,2 » (virgule, sans zéro inutile) — comme le héro.
-export const fmtKg = (n: number): string => n.toString().replace('.', ',');
 
 export interface DuoEntete {
   label: string;
@@ -34,7 +32,7 @@ export const resumeObjectif = (
   const cible = profile.poidsObjectif;
   if (cible == null || !pesee) return nom;
   const restant = Math.round((pesee.kg - cible) * 10) / 10;
-  return `${nom} · ${fmtKg(Math.abs(restant))} kg ${restant > 0 ? 'restants' : 'à prendre'}`;
+  return `${nom} · ${fmtKg(Math.abs(restant))} kg ${restant < 0 ? 'à prendre' : 'restants'}`;
 };
 
 // Tuile Mes infos : seuls les champs remplis (ageDepuis calcule, rien de manuel).
@@ -49,7 +47,7 @@ export const resumeInfos = (profile: UserProfile): string => {
 export const resumeMaison = (profile: UserProfile): string => {
   const champs: string[] = [];
   if (profile.magasin) champs.push(profile.magasin);
-  if (profile.budgetMax != null) champs.push(`${profile.budgetMax} €`);
+  if (profile.budgetMax != null) champs.push(`${profile.budgetMax}`.replace('.', ',') + ' €');
   if (profile.personnes != null) champs.push(`${profile.personnes} pers.`);
   return champs.length > 0 ? champs.join(' · ') : '—';
 };
