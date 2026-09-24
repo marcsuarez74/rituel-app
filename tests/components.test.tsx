@@ -1817,6 +1817,16 @@ describe('Icon', () => {
     render(<Icon name="check" size={38} strokeWidth={2.5} />);
     expect(document.querySelector('svg')).toHaveAttribute('stroke-width', '2.5');
   });
+
+  it('icônes du hub : info, home, bell, copy, refresh', () => {
+    for (const name of ['info', 'home', 'bell', 'copy', 'refresh'] as const) {
+      const { container, unmount } = render(<Icon name={name} />);
+      const svg = container.querySelector('svg');
+      expect(svg, name).toBeInTheDocument();
+      expect(svg?.childElementCount, `${name} : glyphe présent`).toBeGreaterThan(0);
+      unmount();
+    }
+  });
 });
 
 describe('CoursesBudget — carte budget (citron)', () => {
