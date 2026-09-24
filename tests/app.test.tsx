@@ -488,6 +488,20 @@ describe('App — multi-semaines', () => {
     expect(screen.getByRole('button', { name: 'Semaine suivante' })).toBeEnabled();
   });
 
+  it('le Profil affiche le cycle de la semaine consultée', async () => {
+    vi.setSystemTime(new Date('2026-09-15T10:00:00')); // mardi, dans S38
+    const user = userEvent.setup();
+    const raw38 = fixtureSemaine('2026-S38', '2026-09-14', '2026-09-20', 'B', 'Chili con carne');
+    const raw39 = fixtureSemaine('2026-S39', '2026-09-21', '2026-09-27', 'C', 'Quiche lorraine');
+    upsertWeek(raw38, parseWeeklyFile(raw38).data);
+    upsertWeek(raw39, parseWeeklyFile(raw39).data);
+    render(<App />);
+    await user.click(screen.getByRole('button', { name: 'Semaine suivante' })); // S39 = Cycle 3
+    await user.click(screen.getByRole('button', { name: 'Mon profil' }));
+
+    expect(screen.getByText('Cycle 3')).toBeInTheDocument();
+  });
+
   it('l’import depuis le profil recharge les semaines, affiche la semaine du jour et ferme le profil', async () => {
     vi.setSystemTime(new Date('2026-09-16T10:00:00')); // mercredi, entre S38 et S40
     const user = userEvent.setup();
