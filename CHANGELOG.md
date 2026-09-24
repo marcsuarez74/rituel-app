@@ -13,6 +13,12 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 ### Modifié
 
 - Onboarding tout sautable : chaque étape porte un CTA discret « Passer » (seul le choix du profil reste obligatoire) et le doublon d'objectif disparaît de l'étape 4. Le prénom s'édite à l'étape 1 (« C'est ton prénom ? ») puis dans Mes infos — salutations, titre du suivi et prompt IA l'utilisent. Profil v2.2 : date de naissance et taille deviennent optionnelles (sections silencieuses quand absentes) ; aucune donnée n'est réinitialisée.
+- La semaine consultée (chevrons/commutateur) est mémorisée : à la relance, l'app rouvre sur la semaine en cours de consultation au lieu de retomber sur la semaine du jour (nouvelle clé `sportapp:selection`) ; si la semaine a disparu du stockage, repli propre sur la semaine du jour.
+
+### Corrigé
+
+- Menu : la recette consultée ne saute plus vers la sélection par défaut (jour du jour / premier non fait) quand l'autre téléphone pousse une modification — le pull remote recharge les coches sans perdre l'onglet ouvert ; un changement de semaine replie toujours sur le défaut.
+- Menu : glisser la barre d'onglets de recettes pour la faire défiler ne bascule plus vers l'onglet Suivi (conflit avec le swipe Cuisine ↔ Mon suivi).
 
 ## [1.3.0] - 2026-09-18
 
