@@ -1,0 +1,58 @@
+<h2>Profil — 3 structures de hub</h2>
+<p class="subtitle">Aujourd'hui : 11 sections empilées = scroll interminable (806 lignes). Objectif : une vue générale courte, le détail au clic.</p>
+
+<div class="options">
+  <div class="option" data-choice="accordions" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Accordéons</h3>
+      <p>Une page unique : chaque section est une carte repliée (titre + résumé de l'état), tap = déplie le formulaire en place. Le scroll n'existe que si tu déplies tout.</p>
+      <div style="max-width:340px;border:1px solid #ddd;border-radius:14px;overflow:hidden;margin-top:10px;background:#fff">
+        <div style="padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #eee"><span>ℹ️</span><div style="flex:1"><b style="font-size:14px;color:#2c4a31">Mes infos</b><div style="font-size:12px;color:#888">Marc · 42 ans · 180 cm</div></div><span style="color:#bbb">›</span></div>
+        <div style="padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #eee"><span>🎯</span><div style="flex:1"><b style="font-size:14px;color:#2c4a31">Objectif</b><div style="font-size:12px;color:#888">Perte · -4,2 kg restants</div></div><span style="color:#bbb">⌄</span></div>
+        <div style="padding:12px 14px;background:#f7f9f4;border-bottom:1px solid #eee"><b style="font-size:14px;color:#2c4a31">Compléments</b><div style="font-size:12px;color:#888;margin-bottom:8px">3 chips, ajout libre</div><div style="display:flex;gap:6px;flex-wrap:wrap"><span style="background:#e4efe4;color:#3e7a46;border-radius:999px;padding:2px 10px;font-size:12px">Vitamine D ✕</span><span style="background:#e4efe4;color:#3e7a46;border-radius:999px;padding:2px 10px;font-size:12px">Magnésium ✕</span><span style="background:#f2f2f2;color:#888;border-radius:999px;padding:2px 10px;font-size:12px">+ Ajouter</span></div></div>
+        <div style="padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #eee"><span>🏠</span><div style="flex:1"><b style="font-size:14px;color:#2c4a31">Maison &amp; courses</b><div style="font-size:12px;color:#888">Carrefour · 80 € · 2 pers.</div></div><span style="color:#bbb">›</span></div>
+        <div style="padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #eee"><span>🔔</span><div style="flex:1"><b style="font-size:14px;color:#2c4a31">Notifications</b><div style="font-size:12px;color:#888">2 événements · 1 rappel</div></div><span style="color:#bbb">›</span></div>
+        <div style="padding:10px 14px;display:flex;align-items:center;gap:10px"><span>🔄</span><div style="flex:1"><b style="font-size:14px;color:#2c4a31">Changer de profil</b></div><span style="color:#bbb">›</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="souspages" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Sous-pages (style Réglages iOS)</h3>
+      <p>Vue = simple liste de réglages. Tap = page dédiée avec bouton « ← Retour ». Chaque page respire, jamais de scroll long. La chip du haut fait office d'en-tête de compte.</p>
+      <div style="max-width:340px;border:1px solid #ddd;border-radius:14px;overflow:hidden;margin-top:10px;background:#fff">
+        <div style="padding:14px;background:#f5f1e6;display:flex;align-items:center;gap:12px"><span style="width:44px;height:44px;border-radius:50%;background:#3e7a46"></span><div><b style="font-size:15px;color:#2c4a31">Marc</b><div style="font-size:12px;color:#888">Duo connecté · Cycle 2</div></div></div>
+        <div style="padding:11px 14px;display:flex;justify-content:space-between;border-bottom:1px solid #eee"><span style="font-size:14px">Mes infos</span><span style="font-size:12px;color:#999">42 ans, 180 cm ›</span></div>
+        <div style="padding:11px 14px;display:flex;justify-content:space-between;border-bottom:1px solid #eee"><span style="font-size:14px">Objectif</span><span style="font-size:12px;color:#999">Perte ›</span></div>
+        <div style="padding:11px 14px;display:flex;justify-content:space-between;border-bottom:1px solid #eee"><span style="font-size:14px">Maison &amp; courses</span><span style="font-size:12px;color:#999">Carrefour ›</span></div>
+        <div style="padding:11px 14px;display:flex;justify-content:space-between;border-bottom:1px solid #eee"><span style="font-size:14px">Notifications</span><span style="font-size:12px;color:#999">3 actives ›</span></div>
+        <div style="padding:11px 14px;display:flex;justify-content:space-between;border-bottom:1px solid #eee"><span style="font-size:14px">Foyer &amp; sync</span><span style="font-size:12px;color:#999">Duo ›</span></div>
+        <div style="padding:11px 14px;display:flex;justify-content:space-between"><span style="font-size:14px">Changer de profil</span><span style="font-size:12px;color:#999">›</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="tuiles" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Tuiles mixtes</h3>
+      <p>Grille de 6 tuiles courtes (2 colonnes) + actions directes dessous (changer de profil, copier prompt IA). Visuel « dashboard », tap = détail.</p>
+      <div style="max-width:340px;border:1px solid #ddd;border-radius:14px;overflow:hidden;margin-top:10px;background:#fff;padding:12px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="background:#f7f9f4;border-radius:12px;padding:12px"><b style="font-size:13px;color:#2c4a31">🎯 Objectif</b><div style="font-size:12px;color:#888;margin-top:2px">Perte · -4,2 kg</div></div>
+          <div style="background:#f7f9f4;border-radius:12px;padding:12px"><b style="font-size:13px;color:#2c4a31">ℹ️ Infos</b><div style="font-size:12px;color:#888;margin-top:2px">42 ans · 180 cm</div></div>
+          <div style="background:#f7f9f4;border-radius:12px;padding:12px"><b style="font-size:13px;color:#2c4a31">🏠 Courses</b><div style="font-size:12px;color:#888;margin-top:2px">Carrefour · 80 €</div></div>
+          <div style="background:#f7f9f4;border-radius:12px;padding:12px"><b style="font-size:13px;color:#2c4a31">🔔 Notifs</b><div style="font-size:12px;color:#888;margin-top:2px">3 actives</div></div>
+        </div>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">
+          <div style="padding:10px;border:1px solid #eee;border-radius:10px;font-size:14px">🔄 Changer de profil</div>
+          <div style="padding:10px;border:1px solid #eee;border-radius:10px;font-size:14px">📋 Copier le prompt IA</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<p class="subtitle">→ Clique la structure qui te parle (ou réponds A/B/C).</p>

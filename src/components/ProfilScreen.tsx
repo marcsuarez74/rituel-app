@@ -164,7 +164,7 @@ export function ProfilScreen({
             <div className="hub-compte">
               <div className="hub-avatar">{(prenomProfil(profile.id, profile)[0] ?? '?').toUpperCase()}</div>
               <div>
-                <div className="hub-nom">{prenomProfil(profile.id, profile)}</div>
+                <h1 className="hub-nom">{prenomProfil(profile.id, profile)}</h1>
                 <div className="hub-sous">
                   {duo && <span aria-hidden="true" className={`hub-pt${duo.ton !== 'basilic' ? ` ${duo.ton}` : ''}`} />}
                   {duo && <b>{duo.label}</b>}

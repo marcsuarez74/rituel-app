@@ -35,3 +35,6 @@ playwright-report/
 
 # CLI Supabase (état local)
 supabase/.temp/
+
+# Playwright CLI (artefact outillage)
+.playwright-cli/

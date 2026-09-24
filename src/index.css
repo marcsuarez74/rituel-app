@@ -2382,6 +2382,8 @@ progress {
 }
 
 .hub-nom {
+  margin: 0;
+  line-height: inherit;
   font-size: var(--fs-h3);
   font-weight: 700;
   color: var(--text);
@@ -2492,17 +2494,6 @@ progress {
   margin-top: var(--sp-16);
 }
 
-.profil-switch {
-  border: 1.5px solid var(--danger);
-  background: var(--surface);
-  color: var(--danger);
-  border-radius: 999px;
-  width: 100%;
-  min-height: 48px;
-  font: 600 var(--fs-meta) Poppins, sans-serif;
-  cursor: pointer;
-}
-
 .profil-ghost {
   border: 1.5px solid var(--border);
   background: var(--surface);
@@ -2512,10 +2503,6 @@ progress {
   min-height: 48px;
   font: 600 var(--fs-meta) Poppins, sans-serif;
   cursor: pointer;
-}
-
-.profil-switch:active {
-  transform: scale(0.97);
 }
 
 .profil-about {

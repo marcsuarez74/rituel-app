@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liste courses — traitements du rituel + flow complet</title>
+<style>
+  :root{
+    --basilic:#3e7a46; --basilic-sombre:#2c4a31; --citron:#f2dc7b; --citron-clair:#fdf6d8;
+    --creme:#f5f1e6; --surface:#fff; --muted:#6e7a6c; --bord:#e1e6da; --texte:#26312b;
+    --accent-surface:#e2ede1;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,'Poppins',system-ui,sans-serif;background:#e9e5d8;display:flex;flex-direction:column;align-items:center;padding:24px 12px;min-height:100vh;gap:12px}
+  .switcher{display:flex;background:#fff;border-radius:999px;padding:4px;box-shadow:0 2px 8px rgba(0,0,0,.08);gap:2px}
+  .switcher button{border:0;background:transparent;padding:8px 15px;border-radius:999px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .2s}
+  .switcher button.on{background:var(--basilic);color:#fff}
+  .demo-bar{display:flex;gap:8px}
+  .demo-bar button{border:0;background:#fff;border-radius:999px;padding:7px 14px;font-size:12.5px;font-weight:600;color:var(--basilic);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08);font-family:inherit}
+  .phone{width:375px;max-width:100%;height:740px;background:var(--creme);border-radius:28px;box-shadow:0 12px 40px rgba(0,0,0,.18);overflow:hidden;display:flex;flex-direction:column;position:relative}
+  .topbar{padding:12px 16px 6px;display:flex;align-items:center;gap:10px}
+  .topbar h1{font-size:17px;color:var(--texte);font-weight:700}
+  .scroll{flex:1;overflow-y:auto;padding:0 12px 40px}
+  .progression{display:flex;align-items:center;gap:8px;margin:2px 2px 12px}
+  .progression b{font-size:13px;color:var(--texte);white-space:nowrap}
+  .barre{flex:1;height:6px;background:#e7eae0;border-radius:999px;overflow:hidden}
+  .barre i{display:block;height:100%;background:var(--basilic);border-radius:999px;transition:width .3s}
+  .mm-btn{background:var(--surface);border:1px solid var(--bord);border-radius:999px;padding:7px 12px;font-size:11.5px;font-weight:600;color:var(--basilic);cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .2s}
+  .mm-btn.on{background:var(--basilic);color:#fff;border-color:var(--basilic)}
+  .item{background:var(--surface);border-radius:12px;margin-bottom:3px;padding:10px 12px;display:flex;align-items:center;gap:11px;cursor:pointer;transition:all .18s;font-family:inherit;border:0;width:100%;text-align:left}
+  .item:active{transform:scale(.985)}
+  .cbox{width:20px;height:20px;border-radius:7px;border:2px solid #c5cdbc;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;transition:all .18s}
+  .item.done .cbox{background:var(--basilic);border-color:var(--basilic)}
+  .item .t{flex:1;min-width:0}
+  .item .t b{font-size:14px;color:var(--texte);font-weight:600;display:block;line-height:1.3}
+  .item .t span{font-size:11.5px;color:var(--muted);display:block;margin-top:1px}
+  .item.done .t b{color:var(--muted);text-decoration:line-through}
+  .item.masquee{display:none}
+  .rayon{margin-bottom:14px}
+  .rayon-tete{display:flex;align-items:center;gap:9px;margin:0 2px 6px}
+  .vignette{width:46px;height:34px;border-radius:8px;background:linear-gradient(145deg,#e7eae0,#d8dfd0);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+  .rayon-tete b{font-size:13.5px;color:var(--texte)}
+  .rayon-tete span{font-size:12px;color:var(--muted);margin-left:auto}
+  .fin-liste{margin-top:4px}
+
+  /* récap budget (fin de page) */
+  .recap{margin-top:14px;background:var(--surface);border-radius:12px;padding:11px 14px;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted);box-shadow:0 1px 5px rgba(62,122,70,.07);cursor:pointer;border:0;width:100%;font-family:inherit}
+  .recap b{color:var(--basilic)}
+
+  /* — Traitement 1 : bloc inversé — */
+  .rituel-bloc{background:var(--basilic);border-radius:16px;padding:14px;margin-bottom:16px;color:#fff}
+  .rituel-bloc .rt{display:flex;align-items:center;gap:10px;margin-bottom:2px}
+  .rituel-bloc .rt .pot{width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:17px}
+  .rituel-bloc .rt b{font-size:15px;display:block}
+  .rituel-bloc .rt span{font-size:12px;opacity:.75}
+  .rituel-bloc .ri{background:rgba(255,255,255,.1);border-radius:11px;margin-top:6px;padding:9px 11px;display:flex;align-items:center;gap:10px;cursor:pointer;border:0;width:100%;text-align:left;font-family:inherit;color:#fff;transition:background .18s}
+  .rituel-bloc .ri:active{background:rgba(255,255,255,.18)}
+  .rituel-bloc .ri .cbox{border-color:rgba(255,255,255,.45)}
+  .rituel-bloc .ri.done{opacity:.55}
+  .rituel-bloc .ri.done .t b{text-decoration:line-through}
+  .rituel-bloc .bud{font-size:11.5px;opacity:.75;margin-top:9px;display:flex;align-items:center;gap:6px}
+  .rituel-bloc .bud i{width:7px;height:7px;border-radius:50%;background:var(--citron);display:inline-block}
+
+  /* — Traitement 2 : pot citron — */
+  .item.rituel-citron{background:var(--citron-clair);border:1.5px solid #e3c94f;padding:9px 11px}
+  .item.rituel-citron .pot{width:34px;height:34px;border-radius:10px;background:var(--citron);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+  .item.rituel-citron .t b{color:var(--basilic-sombre)}
+  .item.rituel-citron.done{opacity:.6}
+  .item.rituel-citron.done .t b{text-decoration:line-through}
+  .zone-citron{margin-top:2px}
+  .zone-citron .rayon-tete .vignette{background:var(--citron)}
+
+  /* — Traitement 3 : rayon rituel — */
+  .rayon-rituel{border:1.5px solid var(--basilic);border-radius:16px;padding:10px 10px 6px;margin-bottom:14px;background:#fbfaf4}
+  .rayon-rituel .rayon-tete .vignette{background:var(--basilic);color:#fff}
+  .rtag{background:var(--accent-surface);color:var(--basilic);font-size:10.5px;font-weight:700;border-radius:999px;padding:2px 8px;white-space:nowrap}
+
+  /* bottom sheet paiement */
+  .voile{position:absolute;inset:0;background:rgba(38,49,43,.35);opacity:0;pointer-events:none;transition:opacity .25s;z-index:10}
+  .voile.on{opacity:1;pointer-events:auto}
+  .sheet{position:absolute;left:10px;right:10px;bottom:10px;background:var(--surface);border-radius:20px;padding:20px 18px 16px;transform:translateY(110%);transition:transform .3s cubic-bezier(.2,.9,.3,1.1);z-index:20;text-align:center;box-shadow:0 -8px 30px rgba(0,0,0,.15)}
+  .sheet.on{transform:none}
+  .sheet .emo{font-size:30px}
+  .sheet h3{font-size:17px;color:var(--texte);margin:6px 0 4px}
+  .sheet p{font-size:13px;color:var(--muted);margin-bottom:14px}
+  .sheet .row{display:flex;gap:8px}
+  .sheet input{flex:1;border:1.5px solid var(--bord);border-radius:12px;padding:12px;font-size:16px;text-align:center;font-family:inherit;outline:none}
+  .sheet input:focus{border-color:var(--basilic)}
+  .sheet .ok{background:var(--basilic);color:#fff;border:0;border-radius:12px;padding:12px 20px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
+  .sheet .plus-tard{background:transparent;border:0;color:var(--muted);font-size:13px;margin-top:10px;cursor:pointer;font-family:inherit;text-decoration:underline}
+  .toast{position:absolute;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--basilic-sombre);color:#fff;padding:10px 20px;border-radius:999px;font-size:13.5px;transition:transform .25s;z-index:50;white-space:nowrap}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="switcher">
+  <button class="on" onclick="variante(1,this)">1 · Bloc inversé</button>
+  <button onclick="variante(2,this)">2 · Pot citron</button>
+  <button onclick="variante(3,this)">3 · Rayon rituel</button>
+</div>
+<div class="demo-bar">
+  <button onclick="toutCocher()">⚡ Tout cocher → payer</button>
+  <button onclick="reset()">↺ Recommencer</button>
+</div>
+
+<div class="phone">
+  <div class="topbar"><h1>Courses</h1><span style="font-size:12px;color:var(--muted);margin-left:auto">Semaine 37</span></div>
+  <div class="scroll">
+    <div class="progression">
+      <b id="compteur"></b>
+      <div class="barre"><i id="barre"></i></div>
+      <button class="mm-btn" id="mm" onclick="basculerMM()">Mode magasin</button>
+    </div>
+    <div id="zone"></div>
+    <button class="recap" id="recap" style="display:none" onclick="ouvrirSheet(true)">
+      <span>Cette semaine : <b id="recap-total">—</b> payés</span>
+      <span style="color:var(--basilic);font-weight:700" id="recap-pct">—</span>
+    </button>
+  </div>
+
+  <div class="voile" id="voile"></div>
+  <div class="sheet" id="sheet">
+    <div class="emo">🎉</div>
+    <h3>Courses terminées !</h3>
+    <p>Saisis le total payé, le budget suit tout seul.</p>
+    <div class="row">
+      <input id="total" type="text" inputmode="decimal" placeholder="72,40 €">
+      <button class="ok" onclick="valider()">Valider</button>
+    </div>
+    <button class="plus-tard" onclick="plusTard()">Plus tard</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<p style="color:#777;font-size:13px;max-width:375px;text-align:center;line-height:1.5">Flow complet : coche (ou ⚡) → à la dernière item l'écran de paiement surgit → récap en bas de liste. « Mode magasin » masque les items faites.</p>
+
+<script>
+  const RIT = [
+    {t:'Œufs fermiers ×12', plat:'Egg muffins ×12'},
+    {t:'Épinards frais 400 g', plat:'Egg muffins ×12'},
+    {t:'Basilic en pot', plat:'Pesta du batch'},
+  ];
+  const RAYONS = [
+    {nom:'Frais', ico:'🥬', items:[
+      {t:'Saumon fumé 2 tr.'},
+      {t:'Feta 150 g'},
+      {t:'Yaourt grec ×4'},
+    ]},
+    {nom:'Épicerie', ico:'🫙', items:[
+      {t:'Huile d\u2019olive 1 L'},
+      {t:'Amarante 200 g'},
+    ]},
+  ];
+  let v = 1, mm = false, paye = null, sheetOuvert = false;
+  const $ = id => document.getElementById(id);
+  const toutItems = () => [...RIT, ...RAYONS.flatMap(r=>r.items)];
+
+  function rendre(){
+    const ritDone = RIT.filter(i=>i.done).length;
+    const masque = it => mm && it.done ? 'masquee' : '';
+    let html = '';
+
+    if (v === 1){
+      html += `<div class="rituel-bloc">
+        <div class="rt"><div class="pot">🫙</div><div><b>Le rituel de dimanche</b><span>Egg muffins ×12 · Pesta</span></div></div>
+        ${RIT.map((it,i)=>`
+          <button class="ri ${it.done?'done':''} ${masque(it)}" onclick="cocherRit(${i})">
+            <span class="cbox">${it.done?'✓':''}</span>
+            <span class="t" style="flex:1"><b style="font-size:14px">${it.t}</b><span style="font-size:11px;opacity:.7">${it.plat}</span></span>
+          </button>`).join('')}
+        <div class="bud"><i></i> ${ritDone}/${RIT.length} — tout acheter avant dimanche 14 h</div>
+      </div>`;
+      html += RAYONS.map((r,ri)=>rayonHTML(r,ri,masque)).join('');
+    }
+
+    if (v === 2){
+      html += RAYONS.map((r,ri)=>rayonHTML(r,ri,masque)).join('');
+      html += `<div class="rayon zone-citron fin-liste">
+        <div class="rayon-tete"><div class="vignette">🫙</div><b>Le rituel de dimanche</b><span>${ritDone}/${RIT.length}</span></div>
+        ${RIT.map((it,i)=>`
+          <button class="item rituel-citron ${it.done?'done':''} ${masque(it)}" onclick="cocherRit(${i})">
+            <span class="pot">🫙</span>
+            <span class="t"><b>${it.t}</b><span>pour ${it.plat.toLowerCase()}</span></span>
+            <span class="cbox" style="border-color:#d9c05a">${it.done?'✓':''}</span>
+          </button>`).join('')}
+      </div>`;
+    }
+
+    if (v === 3){
+      html += `<div class="rayon-rituel">
+        <div class="rayon-tete"><div class="vignette">🫙</div><b>Rituel du dimanche</b><span>${ritDone}/${RIT.length}</span></div>
+        ${RIT.map((it,i)=>`
+          <button class="item ${it.done?'done':''} ${masque(it)}" onclick="cocherRit(${i})">
+            <span class="cbox">${it.done?'✓':''}</span>
+            <span class="t"><b>${it.t}</b><span>pour ${it.plat.toLowerCase()}</span></span>
+            <span class="rtag">rituel</span>
+          </button>`).join('')}
+      </div>`;
+      html += RAYONS.map((r,ri)=>rayonHTML(r,ri,masque)).join('');
+    }
+
+    $('zone').innerHTML = html;
+    const d = toutItems().filter(i=>i.done).length, t = toutItems().length;
+    $('compteur').textContent = `${d}/${t} cochés`;
+    $('barre').style.width = `${Math.round(d/t*100)}%`;
+    if (paye !== null){
+      $('recap').style.display = 'flex';
+      $('recap-total').textContent = paye;
+      const n = parseFloat(paye.replace(',','.'));
+      $('recap-pct').textContent = isFinite(n) ? `${Math.round(n/80*100)} % du budget` : '';
+    } else {
+      $('recap').style.display = 'none';
+    }
+    if (d === t && paye === null && !sheetOuvert) setTimeout(ouvrirSheet, 350);
+  }
+  function rayonHTML(r,ri,masque){
+    return `<div class="rayon">
+      <div class="rayon-tete"><div class="vignette">${r.ico}</div><b>${r.nom}</b><span>${r.items.filter(i=>i.done).length}/${r.items.length}</span></div>
+      ${r.items.map((it,ii)=>`
+        <button class="item ${it.done?'done':''} ${masque(it)}" onclick="cocherRay(${ri},${ii})">
+          <span class="cbox">${it.done?'✓':''}</span>
+          <span class="t"><b>${it.t}</b></span>
+        </button>`).join('')}
+    </div>`;
+  }
+  function cocherRit(i){ RIT[i].done = !RIT[i].done; rendre(); }
+  function cocherRay(ri,ii){ RAYONS[ri].items[ii].done = !RAYONS[ri].items[ii].done; rendre(); }
+  function basculerMM(){ mm = !mm; $('mm').classList.toggle('on', mm); rendre(); }
+  function ouvrirSheet(manuel){
+    sheetOuvert = true;
+    $('voile').classList.add('on'); $('sheet').classList.add('on'); $('total').focus();
+  }
+  function fermerSheet(){ sheetOuvert = false; $('voile').classList.remove('on'); $('sheet').classList.remove('on'); }
+  function plusTard(){ fermerSheet(); toast('Saisis le total plus tard, en bas de liste'); }
+  function valider(){
+    paye = $('total').value.trim() || '72,40 €';
+    fermerSheet(); rendre(); toast(`Payé ${paye} — enregistré ✓`);
+  }
+  function variante(n,btn){ v = n; document.querySelectorAll('.switcher button').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); rendre(); }
+  function toutCocher(){ toutItems().forEach(i=>i.done=true); rendre(); }
+  function reset(){ toutItems().forEach(i=>i.done=false); paye = null; fermerSheet(); rendre(); }
+  let timer;
+  function toast(msg){
+    const t = $('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(timer); timer = setTimeout(()=>t.classList.remove('show'), 2000);
+  }
+  rendre();
+</script>
+</body>
+</html>

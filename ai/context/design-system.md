@@ -26,7 +26,7 @@ Source de vérité : `src/index.css` (section `:root`). Toute valeur ici doit y 
 | `--accent-2` | `#f2dc7b` | **accent secondaire** (citron) : surbrillance — carte pesée, encadré keto, tags Mél, barre courses, nom du jour micro-batch. **Jamais en couleur de texte** |
 | `--citron-surface` | `#fdf6d8` | fond des items « pot citron » du rituel |
 | `--citron-line` | `#e3c94f` | bordure des items « pot citron » du rituel |
-| `--danger` | `#b4452f` | erreurs (`.error`), `.profil-switch`, delta d'alerte (`.stat-delta-alerte`) |
+| `--danger` | `#b4452f` | erreurs (`.error`), delta d'alerte (`.stat-delta-alerte`) |
 
 ⚠️ Ne jamais coder une couleur en dur dans un composant — utiliser `var(--token)`. **Règle Herbes : texte blanc `#ffffff` sur basilic** (boutons, tags Marc, pill menu, Mode magasin actif) — ≈ 5,2:1 ; **texte encre `#26312b` sur citron** (tags Mél, nom du jour micro-batch, carte Mélanie onboarding) — ≈ 9,8:1.
 
@@ -107,7 +107,7 @@ Padding standard des cartes : `var(--sp-16)`. Gouttières page : `var(--sp-16)`.
 | `.dep-panel` (+ `.dep-head` `.dep-back` `.dep-form` `.dep-sec-label` `.dep-sum` `.dep-list` `.dep-hint`) | panneau « Mes dépenses réelles » (écran poussé de l'onglet Courses) | retour muted en tête, h1 20px ; form `.dep-form` (frow 3 colonnes date/magasin/total, total tabulaire aligné droite — frow passe en 1 colonne empilée < 360px), actions « Annuler » + `.bgo` basilic 38px ; résumé « Par magasin » = grid 2 cartes (total + moyenne tabulaires) ; historique = lignes date/magasin/total + suppression ✕ 32px |
 | `.keto-box` / `.keto-title` | encadré keto de Mélanie (rayon `### Keto`) | fond `--accent-2` 12% + bordure 45% (`color-mix`), titre encre 15px/700 (icône leaf basilic) — affiché en dernier |
 | `.profile-icon-btn` | accès écran Profil (bannière) | cercle basilic 30px (dessiné en `::before`, icône user blanche 16px), frappe 48px via padding/marge ±10px |
-| `.profil-screen` / `.profil-switch` | écran Profil | sections `.profile-section` ; switch = bordure `--danger` (action sensible) |
+| `.profil-screen` | écran Profil | sections `.profile-section` |
 | `.profil-ghost` | bouton secondaire du Profil (« Copier le prompt IA ») | ghost bordure `--border`, pill pleine largeur 48px, texte encre |
 | `.greeting` | accueil personnalisé Mon suivi | muted, 14px/700 |
 | `.obj-bloc` (+ `.obj-pills` `.obj-pill-type` `.obj-pill-reg` `.obj-echeance` `.obj-prog` `.obj-kg` `.obj-bar` `.obj-comps` `.cchip`) | bloc objectif en tête de Mon suivi | surface + radius ; pill type basilic texte blanc, pill régime citron 60 % (texte encre), échéance `.late` = `--danger`, barre progression `--accent` sur `--surface-2`, compléments `.cchip` surface-2 sous filet pointillé |

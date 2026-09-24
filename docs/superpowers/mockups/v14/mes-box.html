@@ -1,0 +1,54 @@
+<h2>« Mes box » — toujours visible</h2>
+<p class="subtitle">L'onglet 🍱 (renommé « Mes box ») doit rester accessible sans scroller la rangée de pills. 3 dispositifs.</p>
+
+<div class="options">
+  <div class="option" data-choice="premier" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Mes box en premier</h3>
+      <p>Il devient la <strong>1ʳᵉ pill</strong>, avant les jours. Ouverture du Menu = Mes box par défaut, les jours suivent. Simple, mais le dernier jour du cycle est alors lui-même hors écran.</p>
+      <div style="max-width:340px;border:1px solid #ddd;border-radius:14px;overflow:hidden;margin-top:10px;background:#fff;padding:10px 12px">
+        <div style="display:flex;gap:6px;overflow:hidden">
+          <span style="background:#3e7a46;color:#fff;border-radius:999px;padding:8px 13px;font-size:13px;white-space:nowrap">🍱 Mes box</span>
+          <span style="background:#f2f2ec;border-radius:999px;padding:8px 13px;font-size:13px;white-space:nowrap">Bolo</span>
+          <span style="background:#f2f2ec;border-radius:999px;padding:8px 13px;font-size:13px;white-space:nowrap">Curry</span>
+          <span style="background:#f2f2ec;border-radius:999px;padding:8px 13px;font-size:13px;white-space:nowrap">Pâtes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="epingle" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Mes box épinglé à droite</h3>
+      <p>La rangée se scinde : les <strong>jours scrollent</strong> à gauche, « 🍱 Mes box » reste <strong>épinglé</strong> à droite, séparé par un trait vertical. Les deux existent en permanence, aucun compromis.</p>
+      <div style="max-width:340px;border:1px solid #ddd;border-radius:14px;overflow:hidden;margin-top:10px;background:#fff;padding:10px 12px;display:flex;align-items:center;gap:8px">
+        <div style="flex:1;display:flex;gap:6px;overflow:hidden">
+          <span style="background:#3e7a46;color:#fff;border-radius:999px;padding:8px 13px;font-size:13px;white-space:nowrap">Bolo</span>
+          <span style="background:#f2f2ec;border-radius:999px;padding:8px 13px;font-size:13px;white-space:nowrap">Curry</span>
+          <span style="background:#f2f2ec;border-radius:999px;padding:8px 13px;font-size:13px;white-space:nowrap">Pâtes</span>
+        </div>
+        <div style="width:1px;height:26px;background:#e1e6da;flex-shrink:0"></div>
+        <span style="background:#3e7a46;color:#fff;border-radius:999px;padding:8px 13px;font-size:13px;white-space:nowrap">🍱 Mes box</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="chip-haut" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Chip au-dessus de la progression</h3>
+      <p>Les pills jours restent seules ; « 🍱 Mes box » devient une chip pleine largeur au-dessus de la barre « Dîners n/m · Boxes n/m ». Toujours visible, mais sort de la rangée — hiérarchie plus « à part ».</p>
+      <div style="max-width:340px;border:1px solid #ddd;border-radius:14px;overflow:hidden;margin-top:10px;background:#fff;padding:10px 12px">
+        <div style="background:#3e7a46;color:#fff;border-radius:999px;padding:9px 13px;font-size:13px;text-align:center;margin-bottom:8px">🍱 Mes box <span style="opacity:.75">· 2 prêtes</span></div>
+        <div style="display:flex;gap:6px;overflow:hidden">
+          <span style="background:#3e7a46;color:#fff;border-radius:999px;padding:8px 13px;font-size:13px;white-space:nowrap">Bolo</span>
+          <span style="background:#f2f2ec;border-radius:999px;padding:8px 13px;font-size:13px;white-space:nowrap">Curry</span>
+          <span style="background:#f2f2ec;border-radius:999px;padding:8px 13px;font-size:13px;white-space:nowrap">Pâtes</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<p class="subtitle">→ Clique ou réponds A/B/C.</p>
