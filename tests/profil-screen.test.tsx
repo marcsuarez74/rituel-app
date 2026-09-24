@@ -68,9 +68,12 @@ const monterApp = () => {
   return user;
 };
 
-// Chaque bloc de l'écran Profil est une <section> sous son h3 (niveau 3).
-const section = (nom: string) =>
-  screen.getByRole('heading', { name: nom, level: 3 }).closest('section')!;
+// Hub : chaque tuile est un <button> (name = titre + résumé) ; les pages
+// détail vivent sous leur h2 (niveau 2).
+const ouvrirPage = (titre: string) =>
+  screen.getByRole('button', { name: new RegExp(titre) });
+const page = (nom: string) =>
+  screen.getByRole('heading', { name: nom, level: 2 }).closest('section')!;
 
 describe('ProfilScreen (unité)', () => {
   let onBack: Mock<() => void>;
@@ -90,26 +93,29 @@ describe('ProfilScreen (unité)', () => {
     vi.unstubAllGlobals();
   });
 
-  it('affiche le titre, le retour, mes infos et le changement de profil', () => {
+  it('affiche le hub, le retour, mes infos et le changement de profil', async () => {
+    const user = userEvent.setup();
     render(
       <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
     );
 
-    expect(screen.getByRole('heading', { name: 'Profil', level: 1 })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Retour/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Changer de profil/ })).toBeInTheDocument();
+    // Section « Semaine » : l'import du cycle est de retour dans le profil (rotation)
+    expect(screen.getByText('Importer un cycle (.md)')).toBeInTheDocument();
+
+    await user.click(ouvrirPage('Mes infos'));
     expect(screen.getByLabelText('Date de naissance')).toHaveValue('1985-04-12');
     expect(screen.getByLabelText('Taille (cm)')).toHaveValue(178);
     expect(screen.getByRole('button', { name: 'Enregistrer mes infos' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Changer de profil/ })).toBeInTheDocument();
-    // Section « Semaine » : l'import du cycle est de retour dans le profil (rotation)
-    expect(screen.getByRole('heading', { name: 'Semaine', level: 3 })).toBeInTheDocument();
-    expect(screen.getByText('Importer un cycle (.md)')).toBeInTheDocument();
   });
 
-  it('enregistre les infos modifiées dans le store', () => {
+  it('enregistre les infos modifiées dans le store', async () => {
+    const user = userEvent.setup();
     render(
       <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
     );
+    await user.click(ouvrirPage('Mes infos'));
 
     // input[type=date] ne se laisse pas taper : convention repo = fireEvent.change.
     fireEvent.change(screen.getByLabelText('Date de naissance'), { target: { value: '1984-04-12' } });
@@ -130,6 +136,7 @@ describe('ProfilScreen (unité)', () => {
       <ProfilScreen profile={{ ...profileMarc, prenom: 'Marc' }} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
     );
     const user = userEvent.setup();
+    await user.click(ouvrirPage('Mes infos'));
 
     expect(screen.getByLabelText('Prénom')).toHaveValue('Marc');
     await user.clear(screen.getByLabelText('Prénom'));
@@ -144,6 +151,7 @@ describe('ProfilScreen (unité)', () => {
       <ProfilScreen profile={{ ...profileMarc, prenom: 'Marc' }} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
     );
     const user = userEvent.setup();
+    await user.click(ouvrirPage('Mes infos'));
 
     await user.clear(screen.getByLabelText('Prénom'));
     await user.click(screen.getByRole('button', { name: /Enregistrer mes infos/ }));
@@ -164,6 +172,7 @@ describe('ProfilScreen (unité)', () => {
       <ProfilScreen profile={partiel} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
     );
     const user = userEvent.setup();
+    await user.click(ouvrirPage('Mes infos'));
 
     expect(screen.getByLabelText('Prénom')).toBeInTheDocument();
     expect(screen.getByLabelText('Taille (cm)')).toHaveValue(null);
@@ -183,13 +192,14 @@ describe('ProfilScreen (unité)', () => {
       <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
     );
     const user = userEvent.setup();
+    await user.click(ouvrirPage('Mes infos'));
 
     // input[type=date] ne se laisse pas taper : convention repo = fireEvent.change.
     await user.clear(screen.getByLabelText('Taille (cm)'));
     fireEvent.change(screen.getByLabelText('Date de naissance'), { target: { value: '' } });
     await user.click(screen.getByRole('button', { name: /Enregistrer mes infos/ }));
 
-    expect(within(section('Mes infos')).queryByRole('alert')).not.toBeInTheDocument();
+    expect(within(page('Mes infos')).queryByRole('alert')).not.toBeInTheDocument();
     const p = loadProfile();
     expect(p?.dateNaissance).toBeUndefined();
     expect(p?.taille).toBeUndefined();
@@ -201,30 +211,35 @@ describe('ProfilScreen (unité)', () => {
       <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
     );
     const user = userEvent.setup();
+    await user.click(ouvrirPage('Mes infos'));
 
     await user.clear(screen.getByLabelText('Taille (cm)'));
     await user.click(screen.getByRole('button', { name: /Enregistrer mes infos/ }));
 
-    expect(within(section('Mes infos')).getByRole('alert')).toHaveTextContent(/incomplet/i);
+    expect(within(page('Mes infos')).getByRole('alert')).toHaveTextContent(/incomplet/i);
     expect(loadProfile()).toBeNull();
   });
 
-  it('refuse une date de naissance donnant un âge hors bornes (cohérent avec l’onboarding)', () => {
+  it('refuse une date de naissance donnant un âge hors bornes (cohérent avec l’onboarding)', async () => {
     render(
       <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
     );
+    const user = userEvent.setup();
+    await user.click(ouvrirPage('Mes infos'));
 
     fireEvent.change(screen.getByLabelText('Date de naissance'), { target: { value: '2020-01-01' } });
     fireEvent.click(screen.getByRole('button', { name: 'Enregistrer mes infos' }));
 
-    expect(within(section('Mes infos')).getByRole('alert')).toHaveTextContent(/âge/i);
+    expect(within(page('Mes infos')).getByRole('alert')).toHaveTextContent(/âge/i);
     expect(loadProfile()).toBeNull();
   });
 
-  it('prévient le parent après enregistrement (état App resynchronisé)', () => {
+  it('prévient le parent après enregistrement (état App resynchronisé)', async () => {
     render(
       <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
     );
+    const user = userEvent.setup();
+    await user.click(ouvrirPage('Mes infos'));
 
     fireEvent.change(screen.getByLabelText('Date de naissance'), { target: { value: '1984-04-12' } });
     fireEvent.click(screen.getByRole('button', { name: 'Enregistrer mes infos' }));
@@ -269,6 +284,7 @@ describe('ProfilScreen (unité)', () => {
       />,
     );
     const user = userEvent.setup();
+    await user.click(ouvrirPage('Objectif'));
 
     expect(screen.getByLabelText('Poids objectif (kg)')).toHaveValue(72);
     expect(screen.queryByLabelText('Objectif kcal/jour')).not.toBeInTheDocument();
@@ -293,6 +309,7 @@ describe('ProfilScreen (unité)', () => {
       />,
     );
     const user = userEvent.setup();
+    await user.click(ouvrirPage('Objectif'));
 
     await user.clear(screen.getByLabelText('Poids objectif (kg)'));
     await user.click(screen.getByRole('button', { name: "Enregistrer l'objectif" }));
@@ -310,11 +327,13 @@ describe('ProfilScreen (unité)', () => {
     ).toBeInTheDocument();
   });
 
-  it('date de naissance vidée : le hint propose de saisir (pas d’âge fantôme « 2026 ans »)', () => {
+  it('date de naissance vidée : le hint propose de saisir (pas d’âge fantôme « 2026 ans »)', async () => {
     vi.setSystemTime(new Date('2026-09-09T10:00:00'));
     render(
       <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
     );
+    const user = userEvent.setup();
+    await user.click(ouvrirPage('Mes infos'));
 
     expect(screen.getByText('41 ans — calculé automatiquement.')).toBeInTheDocument();
     // input[type=date] ne se laisse pas taper : convention repo = fireEvent.change.
@@ -330,26 +349,26 @@ describe('ProfilScreen (unité)', () => {
       <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
     );
     const user = userEvent.setup();
+    await user.click(ouvrirPage('Objectif'));
 
     await user.type(screen.getByLabelText('Poids objectif (kg)'), '500');
     await user.click(screen.getByRole('button', { name: "Enregistrer l'objectif" }));
 
-    expect(within(section('Objectif')).getByRole('alert')).toHaveTextContent(/poids objectif/i);
-    expect(within(section('Mes infos')).queryByRole('alert')).not.toBeInTheDocument();
+    expect(within(page('Objectif')).getByRole('alert')).toHaveTextContent(/poids objectif/i);
     expect(loadProfile()).toBeNull();
   });
 
-  it('complément en doublon : alerte rendue dans la section Compléments', async () => {
+  it('complément en doublon : alerte rendue dans la page Objectif', async () => {
     render(
       <ProfilScreen profile={{ ...profileMarc, complements: ['Whey'] }} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
     );
     const user = userEvent.setup();
+    await user.click(ouvrirPage('Objectif'));
 
     await user.type(screen.getByLabelText('Ajouter un complément'), 'whey');
-    await user.click(within(section('Compléments')).getByRole('button', { name: /Ajouter/ }));
+    await user.click(within(page('Objectif')).getByRole('button', { name: /Ajouter/ }));
 
-    expect(within(section('Compléments')).getByRole('alert')).toHaveTextContent(/déjà sélectionné/i);
-    expect(within(section('Mes infos')).queryByRole('alert')).not.toBeInTheDocument();
+    expect(within(page('Objectif')).getByRole('alert')).toHaveTextContent(/déjà sélectionné/i);
   });
 
   it('sections dédiées : objectif affiché et modifiable', async () => {
@@ -357,8 +376,9 @@ describe('ProfilScreen (unité)', () => {
       <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
     );
     const user = userEvent.setup();
+    await user.click(ouvrirPage('Objectif'));
 
-    expect(screen.getByRole('heading', { name: 'Objectif', level: 3 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Objectif', level: 2 })).toBeInTheDocument();
     expect(screen.getByRole('radio', { name: 'Perte de poids' })).toBeChecked();
     expect(screen.getByLabelText('Échéance (optionnelle)')).toHaveValue('2026-12-15');
 
@@ -375,10 +395,11 @@ describe('ProfilScreen (unité)', () => {
       <ProfilScreen profile={{ ...profileMarc, complements: ['Whey'] }} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
     );
     const user = userEvent.setup();
+    await user.click(ouvrirPage('Objectif'));
 
     expect(screen.getByRole('button', { name: /Whey/ })).toBeInTheDocument();
     await user.type(screen.getByLabelText('Ajouter un complément'), 'Zinc');
-    await user.click(within(section('Compléments')).getByRole('button', { name: /Ajouter/ }));
+    await user.click(within(page('Objectif')).getByRole('button', { name: /Ajouter/ }));
     await user.click(screen.getByRole('button', { name: 'Enregistrer les compléments' }));
 
     expect(loadProfile()).toMatchObject({ complements: ['Whey', 'Zinc'] });
@@ -393,11 +414,53 @@ describe('ProfilScreen (unité)', () => {
       <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
     );
     const user = userEvent.setup();
+    await user.click(ouvrirPage('Objectif'));
 
     await user.click(screen.getByRole('radio', { name: 'Végétarien' }));
     await user.click(screen.getByRole('button', { name: 'Enregistrer le régime' }));
 
     expect(loadProfile()).toMatchObject({ regime: 'vegetarien' });
+  });
+
+  it('hub : tuile Mes infos avec résumé, ouvre la page, « ‹ Profil » revient', async () => {
+    vi.setSystemTime(new Date('2026-09-09T10:00:00'));
+    const user = userEvent.setup();
+    render(
+      <ProfilScreen profile={{ ...profileMarc, prenom: 'Marc' }} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} cycle={2} />,
+    );
+
+    // En-tête compte : initiale + prénom + duo/cycle
+    expect(screen.getByText('M')).toBeInTheDocument(); // initiale avatar
+    expect(screen.getByText('Marc')).toBeInTheDocument();
+    expect(screen.queryByText(/Duo/)).not.toBeInTheDocument(); // sync off : chip masquée
+    expect(screen.getByText('Cycle 2')).toBeInTheDocument();
+    // Tuile Mes infos : résumé âge/taille (41 ans au 09/09/2026)
+    expect(ouvrirPage('Mes infos')).toHaveTextContent('41 ans · 178 cm');
+
+    await user.click(ouvrirPage('Mes infos'));
+    expect(screen.getByRole('heading', { name: 'Mes infos', level: 2 })).toBeInTheDocument();
+    expect(screen.getByLabelText('Prénom')).toHaveValue('Marc');
+
+    await user.click(screen.getByRole('button', { name: /Profil/ }));
+    expect(screen.queryByRole('heading', { name: 'Mes infos', level: 2 })).not.toBeInTheDocument();
+    vi.useRealTimers();
+  });
+
+  it('hub : sous-ligne duo selon syncEtat', () => {
+    const { rerender } = render(
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} syncEtat="sync" cycle={2} />,
+    );
+    expect(screen.getByText('Duo connecté')).toBeInTheDocument();
+
+    rerender(
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} syncEtat="hors-foyer" cycle={2} />,
+    );
+    expect(screen.getByText('Local')).toBeInTheDocument();
+
+    rerender(
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} syncEtat="off" cycle={2} />,
+    );
+    expect(screen.queryByText(/Duo|Local/)).not.toBeInTheDocument();
   });
 });
 
@@ -406,7 +469,8 @@ describe('ProfilScreen — Maison & courses', () => {
     localStorage.clear();
   });
 
-  it('préremplit les champs depuis le profil et propose le datalist magasins', () => {
+  it('préremplit les champs depuis le profil et propose le datalist magasins', async () => {
+    const user = userEvent.setup();
     render(
       <ProfilScreen
         profile={{
@@ -422,8 +486,9 @@ describe('ProfilScreen — Maison & courses', () => {
         onImported={() => {}}
       />,
     );
+    await user.click(ouvrirPage('Maison & courses'));
 
-    const maison = section('Maison & courses');
+    const maison = page('Maison & courses');
     expect(screen.getByLabelText('Magasin habituel')).toHaveValue('Lidl');
     expect(screen.getByLabelText('Magasin habituel')).toHaveAttribute('list', 'pf-magasins');
     // inputs texte (+ inputMode) : jest-dom renvoie la valeur sous forme de chaîne.
@@ -441,7 +506,8 @@ describe('ProfilScreen — Maison & courses', () => {
     render(
       <ProfilScreen profile={profileMarc} onBack={() => {}} onChangeProfile={() => {}} onImported={() => {}} />,
     );
-    const maison = section('Maison & courses');
+    await user.click(ouvrirPage('Maison & courses'));
+    const maison = page('Maison & courses');
 
     await user.type(screen.getByLabelText('Magasin habituel'), 'Lidl');
     await user.type(screen.getByLabelText('Budget max courses / semaine (€)'), '40');
@@ -456,17 +522,17 @@ describe('ProfilScreen — Maison & courses', () => {
     expect(screen.getByRole('status')).toHaveTextContent(/Enregistré/);
   });
 
-  it('refuse un budget max invalide (erreur rendue dans la section)', async () => {
+  it('refuse un budget max invalide (erreur rendue dans la page)', async () => {
     const user = userEvent.setup();
     render(
       <ProfilScreen profile={profileMarc} onBack={() => {}} onChangeProfile={() => {}} onImported={() => {}} />,
     );
+    await user.click(ouvrirPage('Maison & courses'));
 
     await user.type(screen.getByLabelText('Budget max courses / semaine (€)'), '0');
     await user.click(screen.getByRole('button', { name: 'Enregistrer maison & courses' }));
 
-    expect(within(section('Maison & courses')).getByRole('alert')).toHaveTextContent(/Budget max invalide/i);
-    expect(within(section('Mes infos')).queryByRole('alert')).not.toBeInTheDocument();
+    expect(within(page('Maison & courses')).getByRole('alert')).toHaveTextContent(/Budget max invalide/i);
     expect(loadProfile()).toBeNull();
   });
 
@@ -487,6 +553,7 @@ describe('ProfilScreen — Maison & courses', () => {
         onImported={() => {}}
       />,
     );
+    await user.click(ouvrirPage('Maison & courses'));
 
     await user.clear(screen.getByLabelText('Magasin habituel'));
     await user.clear(screen.getByLabelText('Budget max courses / semaine (€)'));
@@ -544,28 +611,6 @@ describe('ProfilScreen — Génération IA', () => {
     expect(texte).toContain('## Règles dures');
     expect(screen.getByText(/Prompt copié/)).toBeInTheDocument();
   });
-
-  it('efface la confirmation dès qu un champ maison change (prompt périmé)', async () => {
-    const user = userEvent.setup();
-    const writeText = vi.fn().mockResolvedValue(undefined);
-    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
-    render(
-      <ProfilScreen
-        profile={{ ...profileMarc, magasin: 'Lidl', budgetMax: 40 }}
-        onBack={() => {}}
-        onChangeProfile={() => {}}
-        onImported={() => {}}
-      />,
-    );
-
-    await user.click(screen.getByRole('button', { name: /Copier le prompt IA/ }));
-    expect(screen.getByText(/Prompt copié/)).toBeInTheDocument();
-
-    await user.clear(screen.getByLabelText('Magasin habituel'));
-    await user.type(screen.getByLabelText('Magasin habituel'), 'Intermarché');
-
-    expect(screen.queryByText(/Prompt copié/)).not.toBeInTheDocument();
-  });
 });
 
 describe('ProfilScreen (intégration via App)', () => {
@@ -578,7 +623,7 @@ describe('ProfilScreen (intégration via App)', () => {
     const user = monterApp();
 
     await user.click(screen.getByRole('button', { name: 'Mon profil' }));
-    expect(screen.getByRole('heading', { name: 'Profil', level: 1 })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Mes infos/ })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Cuisine' })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /Retour/ }));
@@ -589,11 +634,14 @@ describe('ProfilScreen (intégration via App)', () => {
     const user = monterApp();
 
     await user.click(screen.getByRole('button', { name: 'Mon profil' }));
+    await user.click(ouvrirPage('Mes infos'));
     fireEvent.change(screen.getByLabelText('Date de naissance'), { target: { value: '1984-04-12' } });
     await user.click(screen.getByRole('button', { name: 'Enregistrer mes infos' }));
 
-    await user.click(screen.getByRole('button', { name: /Retour/ }));
+    await user.click(screen.getByRole('button', { name: /Profil/ })); // page → hub
+    await user.click(screen.getByRole('button', { name: /Retour/ })); // hub → shell
     await user.click(screen.getByRole('button', { name: 'Mon profil' }));
+    await user.click(ouvrirPage('Mes infos'));
 
     expect(screen.getByLabelText('Date de naissance')).toHaveValue('1984-04-12');
   });

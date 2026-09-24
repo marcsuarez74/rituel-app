@@ -143,13 +143,17 @@ describe('sync UI: bloc profil', () => {
   it('attente : saisie code + bouton connecter (appel engine)', async () => {
     const { connecterFoyer } = await import('../../src/lib/sync/engine');
     renderProfil('attente');
-    await userEvent.setup().type(screen.getByLabelText('Code de foyer'), 'rituel-2026');
-    await userEvent.setup().click(screen.getByRole('button', { name: 'Se connecter au foyer' }));
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: /voir le foyer/ }));
+    await user.type(screen.getByLabelText('Code de foyer'), 'rituel-2026');
+    await user.click(screen.getByRole('button', { name: 'Se connecter au foyer' }));
     expect(connecterFoyer).toHaveBeenCalledWith('rituel-2026');
   });
 
-  it('hors-foyer : le formulaire de connexion est proposé', () => {
+  it('hors-foyer : le formulaire de connexion est proposé', async () => {
     renderProfil('hors-foyer');
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: /voir le foyer/ }));
     expect(screen.getByLabelText('Code de foyer')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Se connecter au foyer/ })).toBeInTheDocument();
   });
@@ -159,6 +163,7 @@ describe('sync UI: bloc profil', () => {
     vi.mocked(engine.connecterFoyer).mockRejectedValueOnce(new Error('code-refuse'));
     renderProfil('attente');
     const u = userEvent.setup();
+    await u.click(screen.getByRole('button', { name: /voir le foyer/ }));
     await u.type(screen.getByLabelText('Code de foyer'), 'mauvais');
     await u.click(screen.getByRole('button', { name: 'Se connecter au foyer' }));
     expect(await screen.findByRole('alert')).toHaveTextContent(/code de foyer refusé/i);
@@ -170,9 +175,9 @@ describe('sync UI: bloc profil', () => {
     const confirmSpy = vi.fn().mockReturnValue(true);
     vi.stubGlobal('confirm', confirmSpy);
     renderProfil('sync');
-    await userEvent
-      .setup()
-      .click(screen.getByRole('button', { name: /supprimer les données du foyer/i }));
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: /voir le foyer/ }));
+    await user.click(screen.getByRole('button', { name: /supprimer les données du foyer/i }));
     expect(confirmSpy).toHaveBeenCalledTimes(2);
     expect(purgerFoyer).toHaveBeenCalledOnce();
   });
@@ -185,13 +190,16 @@ describe('sync UI: bloc profil', () => {
     vi.mocked(purgerFoyer).mockImplementation(() => new Promise(() => {}));
     renderProfil('sync');
     const u = userEvent.setup();
+    await u.click(screen.getByRole('button', { name: /voir le foyer/ }));
     await u.click(screen.getByRole('button', { name: /supprimer les données du foyer/i }));
     await u.click(screen.getByRole('button', { name: /suppression/i }));
     expect(purgerFoyer).toHaveBeenCalledOnce();
   });
 
-  it('note de transparence affichée', () => {
+  it('note de transparence affichée', async () => {
     renderProfil('attente');
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: /voir le foyer/ }));
     expect(screen.getByText(/supabase.*région ue.*accès limité au foyer/i)).toBeInTheDocument();
   });
 });
@@ -354,11 +362,14 @@ describe('profil: bloc Notifications', () => {
     pushActifMock.mockReturnValue(false);
     render(<ProfilScreen profile={profilBase()} onBack={() => {}} onChangeProfile={() => {}} onImported={() => {}} />);
     expect(screen.queryByRole('heading', { name: 'Notifications' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Notifications/ })).not.toBeInTheDocument();
   });
 
   it('visible avec push actif : toggle, 3 événements, ajout de rappel', async () => {
+    const user = userEvent.setup();
     await renderProfil();
-    expect(screen.getByRole('heading', { name: 'Notifications' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Notifications/ }));
+    expect(screen.getByRole('heading', { name: 'Notifications', level: 2 })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Activer les notifications' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Dîner coché' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Pesée ajoutée' })).toBeInTheDocument();
@@ -369,6 +380,7 @@ describe('profil: bloc Notifications', () => {
   it('activation → souscrireEtEnregistrer avec la config par défaut', async () => {
     const user = userEvent.setup();
     await renderProfil();
+    await user.click(screen.getByRole('button', { name: /Notifications/ }));
     await user.click(screen.getByRole('button', { name: 'Activer les notifications' }));
     expect(souscrireMock).toHaveBeenCalledTimes(1);
     expect(souscrireMock).toHaveBeenCalledWith({
@@ -383,6 +395,7 @@ describe('profil: bloc Notifications', () => {
   it('activation en échec → l’erreur est affichée (role alert)', async () => {
     const user = userEvent.setup();
     await renderProfil();
+    await user.click(screen.getByRole('button', { name: /Notifications/ }));
     souscrireMock.mockResolvedValueOnce({ ok: false, erreur: 'Registration failed - permission denied' });
     await user.click(screen.getByRole('button', { name: 'Activer les notifications' }));
     expect(screen.getByRole('alert')).toHaveTextContent('Registration failed - permission denied');
@@ -391,6 +404,7 @@ describe('profil: bloc Notifications', () => {
   it('désactivation → desabonner', async () => {
     const user = userEvent.setup();
     await renderProfil();
+    await user.click(screen.getByRole('button', { name: /Notifications/ }));
     await user.click(screen.getByRole('button', { name: 'Activer les notifications' }));
     await user.click(screen.getByRole('button', { name: 'Désactiver les notifications' }));
     expect(desabonnerMock).toHaveBeenCalledTimes(1);
@@ -399,6 +413,7 @@ describe('profil: bloc Notifications', () => {
   it('toggle événement → majConfig avec le dîner activé', async () => {
     const user = userEvent.setup();
     await renderProfil();
+    await user.click(screen.getByRole('button', { name: /Notifications/ }));
     await user.click(screen.getByRole('button', { name: 'Activer les notifications' }));
     await user.click(screen.getByRole('button', { name: 'Dîner coché' }));
     expect(majConfigMock).toHaveBeenCalledWith(
@@ -409,6 +424,7 @@ describe('profil: bloc Notifications', () => {
   it('ajouter un rappel → majConfig avec un rappel, la ligne apparaît', async () => {
     const user = userEvent.setup();
     await renderProfil();
+    await user.click(screen.getByRole('button', { name: /Notifications/ }));
     await user.click(screen.getByRole('button', { name: 'Activer les notifications' }));
     await user.click(screen.getByRole('button', { name: /Ajouter un rappel/ }));
     expect(screen.getByRole('combobox', { name: /Type de rappel/ })).toBeInTheDocument();
@@ -422,6 +438,7 @@ describe('profil: bloc Notifications', () => {
   it('supprimer le rappel → majConfig sans rappel', async () => {
     const user = userEvent.setup();
     await renderProfil();
+    await user.click(screen.getByRole('button', { name: /Notifications/ }));
     await user.click(screen.getByRole('button', { name: 'Activer les notifications' }));
     await user.click(screen.getByRole('button', { name: /Ajouter un rappel/ }));
     await user.click(screen.getByRole('button', { name: /Supprimer le rappel/ }));
@@ -433,6 +450,7 @@ describe('profil: bloc Notifications', () => {
   it('jours du rappel : toggle d\'un jour → majConfig', async () => {
     const user = userEvent.setup();
     await renderProfil();
+    await user.click(screen.getByRole('button', { name: /Notifications/ }));
     await user.click(screen.getByRole('button', { name: 'Activer les notifications' }));
     await user.click(screen.getByRole('button', { name: /Ajouter un rappel/ }));
     await user.click(screen.getByRole('button', { name: 'Mardi' }));

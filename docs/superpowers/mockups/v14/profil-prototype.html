@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Profil — prototype interactif</title>
+<style>
+  :root{
+    --basilic:#3e7a46; --basilic-sombre:#2c4a31; --citron:#f2dc7b; --creme:#f5f1e6;
+    --surface:#ffffff; --surface-2:#f7f9f4; --texte:#2c4a31; --muted:#8a8f87; --bord:#e8e5da;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,'Poppins',system-ui,sans-serif;background:#e9e5d8;display:flex;flex-direction:column;align-items:center;padding:24px 12px;min-height:100vh;gap:14px}
+  .switcher{display:flex;background:#fff;border-radius:999px;padding:4px;box-shadow:0 2px 8px rgba(0,0,0,.08);gap:2px}
+  .switcher button{border:0;background:transparent;padding:8px 18px;border-radius:999px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .2s}
+  .switcher button.on{background:var(--basilic);color:#fff}
+  .phone{width:375px;max-width:100%;height:720px;background:#fbfaf6;border-radius:28px;box-shadow:0 12px 40px rgba(0,0,0,.18);overflow:hidden;display:flex;flex-direction:column;position:relative}
+  .screen{flex:1;overflow-y:auto;display:none;animation:fadein .22s ease}
+  .screen.on{display:block}
+  @keyframes fadein{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+  @keyframes fadeback{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+  .screen.back{animation:fadeback .22s ease}
+
+  /* hub */
+  .compte{background:var(--creme);padding:18px 16px;display:flex;align-items:center;gap:14px}
+  .avatar{width:52px;height:52px;border-radius:50%;background:var(--basilic);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px;flex-shrink:0}
+  .compte b{font-size:17px;color:var(--texte)}
+  .compte .sous{font-size:12.5px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:6px}
+  .pt{width:8px;height:8px;border-radius:50%;background:var(--basilic);display:inline-block}
+  .corps{padding:14px}
+  .tuiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .tuile{background:linear-gradient(145deg,#ffffff, #eef4ec);border:1px solid #e3ead9;border-radius:14px;padding:14px;text-align:left;border:0;cursor:pointer;font-family:inherit;transition:transform .12s, box-shadow .12s;box-shadow:0 2px 8px rgba(62,122,70,.08)}
+  .tuile:active{transform:scale(.97);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+  .tuile .t-ico{font-size:20px}
+  .tuile b{display:block;font-size:13.5px;color:var(--texte);margin-top:6px}
+  .tuile span{font-size:12px;color:var(--muted);display:block;margin-top:2px}
+  .actions{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+  .action{background:#fff;border:1px solid var(--bord);border-radius:12px;padding:13px 14px;font-size:14.5px;color:var(--texte);cursor:pointer;font-family:inherit;display:flex;justify-content:space-between;align-items:center;transition:background .15s}
+  .action:active{background:var(--surface-2)}
+  .action.danger{color:#b23c3c}
+  .action span.fleche{color:#c5c2b6}
+
+  /* accordéons */
+  .acc{background:#fff;border:1px solid var(--bord);border-radius:14px;margin-bottom:10px;overflow:hidden}
+  .acc-head{width:100%;background:transparent;border:0;padding:13px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;font-family:inherit;text-align:left}
+  .acc-head .a-ico{font-size:18px}
+  .acc-head .a-titre{flex:1}
+  .acc-head .a-titre b{font-size:14.5px;color:var(--texte);display:block}
+  .acc-head .a-titre span{font-size:12.5px;color:var(--muted)}
+  .acc-head .a-chev{color:#c5c2b6;transition:transform .2s;font-size:13px}
+  .acc.ouvert .acc-head .a-chev{transform:rotate(180deg)}
+  .acc-body{max-height:0;overflow:hidden;transition:max-height .25s ease}
+  .acc.ouvert .acc-body{max-height:420px}
+  .acc-contenu{padding:4px 14px 16px}
+
+  /* pages détail */
+  .page{flex:1;overflow-y:auto;display:none;background:#fbfaf6}
+  .page.on{display:block;animation:fadein .22s ease}
+  .page.back{animation:fadeback .22s ease}
+  .retour{background:transparent;border:0;color:var(--basilic);font-size:15px;font-weight:600;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit}
+  .retour .rc{font-size:18px;line-height:1}
+  .page h2{font-size:19px;color:var(--texte);padding:2px 18px 12px}
+  .champ{background:#fff;border:1px solid var(--bord);border-radius:12px;margin:0 16px 10px;padding:11px 14px}
+  .champ label{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:5px}
+  .champ input,.champ select{border:0;font-size:15px;color:var(--texte);width:100%;font-family:inherit;background:transparent;outline:none}
+  .radio{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--bord);border-radius:12px;margin:0 16px 8px;padding:13px 14px;cursor:pointer;font-size:14.5px;color:var(--texte);transition:all .15s}
+  .radio.sel{border-color:var(--basilic);background:#eef4ec;font-weight:600}
+  .radio .r-dot{width:18px;height:18px;border-radius:50%;border:2px solid #d5d1c4;flex-shrink:0}
+  .radio.sel .r-dot{border:6px solid var(--basilic)}
+  .chip{background:#e4efe4;color:var(--basilic);border-radius:999px;padding:5px 12px;font-size:13px;display:inline-block;margin:0 6px 6px 0}
+  .chip.add{background:#f2f2ec;color:var(--muted);cursor:pointer;border:0;font-family:inherit}
+  .cta{display:block;margin:18px 16px;background:var(--basilic);color:#fff;border:0;border-radius:12px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;width:calc(100% - 32px)}
+  .hint{font-size:12.5px;color:var(--muted);padding:0 18px 10px}
+  .toggle{width:46px;height:27px;border-radius:999px;background:#d5d1c4;position:relative;flex-shrink:0;transition:background .2s}
+  .toggle.on{background:var(--basilic)}
+  .toggle::after{content:'';position:absolute;top:2.5px;left:2.5px;width:22px;height:22px;border-radius:50%;background:#fff;transition:left .2s}
+  .toggle.on::after{left:21.5px}
+  .ligne{background:#fff;border:1px solid var(--bord);border-radius:12px;margin:0 16px 10px;padding:13px 14px;display:flex;align-items:center;gap:12px;font-size:14.5px;color:var(--texte)}
+  .toast{position:absolute;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--basilic-sombre);color:#fff;padding:10px 20px;border-radius:999px;font-size:13.5px;transition:transform .25s;z-index:50;white-space:nowrap}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="switcher" id="switcher">
+  <button class="on" data-variante="tuiles" onclick="variante('tuiles',this)">Tuiles</button>
+  <button data-variante="accordeons" onclick="variante('accordeons',this)">Accordéons</button>
+</div>
+
+<div class="phone" id="phone">
+
+  <!-- ===== HUB ===== -->
+  <div class="screen on" id="hub">
+    <div class="compte">
+      <div class="avatar">M</div>
+      <div><b>Marc</b><div class="sous"><span class="pt"></span> Duo connecté · Cycle 2</div></div>
+    </div>
+    <div class="corps">
+
+      <!-- variante tuiles -->
+      <div id="vue-tuiles">
+        <div class="tuiles">
+          <button class="tuile" onclick="ouvrir('objectif')"><div class="t-ico">🎯</div><b>Objectif</b><span>Perte · -4,2 kg</span></button>
+          <button class="tuile" onclick="ouvrir('infos')"><div class="t-ico">ℹ️</div><b>Mes infos</b><span>42 ans · 180 cm</span></button>
+          <button class="tuile" onclick="ouvrir('maison')"><div class="t-ico">🏠</div><b>Maison &amp; courses</b><span>Carrefour · 80 € · 2 pers.</span></button>
+          <button class="tuile" onclick="ouvrir('notifs')"><div class="t-ico">🔔</div><b>Notifications</b><span>2 évts · 1 rappel</span></button>
+        </div>
+        <div class="actions">
+          <button class="action" onclick="toast('Écran de changement de profil')">🔄 Changer de profil <span class="fleche">›</span></button>
+          <button class="action" onclick="toast('Prompt IA copié ✓')">📋 Copier le prompt IA <span class="fleche">⧉</span></button>
+          <button class="action" onclick="toast('Hub Foyer (connexion, détail duo)')">● Duo connecté — voir le foyer <span class="fleche">›</span></button>
+          <button class="action danger" onclick="toast('Confirmation demandée…')">Déconnecter le foyer <span class="fleche">›</span></button>
+        </div>
+      </div>
+
+      <!-- variante accordéons -->
+      <div id="vue-accordeons" style="display:none">
+        <div class="acc" id="acc-obj">
+          <button class="acc-head" onclick="basculer('acc-obj')"><span class="a-ico">🎯</span><span class="a-titre"><b>Objectif</b><span>Perte · -4,2 kg restants</span></span><span class="a-chev">▼</span></button>
+          <div class="acc-body"><div class="acc-contenu">
+            <div class="radio sel" onclick="sel(this)"><span class="r-dot"></span>Perte de poids</div>
+            <div class="radio" onclick="sel(this)"><span class="r-dot"></span>Affiner / recomp</div>
+            <div class="radio" onclick="sel(this)"><span class="r-dot"></span>Prise de masse</div>
+            <div class="radio" onclick="sel(this)"><span class="r-dot"></span>Maintien</div>
+          </div></div>
+        </div>
+        <div class="acc" id="acc-infos">
+          <button class="acc-head" onclick="basculer('acc-infos')"><span class="a-ico">ℹ️</span><span class="a-titre"><b>Mes infos</b><span>42 ans · 180 cm</span></span><span class="a-chev">▼</span></button>
+          <div class="acc-body"><div class="acc-contenu">
+            <div class="champ" style="margin:0 0 8px"><label>Date de naissance</label><input value="1984-03-12"></div>
+            <div class="champ" style="margin:0 0 8px"><label>Taille (cm)</label><input value="180"></div>
+          </div></div>
+        </div>
+        <div class="acc" id="acc-maison">
+          <button class="acc-head" onclick="basculer('acc-maison')"><span class="a-ico">🏠</span><span class="a-titre"><b>Maison &amp; courses</b><span>Carrefour · 80 € · 2 pers.</span></span><span class="a-chev">▼</span></button>
+          <div class="acc-body"><div class="acc-contenu">
+            <div class="champ" style="margin:0 0 8px"><label>Magasin habituel</label><input value="Carrefour City"></div>
+            <div class="champ" style="margin:0 0 8px"><label>Budget max / semaine (€)</label><input value="80"></div>
+            <div class="chip">Personnes : 2</div><div class="chip">Repas / jour : 3</div>
+          </div></div>
+        </div>
+        <div class="acc" id="acc-notifs">
+          <button class="acc-head" onclick="basculer('acc-notifs')"><span class="a-ico">🔔</span><span class="a-titre"><b>Notifications</b><span>2 événements · 1 rappel</span></span><span class="a-chev">▼</span></button>
+          <div class="acc-body"><div class="acc-contenu">
+            <div class="ligne" style="margin:0 0 8px"><span style="flex:1">Notifications push</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="chip">Dîner coché</div><div class="chip">Pesée ajoutée</div>
+            <div class="hint" style="padding:6px 0 0">Rappel : Rituel dimanche · 17 h 30</div>
+          </div></div>
+        </div>
+        <div class="actions">
+          <button class="action" onclick="toast('Écran de changement de profil')">🔄 Changer de profil <span class="fleche">›</span></button>
+          <button class="action" onclick="toast('Prompt IA copié ✓')">📋 Copier le prompt IA <span class="fleche">⧉</span></button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== PAGE OBJECTIF ===== -->
+  <div class="page" id="page-objectif">
+    <button class="retour" onclick="retour('objectif')"><span class="rc">‹</span> Profil</button>
+    <h2>Objectif</h2>
+    <p class="hint">Ton cap pour les 4 prochaines semaines.</p>
+    <div class="radio sel" onclick="sel(this)"><span class="r-dot"></span>Perte de poids</div>
+    <div class="radio" onclick="sel(this)"><span class="r-dot"></span>Affiner / recomp</div>
+    <div class="radio" onclick="sel(this)"><span class="r-dot"></span>Prise de masse</div>
+    <div class="radio" onclick="sel(this)"><span class="r-dot"></span>Maintien</div>
+    <div style="height:12px"></div>
+    <div class="champ"><label>Poids objectif (kg)</label><input value="76"></div>
+    <div class="champ"><label>Échéance (optionnel)</label><input value="2026-12-15"></div>
+    <button class="cta" onclick="retour('objectif')">Enregistrer ✓</button>
+  </div>
+
+  <!-- ===== PAGE INFOS ===== -->
+  <div class="page" id="page-infos">
+    <button class="retour" onclick="retour('infos')"><span class="rc">‹</span> Profil</button>
+    <h2>Mes infos</h2>
+    <div class="champ"><label>Prénom</label><input value="Marc"></div>
+    <div class="champ"><label>Date de naissance</label><input value="1984-03-12"></div>
+    <div class="champ"><label>Taille (cm)</label><input value="180"></div>
+    <button class="cta" onclick="retour('infos')">Enregistrer ✓</button>
+  </div>
+
+  <!-- ===== PAGE MAISON ===== -->
+  <div class="page" id="page-maison">
+    <button class="retour" onclick="retour('maison')"><span class="rc">‹</span> Profil</button>
+    <h2>Maison &amp; courses</h2>
+    <div class="champ"><label>Magasin habituel</label><input value="Carrefour City"></div>
+    <div class="champ"><label>Budget max / semaine (€)</label><input value="80"></div>
+    <div class="champ"><label>Personnes à table</label><input value="2"></div>
+    <div class="champ"><label>Repas / jour</label><input value="3"></div>
+    <p class="hint" style="padding-top:8px">Préférences</p>
+    <div style="padding:0 16px"><span class="chip">Keto le soir ✕</span><span class="chip">Zéro déchets ✕</span><button class="chip add" onclick="toast('Ajout d\u2019une préférence')">+ Ajouter</button></div>
+    <button class="cta" onclick="retour('maison')">Enregistrer ✓</button>
+  </div>
+
+  <!-- ===== PAGE NOTIFS ===== -->
+  <div class="page" id="page-notifs">
+    <button class="retour" onclick="retour('notifs')"><span class="rc">‹</span> Profil</button>
+    <h2>Notifications</h2>
+    <div class="ligne"><span style="flex:1">Notifications push</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    <p class="hint">Me prévenir quand…</p>
+    <div style="padding:0 16px"><span class="chip">Dîner coché</span><span class="chip">Pesée ajoutée</span><span class="chip" style="background:#f2f2ec;color:var(--muted)">Courses faites +</span></div>
+    <p class="hint" style="padding-top:14px">Rappels planifiés</p>
+    <div class="ligne"><span style="flex:1">🕐 Rituel dimanche · 17 h 30<span style="display:block;font-size:12px;color:var(--muted)">dimanche</span></span><span style="color:#b23c3c;cursor:pointer" onclick="toast('Rappel supprimé')">✕</span></div>
+    <button class="cta" style="background:transparent;color:var(--basilic);border:1.5px dashed var(--basilic)">+ Ajouter un rappel</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<p style="color:#777;font-size:13px;max-width:375px;text-align:center;line-height:1.5">Prototype interactif — tape sur les tuiles / cartes / toggles, reviens avec « ‹ Profil ». Bascule Tuiles ↔ Accordéons en haut.</p>
+
+<script>
+  function variante(v, btn){
+    document.querySelectorAll('#switcher button').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    document.getElementById('vue-tuiles').style.display = v==='tuiles'?'block':'none';
+    document.getElementById('vue-accordeons').style.display = v==='accordeons'?'block':'none';
+  }
+  function basculer(id){
+    document.querySelectorAll('.acc').forEach(a=>{ if(a.id!==id) a.classList.remove('ouvert'); });
+    document.getElementById(id).classList.toggle('ouvert');
+  }
+  function sel(el){
+    el.parentElement.querySelectorAll('.radio').forEach(r=>r.classList.remove('sel'));
+    el.classList.add('sel');
+  }
+  function ouvrir(nom){
+    const p = document.getElementById('page-'+nom);
+    p.classList.add('on');
+    document.getElementById('hub').style.display='none';
+  }
+  function retour(nom){
+    const p = document.getElementById('page-'+nom);
+    p.classList.remove('on');
+    document.getElementById('hub').style.display='block';
+  }
+  let timer;
+  function toast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(timer); timer = setTimeout(()=>t.classList.remove('show'), 1800);
+  }
+</script>
+</body>
+</html>

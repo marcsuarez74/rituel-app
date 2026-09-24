@@ -1,0 +1,70 @@
+<h2>Suivi — carte héro A, anneau raffiné</h2>
+<p class="subtitle">Arc SVG à bouts arrondis (fini l'escalier du conic-gradient), piste plus douce, et un point citron en bout d'arc : le « bourgeon » qui marque où en est la progression.</p>
+
+<div class="section">
+  <div style="max-width:340px;border:1px solid #ddd;border-radius:16px;overflow:hidden;margin:12px auto;background:#f5f1e6;padding:16px">
+    <div style="display:flex;align-items:center;gap:16px">
+      <!-- anneau SVG -->
+      <div style="width:118px;height:118px;flex-shrink:0;position:relative">
+        <svg width="118" height="118" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="48" fill="none" stroke="#e7eae0" stroke-width="9"/>
+          <circle cx="60" cy="60" r="48" fill="none" stroke="#3e7a46" stroke-width="9"
+                  stroke-linecap="round" stroke-dasharray="150.8 301.6"
+                  transform="rotate(-90 60 60)"/>
+          <circle cx="60" cy="108" r="6.5" fill="#f2dc7b" stroke="#f5f1e6" stroke-width="2.5"/>
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <b style="font-size:21px;color:#2c4a31;line-height:1">-4,2</b>
+          <span style="font-size:11px;color:#8a8f87;margin-top:3px">kg restants</span>
+        </div>
+      </div>
+      <div style="flex:1">
+        <div style="font-size:12px;color:#8a8f87;letter-spacing:.2px">Objectif · Perte</div>
+        <div style="font-weight:700;font-size:17px;color:#2c4a31;margin:2px 0 8px">76 kg</div>
+        <span style="background:#e4efe4;color:#3e7a46;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:600">▼ -0,6 kg / 7 j</span>
+        <div style="font-size:12px;color:#8a8f87;margin-top:10px">Échéance 15 déc. · dans 88 j</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:14px;flex-wrap:wrap">
+      <span style="background:#fff;border:1px solid #e1e6da;border-radius:999px;padding:3px 10px;font-size:12px;color:#6e7a6c">Keto le soir</span>
+      <span style="background:#fff;border:1px solid #e1e6da;border-radius:999px;padding:3px 10px;font-size:12px;color:#6e7a6c">2 compléments</span>
+    </div>
+  </div>
+
+  <div class="split" style="margin-top:16px">
+    <div class="mockup">
+      <div class="mockup-header">Le bourgeon citron (zoom)</div>
+      <div class="mockup-body" style="display:flex;justify-content:center;padding:20px">
+        <svg width="130" height="130" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="48" fill="none" stroke="#e7eae0" stroke-width="9"/>
+          <circle cx="60" cy="60" r="48" fill="none" stroke="#3e7a46" stroke-width="9"
+                  stroke-linecap="round" stroke-dasharray="150.8 301.6"
+                  transform="rotate(-90 60 60)"/>
+          <circle cx="60" cy="108" r="7" fill="#f2dc7b" stroke="#f5f1e6" stroke-width="3"/>
+        </svg>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">95 % — presque au bout</div>
+      <div class="mockup-body" style="display:flex;justify-content:center;padding:20px">
+        <svg width="130" height="130" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="48" fill="none" stroke="#e7eae0" stroke-width="9"/>
+          <circle cx="60" cy="60" r="48" fill="none" stroke="#3e7a46" stroke-width="9"
+                  stroke-linecap="round" stroke-dasharray="286.5 301.6"
+                  transform="rotate(-90 60 60)"/>
+          <circle cx="98.5" cy="24.6" r="7" fill="#f2dc7b" stroke="#f5f1e6" stroke-width="3"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Pourquoi ça marche</h3>
+  <ul style="color:#555;font-size:14px;line-height:1.7">
+    <li><strong>Caps arrondis</strong> : l'arc commence et finit en pointe douce — organique, pas « jauge de machine »</li>
+    <li><strong>Point citron</strong> (—accent-2 du thème) : il marque la position actuelle, il grandit le long de l'anneau au fil des pesées. Signature visuelle du thème Herbes, réutilisable ailleurs (batch, budget)</li>
+    <li><strong>Anneaux 100 % atteint</strong> : le bourgeon revient toucher le départ — boucle fermée, satisfaction visuelle</li>
+  </ul>
+</div>
+<p class="subtitle">→ Validé ? L'anneau devient le composant « ProgressRing » (SVG maison, comme WeightChart), animé à l'ajout d'une pesée.</p>

@@ -1799,7 +1799,7 @@ describe('Icon', () => {
     expect(document.querySelector('svg')).toHaveAttribute('stroke-width', '2.5');
   });
 
-  it('couvre les 22 noms du design system sans crash', () => {
+  it('couvre les icônes d\'origine sans crash (lock, user et les ajouts hub ont leur test dédié)', () => {
     for (const name of NAMES) {
       const { unmount } = render(<Icon name={name} />);
       expect(document.querySelector('svg')).not.toBeNull();
@@ -1816,6 +1816,16 @@ describe('Icon', () => {
     u2();
     render(<Icon name="check" size={38} strokeWidth={2.5} />);
     expect(document.querySelector('svg')).toHaveAttribute('stroke-width', '2.5');
+  });
+
+  it('icônes du hub : info, home, bell, copy, refresh', () => {
+    for (const name of ['info', 'home', 'bell', 'copy', 'refresh'] as const) {
+      const { container, unmount } = render(<Icon name={name} />);
+      const svg = container.querySelector('svg');
+      expect(svg, name).toBeInTheDocument();
+      expect(svg?.childElementCount, `${name} : glyphe présent`).toBeGreaterThan(0);
+      unmount();
+    }
   });
 });
 

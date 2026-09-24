@@ -228,25 +228,41 @@ test.describe('Écran Profil — mobile', () => {
     },
   });
 
-  test('profil : sections v2 sans débordement horizontal', async ({ page }) => {
+  test('profil : pages détail sans débordement horizontal', async ({ page }) => {
     await page.goto('/');
     // document.fonts.ready fixe le layout avant la mesure (pattern dock.spec).
     await page.evaluate(() => document.fonts.ready);
     await page.getByRole('button', { name: 'Mon profil' }).click();
 
-    await expect(page.getByRole('heading', { name: 'Profil' })).toBeVisible();
+    // Hub : tuiles du compte visibles (le h1 « Profil » a laissé place au hub).
+    const tuileInfos = page.getByRole('button', { name: /Mes infos/ });
+    await expect(tuileInfos).toBeVisible();
+    await assertPasDeDebordement(page);
+
+    // Tuile « Mes infos » → page détail : infos v2.
+    await tuileInfos.click();
+    await expect(page.getByRole('heading', { name: 'Mes infos', level: 2 })).toBeVisible();
     await expect(page.getByLabel('Date de naissance')).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Objectif', level: 3 })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Compléments', level: 3 })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Régime', level: 3 })).toBeVisible();
+    await assertPasDeDebordement(page);
+
+    // Tuile « Objectif » → page détail : cap, régime, compléments.
+    await page.getByRole('button', { name: 'Profil', exact: true }).click();
+    await page.getByRole('button', { name: /Objectif/ }).click();
+    await expect(page.getByRole('heading', { name: 'Objectif', level: 2 })).toBeVisible();
+    await expect(page.getByRole('radiogroup', { name: "Type d'objectif" })).toBeVisible();
+    await expect(page.getByRole('radiogroup', { name: 'Régime' })).toBeVisible();
+    await expect(page.getByText('Whey')).toBeVisible();
     await assertPasDeDebordement(page);
   });
 
   test('profil : les champs maison & courses suivent le style guideline', async ({ page }) => {
     await page.goto('/');
+    await page.evaluate(() => document.fonts.ready);
     await page.getByRole('button', { name: 'Mon profil' }).click();
+    await page.getByRole('button', { name: /Maison & courses/ }).click(); // tuile → page détail
 
-    await expect(page.getByRole('heading', { name: 'Profil' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Maison & courses', level: 2 })).toBeVisible();
+    await assertPasDeDebordement(page);
     for (const label of [
       'Magasin habituel',
       'Budget max courses / semaine',

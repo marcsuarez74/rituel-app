@@ -18,7 +18,7 @@ import { evenementsDepuisMutations } from './lib/push/evenements';
 import { envoyerEvenement } from './lib/push/module';
 import { pushActif } from './lib/push/config';
 import { indexSemaineCourante, semainesTriees } from './lib/weeks';
-import { todayISO } from './lib/dates';
+import { numeroCycle, todayISO } from './lib/dates';
 import sampleRaw from './assets/semaine-exemple.md?raw';
 
 // Fallback en mémoire : tant qu'aucune semaine n'a été importée, on affiche
@@ -126,12 +126,22 @@ function App() {
     return <Onboarding onDone={setProfile} prefill={loadProfilLegacy() ?? undefined} />;
   }
 
+  const idx = indexSemaineCourante(semaines, todayISO());
+  // Sélection obsolète (semaine retirée du stockage, ex. purge du foyer) :
+  // repli sur la semaine du jour, jamais sur la 1re semaine stockée.
+  const trouve =
+    selection != null ? semaines.findIndex((w) => w.data.meta.semaine === selection) : -1;
+  const idxAffiche = Math.min(Math.max(trouve >= 0 ? trouve : idx, 0), semaines.length - 1);
+  const affichee = semaines[idxAffiche];
+  if (!affichee) return null;
+
   if (profilOuvert) {
     return (
       <div className="main-content">
         <ProfilScreen
           profile={profile}
           syncEtat={syncEtat}
+          cycle={numeroCycle(affichee.data.meta.semaine) ?? undefined}
           onBack={() => setProfilOuvert(false)}
           onChangeProfile={() => {
             removeProfile();
@@ -149,15 +159,6 @@ function App() {
       </div>
     );
   }
-
-  const idx = indexSemaineCourante(semaines, todayISO());
-  // Sélection obsolète (semaine retirée du stockage, ex. purge du foyer) :
-  // repli sur la semaine du jour, jamais sur la 1re semaine stockée.
-  const trouve =
-    selection != null ? semaines.findIndex((w) => w.data.meta.semaine === selection) : -1;
-  const idxAffiche = Math.min(Math.max(trouve >= 0 ? trouve : idx, 0), semaines.length - 1);
-  const affichee = semaines[idxAffiche];
-  if (!affichee) return null;
 
   return (
     <div className="main-content">
