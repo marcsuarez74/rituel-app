@@ -3,14 +3,8 @@ import { prenomProfil } from '../lib/model';
 import type { UserProfile } from '../lib/model';
 import { getWeights } from '../lib/storage';
 import { assemblePromptIa } from '../lib/promptIa';
-import {
-  connecterFoyer,
-  deconnecterFoyer,
-  lireSessionPub,
-  purgerFoyer,
-} from '../lib/sync/engine';
+import { deconnecterFoyer } from '../lib/sync/engine';
 import type { SyncEtat } from '../lib/sync/engine';
-import { messageConnexion } from '../lib/sync/messages';
 import { configDefaut } from '../lib/push/module';
 import type { PushConfig, RappelPush } from '../lib/push/module';
 import {
@@ -29,22 +23,15 @@ import {
 import { ImportButton } from './ImportButton';
 import { Icon } from './Icon';
 import { ProfilInfos } from './profil/ProfilInfos';
+import { ProfilFoyer } from './profil/ProfilFoyer';
 import { ProfilMaison } from './profil/ProfilMaison';
 import { ProfilObjectif } from './profil/ProfilObjectif';
-import { Alerte } from './profil/presente';
 
 // Navigation interne : hub (vue générale) ou page détail.
 type Vue = 'hub' | 'objectif' | 'infos' | 'maison' | 'notifs' | 'foyer';
 
-// Message d'état en vue connectée (texte simple — pas de symbole).
-const ETAT_SYNC: Record<Exclude<SyncEtat, 'off' | 'hors-foyer'>, string> = {
-  attente: 'Synchronisation : en attente.',
-  sync: 'Synchronisé.',
-  erreur: 'Synchronisation : erreur.',
-};
-
-// ——— Pages détail transitoires (Inlines) : le JSX des sections actuelles est
-// enveloppé dans une page détail ; les Tasks 4-7 les extraient vers
+// ——— Page détail transitoire (Inline) : le JSX de la section Notifications
+// actuelle est enveloppé dans une page détail ; la Task 7 l'extrait vers
 // src/components/profil/. Code déplacé, pas réécrit. ———
 
 // Page détail « Notifications » — les états push restent dans ProfilScreen
@@ -171,103 +158,6 @@ function PushInline({
         </button>
         <p className="onb-hint">
           Notifications sur cet appareil, envoyées par le serveur du foyer (Supabase). Désactivation immédiate.
-        </p>
-      </div>
-    </section>
-  );
-}
-
-// Page détail « Foyer » — connexion par code, état duo, déconnexion, purge
-// (double confirmation, définitive pour tout le foyer). Self-contained.
-function FoyerInline({ syncEtat }: { syncEtat: SyncEtat }) {
-  const [codeFoyer, setCodeFoyer] = useState('');
-  const [syncErreur, setSyncErreur] = useState<string | null>(null);
-  const [syncOccupe, setSyncOccupe] = useState(false);
-  const [purgeEnCours, setPurgeEnCours] = useState(false);
-
-  const connecterFoyerCode = async () => {
-    const code = codeFoyer.trim();
-    if (!code) return;
-    setSyncOccupe(true);
-    setSyncErreur(null);
-    try {
-      await connecterFoyer(code);
-      setCodeFoyer('');
-    } catch (e) {
-      setSyncErreur(messageConnexion(e));
-    } finally {
-      setSyncOccupe(false);
-    }
-  };
-
-  // Purge : le serveur est nettoyé avant le local (engine) — double
-  // confirmation car l'action est définitive pour tout le foyer. La garde
-  // purgeEnCours verrouille pendant la flush en vol (double-tap).
-  const supprimerFoyer = () => {
-    if (purgeEnCours) return;
-    if (
-      !window.confirm(
-        'Supprimer les données du foyer ? Semaines, pesées et dépenses partagées seront effacées chez Supabase et sur tous les téléphones du foyer.',
-      )
-    )
-      return;
-    if (!window.confirm('Dernière confirmation : cette action est définitive.')) return;
-    setPurgeEnCours(true);
-    purgerFoyer()
-      .catch(() => setSyncErreur('Suppression impossible : réessaie plus tard.'))
-      .finally(() => setPurgeEnCours(false));
-  };
-
-  return (
-    <section className="detail-page">
-      <h2>Foyer</h2>
-      <div className="sync-bloc">
-        {lireSessionPub() ? (
-          <>
-            {/* hors-foyer n'a jamais de label ici : fenêtre transitoire
-                (session posée, connexion en échec) — l'alerte syncErreur
-                et le point rouge portent le signal. 'off' : page atteinte
-                uniquement si duo existe, garde là pour le type ETAT_SYNC. */}
-            {syncEtat !== 'off' && syncEtat !== 'hors-foyer' && <p className="muted">{ETAT_SYNC[syncEtat]}</p>}
-            <button type="button" className="profil-ghost" onClick={deconnecterFoyer}>
-              Déconnecter le foyer
-            </button>
-            <button
-              type="button"
-              className="sync-danger"
-              onClick={supprimerFoyer}
-              disabled={purgeEnCours}
-            >
-              {purgeEnCours ? 'Suppression…' : 'Supprimer les données du foyer'}
-            </button>
-          </>
-        ) : (
-          <>
-            <div className="onboarding-field">
-              <label htmlFor="sync-code">Code de foyer</label>
-              <input
-                id="sync-code"
-                type="password"
-                value={codeFoyer}
-                onChange={(e) => {
-                  setSyncErreur(null);
-                  setCodeFoyer(e.target.value);
-                }}
-              />
-            </div>
-            <button
-              type="button"
-              className="profil-ghost"
-              onClick={connecterFoyerCode}
-              disabled={syncOccupe}
-            >
-              {syncOccupe ? 'Connexion…' : 'Se connecter au foyer'}
-            </button>
-          </>
-        )}
-        <Alerte texte={syncErreur} />
-        <p className="onb-hint">
-          Données synchronisées chez Supabase — région UE, accès limité au foyer.
         </p>
       </div>
     </section>
@@ -482,7 +372,7 @@ export function ProfilScreen({
           {vue === 'objectif' && <ProfilObjectif profile={profile} onProfileSaved={onProfileSaved} />}
           {vue === 'maison' && <ProfilMaison profile={profile} onProfileSaved={onProfileSaved} />}
           {vue === 'notifs' && <PushInline {...propsPush} />}
-          {vue === 'foyer' && <FoyerInline syncEtat={syncEtat} />}
+          {vue === 'foyer' && <ProfilFoyer syncEtat={syncEtat} />}
         </>
       )}
     </div>
