@@ -707,6 +707,41 @@ describe('MenuView v3 — onglets par recette', () => {
     expect(screen.getByText('Aucun menu pour cette semaine.')).toBeInTheDocument();
   });
 
+  it('pull remote (syncVersion) : la recette consultée reste affichée, pas de repli par défaut', async () => {
+    const user = userEvent.setup();
+    vi.setSystemTime(new Date('2026-09-09T10:00:00')); // mercredi → défaut = Omelette
+    const { container, rerender } = render(
+      <MenuView menu={MENU} recettes={[RECETTE]} bases={[]} semaine="2026-S40" />,
+    );
+    await user.click(screen.getByRole('tab', { name: /Poulet au four/ }));
+    // L'autre téléphone pousse une coche : le pull remote recharge les coches
+    // (syncVersion+1) — la recette consultée doit rester à l'écran.
+    localStorage.setItem(
+      'sportapp:checks:2026-S40',
+      JSON.stringify({ 'menu:mercredi:dinerFamille': true }),
+    );
+    rerender(
+      <MenuView menu={MENU} recettes={[RECETTE]} bases={[]} semaine="2026-S40" syncVersion={1} />,
+    );
+    expect(screen.getByRole('tab', { name: /Poulet au four/ })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    expect(container.querySelector('.rtab.active')).toHaveTextContent('Poulet au four');
+    expect(screen.getByText('Qui mange quoi')).toBeInTheDocument();
+  });
+
+  it('changement de semaine : repli sur la sélection par défaut (jour courant)', async () => {
+    const user = userEvent.setup();
+    vi.setSystemTime(new Date('2026-09-09T10:00:00')); // mercredi → défaut = Omelette
+    const { container, rerender } = render(
+      <MenuView menu={MENU} recettes={[RECETTE]} bases={[]} semaine="2026-S40" />,
+    );
+    await user.click(screen.getByRole('tab', { name: /Poulet au four/ }));
+    rerender(<MenuView menu={MENU} recettes={[RECETTE]} bases={[]} semaine="2026-S41" />);
+    expect(container.querySelector('.rtab.active')).toHaveTextContent('Omelette');
+  });
+
   const MENU_JOKER: MenuDay[] = [
     { jour: 'Lundi', dinerFamille: 'Chili + riz' },
     { jour: 'Mardi', dejeunerMarc: 'Restes' },

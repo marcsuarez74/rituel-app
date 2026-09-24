@@ -159,3 +159,18 @@ export const selectionInitiale = (
   const idxLibre = onglets.findIndex((o) => !checks[o.cleCoche]);
   return idxLibre >= 0 ? idxLibre : 0;
 };
+
+// Clé d'onglet stable (« menu:jour:clé », ou « dejeuners » pour la file) :
+// la sélection voyage par identité, pas par index — un re-rendu remote ne
+// peut pas la faire glisser sur un autre onglet.
+export const CLE_DEJEUNERS = 'dejeuners';
+
+export const cleInitiale = (
+  onglets: OngletDiner[],
+  menu: MenuDay[],
+  checks: Record<string, boolean>,
+): string => {
+  const i = selectionInitiale(onglets, menu, checks);
+  const onglet = onglets[i];
+  return i === onglets.length || !onglet ? CLE_DEJEUNERS : onglet.cleCoche;
+};
