@@ -76,6 +76,29 @@ test.describe('Nav segmented — mobile', () => {
     await expect(page.locator('.tabbar-segmented')).toHaveAttribute('data-active', 'cuisine');
   });
 
+  test('glisser la barre d’onglets recettes ne bascule pas d’onglet principal', async ({
+    page,
+  }) => {
+    await page.goto(ORIGIN);
+    await expect(page.getByText('Semaine 37')).toBeVisible();
+    await page.locator('.cuisine-tabs').getByRole('button', { name: 'Menu' }).click();
+    await page.evaluate(() => document.fonts.ready);
+    const barre = page.locator('.rtabs');
+    await barre.scrollIntoViewIfNeeded();
+    const box = await barre.boundingBox();
+    expect(box).not.toBeNull();
+    // Départ dans la bande de padding bas de la barre (hors boutons) :
+    // faire défiler la barre de recettes ne doit jamais changer d'onglet
+    // principal — même gesture que le swipe Cuisine ↔ Mon suivi.
+    const x = box!.x + 60;
+    const y = box!.y + box!.height - 4;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x - 200, y, { steps: 8 });
+    await page.mouse.up();
+    await expect(page.locator('.tabbar-segmented')).toHaveAttribute('data-active', 'cuisine');
+  });
+
   test('la pilule active recouvre exactement le segment actif', async ({ page }) => {
     await page.goto(ORIGIN);
     for (const onglet of ['Mon suivi', 'Cuisine']) {

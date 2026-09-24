@@ -3,13 +3,14 @@ import type { KeyboardEvent } from 'react';
 import type { BaseCuisine, MenuDay, Recette, ReserveLigne } from '../../lib/model';
 import { reserveId, soirsSansDiner } from '../../lib/batch';
 import {
+  CLE_DEJEUNERS,
+  cleInitiale,
   construireOnglets,
   construirePaires,
   debloquePar,
   faitsParRecette,
   paireFaite,
   pairePrete,
-  selectionInitiale,
 } from '../../lib/menu';
 import type { OngletDiner, PaireDejeuners } from '../../lib/menu';
 import { getChecks, setCheck } from '../../lib/storage';
@@ -41,15 +42,28 @@ export function MenuView({
   const jokers = soirsSansDiner(menu, reserve ?? []);
 
   // Pattern render-phase reset — cf. Checklist.tsx : un changement remote
-  // (syncVersion) ou de semaine relit le storage et recalcule l'onglet actif.
+  // (syncVersion) ou de semaine relit le storage. L'onglet actif voyage par
+  // clé (cleCoche / « dejeuners »), pas par index : un pull remote (même
+  // semaine) garde la recette consultée ; un changement de semaine replie sur
+  // la sélection par défaut (jour du jour → premier non fait → Déjeuners).
   const [synced, setSynced] = useState({ semaine, version: syncVersion });
-  const [actif, setActif] = useState(() => selectionInitiale(onglets, menu, checks));
+  const [actif, setActif] = useState<string>(() => cleInitiale(onglets, menu, checks));
   if (synced.semaine !== semaine || synced.version !== syncVersion) {
+    const memeSemaine = synced.semaine === semaine;
     setSynced({ semaine, version: syncVersion });
     const fresh = getChecks(semaine);
     setChecks(fresh);
-    setActif(Math.min(selectionInitiale(onglets, menu, fresh), onglets.length));
+    const encoreLa =
+      memeSemaine && (actif === CLE_DEJEUNERS || onglets.some((o) => o.cleCoche === actif));
+    setActif(encoreLa ? actif : cleInitiale(onglets, menu, fresh));
   }
+
+  // Index dérivé de la clé : rendu cohérent même si la clé n'existe plus
+  // (le reset render-phase ci-dessus la recalcule au prochain cycle).
+  const idxActif =
+    actif === CLE_DEJEUNERS
+      ? onglets.length
+      : Math.max(0, onglets.findIndex((o) => o.cleCoche === actif));
 
   if (onglets.length === 0 && paires.length === 0) {
     return <p className="muted">Aucun menu pour cette semaine.</p>;
@@ -93,10 +107,11 @@ export function MenuView({
       event.key === 'ArrowLeft' ? (base - 1 + tabs.length) % tabs.length :
       event.key === 'Home' ? 0 :
       event.key === 'End' ? tabs.length - 1 : -1;
-    if (t < 0) return;
+    const cible = tabs[t];
+    if (!cible) return;
     event.preventDefault();
-    setActif(t);
-    tabs[t]?.focus();
+    setActif(cible.id === 'rtab-dejeuners' ? CLE_DEJEUNERS : cible.id.replace(/^rtab-/, ''));
+    cible.focus();
   };
 
   return (
@@ -153,11 +168,11 @@ export function MenuView({
             type="button"
             role="tab"
             id={`rtab-${o.cleCoche}`}
-            aria-selected={i === actif}
+            aria-selected={i === idxActif}
             aria-controls="rpanel-actif"
             aria-label={`${o.label}${checks[o.cleCoche] ? ' (fait)' : ''}`}
-            className={`rtab${i === actif ? ' active' : ''}${checks[o.cleCoche] ? ' fait' : ''}`}
-            onClick={() => setActif(i)}
+            className={`rtab${i === idxActif ? ' active' : ''}${checks[o.cleCoche] ? ' fait' : ''}`}
+            onClick={() => setActif(o.cleCoche)}
           >
             {checks[o.cleCoche] && (
               <span className="tick" aria-hidden="true">
@@ -171,29 +186,29 @@ export function MenuView({
           type="button"
           role="tab"
           id="rtab-dejeuners"
-          aria-selected={actif === onglets.length}
+          aria-selected={idxActif === onglets.length}
           aria-controls="rpanel-actif"
-          className={`rtab${actif === onglets.length ? ' active' : ''}`}
-          onClick={() => setActif(onglets.length)}
+          className={`rtab${idxActif === onglets.length ? ' active' : ''}`}
+          onClick={() => setActif(CLE_DEJEUNERS)}
         >
           <span className="rn">🍱 Déjeuners</span>
         </button>
       </div>
-      {actif === onglets.length ? (
+      {idxActif === onglets.length ? (
         <div role="tabpanel" id="rpanel-actif" aria-labelledby="rtab-dejeuners">
           <FileDejeuners paires={paires} checks={checks} faits={faits} onBasculer={basculerPaire} />
         </div>
-      ) : onglets[actif] ? (
+      ) : onglets[idxActif] ? (
         <div
           role="tabpanel"
           id="rpanel-actif"
-          aria-labelledby={`rtab-${onglets[actif].cleCoche}`}
+          aria-labelledby={`rtab-${onglets[idxActif].cleCoche}`}
         >
           <OngletRecette
-            onglet={onglets[actif]}
+            onglet={onglets[idxActif]}
             bases={bases}
-            fait={!!checks[onglets[actif].cleCoche]}
-            onBasculer={() => basculerDiner(onglets[actif])}
+            fait={!!checks[onglets[idxActif].cleCoche]}
+            onBasculer={() => basculerDiner(onglets[idxActif])}
           />
         </div>
       ) : null}

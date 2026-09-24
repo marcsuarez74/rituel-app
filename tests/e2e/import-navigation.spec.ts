@@ -73,11 +73,13 @@ test.describe('Import du cycle & navigation semaines', () => {
     await expect(page.getByText('Semaine 1')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Semaine précédente' })).toBeDisabled();
 
-    // La navigation est en session : rechargement -> retour à l'auto (E2E-S1)
+    // La navigation persiste : rechargement -> toujours la semaine consultée
+    // (sportapp:selection), Cycle 2. Retour à l'auto via le chevron précédent.
     await page.getByRole('button', { name: 'Semaine suivante' }).click();
     await expect(page.getByText('Semaine 2')).toBeVisible();
     await page.reload();
-    await expect(page.getByText('Semaine 1')).toBeVisible();
+    await expect(page.getByText('Semaine 2')).toBeVisible();
+    await expect(page.locator('.cycle-pill')).toHaveText('Cycle 2');
 
     await assertPasDeDebordement(page);
   });

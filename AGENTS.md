@@ -102,6 +102,7 @@ Clés existantes — ne pas renommer (données réelles des téléphones) :
 - `sportapp:profile` — profil actif, **shape v2.2** : `{ id: 'marc'|'melanie', prenom?, dateNaissance?, taille?, poidsObjectif?, objectif: { type: 'perte'|'affiner'|'masse'|'maintien', echeance? }, complements: string[], regime, magasin?, budgetMax?, preferences?: string[], personnes?, repasJour? }` — v2.2 : `prenom` édité (défaut = `PROFILS_META[id].nom`, source unique des prénoms) ; `dateNaissance` et `taille` optionnelles (onboarding sautable — sections silencieuses quand absentes). L'ancienne forme `{ id, age, taille }` est lue par `loadProfilLegacy()` (read-only) pour préremplir l'onboarding de migration, puis écrasée au save
 - `sportapp:depenses` — dépenses réelles de courses (`[{ date, magasin, total }]`, trié par date desc, upsert par (date, magasin))
 - `sportapp:checks:{semaine}` — coches par semaine
+- `sportapp:selection` — dernière semaine consultée (chevrons/commutateur), restaurée à la relance ; fallback = semaine du jour si absente ou inconnue (jamais sync)
 - `sportapp:weights:{marc|melanie}` — pesées par profil
 - `sportapp:sync:token` — JWT du foyer (sync optionnelle Supabase, voir `docs/backend.md`)
 - `sportapp:sync:foyer` — id du foyer connecté
