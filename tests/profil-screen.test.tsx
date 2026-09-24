@@ -430,6 +430,7 @@ describe('ProfilScreen (unité)', () => {
     );
 
     // En-tête compte : initiale + prénom + duo/cycle
+    expect(screen.getByText('M')).toBeInTheDocument(); // initiale avatar
     expect(screen.getByText('Marc')).toBeInTheDocument();
     expect(screen.queryByText(/Duo/)).not.toBeInTheDocument(); // sync off : chip masquée
     expect(screen.getByText('Cycle 2')).toBeInTheDocument();

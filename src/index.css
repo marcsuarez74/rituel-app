@@ -2387,14 +2387,14 @@ progress {
   color: var(--text);
 }
 
-/* muted seul sur crème < 4,5:1 — même mix que la ligne 309 */
+/* muted seul sur crème < 4,5:1 — mix standard design-system.md (cf. .week-dates) */
 .hub-sous {
   display: flex;
   align-items: center;
   gap: var(--sp-6);
   margin-top: var(--sp-2);
   font-size: var(--fs-meta);
-  color: color-mix(in srgb, var(--muted) 84%, var(--text));
+  color: color-mix(in srgb, var(--muted) 70%, var(--text));
 }
 
 .hub-pt {
@@ -2438,7 +2438,7 @@ progress {
   display: block;
   margin-top: var(--sp-2);
   font-size: var(--fs-micro);
-  color: color-mix(in srgb, var(--muted) 84%, var(--text));
+  color: color-mix(in srgb, var(--muted) 70%, var(--text));
 }
 
 .hub-actions {
@@ -2471,19 +2471,14 @@ progress {
   background: var(--creme);
   border-radius: var(--radius);
   padding: var(--sp-14);
-  /* Anim fade latérale d'entrée de page (spec §2) — décorative. */
+  /* Anim fade latérale d'entrée de page (spec §2). Décorative ; couverte par
+     le kill-switch prefers-reduced-motion global. */
   animation: detail-entree .16s ease-out;
 }
 
 @keyframes detail-entree {
   from { opacity: 0; transform: translateX(var(--sp-6)); }
   to { opacity: 1; transform: none; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .detail-page {
-    animation: none;
-  }
 }
 
 .profil-screen .profile-section .btn,

@@ -830,19 +830,19 @@ export function ProfilScreen({
             </div>
             <div className="hub-actions">
               <button type="button" className="hub-action" onClick={changerProfil}>
-                <Icon name="refresh" size={16} /> Changer de profil <span className="fleche">›</span>
+                <Icon name="refresh" size={16} /> Changer de profil <span aria-hidden="true" className="fleche">›</span>
               </button>
               <button type="button" className="hub-action" onClick={copierPrompt}>
-                <Icon name="copy" size={16} /> Copier le prompt IA <span className="fleche">⧉</span>
+                <Icon name="copy" size={16} /> Copier le prompt IA <span aria-hidden="true" className="fleche">⧉</span>
               </button>
               {duo && (
                 <button type="button" className="hub-action" onClick={() => setVue('foyer')}>
-                  <span className="hub-pt" /> {duo.label} — voir le foyer <span className="fleche">›</span>
+                  <span aria-hidden="true" className="hub-pt" /> {duo.label} — voir le foyer <span aria-hidden="true" className="fleche">›</span>
                 </button>
               )}
               {syncEtat !== 'off' && (
                 <button type="button" className="hub-action danger" onClick={deconnecterFoyer}>
-                  Déconnecter le foyer <span className="fleche">›</span>
+                  Déconnecter le foyer <span aria-hidden="true" className="fleche">›</span>
                 </button>
               )}
               <div className="hub-import">
