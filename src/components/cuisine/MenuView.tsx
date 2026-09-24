@@ -17,9 +17,10 @@ import { getChecks, setCheck } from '../../lib/storage';
 import { capitalize } from '../../lib/text';
 import { Icon } from '../Icon';
 
-// Menu v3 : 1 onglet par recette/dîner + 🍱 Déjeuners (file dynamique).
-// Aucun jour affiché — l'ordre du fichier est l'ordre conseillé
-// (batch/frigo d'abord, frais ensuite). Logique dans src/lib/menu.ts.
+// Menu v3 : 1 onglet par recette/dîner + 🍱 Mes box (file dynamique, pill
+// épinglée à gauche — spec v14 §4.1). Aucun jour affiché — l'ordre du fichier
+// est l'ordre conseillé (batch/frigo d'abord, frais ensuite). Logique dans
+// src/lib/menu.ts.
 export function MenuView({
   menu,
   recettes = [],
@@ -162,37 +163,40 @@ export function MenuView({
         aria-label="Recettes du menu"
         onKeyDown={onKeyDownTablist}
       >
-        {onglets.map((o, i) => (
-          <button
-            key={o.cleCoche}
-            type="button"
-            role="tab"
-            id={`rtab-${o.cleCoche}`}
-            aria-selected={i === idxActif}
-            aria-controls="rpanel-actif"
-            aria-label={`${o.label}${checks[o.cleCoche] ? ' (fait)' : ''}`}
-            className={`rtab${i === idxActif ? ' active' : ''}${checks[o.cleCoche] ? ' fait' : ''}`}
-            onClick={() => setActif(o.cleCoche)}
-          >
-            {checks[o.cleCoche] && (
-              <span className="tick" aria-hidden="true">
-                <Icon name="check" size={12} strokeWidth={3} />
-              </span>
-            )}
-            <span className="rn">{o.label}</span>
-          </button>
-        ))}
         <button
           type="button"
           role="tab"
           id="rtab-dejeuners"
           aria-selected={idxActif === onglets.length}
           aria-controls="rpanel-actif"
-          className={`rtab${idxActif === onglets.length ? ' active' : ''}`}
+          className={`rtab rtab-epingle${idxActif === onglets.length ? ' active' : ''}`}
           onClick={() => setActif(CLE_DEJEUNERS)}
         >
-          <span className="rn">🍱 Déjeuners</span>
+          <span className="rn">🍱 Mes box</span>
         </button>
+        <span className="rtabs-sep" aria-hidden="true" />
+        <div className="rtabs-jours">
+          {onglets.map((o, i) => (
+            <button
+              key={o.cleCoche}
+              type="button"
+              role="tab"
+              id={`rtab-${o.cleCoche}`}
+              aria-selected={i === idxActif}
+              aria-controls="rpanel-actif"
+              aria-label={`${o.label}${checks[o.cleCoche] ? ' (fait)' : ''}`}
+              className={`rtab${i === idxActif ? ' active' : ''}${checks[o.cleCoche] ? ' fait' : ''}`}
+              onClick={() => setActif(o.cleCoche)}
+            >
+              {checks[o.cleCoche] && (
+                <span className="tick" aria-hidden="true">
+                  <Icon name="check" size={12} strokeWidth={3} />
+                </span>
+              )}
+              <span className="rn">{o.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
       {idxActif === onglets.length ? (
         <div role="tabpanel" id="rpanel-actif" aria-labelledby="rtab-dejeuners">

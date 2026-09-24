@@ -580,16 +580,22 @@ describe('MenuView v3 — onglets par recette', () => {
     vi.useRealTimers();
   });
 
-  it('barre : pills de recettes sans jours + onglet Déjeuners, actif = jour courant, progression Dîners/Boxes', () => {
+  it('barre : pill « Mes box » épinglée à gauche + pills de recettes scrollables sans jours, actif = jour courant, progression Dîners/Boxes', () => {
     vi.setSystemTime(new Date('2026-09-09T10:00:00')); // mercredi
     const { container } = render(
       <MenuView menu={MENU} recettes={[RECETTE]} bases={[]} semaine="2026-S40" />,
     );
     const pills = container.querySelectorAll('.rtab');
-    expect(pills).toHaveLength(3); // 2 recettes (mardi/jeudi sans dîner) + 🍱 Déjeuners
-    expect(pills[0].textContent).toContain('Poulet au four');
-    expect(pills[0].textContent).not.toMatch(/lundi/i);
-    expect(pills[2].textContent).toContain('Déjeuners');
+    expect(pills).toHaveLength(3); // 🍱 Mes box épinglée + 2 recettes (mardi/jeudi sans dîner)
+    expect(pills[0].textContent).toContain('Mes box');
+    expect(pills[0]).toHaveClass('rtab-epingle');
+    expect(pills[1].textContent).toContain('Poulet au four');
+    expect(pills[1].textContent).not.toMatch(/lundi/i);
+    // La pill épinglée vit hors de la zone scrollable des recettes (spec v14 §4.1).
+    const jours = container.querySelector('.rtabs-jours');
+    expect(jours?.textContent).toContain('Poulet au four');
+    expect(jours?.textContent).not.toContain('Mes box');
+    expect(container.querySelector('.rtabs-sep')).not.toBeNull();
     expect(container.querySelector('.rtab.active')).toHaveTextContent('Omelette');
     expect(document.querySelector('.menu-progress')).toHaveTextContent('Dîners 0/2');
     expect(document.querySelector('.menu-progress')).toHaveTextContent('Boxes 0/3');
@@ -618,7 +624,7 @@ describe('MenuView v3 — onglets par recette', () => {
     // (le menu du jour est prioritaire).
     expect(screen.queryByText('KETO-RECETTE-INFO')).not.toBeInTheDocument();
     expect(screen.queryByText('BATCH-RECETTE-INFO')).not.toBeInTheDocument();
-    expect(container.querySelectorAll('.rtab')[0].textContent).not.toMatch(/lundi/i);
+    expect(container.querySelectorAll('.rtab')[1].textContent).not.toMatch(/lundi/i);
   });
 
   it('coche unique du dîner : CTA, pill grisée barrée, persistance, annulable', async () => {
@@ -632,12 +638,12 @@ describe('MenuView v3 — onglets par recette', () => {
     expect(
       JSON.parse(localStorage.getItem('sportapp:checks:2026-S40')!)['menu:lundi:dinerFamille'],
     ).toBe(true);
-    expect(container.querySelectorAll('.rtab')[0]).toHaveClass('fait');
+    expect(container.querySelectorAll('.rtab')[1]).toHaveClass('fait');
     const onglet = document.querySelector('.onglet-recette');
     expect(onglet).toHaveClass('fait');
     await user.click(screen.getByRole('button', { name: /Dîner fait ✓ — annuler/ }));
     expect(onglet).not.toHaveClass('fait');
-    expect(container.querySelectorAll('.rtab')[0]).not.toHaveClass('fait');
+    expect(container.querySelectorAll('.rtab')[1]).not.toHaveClass('fait');
     expect(
       JSON.parse(localStorage.getItem('sportapp:checks:2026-S40')!)['menu:lundi:dinerFamille'],
     ).toBe(false);
@@ -652,7 +658,7 @@ describe('MenuView v3 — onglets par recette', () => {
     const { container } = render(
       <MenuView menu={MENU} recettes={[RECETTE]} bases={[]} semaine="2026-S40" />,
     );
-    expect(container.querySelectorAll('.rtab')[0]).toHaveClass('fait');
+    expect(container.querySelectorAll('.rtab')[1]).toHaveClass('fait');
     expect(document.querySelector('.menu-progress')).toHaveTextContent('Dîners 1/2');
   });
 
@@ -660,7 +666,7 @@ describe('MenuView v3 — onglets par recette', () => {
     const user = userEvent.setup();
     vi.setSystemTime(new Date('2026-09-09T10:00:00'));
     render(<MenuView menu={MENU} recettes={[RECETTE]} bases={[]} semaine="2026-S40" />);
-    await user.click(screen.getByRole('tab', { name: /Déjeuners/ }));
+    await user.click(screen.getByRole('tab', { name: /Mes box/ }));
 
     // R1 pas fait : lundi + mardi verrouillées, jeudi (sans ref) prête.
     expect(screen.getByText('À venir')).toBeInTheDocument();
@@ -678,7 +684,7 @@ describe('MenuView v3 — onglets par recette', () => {
     // On coche le dîner R1 → les paires lundi/mardi deviennent prêtes.
     await user.click(screen.getByRole('tab', { name: /Poulet au four/ }));
     await user.click(screen.getByRole('button', { name: /C'est fait — dîner fini/ }));
-    await user.click(screen.getByRole('tab', { name: /Déjeuners/ }));
+    await user.click(screen.getByRole('tab', { name: /Mes box/ }));
     expect(screen.queryAllByText(/débloquée quand/)).toHaveLength(0);
 
     // Coche de la première paire prête (lundi) : les 2 ids partent en storage.
@@ -695,7 +701,7 @@ describe('MenuView v3 — onglets par recette', () => {
   it('paire sans ref jamais verrouillée, paire à une ligne cochable seule', async () => {
     const user = userEvent.setup();
     render(<MenuView menu={MENU} recettes={[RECETTE]} bases={[]} semaine="2026-S40" />);
-    await user.click(screen.getByRole('tab', { name: /Déjeuners/ }));
+    await user.click(screen.getByRole('tab', { name: /Mes box/ }));
     expect(screen.getByText('Restes ou wrap')).toBeInTheDocument(); // jeudi : prête d'emblée
     await user.click(screen.getByRole('button', { name: /Boxes faites/ }));
     const checks = JSON.parse(localStorage.getItem('sportapp:checks:2026-S40')!);
