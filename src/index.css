@@ -41,6 +41,7 @@
 
 :root {
   --bg: #f0f2eb;
+  --creme: #f5f1e6; /* canvas du hub Profil (maquette v5) */
   --surface: #fcfdf9;
   --surface-2: #e7eae0;
   --border: #e1e6da;
@@ -2350,11 +2351,148 @@ progress {
   cursor: pointer;
 }
 
-.profil-screen .profile-section .btn {
+/* ---------- Hub Profil (cards) ---------- */
+
+.profil-hub {
+  background: var(--creme);
+  border-radius: var(--radius);
+  padding: var(--sp-14);
+}
+
+.hub-compte {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-14);
+  padding: var(--sp-10) var(--sp-4) var(--sp-14);
+}
+
+.hub-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  font-size: var(--fs-h3);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.hub-nom {
+  font-size: var(--fs-h3);
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* muted seul sur crème < 4,5:1 — même mix que la ligne 309 */
+.hub-sous {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+  margin-top: var(--sp-2);
+  font-size: var(--fs-meta);
+  color: color-mix(in srgb, var(--muted) 84%, var(--text));
+}
+
+.hub-pt {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+.hub-pt.gris { background: var(--surface-2); border: 1px solid var(--border); }
+.hub-pt.danger { background: var(--danger); }
+
+.hub-tuiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-10);
+}
+
+.hub-tuile {
+  background: var(--surface);
+  border: none;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--sp-14);
+  min-height: 48px;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition: transform .12s, box-shadow .12s;
+}
+.hub-tuile:active {
+  transform: scale(.97);
+}
+.hub-tuile b {
+  display: block;
+  margin-top: var(--sp-6);
+  font-size: var(--fs-sec);
+  color: var(--text);
+}
+.hub-tuile span {
+  display: block;
+  margin-top: var(--sp-2);
+  font-size: var(--fs-micro);
+  color: color-mix(in srgb, var(--muted) 84%, var(--text));
+}
+
+.hub-actions {
+  margin-top: var(--sp-14);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
+
+.hub-action {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--sp-12) var(--sp-14);
+  min-height: 48px;
+  font: inherit;
+  font-size: var(--fs-body);
+  color: var(--text);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: background .15s;
+}
+.hub-action:active { background: var(--surface-2); }
+.hub-action.danger { color: var(--danger); }
+.hub-action .fleche { color: var(--surface-2); }
+
+.detail-page {
+  background: var(--creme);
+  border-radius: var(--radius);
+  padding: var(--sp-14);
+  /* Anim fade latérale d'entrée de page (spec §2) — décorative. */
+  animation: detail-entree .16s ease-out;
+}
+
+@keyframes detail-entree {
+  from { opacity: 0; transform: translateX(var(--sp-6)); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .detail-page {
+    animation: none;
+  }
+}
+
+.profil-screen .profile-section .btn,
+.profil-screen .detail-page .btn {
   margin-top: var(--sp-12);
 }
 
-.profil-screen .profile-section .btn.profil-save {
+.profil-screen .profile-section .btn.profil-save,
+.profil-screen .detail-page .btn.profil-save {
   width: 100%;
   margin-top: var(--sp-16);
 }
