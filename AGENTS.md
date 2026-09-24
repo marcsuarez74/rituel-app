@@ -8,7 +8,7 @@ Guide pour les agents IA travaillant sur ce repo. Règles courtes, KISS : si une
 
 - **UX personnalisée** : au premier lancement, un onboarding en **5 étapes** (profil, infos — date de naissance & taille optionnelles, objectif, compléments & régime, maison & courses) dont **seule l'étape 1 est obligatoire** : carte de profil + prénom « C'est ton prénom ? » (prérempli, modifiable), les suivantes portent un CTA discret « Passer » (le doublon d'objectif de l'étape 4 a disparu) ; le prénom se modifie ensuite dans Mes infos — salutations, titre du suivi et prompt IA l'utilisent — clé `sportapp:profile` ; une **migration préremplie** relance l'onboarding quand un profil de l'ancienne forme est détecté. L'app utilise un **accent unique** (basilic #3e7a46 + citron #f2dc7b, palette Herbes) — plus de teinte par profil — et n'affiche que « ce qui me concerne » + la cuisine
 - L'app affiche **2 onglets en nav segmented** sous la bannière : 🛒 Cuisine (Courses / Menu / Mon Rituel, partagé — carte budget courses, panneau dépenses réelles, fiches recettes dépliables, timeline rituel, encadré keto) · 🎯 Mon suivi (cibles/séances/rappels/pesées du profil actif) ; écran **Profil** (infos, maison & courses, changer de profil, « Copier le prompt IA ») via l'icône en haut à droite
-- Le contenu : une **semaine d'exemple auto-chargée** au premier lancement (fallback en mémoire, l'app est donc toujours utilisable). L'import .md est **retiré de l'UI** pour l'instant — il reviendra avec une convention « template » ; le parser `parse.ts` reste la référence du format
+- Le contenu : une **semaine d'exemple auto-chargée** au premier lancement (fallback en mémoire, l'app est donc toujours utilisable). L'import .md reste branché dans le hub Profil (action « Importer un cycle (.md) ») — il sera redressé avec la future convention « template » ; le parser `parse.ts` reste la référence du format
 - Coches + pesées persistées en **localStorage** (aucune donnée ne quitte le téléphone)
 - Déployée en PWA offline-first sur GitHub Pages : https://marcsuarez74.github.io/rituel-app/
 
@@ -47,7 +47,7 @@ src/lib/          # cœur logique, zéro React : model.ts (types), parse.ts (.md
                   # storage.ts (localStorage), dates.ts (jours FR), rayons.ts (images de rayons),
                   # text.ts (capitalize mutualisé)
 src/lib/sync/     # sync optionnelle Supabase : config/session/outbox/client/engine/messages
-src/components/   # composants UI ; cuisine/ pour l'onglet Cuisine ; onboarding/ pour le premier lancement
+src/components/   # composants UI ; cuisine/ pour l'onglet Cuisine ; onboarding/ pour le premier lancement ; profil/ pour l'écran Profil (hub cards)
 src/assets/       # semaine-exemple.md (référence du format) + prompt-cycle-template.md (prompt maître IA, assemblé par src/lib/promptIa.ts) + rayons/ (miniatures jpg des rayons)
 tests/            # miroir de src/, vitest + Testing Library, environnement happy-dom
                   # parse.test.ts, storage.test.ts, weeks.test.ts, lib/rayons.test.ts,
