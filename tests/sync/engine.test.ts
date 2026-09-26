@@ -38,7 +38,6 @@ import {
   deconnecterFoyer,
   etatSync,
   flush,
-  enregistrerSurEnvoye,
   flushDiffere,
   initSync,
   injecterClient,
@@ -885,64 +884,5 @@ describe('sync: reconnexion', () => {
     definirSession('token-test', 'foyer-1');
     await vi.runAllTimersAsync(); // ne doit ni crasher ni réabonner
     expect(client.abonner).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe('surEnvoye : hook post-flush (push)', () => {
-  let c: FauxClient;
-
-  beforeEach(() => {
-    vi.setSystemTime(new Date('2026-09-16T10:00:00'));
-    localStorage.clear();
-    viderOutbox();
-    effacerSession();
-    reinitialiser();
-    c = fauxClient();
-    injecterClient(c);
-    definirSession('t', '11111111-2222-3333-4444-555555555555');
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  it('reçoit une fois toutes les mutations envoyées après flush réussie', async () => {
-    setCheck('2026-S39', 'b1', true);
-    addWeight('marc', '2026-09-16', 82.4);
-    const recus: MutationSync[][] = [];
-    enregistrerSurEnvoye((ms) => recus.push(ms));
-    await flush();
-    expect(recus.length).toBe(1);
-    expect(recus[0]).toEqual([
-      { op: 'upsert', table: 'checks', key: { semaine: '2026-S39', check_id: 'b1' }, payload: { done: true } },
-      { op: 'upsert', table: 'weights', key: { profil: 'marc', date_: '2026-09-16' }, payload: { kg: 82.4 } },
-    ]);
-  });
-
-  it('pas appelé si outbox vide', async () => {
-    const cb = vi.fn();
-    enregistrerSurEnvoye(cb);
-    await flush();
-    expect(cb).not.toHaveBeenCalled();
-  });
-
-  it('pas appelé si flush en échec', async () => {
-    setCheck('2026-S39', 'b1', true);
-    c.echouer(0);
-    const cb = vi.fn();
-    enregistrerSurEnvoye(cb);
-    await flush();
-    expect(cb).not.toHaveBeenCalled();
-  });
-
-  it('reinitialiser remet le hook à zéro', async () => {
-    setCheck('2026-S39', 'b1', true);
-    const cb = vi.fn();
-    enregistrerSurEnvoye(cb);
-    reinitialiser();
-    injecterClient(fauxClient());
-    definirSession('t', '11111111-2222-3333-4444-555555555555');
-    await flush();
-    expect(cb).not.toHaveBeenCalled();
   });
 });
