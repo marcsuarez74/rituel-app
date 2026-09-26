@@ -222,5 +222,40 @@ export const creerApp = ({ db, secret, origines, heartbeatMs }: OptionsApp): Hon
     return c.json({ ok: true });
   });
 
+  app.get('/evenements', (c) => {
+    const foyerId = c.get('foyerId');
+    let retirer: (() => void) | null = null;
+    const encodeur = new TextEncoder();
+    const flux = new ReadableStream<Uint8Array>({
+      start: (ctrl) => {
+        retirer = registre.ajouter(foyerId, {
+          envoyer: (bloc) => {
+            try {
+              ctrl.enqueue(encodeur.encode(bloc));
+            } catch {
+              /* flux déjà fermé : le retrait fera le ménage */
+            }
+          },
+          fermer: () => {
+            try {
+              ctrl.close();
+            } catch {
+              /* déjà fermé */
+            }
+          },
+        });
+      },
+      cancel: () => retirer?.(),
+    });
+    c.req.raw.signal.addEventListener('abort', () => retirer?.());
+    return new Response(flux, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+      },
+    });
+  });
+
   return app;
 };
