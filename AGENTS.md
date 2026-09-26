@@ -46,7 +46,7 @@ Un changement d'UI responsive → `npm run e2e` doit passer aussi (zéro débord
 src/lib/          # cœur logique, zéro React : model.ts (types), parse.ts (.md → WeeklyData),
                   # storage.ts (localStorage), dates.ts (jours FR), rayons.ts (images de rayons),
                   # text.ts (capitalize mutualisé)
-src/lib/sync/     # sync optionnelle Supabase : config/session/outbox/client/engine/messages
+src/lib/sync/     # sync optionnelle (serveur VPS) : config/session/outbox/client/sse/engine/messages
 src/components/   # composants UI ; cuisine/ pour l'onglet Cuisine ; onboarding/ pour le premier lancement ; profil/ pour l'écran Profil (hub cards)
 src/assets/       # semaine-exemple.md (référence du format) + prompt-cycle-template.md (prompt maître IA, assemblé par src/lib/promptIa.ts) + rayons/ (miniatures jpg des rayons)
 tests/            # miroir de src/, vitest + Testing Library, environnement happy-dom
@@ -105,7 +105,7 @@ Clés existantes — ne pas renommer (données réelles des téléphones) :
 - `sportapp:checks:{semaine}` — coches par semaine
 - `sportapp:selection` — dernière semaine consultée (chevrons/commutateur), restaurée à la relance ; fallback = semaine du jour si absente ou inconnue (jamais sync)
 - `sportapp:weights:{marc|melanie}` — pesées par profil
-- `sportapp:sync:token` — JWT du foyer (sync optionnelle Supabase, voir `docs/backend.md`)
+- `sportapp:sync:token` — JWT du foyer (sync optionnelle, serveur VPS — voir `docs/backend.md`)
 - `sportapp:sync:foyer` — id du foyer connecté
 - `sportapp:sync:outbox` — file d'attente des mutations à envoyer
 
