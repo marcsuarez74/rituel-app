@@ -208,12 +208,3 @@ avec file d'attente hors ligne.
 > Vie privée : données hébergées chez Supabase (région UE), accès limité au
 > foyer par code. « Supprimer les données du foyer » (Profil) purge serveur +
 > local à tout moment.
-
-## Notifications push (optionnelles)
-
-Une fois le foyer connecté, le bloc **Notifications** du Profil permet
-d'activer, par appareil : « Dîner coché », « Pesée ajoutée », « Courses
-faites » (contenu personnalisé — « C'est prêt ! Mélanie a fait la recette
-"…" ») et des **rappels planifiés** (séance, pesée, rituel du dimanche —
-jours et heure au choix). Configuration complète et secrets : voir
-[`docs/backend.md`](docs/backend.md) §7.
