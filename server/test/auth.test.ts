@@ -15,6 +15,8 @@ describe('server: auth — code foyer (PBKDF2)', () => {
     expect(verifierCode('romarin-basilic-3f9a2c7e', hash)).toBe(true);
     expect(verifierCode('thym-menthe-00000000', hash)).toBe(false);
     expect(verifierCode('x', 'nimporte-quoi')).toBe(false);
+    expect(verifierCode('x', 'pbkdf2-sha256$abc$AA$BB')).toBe(false);
+    expect(verifierCode('x', 'pbkdf2-sha256$0$AA$BB')).toBe(false);
   });
 
   it('deux hash du même code diffèrent (salt aléatoire) mais se vérifient tous deux', () => {

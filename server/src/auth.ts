@@ -15,7 +15,9 @@ export const hashCode = (code: string): string => {
 export const verifierCode = (code: string, stocke: string): boolean => {
   const [algo, iterations, salt64, hash64] = stocke.split('$');
   if (algo !== 'pbkdf2-sha256' || !iterations || !salt64 || !hash64) return false;
-  const calcule = pbkdf2Sync(code, b64urlVersBuffer(salt64), Number(iterations), 32, 'sha256');
+  const n = Number(iterations);
+  if (!Number.isInteger(n) || n < 1) return false;
+  const calcule = pbkdf2Sync(code, b64urlVersBuffer(salt64), n, 32, 'sha256');
   const attendu = b64urlVersBuffer(hash64);
   return calcule.length === attendu.length && timingSafeEqual(calcule, attendu);
 };
