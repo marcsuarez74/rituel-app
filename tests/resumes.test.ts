@@ -1,14 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { UserProfile } from '../src/lib/model';
 import type { WeightEntry } from '../src/lib/storage'; // WeightEntry vit dans storage, pas model
-import type { PushConfig } from '../src/lib/push/module';
-import { configDefaut } from '../src/lib/push/module';
 import { ageDepuis } from '../src/lib/dates';
 import {
   resumeDuo,
   resumeInfos,
   resumeMaison,
-  resumeNotifications,
   resumeObjectif,
 } from '../src/lib/resumes';
 
@@ -110,29 +107,5 @@ describe('resumes — resumeMaison', () => {
   });
   it('rien : « — »', () => {
     expect(resumeMaison(profileBase)).toBe('—');
-  });
-});
-
-describe('resumes — resumeNotifications', () => {
-  it('2 événements + 1 rappel', () => {
-    const config: PushConfig = {
-      ...configDefaut(),
-      evenements: { diner: true, pesee: true, courses: false },
-      rappels: [...configDefaut().rappels, { type: 'seance', jours: [1], heure: '08:00' }],
-    };
-    expect(resumeNotifications(config)).toBe('2 évts · 1 rappel');
-  });
-  it('2 rappels : accord pluriel', () => {
-    const config: PushConfig = {
-      ...configDefaut(),
-      rappels: [
-        { type: 'seance', jours: [1], heure: '08:00' },
-        { type: 'pesee', jours: [1], heure: '08:00' },
-      ],
-    };
-    expect(resumeNotifications(config)).toBe('0 évts · 2 rappels');
-  });
-  it('rien activé : « — »', () => {
-    expect(resumeNotifications({ ...configDefaut(), rappels: [] })).toBe('—');
   });
 });

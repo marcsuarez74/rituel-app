@@ -3,7 +3,6 @@ import { fmtKg } from './text';
 import { OBJECTIF_TYPES } from './model';
 import type { UserProfile } from './model';
 import type { WeightEntry } from './storage';
-import type { PushConfig } from './push/module';
 import type { SyncEtat } from './sync/engine';
 
 // Résumés d'état des tuiles du hub Profil (une ligne) — fonctions pures :
@@ -50,12 +49,4 @@ export const resumeMaison = (profile: UserProfile): string => {
   if (profile.budgetMax != null) champs.push(`${profile.budgetMax}`.replace('.', ',') + ' €');
   if (profile.personnes != null) champs.push(`${profile.personnes} pers.`);
   return champs.length > 0 ? champs.join(' · ') : '—';
-};
-
-// Tuile Notifications : événements activés + rappels (pluriel sur rappel).
-export const resumeNotifications = (config: PushConfig): string => {
-  const evts = [config.evenements.diner, config.evenements.pesee, config.evenements.courses].filter(Boolean).length;
-  const rappels = config.rappels.length;
-  if (evts === 0 && rappels === 0) return '—';
-  return `${evts} évts · ${rappels} rappel${rappels > 1 ? 's' : ''}`;
 };

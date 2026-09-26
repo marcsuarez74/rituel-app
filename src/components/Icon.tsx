@@ -103,7 +103,6 @@ const ICONS = {
     </>
   ),
   home: <path d="M4 11l8-7 8 7v8a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z" />,
-  bell: <path d="M6 17h12l-1.4-2.1V10a4.6 4.6 0 10-9.2 0v4.9zM10 19.6a2 2 0 004 0" />,
   copy: (
     <>
       <rect x="9" y="9" width="11" height="11" rx="2" />
