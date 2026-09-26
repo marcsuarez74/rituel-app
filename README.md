@@ -159,7 +159,7 @@ Trois sous-onglets partagés (Courses · Menu · Mon Rituel), en segmented contr
 npm install
 npm run dev        # serveur de dev
 npm test           # tests unitaires (vitest) — 627 verts
-npm run e2e        # tests navigateur (Playwright, mobile 375/320) — 29 specs × 2 mobiles, 52 verts
+npm run e2e        # tests navigateur (Playwright, mobile 375/320) — 26 specs × 2 mobiles, 52 verts
 npm run build      # build de production
 npm run preview    # prévisualiser le build
 npm run icons      # régénérer les icônes après modification de public/icon-src.svg
