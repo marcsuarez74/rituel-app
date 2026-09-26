@@ -58,7 +58,7 @@ function App() {
   const [syncEtat, setSyncEtat] = useState<SyncEtat>('off');
   const [syncVersion, setSyncVersion] = useState(0);
 
-  // Sync optionnelle : no-op complet sans env Supabase (état 'off'). Effet
+  // Sync optionnelle : no-op complet sans VITE_SYNC_URL (état 'off'). Effet
   // posé avant les early returns — règle des hooks. Idempotent côté engine.
   useEffect(() => {
     initSync({

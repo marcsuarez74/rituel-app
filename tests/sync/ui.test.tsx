@@ -18,8 +18,7 @@ import { getChecks, setCheck } from '../../src/lib/storage';
 // Config sync simulée active : le vrai câblage initSync tourne (engine actif),
 // le client passif injecté évite tout réseau.
 vi.mock('../../src/lib/sync/config', () => ({
-  SUPABASE_URL: 'https://example.supabase.co',
-  SUPABASE_ANON_KEY: 'anon',
+  SYNC_URL: 'https://rituel.example.fr',
   syncActif: vi.fn(() => true),
 }));
 
