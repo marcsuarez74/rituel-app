@@ -1,128 +1,92 @@
-# Backend de synchronisation (Supabase)
+# Backend de synchronisation (VPS + SQLite)
 
-La sync est **optionnelle** : sans configuration, l'app reste 100 % locale
-(aucun code réseau chargé, aucune outbox). Elle sert à un seul cas : retrouver
-semaines, coches, pesées, dépenses et profils sur les 2 téléphones du foyer.
+La sync est **optionnelle** : sans `VITE_SYNC_URL` au build, l'app reste 100 %
+locale (aucune requête réseau, aucune outbox). Elle sert à un seul cas :
+retrouver semaines, coches, pesées, dépenses et profils sur les 2 téléphones
+du foyer.
 
-Spec : `docs/superpowers/specs/2026-09-16-sync-supabase-design.md`.
+Spec : `docs/superpowers/specs/2026-09-26-sync-vps-sqlite-design.md`.
+Guide serveur (systemd, proxy, backup) : `server/README.md`.
 
 ## Posture
 
 - Les données vivent d'abord dans le téléphone (localStorage) ; le serveur est
-  un miroir qui peut être ignoré — l'app doit toujours être utilisable sans lui.
-- **Transparence** : la note affichée dans l'app (bloc Profil → Synchronisation)
-  résume la posture — « Données synchronisées chez Supabase — région UE, accès
-  limité au foyer. »
-- Aucun secret dans le front : la clé `anon` est publique par design, et la
-  `SERVICE_ROLE_KEY` ne quitte jamais le terminal local.
+  un miroir — l'app doit toujours être utilisable sans lui.
+- Transparence : le bloc Profil → Foyer affiche « Données synchronisées sur
+  votre serveur (rituel.marco-studio.fr). »
+- Aucun secret dans le front : `VITE_SYNC_URL` est une URL publique ; le
+  `JWT_SECRET` ne vit que dans `/etc/rituel.env` sur le VPS.
 
-## 1. Créer le projet
+## 1. Installer le serveur (une fois)
 
-1. [supabase.com](https://supabase.com) → New project → **région UE**
-   (ex. Paris) → sauvegarder le mot de passe DB.
-2. Settings → API : noter `Project URL` (= `VITE_SUPABASE_URL`) et
-   `anon public` (= `VITE_SUPABASE_ANON_KEY`).
-3. Settings → API → JWT Secret (→ secret `JWT_SECRET` de l'edge function).
+Voir `server/README.md` : Node ≥ 20, `/srv/rituel`, `/var/lib/rituel/rituel.db`
+(WAL), systemd `rituel-api.service`, reverse proxy `rituel.marco-studio.fr`
+(nginx : `proxy_buffering off` — indispensable pour le SSE), backup cron
+quotidien + rétention 14 jours. Secret : `openssl rand -hex 32` → `JWT_SECRET`.
 
-## 2. Créer le schéma
-
-SQL Editor → coller `supabase/migrations/0001_sync_init.sql` → Run.
-
-Vérifier : 6 tables créées (`households`, `weeks`, `checks`, `weights`,
-`depenses`, `profiles`), RLS activée sur toutes (policies filtrées par la claim
-`household_id` du JWT), publication realtime à jour.
-
-## 3. Créer le foyer (code partagé)
+## 2. Brancher l'app (build)
 
 ```bash
-node supabase/scripts/creer-foyer.mjs "$SUPABASE_URL" "$SERVICE_ROLE_KEY"
-# ou avec code imposé :
-node supabase/scripts/creer-foyer.mjs "$SUPABASE_URL" "$SERVICE_ROLE_KEY" "mon-code"
+# local
+VITE_SYNC_URL="https://rituel.marco-studio.fr" npm run build
+
+# CI Deploy : secret GitHub VITE_SYNC_URL (Settings → Secrets → Actions)
 ```
 
-- Sans code imposé, le script génère une phrase de ~24 caractères
-  (deux mots d'herbes + 8 hexadécimaux, ex. `romarin-basilic-3f9a2c7e`) ;
-  plancher 12 caractères si code imposé. Le code n'est stocké que hashé
-  (PBKDF2-SHA256, 100 000 itérations) — le noter à la création.
-- Le script **refuse de créer un 2e foyer** : la connexion exige un foyer
-  unique (l'edge function renvoie 401 sinon).
-- La `SERVICE_ROLE_KEY` (Settings → API → `service_role`) ne quitte **jamais**
-  le terminal local — elle n'est utilisée que par ce script.
+Les téléphones se connectent ensuite **depuis l'app** :
 
-## 4. Déployer l'edge function
+- **Profil → Foyer → « Créer un foyer »** : un code d'invitation permanent est
+  généré (phrase « mots d'herbes + 8 hex », ex. `romarin-basilic-3f9a2c7e`) ;
+  il est affiché **une fois** (« Notez ce code : il n'est pas stocké en
+  clair ») puis le téléphone se connecte ;
+- **l'autre téléphone** : « Se connecter au foyer » avec ce code ;
+- l'onboarding propose l'étape 6 optionnelle « Synchroniser les téléphones »
+  (rejoindre un foyer existant).
 
-```bash
-npm i -g supabase            # CLI (ou brew install supabase/tap/supabase)
-supabase login
-supabase link --project-ref <ref>
-supabase secrets set JWT_SECRET="<jwt secret du projet>"
-supabase functions deploy connexion-foyer
-```
+## 3. Vérifier
 
-L'edge function `connexion-foyer` vérifie le code contre `households.code_hash`
-et renvoie `{ token, foyer }` : un JWT HS256 (exp. 365 jours) signé avec
-`JWT_SECRET`, portant la claim `household_id` lue par les policies RLS.
-
-## 5. Brancher l'app (build)
-
-```bash
-VITE_SUPABASE_URL="https://xxx.supabase.co" \
-VITE_SUPABASE_ANON_KEY="eyJ..." \
-npm run build
-```
-
-Les deux vars sont **publiques par design** (clé anon) — aucun secret dans le
-front. Les téléphones se connectent ensuite :
-
-- **Profil** → bloc **Synchronisation** (visible dès que la sync est compilée ;
-  sur un appareil non appairé, aucun point n'est affiché dans la bannière)
-  → saisir le code de foyer → « Se connecter au foyer » ;
-- l'**onboarding** propose l'étape 6 optionnelle « Synchroniser les
-  téléphones » aux nouveaux profils (« Plus tard » possible).
-
-## 6. Vérifier
-
-1. Téléphone A : connexion au code → la pastille de la bannière passe à
-   « Synchronisé » (sans coche ni émoji — libellé au survol/lecteur d'écran ;
-   un appui dessus force une re-sync, et recrée la connexion si elle a échoué
-   au démarrage). Le bloc Profil → Synchronisation affiche « Synchronisé. »
-2. Téléphone B : connexion au code → la fusion union lui apporte les données
-   du foyer (et pousse les siennes).
-3. Cocher un item de courses sur A → apparaît coché sur B (~1 s, realtime).
-4. Mode avion sur B → l'app continue hors ligne (les mutations s'empilent dans
-   l'outbox locale) ; au retour du réseau, la file est vidée.
-5. Indisponibilité momentanée de Supabase à l'ouverture → le point passe en
-   erreur ; un appui dessus (ou le retour du réseau) reconnecte sans
-   recharger la page. Coupure du canal en plein usage → erreur puis
-   reconnexion automatique en ~5 s, avec rattrapage des données manquées.
+1. Téléphone A : « Créer un foyer » → pastille bannière « Synchronisé ».
+2. Téléphone B : « Se connecter au foyer » → la fusion union lui apporte les
+   données du foyer (et pousse les siennes).
+3. Cocher un item sur A → apparaît coché sur B (~1 s, SSE).
+4. Mode avion : l'app continue hors ligne (outbox locale) ; au retour du
+   réseau la file est vidée.
+5. Indisponibilité du VPS → point en erreur ; un appui dessus (ou le retour du
+   réseau) reconnecte en ~5 s sans recharger la page.
 
 ## Comment ça marche (résumé)
 
 - **Outbox locale** (`sportapp:sync:outbox`) : toute mutation passe par
-  `storage.ts` → `empilerMutation` (no-op sans env/token). Flush différée de
-  ~300 ms après mutation, dédup « dernier op gagne » par clé.
-- **Pull/merge** : le realtime (debounce 150 ms) déclenche un pull ; le merge
-  applique le remote sauf sur les clés en attente dans l'outbox (l'outbox
-  locale prime). Payload distant invalide → jamais persisté.
-- **Connexion** : fusion union — l'état local part d'abord, puis le remote est
+  `storage.ts` → `empilerMutation` (no-op sans env/token). Flush différée
+  ~300 ms, dédup « dernier op gagne » par clé.
+- **Pull/merge** : le SSE (debounce 150 ms) déclenche un pull ; le merge
+  applique le remote sauf sur les clés en attente (l'outbox locale prime).
+- **Connexion** : fusion union — le local part d'abord, puis le remote est
   fusionné, puis la flush pousse l'union (rien n'est écrasé ni perdu).
-- **Purge** : « Supprimer les données du foyer » (Profil) vide le serveur
-  **avant** le local — jamais de données orphelines.
-- **Déconnexion** : efface session + outbox locales ; le serveur garde le
-  foyer jusqu'à la purge.
+- **Purge** : « Supprimer les données du foyer » vide les 5 tables du foyer
+  sur le serveur **avant** le local ; le foyer et son code survivent.
+- **Déconnexion** : efface session + outbox locales ; le foyer garde ses
+  données côté serveur.
+- **Rotation / révocation du code** : supprimer la row du foyer dans SQLite
+  (`sqlite3 /var/lib/rituel/rituel.db "delete from foyers where id = '…'"` —
+  cascade sur les 5 tables) rend tous les JWT inertes ; recréer ensuite le
+  foyer depuis l'app et reconnecter chaque téléphone (la fusion union repart
+  des données locales de chacun).
 
-## Rotation / révocation du code de foyer
+## 4. Migration depuis Supabase (re-jumelage)
 
-Les JWT n'ont pas de liste de révocation : leur validité repose sur la row
-`households`. **Supprimer la row `households` (SQL Editor ou l'équivalent)
-déclenche la cascade** sur `weeks`/`checks`/`weights`/`depenses`/`profiles` —
-tous les JWT existants deviennent inertes (leur `household_id` ne matche plus
-aucune row) et les données du foyer sont effacées côté serveur.
+Les téléphones sont la source primaire ; Supabase n'était qu'un miroir.
 
-Procédure de rotation du code :
-
-1. SQL Editor : `delete from households;` (cascade — les JWT deviennent
-   inertes, les téléphones connectés passent en erreur de sync).
-2. Recréer le foyer avec le nouveau code (section 3) et redéployer si besoin.
-3. Reconnecter chaque téléphone avec le nouveau code (la fusion union
-   repartira des données locales de chaque téléphone).
+1. **Avant tout** : vérifier les 2 téléphones « Synchronisé » sur Supabase
+   (Supabase devient la copie de secours).
+2. Ajouter le secret GitHub `VITE_SYNC_URL`, merger la PR → déploiement Pages
+   → les PWA se mettent à jour (autoUpdate).
+3. Téléphone A : Profil → « Créer un foyer » → noter le code. Téléphone B :
+   « Se connecter au foyer » avec ce code.
+4. La **fusion union existante** (`pousserTout` → merge outbox-prime → flush)
+   repousse l'état local complet de chaque téléphone dans SQLite.
+5. L'ancienne session Supabase (`sportapp:sync:token`) devient invalide avec
+   le nouveau client : jusqu'au re-jumelage, l'app affiche `erreur`/formulaire
+   de connexion — l'étape 3 la remplace d'abord (`demanderSession` réécrit la
+   session).
+6. Projet Supabase : mis en pause puis supprimé après vérification.

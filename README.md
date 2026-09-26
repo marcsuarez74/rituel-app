@@ -205,6 +205,7 @@ Par défaut, tout reste sur le téléphone. Si un foyer est configuré (voir
 dépenses, profils) se synchronisent entre Marc et Mélanie en quasi temps-réel,
 avec file d'attente hors ligne.
 
-> Vie privée : données hébergées chez Supabase (région UE), accès limité au
-> foyer par code. « Supprimer les données du foyer » (Profil) purge serveur +
-> local à tout moment.
+> Vie privée : données synchronisées sur le serveur du foyer (VPS), accès
+> limité au foyer. Sans configuration, l'app reste 100 % locale.
+> « Supprimer les données du foyer » (Profil) purge serveur + local à tout
+> moment.
