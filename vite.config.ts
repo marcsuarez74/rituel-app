@@ -17,7 +17,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      // SW custom : precache + handlers push/notificationclick (src/sw.ts).
+      // SW custom : precache du build + stratégies images (src/sw.ts).
       // Le runtimeCaching des images vit dans le SW (registerRoute CacheFirst).
       strategies: 'injectManifest',
       srcDir: 'src',
