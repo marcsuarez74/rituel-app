@@ -1,0 +1,17 @@
+[Unit]
+Description=Rituel — API de sync (SQLite)
+After=network.target
+
+[Service]
+Type=simple
+User=rituel
+WorkingDirectory=/opt/rituel/server
+ExecStart=/usr/bin/node dist/index.js
+Environment=NODE_ENV=production
+Environment=TZ=Europe/Paris
+EnvironmentFile=/etc/rituel.env
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
