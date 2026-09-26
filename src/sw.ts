@@ -1,7 +1,6 @@
 /// <reference lib="webworker" />
-// Service worker custom (injectManifest) : precache du build + handlers push.
-// Le serveur envoie { title, body } prêts à afficher — le SW n'interprète
-// jamais le contenu.
+// Service worker custom (injectManifest) : precache du build + stratégies
+// images. Aucun handler métier : la sync passe par la page, pas par le SW.
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { precacheAndRoute } from 'workbox-precaching';
@@ -35,35 +34,3 @@ registerRoute(
     ],
   }),
 );
-
-self.addEventListener('push', (e) => {
-  let titre = 'Rituel';
-  let corps = '';
-  try {
-    const p = (e as PushEvent).data?.json() as { title?: string; body?: string } | undefined;
-    if (p?.title) titre = p.title;
-    if (p?.body) corps = p.body;
-  } catch {
-    /* payload non JSON : notification générique */
-  }
-  e.waitUntil(
-    self.registration.showNotification(titre, {
-      body: corps || undefined,
-      icon: '/rituel-app/pwa-192x192.png',
-      badge: '/rituel-app/pwa-64x64.png',
-      data: { url: '/rituel-app/' },
-    }),
-  );
-});
-
-self.addEventListener('notificationclick', (e) => {
-  e.notification.close();
-  e.waitUntil(
-    (async () => {
-      const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-      const c = clients[0];
-      if (c) return c.focus();
-      return self.clients.openWindow('/rituel-app/');
-    })(),
-  );
-});

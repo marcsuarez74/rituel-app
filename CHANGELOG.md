@@ -21,6 +21,10 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 - Menu : la recette consultée ne saute plus vers la sélection par défaut (jour du jour / premier non fait) quand l'autre téléphone pousse une modification — le pull remote recharge les coches sans perdre l'onglet ouvert ; un changement de semaine replie toujours sur le défaut.
 - Menu : glisser la barre d'onglets de recettes pour la faire défiler ne bascule plus vers l'onglet Suivi (conflit avec le swipe Cuisine ↔ Mon suivi).
 
+### Retiré
+
+- Notifications push (VAPID) : tuile et page Notifications du hub Profil, handlers push/notificationclick du service worker, modules `src/lib/push/`, edge functions `push-register`/`push-notifier`/`push-rappels` + `_shared/`, migration `0002_push_subscriptions`, secret `VITE_VAPID_PUBLIC_KEY`. Les appareils ayant une souscription active ne reçoivent plus rien (silencieux, sans erreur). La synchronisation du foyer (≠ push) est inchangée.
+
 ## [1.3.0] - 2026-09-18
 
 ### Ajouté

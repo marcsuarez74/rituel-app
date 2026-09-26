@@ -1824,8 +1824,8 @@ describe('Icon', () => {
     expect(document.querySelector('svg')).toHaveAttribute('stroke-width', '2.5');
   });
 
-  it('icônes du hub : info, home, bell, copy, refresh', () => {
-    for (const name of ['info', 'home', 'bell', 'copy', 'refresh'] as const) {
+  it('icônes du hub : info, home, copy, refresh', () => {
+    for (const name of ['info', 'home', 'copy', 'refresh'] as const) {
       const { container, unmount } = render(<Icon name={name} />);
       const svg = container.querySelector('svg');
       expect(svg, name).toBeInTheDocument();

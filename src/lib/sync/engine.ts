@@ -51,15 +51,6 @@ let generationRealtime = 0;
 // les déclencheurs (mutations, realtime, réseau) peuvent se rafaler, les
 // demandes concurrentes reçoivent la même promesse et re-programment un tour.
 let flushPromise: Promise<void> | null = null;
-// Hook post-flush (push) : appelé une fois par flush réussie avec les
-// mutations envoyées — jamais en échec ni sur outbox vide.
-let surEnvoye: ((ms: MutationSync[]) => void) | null = null;
-
-// Enregistré par le câblage push (App) : cf. surEnvoye ci-dessus.
-export const enregistrerSurEnvoye = (cb: ((ms: MutationSync[]) => void) | null): void => {
-  surEnvoye = cb;
-};
-
 // Retour du réseau : si le client n'existe pas (échec au démarrage), on
 // relance la connexion ; sinon on rafale ce qui s'est empilé hors ligne.
 const surEnLigne = (): void => {
@@ -99,7 +90,6 @@ export const reinitialiser = (): void => {
   reconnexionTimer = null;
   flushPromise = null;
   surEmpile(null);
-  surEnvoye = null;
   inited = false; // reset test : initSync rejouable
 };
 
@@ -154,7 +144,6 @@ export const flush = (): Promise<void> => {
       for (const m of outbox) retirer(m);
       definirEtat('sync');
       ok = true;
-      surEnvoye?.(outbox);
     } catch {
       definirEtat('erreur'); // outbox conservée — retry au prochain déclencheur
     } finally {
