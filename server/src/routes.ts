@@ -19,9 +19,6 @@ const DEFS: Record<TableSync, { cles: string[]; colonnes: string[] }> = {
   depenses: { cles: ['date_', 'magasin_key'], colonnes: ['magasin', 'total'] },
   profiles: { cles: ['profil'], colonnes: ['payload'] },
 };
-// (Task 5) — consumed par les routes sync à venir;
-void DEFS;
-
 const ORIGINES_DEFAUT = ['https://marcsuarez74.github.io', 'http://localhost:5173'];
 
 export interface OptionsApp {
@@ -45,6 +42,29 @@ const lireCorps = async (c: Context): Promise<Record<string, unknown> | null> =>
   } catch {
     return null;
   }
+};
+
+// SQLite n'a pas de booléen ni d'objet : coercition à l'écriture.
+const valeurSql = (colonne: string, v: unknown): string | number => {
+  if (colonne === 'payload') return typeof v === 'string' ? v : JSON.stringify(v ?? null);
+  if (colonne === 'done') return v === true ? 1 : 0;
+  if (colonne === 'kg' || colonne === 'total') return Number(v);
+  return String(v);
+};
+
+// …et retour aux types JS à la lecture — les rows gardent la même forme que
+// du temps de Supabase : appliquerRemote ne voit aucune différence.
+const normaliser = (r: Record<string, unknown>): Record<string, unknown> => {
+  const out = { ...r };
+  if (typeof out.payload === 'string') {
+    try {
+      out.payload = JSON.parse(out.payload) as unknown;
+    } catch {
+      /* payload texte illisible → laissé tel quel, le client filtrera */
+    }
+  }
+  if (out.done !== undefined) out.done = out.done === 1;
+  return out;
 };
 
 export const creerApp = ({ db, secret, origines, heartbeatMs }: OptionsApp): Hono<EnvApp> => {
@@ -119,12 +139,88 @@ export const creerApp = ({ db, secret, origines, heartbeatMs }: OptionsApp): Hon
     return c.json({ token: signerToken(foyer.id, secret), foyerId: foyer.id });
   });
 
-  // ---- Sync (auth Bearer) — routes ajoutées en Task 5 ----
-  // ---- SSE — route ajoutée en Task 6 ----
-  // Stubs pour Tasks 5-6 — utilisées par les routes à venir:
-  void DEFS;
-  void registre;
-  void incrementerRev;
+  // ---- Sync (auth Bearer) ----
+
+  app.get('/sync/:table', (c) => {
+    const table = c.req.param('table');
+    const def = DEFS[table as TableSync];
+    if (!def) return c.json({ erreur: 'table-inconnue' }, 404);
+    const colonnes = [...def.cles, ...def.colonnes, 'updated_at'].join(', ');
+    const rows = db
+      .prepare(`select ${colonnes} from ${table} where foyer_id = ?`)
+      .all(c.get('foyerId')) as Record<string, unknown>[];
+    return c.json({ rows: rows.map(normaliser) });
+  });
+
+  app.post('/sync/:table', async (c) => {
+    const table = c.req.param('table');
+    const def = DEFS[table as TableSync];
+    if (!def) return c.json({ erreur: 'table-inconnue' }, 404);
+    const corps = await lireCorps(c);
+    const rows = corps?.rows;
+    if (!Array.isArray(rows)) return c.json({ erreur: 'rows-manquantes' }, 400);
+    for (const r of rows) {
+      if (!estObjet(r)) return c.json({ erreur: 'row-illegale' }, 400);
+      for (const k of def.cles) {
+        if (typeof r[k] !== 'string' || !r[k]) return c.json({ erreur: 'cle-illegale' }, 400);
+      }
+      for (const col of def.colonnes) {
+        if (!(col in r)) return c.json({ erreur: 'colonne-manquante' }, 400);
+      }
+    }
+    const colonnes = ['foyer_id', ...def.cles, ...def.colonnes, 'updated_at'];
+    const insert = db.prepare(
+      `insert or replace into ${table} (${colonnes.join(', ')}) values (${colonnes.map(() => '?').join(', ')})`,
+    );
+    const maintenant = new Date().toISOString();
+    for (const r of rows as Record<string, unknown>[]) {
+      insert.run(
+        c.get('foyerId'),
+        ...def.cles.map((k) => r[k] as string),
+        ...def.colonnes.map((col) => valeurSql(col, r[col])),
+        maintenant,
+      );
+    }
+    const rev = incrementerRev(c.get('foyerId'));
+    registre.diffuser(c.get('foyerId'), rev);
+    return c.json({ ok: true });
+  });
+
+  app.delete('/sync/:table', async (c) => {
+    const table = c.req.param('table');
+    const def = DEFS[table as TableSync];
+    if (!def) return c.json({ erreur: 'table-inconnue' }, 404);
+    const corps = await lireCorps(c);
+    const clefs = corps?.clefs;
+    if (!Array.isArray(clefs)) return c.json({ erreur: 'clefs-manquantes' }, 400);
+    for (const cle of clefs) {
+      if (!estObjet(cle)) return c.json({ erreur: 'clef-illegale' }, 400);
+      for (const k of def.cles) {
+        if (typeof cle[k] !== 'string' || !cle[k]) return c.json({ erreur: 'clef-illegale' }, 400);
+      }
+    }
+    const del = db.prepare(
+      `delete from ${table} where foyer_id = ? and ${def.cles.map((k) => `${k} = ?`).join(' and ')}`,
+    );
+    for (const cle of clefs as Record<string, unknown>[]) {
+      del.run(c.get('foyerId'), ...def.cles.map((k) => cle[k] as string));
+    }
+    const rev = incrementerRev(c.get('foyerId'));
+    registre.diffuser(c.get('foyerId'), rev);
+    return c.json({ ok: true });
+  });
+
+  // Purge du foyer : les 5 tables sont vidées, le foyer et son code survivent
+  // (même sémantique qu'au temps de Supabase — purge ≠ suppression du foyer).
+  app.delete('/sync', (c) => {
+    const foyerId = c.get('foyerId');
+    for (const t of ['weeks', 'checks', 'weights', 'depenses', 'profiles'] as const) {
+      db.prepare(`delete from ${t} where foyer_id = ?`).run(foyerId);
+    }
+    const rev = incrementerRev(foyerId);
+    registre.diffuser(foyerId, rev);
+    return c.json({ ok: true });
+  });
 
   return app;
 };
