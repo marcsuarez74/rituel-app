@@ -242,7 +242,7 @@ describe('profil: création de foyer (VPS)', () => {
     await user.click(screen.getByRole('button', { name: /voir le foyer/ }));
     await user.click(screen.getByRole('button', { name: 'Créer un foyer' }));
     expect(await screen.findByText('romarin-basilic-3f9a2c7e')).toBeInTheDocument();
-    expect(screen.getByText(/n'est pas stocké en clair/i)).toBeInTheDocument();
+    expect(screen.getByText(/n’est pas stocké en clair/i)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Copier le code/ }));
     await user.click(screen.getByRole('button', { name: /C’est noté/ }));
     expect(engine.connecterFoyer).toHaveBeenCalledWith('romarin-basilic-3f9a2c7e');

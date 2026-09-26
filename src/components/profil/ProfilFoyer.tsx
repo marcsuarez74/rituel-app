@@ -131,8 +131,8 @@ export function ProfilFoyer({ syncEtat }: { syncEtat: SyncEtat }) {
               {copie ? 'Copié' : 'Copier le code'}
             </button>
             <p className="onb-hint">
-              Notez ce code : il n'est pas stocké en clair. Il sera demandé sur
-              l'autre téléphone (« Se connecter au foyer »).
+              Notez ce code : il n’est pas stocké en clair. Il sera demandé sur
+              l’autre téléphone (« Se connecter au foyer »).
             </p>
             <button
               type="button"

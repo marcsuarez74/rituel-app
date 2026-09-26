@@ -53,12 +53,13 @@ describe('sync: client VPS (fetch natif)', () => {
   });
 
   it('toutLire : GET /sync/:table → rows', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async () => new Response(JSON.stringify({ rows: [{ semaine: 's', payload: {} }] }))),
-    );
+    vi.stubGlobal('fetch', vi.fn(async (url: unknown, init?: RequestInit) => {
+      appels.push({ url: String(url), init: init ?? {} });
+      return new Response(JSON.stringify({ rows: [{ semaine: 's', payload: {} }] }));
+    }));
     const c = await creerClient();
     await expect(c.toutLire('weeks')).resolves.toEqual([{ semaine: 's', payload: {} }]);
+    expect(appels[0]?.url).toBe('https://rituel.example.fr/sync/weeks');
     expect(appels[0]?.init.method).toBeUndefined(); // GET
   });
 

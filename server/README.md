@@ -11,15 +11,16 @@ Guide opérateur complet (création du foyer depuis l'app, migration, rotation) 
 cd server
 npm ci
 npm run check                       # typecheck + lint + tests (SQLite en mémoire)
-JWT_SECRET=dev DB_PATH=/tmp/rituel.db npm run build && npm start   # :8787
+npm run build && JWT_SECRET=dev DB_PATH=/tmp/rituel.db npm start   # :8787
 ```
 
 ## VPS (première installation)
 
 1. Node ≥ 22 (`node -v`) ; utilisateur dédié sans shell :
    `sudo useradd -r -s /usr/sbin/nologin rituel`
-2. Dépôt dans `/srv/rituel` ; base dans `/var/lib/rituel/` :
+2. Dépôt dans `/srv/rituel` ; base et backups dans `/var/lib/rituel/` :
    `sudo mkdir -p /var/lib/rituel && sudo chown rituel:rituel /var/lib/rituel`
+   `sudo mkdir -p /var/lib/rituel/backups && sudo chown rituel:rituel /var/lib/rituel/backups`
 3. Secret JWT : `openssl rand -hex 32` → `/etc/rituel.env` (root-only) :
    ```
    JWT_SECRET=<64 hex>
