@@ -19,10 +19,11 @@ Guide serveur (systemd, proxy, backup) : `server/README.md`.
 
 ## 1. Installer le serveur (une fois)
 
-Voir `server/README.md` : Node ≥ 20, `/srv/rituel`, `/var/lib/rituel/rituel.db`
-(WAL), systemd `rituel-api.service`, reverse proxy `rituel.marco-studio.fr`
-(nginx : `proxy_buffering off` — indispensable pour le SSE), backup cron
-quotidien + rétention 14 jours. Secret : `openssl rand -hex 32` → `JWT_SECRET`.
+Voir `server/README.md` : Node ≥ 22, `/opt/rituel` (utilisateur système
+`rituel`), `/opt/rituel/data/rituel.db` (WAL), systemd `rituel.service`,
+reverse proxy Caddy `rituel.marco-studio.fr` (SSE géré par défaut), backup
+cron quotidien + rétention 14 jours (`server/backup.sh`). Secret :
+`openssl rand -hex 32` → `JWT_SECRET` dans `/etc/rituel.env`.
 
 ## 2. Brancher l'app (build)
 
@@ -68,7 +69,7 @@ Les téléphones se connectent ensuite **depuis l'app** :
 - **Déconnexion** : efface session + outbox locales ; le foyer garde ses
   données côté serveur.
 - **Rotation / révocation du code** : supprimer la row du foyer dans SQLite
-  (`sqlite3 /var/lib/rituel/rituel.db "delete from foyers where id = '…'"` —
+  (`sqlite3 /opt/rituel/data/rituel.db "delete from foyers where id = '…'"` —
   cascade sur les 5 tables) rend tous les JWT inertes ; recréer ensuite le
   foyer depuis l'app et reconnecter chaque téléphone (la fusion union repart
   des données locales de chacun).
