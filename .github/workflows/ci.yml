@@ -29,3 +29,9 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
+      - name: Server — install
+        run: npm ci
+        working-directory: server
+      - name: Server — check (typecheck + lint + test)
+        run: npm run check
+        working-directory: server

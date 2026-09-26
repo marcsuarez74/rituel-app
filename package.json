@@ -17,7 +17,6 @@
     "e2e:preview": "E2E_PREVIEW=1 playwright test"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.116.0",
     "js-yaml": "^5.4.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

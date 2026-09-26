@@ -4,7 +4,7 @@ Guide pour les agents IA travaillant sur ce repo. Règles courtes, KISS : si une
 
 ## Le projet
 
-**Rituel** — PWA React (thème clair « Herbes ») de suivi cuisine/diet/sport pour Marc & Mélanie. 100 % front + backend optionnel de sync (Supabase — voir `docs/backend.md`) ; sans configuration, l'app reste strictement locale :
+**Rituel** — PWA React (thème clair « Herbes ») de suivi cuisine/diet/sport pour Marc & Mélanie. 100 % front + backend optionnel de sync (serveur VPS + SQLite — voir `docs/backend.md`) ; sans configuration, l'app reste strictement locale :
 
 - **UX personnalisée** : au premier lancement, un onboarding en **5 étapes** (profil, infos — date de naissance & taille optionnelles, objectif, compléments & régime, maison & courses) dont **seule l'étape 1 est obligatoire** : carte de profil + prénom « C'est ton prénom ? » (prérempli, modifiable), les suivantes portent un CTA discret « Passer » (le doublon d'objectif de l'étape 4 a disparu) ; le prénom se modifie ensuite dans Mes infos — salutations, titre du suivi et prompt IA l'utilisent — clé `sportapp:profile` ; une **migration préremplie** relance l'onboarding quand un profil de l'ancienne forme est détecté. L'app utilise un **accent unique** (basilic #3e7a46 + citron #f2dc7b, palette Herbes) — plus de teinte par profil — et n'affiche que « ce qui me concerne » + la cuisine
 - L'app affiche **2 onglets en nav segmented** sous la bannière : 🛒 Cuisine (Courses / Menu / Mon Rituel, partagé — carte budget courses, panneau dépenses réelles, fiches recettes dépliables, timeline rituel, encadré keto) · 🎯 Mon suivi (cibles/séances/rappels/pesées du profil actif) ; écran **Profil** (infos, maison & courses, changer de profil, « Copier le prompt IA ») via l'icône en haut à droite
@@ -46,13 +46,13 @@ Un changement d'UI responsive → `npm run e2e` doit passer aussi (zéro débord
 src/lib/          # cœur logique, zéro React : model.ts (types), parse.ts (.md → WeeklyData),
                   # storage.ts (localStorage), dates.ts (jours FR), rayons.ts (images de rayons),
                   # text.ts (capitalize mutualisé)
-src/lib/sync/     # sync optionnelle Supabase : config/session/outbox/client/engine/messages
+src/lib/sync/     # sync optionnelle (serveur VPS) : config/session/outbox/client/sse/engine/messages
 src/components/   # composants UI ; cuisine/ pour l'onglet Cuisine ; onboarding/ pour le premier lancement ; profil/ pour l'écran Profil (hub cards)
 src/assets/       # semaine-exemple.md (référence du format) + prompt-cycle-template.md (prompt maître IA, assemblé par src/lib/promptIa.ts) + rayons/ (miniatures jpg des rayons)
 tests/            # miroir de src/, vitest + Testing Library, environnement happy-dom
                   # parse.test.ts, storage.test.ts, weeks.test.ts, lib/rayons.test.ts,
 tests/e2e/        # specs Playwright (navigateur réel, config playwright.config.ts, projets mobile 375 + 320)
-supabase/         # SQL + edge function + script foyer, hors tsconfig
+server/           # serveur de sync VPS (Hono + better-sqlite3), hors tsconfig app ; ses propres scripts `npm run check` (typecheck + lint + test)
 CHANGELOG.md      # historique des versions (Keep a Changelog) ; source de vérité = package.json `version`
 .github/workflows/deploy.yml   # déploie sur GitHub Pages à chaque push sur main
 .github/workflows/release.yml  # crée la GitHub Release à chaque push de tag v* (notes = section CHANGELOG)
@@ -89,6 +89,7 @@ Le format des fichiers hebdo est un **contrat** : l'app s'en sert pour la semain
 - Nouvelle fonctionnalité ou bugfix = **test d'abord** (rouge), puis implémentation (vert). `npm run test:watch` pour boucler.
 - Tests dans `tests/`, nommés en miroir : `parse.test.ts`, `storage.test.ts`, `weeks.test.ts`, `lib/rayons.test.ts`, `lib/text.test.ts`, `components.test.tsx`, `app.test.tsx`.
 - `tests/sync/` — sync optionnelle : mock de `lib/sync/config` pour forcer l'activation (sans env, tout est no-op).
+- `server/test/` — vitest + SQLite en mémoire (serveur de sync, cf. `docs/backend.md`) ; exclu du vitest racine.
 - Tester le **comportement visible** (rôles, textes, storage) — pas les détails d'implémentation. Utiliser `userEvent` (pas `fireEvent` sauf cas documenté : `fireEvent.submit` pour les formulaires sous happy-dom, `fireEvent.change` pour l'upload de plusieurs fichiers — `user.upload` n'en livre qu'un).
 - Mocks d'horloge : `vi.setSystemTime(new Date('…T10:00:00'))` — toujours la forme avec heure (parse en heure locale), jamais la forme date seule (parse en UTC). Restaurer avec `vi.useRealTimers()`.
 - `localStorage.clear()` en `beforeEach` pour l'isolation.
@@ -104,7 +105,7 @@ Clés existantes — ne pas renommer (données réelles des téléphones) :
 - `sportapp:checks:{semaine}` — coches par semaine
 - `sportapp:selection` — dernière semaine consultée (chevrons/commutateur), restaurée à la relance ; fallback = semaine du jour si absente ou inconnue (jamais sync)
 - `sportapp:weights:{marc|melanie}` — pesées par profil
-- `sportapp:sync:token` — JWT du foyer (sync optionnelle Supabase, voir `docs/backend.md`)
+- `sportapp:sync:token` — JWT du foyer (sync optionnelle, serveur VPS — voir `docs/backend.md`)
 - `sportapp:sync:foyer` — id du foyer connecté
 - `sportapp:sync:outbox` — file d'attente des mutations à envoyer
 

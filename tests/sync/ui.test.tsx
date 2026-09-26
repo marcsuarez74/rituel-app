@@ -18,8 +18,7 @@ import { getChecks, setCheck } from '../../src/lib/storage';
 // Config sync simulée active : le vrai câblage initSync tourne (engine actif),
 // le client passif injecté évite tout réseau.
 vi.mock('../../src/lib/sync/config', () => ({
-  SUPABASE_URL: 'https://example.supabase.co',
-  SUPABASE_ANON_KEY: 'anon',
+  SYNC_URL: 'https://rituel.example.fr',
   syncActif: vi.fn(() => true),
 }));
 
@@ -29,6 +28,19 @@ vi.mock('../../src/lib/sync/engine', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../src/lib/sync/engine')>()),
   connecterFoyer: vi.fn(async () => {}),
   purgerFoyer: vi.fn(async () => {}),
+}));
+
+const { creerFoyerMock, genererCodeMock } = vi.hoisted(() => ({
+  creerFoyerMock: vi.fn(async () => ({ foyerId: 'f-1' })),
+  genererCodeMock: vi.fn(() => 'romarin-basilic-3f9a2c7e'),
+}));
+
+// Session partiellement mockée : création de foyer + code interceptés
+// (les autres exports restent réels — definirSession, effacerSession…).
+vi.mock('../../src/lib/sync/session', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../src/lib/sync/session')>()),
+  creerFoyer: () => creerFoyerMock(),
+  genererCodeFoyer: () => genererCodeMock(),
 }));
 
 const clientPassif = (): SyncClient => ({
@@ -195,12 +207,61 @@ describe('sync UI: bloc profil', () => {
     await u.click(screen.getByRole('button', { name: /suppression/i }));
     expect(purgerFoyer).toHaveBeenCalledOnce();
   });
+});
 
-  it('note de transparence affichée', async () => {
-    renderProfil('attente');
+describe('profil: création de foyer (VPS)', () => {
+  const profilBase = (): UserProfile => ({
+    id: 'marc',
+    dateNaissance: '1990-01-01',
+    taille: 180,
+    objectif: { type: 'maintien' },
+    complements: [],
+    regime: 'aucun',
+  });
+  const renderProfil = () =>
+    render(
+      <ProfilScreen
+        profile={profilBase()}
+        syncEtat="attente"
+        onBack={() => {}}
+        onChangeProfile={() => {}}
+        onProfileSaved={() => {}}
+        onImported={() => {}}
+      />,
+    );
+
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('créer → code affiché une fois + copie + connexion au même code', async () => {
+    const engine = await import('../../src/lib/sync/engine');
+    renderProfil();
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: /voir le foyer/ }));
-    expect(screen.getByText(/supabase.*région ue.*accès limité au foyer/i)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Créer un foyer' }));
+    expect(await screen.findByText('romarin-basilic-3f9a2c7e')).toBeInTheDocument();
+    expect(screen.getByText(/n’est pas stocké en clair/i)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Copier le code/ }));
+    await user.click(screen.getByRole('button', { name: /C’est noté/ }));
+    expect(engine.connecterFoyer).toHaveBeenCalledWith('romarin-basilic-3f9a2c7e');
+  });
+
+  it('code déjà pris (409) → alerte visible', async () => {
+    creerFoyerMock.mockRejectedValueOnce(new Error('code-occupe'));
+    renderProfil();
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: /voir le foyer/ }));
+    await user.click(screen.getByRole('button', { name: 'Créer un foyer' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(/déjà pris/i);
+  });
+
+  it('note de posture VPS', async () => {
+    renderProfil();
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: /voir le foyer/ }));
+    expect(screen.getByText(/votre serveur.*rituel\.marco-studio\.fr/i)).toBeInTheDocument();
   });
 });
 

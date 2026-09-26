@@ -9,10 +9,9 @@ import {
   type MutationSync,
 } from '../../src/lib/sync/outbox';
 
-// Force l'activation : en vitest, VITE_SUPABASE_* est undefined.
+// Force l'activation : en vitest, VITE_SYNC_URL est undefined.
 vi.mock('../../src/lib/sync/config', () => ({
-  SUPABASE_URL: 'https://example.supabase.co',
-  SUPABASE_ANON_KEY: 'anon',
+  SYNC_URL: 'https://rituel.example.fr',
   syncActif: () => true,
 }));
 

@@ -3,8 +3,7 @@ import type { RowSync, SyncClient } from '../../src/lib/sync/client';
 import type { MutationSync, TableSync } from '../../src/lib/sync/outbox';
 
 vi.mock('../../src/lib/sync/config', () => ({
-  SUPABASE_URL: 'https://example.supabase.co',
-  SUPABASE_ANON_KEY: 'anon',
+  SYNC_URL: 'https://rituel.example.fr',
   syncActif: vi.fn(() => true),
 }));
 
@@ -505,7 +504,7 @@ describe('sync: connexion foyer', () => {
     addWeight('marc', '2026-09-21', 82.4);
     vi.stubGlobal(
       'fetch',
-      vi.fn(async () => new Response(JSON.stringify({ token: 'tok', foyer: 'foyer-1' }), { status: 200 })),
+      vi.fn(async () => new Response(JSON.stringify({ token: 'tok', foyerId: 'foyer-1' }), { status: 200 })),
     );
     await connecterFoyer(' rituel-2026 ');
     expect(lireSession()).toEqual({ token: 'tok', foyerId: 'foyer-1' });
@@ -524,7 +523,7 @@ describe('sync: connexion foyer', () => {
     ];
     vi.stubGlobal(
       'fetch',
-      vi.fn(async () => new Response(JSON.stringify({ token: 'tok', foyer: 'foyer-1' }), { status: 200 })),
+      vi.fn(async () => new Response(JSON.stringify({ token: 'tok', foyerId: 'foyer-1' }), { status: 200 })),
     );
     await connecterFoyer('code');
     expect(client.upserts).not.toEqual([]); // le local est parti
@@ -541,7 +540,7 @@ describe('sync: connexion foyer', () => {
     ];
     vi.stubGlobal(
       'fetch',
-      vi.fn(async () => new Response(JSON.stringify({ token: 'tok', foyer: 'foyer-1' }), { status: 200 })),
+      vi.fn(async () => new Response(JSON.stringify({ token: 'tok', foyerId: 'foyer-1' }), { status: 200 })),
     );
     await connecterFoyer('code');
     expect(getChecks('2026-S39')['b1']).toBe(false); // outbox-prime : remote skippé

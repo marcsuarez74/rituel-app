@@ -158,8 +158,8 @@ Trois sous-onglets partagés (Courses · Menu · Mon Rituel), en segmented contr
 ```bash
 npm install
 npm run dev        # serveur de dev
-npm test           # tests unitaires (vitest) — 245 verts
-npm run e2e        # tests navigateur (Playwright, mobile 375/320) — 13 specs × 2 mobiles, 26 verts
+npm test           # tests unitaires (vitest) — 627 verts
+npm run e2e        # tests navigateur (Playwright, mobile 375/320) — 26 specs × 2 mobiles, 52 verts
 npm run build      # build de production
 npm run preview    # prévisualiser le build
 npm run icons      # régénérer les icônes après modification de public/icon-src.svg
@@ -205,6 +205,7 @@ Par défaut, tout reste sur le téléphone. Si un foyer est configuré (voir
 dépenses, profils) se synchronisent entre Marc et Mélanie en quasi temps-réel,
 avec file d'attente hors ligne.
 
-> Vie privée : données hébergées chez Supabase (région UE), accès limité au
-> foyer par code. « Supprimer les données du foyer » (Profil) purge serveur +
-> local à tout moment.
+> Vie privée : données synchronisées sur le serveur du foyer (VPS), accès
+> limité au foyer. Sans configuration, l'app reste 100 % locale.
+> « Supprimer les données du foyer » (Profil) purge serveur + local à tout
+> moment.

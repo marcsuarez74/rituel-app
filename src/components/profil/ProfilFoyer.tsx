@@ -6,7 +6,8 @@ import {
   purgerFoyer,
 } from '../../lib/sync/engine';
 import type { SyncEtat } from '../../lib/sync/engine';
-import { messageConnexion } from '../../lib/sync/messages';
+import { creerFoyer, genererCodeFoyer } from '../../lib/sync/session';
+import { messageConnexion, messageCreation } from '../../lib/sync/messages';
 import { Alerte } from './presente';
 
 // Message d'état en vue connectée (texte simple — pas de symbole).
@@ -16,13 +17,17 @@ const ETAT_SYNC: Record<Exclude<SyncEtat, 'off' | 'hors-foyer'>, string> = {
   erreur: 'Synchronisation : erreur.',
 };
 
-// Page détail « Foyer » — connexion par code, état duo, déconnexion, purge
-// (double confirmation, définitive pour tout le foyer).
+// Page détail « Foyer » — création (code d'invitation permanent), connexion
+// par code, état duo, déconnexion, purge (double confirmation).
 export function ProfilFoyer({ syncEtat }: { syncEtat: SyncEtat }) {
   const [codeFoyer, setCodeFoyer] = useState('');
   const [syncErreur, setSyncErreur] = useState<string | null>(null);
   const [syncOccupe, setSyncOccupe] = useState(false);
   const [purgeEnCours, setPurgeEnCours] = useState(false);
+  // Création : le code n'est récupérable qu'ici (hashé côté serveur) — il
+  // reste affiché jusqu'à la connexion du téléphone.
+  const [codeCree, setCodeCree] = useState<string | null>(null);
+  const [copie, setCopie] = useState(false);
 
   const connecterFoyerCode = async () => {
     const code = codeFoyer.trim();
@@ -39,14 +44,57 @@ export function ProfilFoyer({ syncEtat }: { syncEtat: SyncEtat }) {
     }
   };
 
+  const creerFoyerCode = async () => {
+    if (syncOccupe) return;
+    setSyncOccupe(true);
+    setSyncErreur(null);
+    try {
+      const code = genererCodeFoyer();
+      await creerFoyer(code);
+      setCopie(false);
+      setCodeCree(code);
+    } catch (e) {
+      setSyncErreur(messageCreation(e));
+    } finally {
+      setSyncOccupe(false);
+    }
+  };
+
+  const copierCode = async () => {
+    if (!codeCree) return;
+    try {
+      await navigator.clipboard.writeText(codeCree);
+    } catch {
+      const ta = document.createElement('textarea');
+      ta.value = codeCree;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+    }
+    setCopie(true);
+  };
+
+  const connecterApresCreation = async () => {
+    if (!codeCree || syncOccupe) return;
+    setSyncOccupe(true);
+    try {
+      await connecterFoyer(codeCree);
+      setCodeCree(null);
+    } catch (e) {
+      setSyncErreur(messageConnexion(e));
+    } finally {
+      setSyncOccupe(false);
+    }
+  };
+
   // Purge : le serveur est nettoyé avant le local (engine) — double
-  // confirmation car l'action est définitive pour tout le foyer. La garde
-  // purgeEnCours verrouille pendant la flush en vol (double-tap).
+  // confirmation car l'action est définitive pour tout le foyer.
   const supprimerFoyer = () => {
     if (purgeEnCours) return;
     if (
       !window.confirm(
-        'Supprimer les données du foyer ? Semaines, pesées et dépenses partagées seront effacées chez Supabase et sur tous les téléphones du foyer.',
+        'Supprimer les données du foyer ? Semaines, pesées et dépenses partagées seront effacées sur le serveur du foyer et sur tous les téléphones.',
       )
     )
       return;
@@ -63,10 +111,6 @@ export function ProfilFoyer({ syncEtat }: { syncEtat: SyncEtat }) {
       <div className="sync-bloc">
         {lireSessionPub() ? (
           <>
-            {/* hors-foyer n'a jamais de label ici : fenêtre transitoire
-                (session posée, connexion en échec) — l'alerte syncErreur
-                et le point rouge portent le signal. 'off' : page atteinte
-                uniquement si duo existe, garde là pour le type ETAT_SYNC. */}
             {syncEtat !== 'off' && syncEtat !== 'hors-foyer' && <p className="muted">{ETAT_SYNC[syncEtat]}</p>}
             <button type="button" className="profil-ghost" onClick={deconnecterFoyer}>
               Déconnecter le foyer
@@ -80,8 +124,35 @@ export function ProfilFoyer({ syncEtat }: { syncEtat: SyncEtat }) {
               {purgeEnCours ? 'Suppression…' : 'Supprimer les données du foyer'}
             </button>
           </>
+        ) : codeCree ? (
+          <>
+            <p className="sync-code">{codeCree}</p>
+            <button type="button" className="profil-ghost" onClick={() => void copierCode()}>
+              {copie ? 'Copié' : 'Copier le code'}
+            </button>
+            <p className="onb-hint">
+              Notez ce code : il n’est pas stocké en clair. Il sera demandé sur
+              l’autre téléphone (« Se connecter au foyer »).
+            </p>
+            <button
+              type="button"
+              className="profil-ghost"
+              onClick={() => void connecterApresCreation()}
+              disabled={syncOccupe}
+            >
+              {syncOccupe ? 'Connexion…' : 'C’est noté — connecter ce téléphone'}
+            </button>
+          </>
         ) : (
           <>
+            <button
+              type="button"
+              className="profil-ghost"
+              onClick={() => void creerFoyerCode()}
+              disabled={syncOccupe}
+            >
+              Créer un foyer
+            </button>
             <div className="onboarding-field">
               <label htmlFor="sync-code">Code de foyer</label>
               <input
@@ -106,7 +177,7 @@ export function ProfilFoyer({ syncEtat }: { syncEtat: SyncEtat }) {
         )}
         <Alerte texte={syncErreur} />
         <p className="onb-hint">
-          Données synchronisées chez Supabase — région UE, accès limité au foyer.
+          Données synchronisées sur votre serveur (rituel.marco-studio.fr).
         </p>
       </div>
     </section>

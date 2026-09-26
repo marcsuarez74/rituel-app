@@ -1,5 +1,6 @@
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from './config';
-import { TABLES, type TableSync } from './outbox';
+import { SYNC_URL } from './config';
+import type { TableSync } from './outbox';
+import { abonnerSse } from './sse';
 import { lireSession } from './session';
 
 export type RowSync = Record<string, unknown>;
@@ -12,70 +13,49 @@ export interface SyncClient {
   abonner: (onEvenement: () => void, onStatut?: (ouvert: boolean) => void) => () => void;
 }
 
-const verifier = (error: { message: string } | null): void => {
-  if (error) throw new Error(error.message);
-};
-
-// Port étroit sur supabase-js — dynamic import : l'app sans backend ne
-// télécharge jamais cette dépendance (le chunk est séparé par le bundler).
+// Port étroit sur l'API du VPS — fetch natif, zéro dépendance. L'app sans
+// VITE_SYNC_URL n'appelle jamais creerClient (gate syncActif de l'engine) :
+// aucun réseau.
 export const creerClient = async (): Promise<SyncClient> => {
-  const { createClient } = await import('@supabase/supabase-js');
-  const { token, foyerId } = lireSession()!;
-  const supabase = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: { headers: { Authorization: `Bearer ${token}` } },
+  const session = lireSession()!;
+  const entetes = (): Record<string, string> => ({
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${lireSession()?.token ?? session.token}`,
   });
-  // Le realtime passe les RLS : il a besoin du JWT foyer lui aussi.
-  try {
-    supabase.realtime.setAuth(token);
-  } catch {
-    // version sans setAuth : REST seul, le pull reste fonctionnel
-  }
+  const verifier = async (res: Response): Promise<void> => {
+    if (!res.ok) throw new Error(`sync-${res.status}`);
+  };
 
   return {
     upsert: async (table, rows) => {
-      const { error } = await supabase.from(table).upsert(rows);
-      verifier(error);
+      const res = await fetch(`${SYNC_URL}/sync/${table}`, {
+        method: 'POST',
+        headers: entetes(),
+        body: JSON.stringify({ rows }),
+      });
+      await verifier(res);
     },
     supprimer: async (table, clefs) => {
-      for (const cle of clefs) {
-        let q = supabase.from(table).delete().eq('household_id', foyerId);
-        for (const [k, v] of Object.entries(cle)) q = q.eq(k, v);
-        const { error } = await q;
-        verifier(error);
-      }
+      const res = await fetch(`${SYNC_URL}/sync/${table}`, {
+        method: 'DELETE',
+        headers: entetes(),
+        body: JSON.stringify({ clefs }),
+      });
+      await verifier(res);
     },
     toutLire: async (table) => {
-      const { data, error } = await supabase.from(table).select('*').eq('household_id', foyerId);
-      verifier(error);
-      return (data ?? []) as RowSync[];
+      const res = await fetch(`${SYNC_URL}/sync/${table}`, { headers: entetes() });
+      await verifier(res);
+      const { rows } = (await res.json()) as { rows?: RowSync[] };
+      return rows ?? [];
     },
     purger: async () => {
-      for (const t of TABLES) {
-        const { error } = await supabase.from(t).delete().eq('household_id', foyerId);
-        verifier(error);
-      }
+      const res = await fetch(`${SYNC_URL}/sync`, { method: 'DELETE', headers: entetes() });
+      await verifier(res);
     },
-    abonner: (onEvenement, onStatut) => {
-      const canal = supabase.channel('sync-foyer');
-      for (const t of TABLES) {
-        canal.on(
-          'postgres_changes',
-          { event: '*', schema: 'public', table: t, filter: `household_id=eq.${foyerId}` },
-          () => onEvenement(),
-        );
-      }
-      // Statut du canal : une coupure websocket doit être visible (erreur +
-      // reconnexion), sinon l'app croit être à jour sans recevoir les push.
-      canal.subscribe((status) => {
-        if (status === 'SUBSCRIBED') onStatut?.(true);
-        else if (status === 'TIMED_OUT' || status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-          onStatut?.(false);
-        }
-      });
-      return () => {
-        void supabase.removeChannel(canal);
-      };
-    },
+    abonner: (onEvenement, onStatut) =>
+      abonnerSse(`${SYNC_URL}/evenements`, session.token, onEvenement, (ouvert) =>
+        onStatut?.(ouvert),
+      ),
   };
 };

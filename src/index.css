@@ -3085,6 +3085,21 @@ progress {
 
 /* ---------- Sync (bloc profil) ---------- */
 
+/* Code d'invitation affiché une fois après la création du foyer : grand,
+   copiable, cassable (mots + hex longs sur petit écran). */
+.sync-code {
+  padding: var(--sp-12) var(--sp-16);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: var(--fs-h3);
+  line-height: var(--lh-title);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  word-break: break-all;
+  text-align: center;
+}
+
 .sync-bloc .profil-ghost {
   margin-top: var(--sp-12);
 }

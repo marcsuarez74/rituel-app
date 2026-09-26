@@ -1,15 +1,16 @@
 import { vi } from 'vitest';
 import {
+  creerFoyer,
   demanderSession,
   definirSession,
   effacerSession,
+  genererCodeFoyer,
   lireSession,
 } from '../../src/lib/sync/session';
 
-// Force l'activation : en vitest, VITE_SUPABASE_* est undefined.
+// Force l'activation : en vitest, VITE_SYNC_URL est undefined.
 vi.mock('../../src/lib/sync/config', () => ({
-  SUPABASE_URL: 'https://example.supabase.co',
-  SUPABASE_ANON_KEY: 'anon',
+  SYNC_URL: 'https://rituel.example.fr',
   syncActif: () => true,
 }));
 
@@ -41,37 +42,53 @@ describe('sync: session foyer', () => {
     expect(lireSession()).toBeNull();
   });
 
-  it('demanderSession : 401 → code-refuse', async () => {
+  it('demanderSession : POST /connexion → { token, foyerId }', async () => {
+    const appels: Array<{ url: string; init: RequestInit }> = [];
     vi.stubGlobal(
       'fetch',
-      vi.fn(async () => new Response('unauthorized', { status: 401 })),
-    );
-    await expect(demanderSession('mauvais')).rejects.toThrow('code-refuse');
-    vi.unstubAllGlobals();
-  });
-
-  it('demanderSession : 500 → indisponible (pas code-refuse)', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async () => new Response('boom', { status: 500 })),
-    );
-    await expect(demanderSession('code')).rejects.toThrow('indisponible');
-    vi.unstubAllGlobals();
-  });
-
-  it('demanderSession envoie le header Authorization (verify_jwt de la plateforme)', async () => {
-    const inits: RequestInit[] = [];
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async (_url: unknown, init?: RequestInit) => {
-        inits.push(init ?? {});
-        return new Response(JSON.stringify({ token: 'jwt', foyer: 'f' }), {
+      vi.fn(async (url: unknown, init?: RequestInit) => {
+        appels.push({ url: String(url), init: init ?? {} });
+        return new Response(JSON.stringify({ token: 'jwt', foyerId: 'f-1' }), {
           headers: { 'Content-Type': 'application/json' },
         });
       }),
     );
-    await demanderSession('bon-code');
-    expect(inits[0]?.headers).toMatchObject({ Authorization: 'Bearer anon' });
+    await expect(demanderSession('bon-code')).resolves.toEqual({ token: 'jwt', foyerId: 'f-1' });
+    expect(appels[0]?.url).toBe('https://rituel.example.fr/connexion');
+    expect(appels[0]?.init.method).toBe('POST');
+    expect(JSON.parse(String(appels[0]?.init.body))).toEqual({ code: 'bon-code' });
     vi.unstubAllGlobals();
+  });
+
+  it('demanderSession : 401 → code-refuse ; 500 → indisponible', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('unauthorized', { status: 401 })));
+    await expect(demanderSession('mauvais')).rejects.toThrow('code-refuse');
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('boom', { status: 500 })));
+    await expect(demanderSession('code')).rejects.toThrow('indisponible');
+    vi.unstubAllGlobals();
+  });
+
+  it('demanderSession : corps incomplet → reponse-invalide', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ token: 'jwt' }))));
+    await expect(demanderSession('code')).rejects.toThrow('reponse-invalide');
+    vi.unstubAllGlobals();
+  });
+
+  it('creerFoyer : 201 → { foyerId } ; 409 → code-occupe ; 400 → code-trop-court', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ foyerId: 'f-9' }), { status: 201 })));
+    await expect(creerFoyer('romarin-basilic-3f9a2c7e')).resolves.toEqual({ foyerId: 'f-9' });
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('{"erreur":"code-occupe"}', { status: 409 })));
+    await expect(creerFoyer('x')).rejects.toThrow('code-occupe');
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('{"erreur":"code-trop-court"}', { status: 400 })));
+    await expect(creerFoyer('x')).rejects.toThrow('code-trop-court');
+    vi.unstubAllGlobals();
+  });
+
+  it('genererCodeFoyer : mot-mot-8hex, ≥ 12 caractères', () => {
+    for (let i = 0; i < 20; i++) {
+      const code = genererCodeFoyer();
+      expect(code).toMatch(/^[a-z]+-[a-z]+-[0-9a-f]{8}$/);
+      expect(code.length).toBeGreaterThanOrEqual(12);
+    }
   });
 });
