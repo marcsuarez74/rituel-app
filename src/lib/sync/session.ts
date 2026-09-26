@@ -56,7 +56,7 @@ export const creerFoyer = async (code: string): Promise<{ foyerId: string }> => 
 const MOTS = ['basilic', 'citron', 'sauge', 'romarin', 'thym', 'menthe', 'origan', 'estragon'];
 
 // Phrase « mots d'herbes + 8 hex » — même générateur que l'ancien script CLI
-// supabase/scripts/creer-foyer.mjs (ex. romarin-basilic-3f9a2c7e).
+// creer-foyer.mjs (ex. romarin-basilic-3f9a2c7e).
 export const genererCodeFoyer = (): string => {
   const mot = (): string => MOTS[crypto.getRandomValues(new Uint32Array(1))[0]! % MOTS.length]!;
   const hex = Array.from(crypto.getRandomValues(new Uint8Array(4)))
