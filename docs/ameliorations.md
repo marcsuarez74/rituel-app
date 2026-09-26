@@ -11,8 +11,8 @@ au moment de choisir la prochaine itération.
 - **Backend optionnel** (révision 2026-09-16) : les données vivent d'abord dans
   le téléphone ; la sync Supabase (chantier 1) est un miroir qui peut être
   ignoré — l'app doit toujours être utilisable sans lui. Phases suivantes
-  (reportées) : génération IA dans l'app (edge function), notifications push
-  (Web Push + VAPID, iOS ≥ 16.4 PWA installée).
+  (reportées) : génération IA dans l'app (edge function).
+  Les notifications push ont été retirées le 2026-09-26 (spec §5 retrait push).
 - **Public actuel** : Marc & Mélanie uniquement — mais garder la porte ouverte à
   une évolution multiprofile (ne pas graver « 2 profils » dans le code).
 - **La rotation de 4 menus (A/B/C/D) est la clé** pour installer la routine
