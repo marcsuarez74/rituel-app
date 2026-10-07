@@ -6,7 +6,19 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 ## [Non publié]
 
+> **Refonte 2.0 — version majeure** (contrat et stockage cassants) : à publier en `2.0.0` (`npm version major`). Déployer le serveur de sync **avant** l'app (nouvelle table `etat`).
+
 ### Ajouté
+
+- **Cycle v2** : 4 menus A-D + **un seul rituel batch** pour les 4 semaines, générés par Claude au format JSON (un fichier par menu) depuis Profil › **Mon cycle** — copier le prompt, ouvrir Claude, importer ; aperçu avec erreurs bloquantes, alertes (budget, variété, keto, recettes déjà vues) et « Copier pour Claude ». Dates calculées depuis le jour des courses ; nouveau cycle verrouillé tant que les 4 semaines ne sont pas passées ; relance du même cycle ; pause d'une semaine.
+- **Navigation** : barre du bas à 5 onglets (Aujourd'hui · Menu · Courses · Rituel · Suivi), en-tête avec avatar et point de sync, ligne semaine ; écrans chargés à la demande.
+- **Aujourd'hui** : la semaine en un coup d'œil, l'action du jour, les repas du jour cochables d'un tap.
+- **Menu** : bande des 7 jours, versions de chacun, exceptions, boîtes du rituel, « Ce soir, j'anticipe » ; **report** d'un repas (demain, semaine prochaine, abandon) avec toast Annuler et avertissement fraîcheur.
+- **Fiche recette** : macros et portion par membre suivi, ingrédients du foyer, étapes cochables, minuteurs, conservation, mode cuisine (écran allumé).
+- **Courses calculées** depuis les recettes de la semaine + articles fixes, carte Estimé / Payé / Max (budget souple avec alerte), mode magasin, « J'ai payé… », placard à vérifier, « déjà au frigo ? ».
+- **Rituel** : rituel du jour, micro-batch, réserve ; **mode guidé** plein écran.
+- **Foyer et semaine type** (Profil › Ma semaine type, étape « Ta semaine » après l'onboarding) : membres (enfants sans âge), jour des courses, jour du rituel, jour par jour, exceptions récurrentes.
+- Sync : table `etat` (foyer, cycle, reports) côté app et serveur.
 
 - Mon Rituel (ex-onglet Batch) : références recette sur les tâches et les étapes du rituel (`- [ ] Egg muffins ×10 → R7`, extension rétrocompatible du contrat .md), fiche recette dépliable à chaque étape du mode guidé, micro-batch enrichi (durée, quantité, recette liée), réserve avec état disponible/consommé et joker interactif dans le Menu (un soir sans dîner prévu → « Sors la réserve : … », coche = consommée).
 - Profil hub v5 : `ProfilScreen` devient une vue générale courte sur canvas crème — en-tête compte (initiale + prénom + chip « ● Duo connecté / Local · Cycle N »), 3 tuiles cards (Objectif, Mes infos, Maison & courses) avec résumé d'état sous le titre, actions directes (changer de profil, copier le prompt IA, déconnexion du foyer, import du cycle). Chaque tuile ouvre une page détail dédiée (retour ‹ Profil) — la page Objectif regroupe le cap complet (type, poids objectif, échéance, régime, compléments), les formulaires respirent, plus de scroll interminable.
@@ -24,6 +36,10 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 - Menu : glisser la barre d'onglets de recettes pour la faire défiler ne bascule plus vers l'onglet Suivi (conflit avec le swipe Cuisine ↔ Mon suivi).
 
 ### Retiré
+
+- **Format `.md` des semaines** (parser, semaine d'exemple, templates, import `.md`) et l'ancien onglet Cuisine : au premier lancement de la 2.0, les semaines `.md`, leurs coches et la semaine consultée sont effacées (une fois) ; profil, pesées, dépenses et sync sont conservés. La table de sync `weeks` n'est plus utilisée par l'app.
+- Suivi : séances, cibles et rappels (reportés) ; la carte objectif et le poids restent.
+- Dépendance `js-yaml`.
 
 - Notifications push (VAPID) : tuile et page Notifications du hub Profil, handlers push/notificationclick du service worker, modules `src/lib/push/`, edge functions `push-register`/`push-notifier`/`push-rappels` + `_shared/`, migration `0002_push_subscriptions`, secret `VITE_VAPID_PUBLIC_KEY`. Les appareils ayant une souscription active ne reçoivent plus rien (silencieux, sans erreur). La synchronisation du foyer (≠ push) est inchangée.
 - Backend Supabase : projet, edge function `connexion-foyer`, script CLI `creer-foyer.mjs`, migrations SQL (dossier `supabase/` supprimé) — remplacés par le serveur VPS.

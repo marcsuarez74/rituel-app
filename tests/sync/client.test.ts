@@ -58,8 +58,8 @@ describe('sync: client VPS (fetch natif)', () => {
       return new Response(JSON.stringify({ rows: [{ semaine: 's', payload: {} }] }));
     }));
     const c = await creerClient();
-    await expect(c.toutLire('weeks')).resolves.toEqual([{ semaine: 's', payload: {} }]);
-    expect(appels[0]?.url).toBe('https://rituel.example.fr/sync/weeks');
+    await expect(c.toutLire('checks')).resolves.toEqual([{ semaine: 's', payload: {} }]);
+    expect(appels[0]?.url).toBe('https://rituel.example.fr/sync/checks');
     expect(appels[0]?.init.method).toBeUndefined(); // GET
   });
 
@@ -82,7 +82,7 @@ describe('sync: client VPS (fetch natif)', () => {
   it('erreur HTTP → exception sync-<status> (état erreur côté engine)', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response('non', { status: 401 })));
     const c = await creerClient();
-    await expect(c.toutLire('weeks')).rejects.toThrow('sync-401');
+    await expect(c.toutLire('checks')).rejects.toThrow('sync-401');
   });
 
   it('abonner : lecteur SSE avec url du VPS et token', async () => {

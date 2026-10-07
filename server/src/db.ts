@@ -36,6 +36,12 @@ create table if not exists profiles (
   profil text not null, payload text not null, updated_at text not null,
   primary key (foyer_id, profil)
 );
+-- v2 : état générique (foyer, cycle, reports…), une ligne par clé, dernier écrit gagne.
+create table if not exists etat (
+  foyer_id text not null references foyers on delete cascade,
+  cle text not null, payload text not null, updated_at text not null,
+  primary key (foyer_id, cle)
+);
 `;
 
 export const ouvrirDb = (chemin: string): Database.Database => {

@@ -1,9 +1,7 @@
-import type { DepenseEntry, ImportedWeek, ProfileKey, ProfilLegacy, UserProfile, WeeklyData } from './model';
+import type { DepenseEntry, ProfileKey, ProfilLegacy, UserProfile } from './model';
 import { normaliseComplement } from './model';
 import { empilerMutation } from './sync/outbox';
 
-const WEEK_KEY = 'sportapp:week';
-const WEEKS_KEY = 'sportapp:weeks';
 const PROFILE_KEY = 'sportapp:profile';
 const checksKey = (s: string) => `sportapp:checks:${s}`;
 const weightsKey = (p: string) => `sportapp:weights:${p}`;
@@ -20,110 +18,13 @@ const safeParse = <T>(key: string, raw: string | null, fallback: T): T => {
   }
 };
 
+const isPlainObject = (v: unknown): v is Record<string, unknown> =>
+  !!v && typeof v === 'object' && !Array.isArray(v);
+
 export interface WeightEntry {
   date: string;
   kg: number;
 }
-
-export const saveWeek = (raw: string, data: WeeklyData): void =>
-  localStorage.setItem(
-    WEEK_KEY,
-    JSON.stringify({ raw, data, importedAt: new Date().toISOString() } satisfies ImportedWeek),
-  );
-
-export const loadWeek = (): ImportedWeek | null => {
-  const s = localStorage.getItem(WEEK_KEY);
-  if (!s) return null;
-  const parsed = safeParse<ImportedWeek | null>(WEEK_KEY, s, null);
-  if (!parsed || typeof parsed?.data?.meta?.semaine !== 'string') {
-    console.warn(`Semaine corrompue ignorée : ${WEEK_KEY}`);
-    localStorage.removeItem(WEEK_KEY);
-    return null;
-  }
-  return parsed;
-};
-
-const isPlainObject = (v: unknown): v is Record<string, unknown> =>
-  !!v && typeof v === 'object' && !Array.isArray(v);
-
-const estSemaineValide = (v: unknown): v is ImportedWeek =>
-  isPlainObject(v) &&
-  typeof v.raw === 'string' &&
-  typeof v.importedAt === 'string' &&
-  isPlainObject(v.data) &&
-  isPlainObject(v.data.meta) &&
-  typeof v.data.meta.semaine === 'string';
-
-// Lecture du stock multi-semaines. Garde de forme PAR ENTRÉE : une semaine
-// corrompue est retirée de la mémoire (warn), les autres sont gardées.
-// Si le stock est absent/vide, l'ancienne clé sportapp:week est migrée dedans
-// (l'ancienne clé reste en place, non écrite).
-export const loadWeeks = (): Record<string, ImportedWeek> => {
-  const raw = localStorage.getItem(WEEKS_KEY);
-  if (raw === null) return migrerAncienneSemaine();
-  const parsed = safeParse<unknown>(WEEKS_KEY, raw, null);
-  if (!isPlainObject(parsed) || !isPlainObject(parsed.semaines)) {
-    console.warn(`Semaines corrompues ignorées : ${WEEKS_KEY}`);
-    localStorage.removeItem(WEEKS_KEY);
-    return migrerAncienneSemaine();
-  }
-  const semaines: Record<string, ImportedWeek> = {};
-  for (const [id, entry] of Object.entries(parsed.semaines)) {
-    if (estSemaineValide(entry)) semaines[id] = entry;
-    else console.warn(`Semaine corrompue ignorée : ${id}`);
-  }
-  return semaines;
-};
-
-const migrerAncienneSemaine = (): Record<string, ImportedWeek> => {
-  const ancienne = loadWeek();
-  if (!ancienne) return {};
-  const semaines = { [ancienne.data.meta.semaine]: ancienne };
-  localStorage.setItem(WEEKS_KEY, JSON.stringify({ semaines }));
-  return semaines;
-};
-
-// Même meta.semaine -> remplace ; les autres semaines restent.
-export const upsertWeek = (raw: string, data: WeeklyData): void => {
-  const semaines = loadWeeks();
-  semaines[data.meta.semaine] = {
-    raw,
-    data,
-    importedAt: new Date().toISOString(),
-  } satisfies ImportedWeek;
-  localStorage.setItem(WEEKS_KEY, JSON.stringify({ semaines }));
-  empilerMutation({
-    op: 'upsert',
-    table: 'weeks',
-    key: { semaine: data.meta.semaine },
-    payload: { ...semaines[data.meta.semaine] },
-  });
-};
-
-const SELECTION_KEY = 'sportapp:selection';
-
-// Semaine consultée (chevrons / commutateur) : restaurée au lancement pour
-// retrouver la consultation en cours. Absente → null silencieux (l'app
-// retombe sur la semaine du jour) ; non reconnue → réparée (warn + remove).
-export const lireSelection = (): string | null => {
-  const raw = localStorage.getItem(SELECTION_KEY);
-  if (raw === null) return null;
-  const parsed = safeParse<unknown>(SELECTION_KEY, raw, null);
-  if (typeof parsed === 'string' && parsed) return parsed;
-  if (parsed !== null) {
-    console.warn(`Sélection corrompue ignorée : ${SELECTION_KEY}`);
-    localStorage.removeItem(SELECTION_KEY);
-  }
-  return null;
-};
-
-export const sauverSelection = (semaine: string): void => {
-  localStorage.setItem(SELECTION_KEY, JSON.stringify(semaine));
-};
-
-export const effacerSelection = (): void => {
-  localStorage.removeItem(SELECTION_KEY);
-};
 
 export const getChecks = (semaine: string): Record<string, boolean> => {
   const key = checksKey(semaine);

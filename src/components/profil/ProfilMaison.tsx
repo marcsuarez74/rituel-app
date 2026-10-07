@@ -6,7 +6,7 @@ import { saveProfile } from '../../lib/storage';
 import { Icon } from '../Icon';
 import { Alerte, Fil } from './presente';
 
-// Page détail « Maison & courses » — magasin, budget, personnes à table,
+// Page détail « Courses & budget » — magasin, budget, personnes à table,
 // repas/jour, préférences des prochains cycles.
 export function ProfilMaison({
   profile,
@@ -91,7 +91,7 @@ export function ProfilMaison({
 
   return (
     <section className="detail-page">
-      <h2>Maison &amp; courses</h2>
+      <h2>Courses &amp; budget</h2>
       <div className="onboarding-field">
         <label htmlFor="pf-magasin">Magasin habituel</label>
         <input

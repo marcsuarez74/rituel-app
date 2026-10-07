@@ -64,13 +64,13 @@ Les téléphones se connectent ensuite **depuis l'app** :
   applique le remote sauf sur les clés en attente (l'outbox locale prime).
 - **Connexion** : fusion union — le local part d'abord, puis le remote est
   fusionné, puis la flush pousse l'union (rien n'est écrasé ni perdu).
-- **Purge** : « Supprimer les données du foyer » vide les 5 tables du foyer
+- **Purge** : « Supprimer les données du foyer » vide les tables de sync du foyer (dont `etat` : foyer, cycle, reports — v2)
   sur le serveur **avant** le local ; le foyer et son code survivent.
 - **Déconnexion** : efface session + outbox locales ; le foyer garde ses
   données côté serveur.
 - **Rotation / révocation du code** : supprimer la row du foyer dans SQLite
   (`sqlite3 /opt/rituel/data/rituel.db "delete from foyers where id = '…'"` —
-  cascade sur les 5 tables) rend tous les JWT inertes ; recréer ensuite le
+  cascade sur les tables de sync) rend tous les JWT inertes ; recréer ensuite le
   foyer depuis l'app et reconnecter chaque téléphone (la fusion union repart
   des données locales de chacun).
 

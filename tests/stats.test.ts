@@ -1,12 +1,5 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { MenuDay, Recette } from '../src/lib/model';
-import {
-  compteChecklist,
-  poidsActuel,
-  recetteParRef,
-  trouverJourDuJour,
-  variationKg7j,
-} from '../src/lib/stats';
+import { describe, expect, it } from 'vitest';
+import { poidsActuel, variationKg7j } from '../src/lib/stats';
 import type { WeightEntry } from '../src/lib/storage';
 
 const w = (date: string, kg: number): WeightEntry => ({ date, kg });
@@ -36,45 +29,3 @@ describe('stats: variationKg7j', () => {
   });
 });
 
-describe('stats: recetteParRef', () => {
-  const recettes: Recette[] = [
-    { id: 'r1-poulet', nom: 'Poulet' },
-    { id: 'r10-else', nom: 'Else' },
-  ];
-
-  it('match exact puis préfixe borné (r1 ne matche pas r10)', () => {
-    expect(recetteParRef('r1', recettes)?.id).toBe('r1-poulet');
-    expect(recetteParRef('R1-POULET', recettes)?.id).toBe('r1-poulet');
-    expect(recetteParRef('inconnu', recettes)).toBeUndefined();
-  });
-});
-
-describe('stats: compteChecklist', () => {
-  it('compte les items cochés', () => {
-    const items = [{ id: 'a' }, { id: 'c' }, { id: 'b' }];
-    expect(compteChecklist({ a: true, c: true }, items)).toEqual({ faites: 2, total: 3 });
-    expect(compteChecklist({}, items)).toEqual({ faites: 0, total: 3 });
-  });
-});
-
-describe('stats: trouverJourDuJour', () => {
-  const menu: MenuDay[] = [
-    { jour: 'Lundi', dejeunerMarc: 'A' },
-    { jour: '  Mercredi ', dinerFamille: 'B' },
-    { jour: 'Vendredi', dejeunerMarc: 'C' },
-  ];
-
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  it('retourne le jour du menu correspondant à aujourd’hui (trim + casse ignorés)', () => {
-    vi.setSystemTime(new Date('2026-09-09T10:00:00')); // mercredi
-    expect(trouverJourDuJour(menu)).toEqual({ jour: '  Mercredi ', dinerFamille: 'B' });
-  });
-
-  it('retourne undefined si le jour courant est absent du menu', () => {
-    vi.setSystemTime(new Date('2026-09-13T10:00:00')); // dimanche
-    expect(trouverJourDuJour(menu)).toBeUndefined();
-  });
-});

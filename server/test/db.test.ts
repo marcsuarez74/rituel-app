@@ -4,10 +4,10 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ouvrirDb } from '../src/db.js';
 
-const TABLES = ['foyers', 'weeks', 'checks', 'weights', 'depenses', 'profiles'];
+const TABLES = ['foyers', 'weeks', 'checks', 'weights', 'depenses', 'profiles', 'etat'];
 
 describe('server: db', () => {
-  it('ouvre la base et crée les 6 tables', () => {
+  it('ouvre la base et crée les 7 tables', () => {
     const db = ouvrirDb(':memory:');
     const noms = (
       db.prepare("select name from sqlite_master where type='table'").all() as { name: string }[]

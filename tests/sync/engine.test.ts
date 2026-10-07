@@ -47,21 +47,41 @@ import {
   ressynchroniser,
 } from '../../src/lib/sync/engine';
 import { definirSession, effacerSession, lireSession } from '../../src/lib/sync/session';
-import { empiler, lireOutbox, viderOutbox } from '../../src/lib/sync/outbox';
-import { parseWeeklyFile } from '../../src/lib/parse';
+import { lireOutbox, viderOutbox } from '../../src/lib/sync/outbox';
 import {
   addWeight,
   getChecks,
   getDepenses,
   getWeights,
   loadProfile,
-  loadWeeks,
   saveDepense,
   saveProfile,
   setCheck,
-  upsertWeek,
 } from '../../src/lib/storage';
-import type { ImportedWeek, UserProfile } from '../../src/lib/model';
+import type { UserProfile } from '../../src/lib/model';
+import {
+  type CycleActif,
+  foyerParDefaut,
+  getReports,
+  loadCycle,
+  loadFoyer,
+  loadPrecedent,
+  saveCycle,
+  saveFoyer,
+  savePrecedent,
+  saveReports,
+  semaineCoches,
+} from '../../src/lib/cycle/etat';
+import { importerCycle } from '../../src/lib/cycle/valider';
+import { enFichiers, quatreFichiers } from '../lib/cycle/fabrique';
+
+const vide = (): Record<TableSync, RowSync[]> => ({
+  checks: [],
+  weights: [],
+  depenses: [],
+  profiles: [],
+  etat: [],
+});
 
 // Faux client : enregistre les appels, pas de réseau.
 interface FauxClient extends SyncClient {
@@ -116,13 +136,6 @@ const profilMarc = (): UserProfile => ({
   regime: 'aucun',
 });
 
-// Semaine complète (ImportedWeek) pour tester le format wire jsonb.
-const semaineFictive = (): ImportedWeek => {
-  const raw = '---\nsemaine: 2026-S39\nmenu: A\ndu: 2026-09-21\nau: 2026-09-27\n---\n';
-  const { data } = parseWeeklyFile(raw);
-  return { raw, data, importedAt: '2026-09-16T08:00:00.000Z' };
-};
-
 describe('sync: flush', () => {
   let client: FauxClient;
 
@@ -148,8 +161,8 @@ describe('sync: flush', () => {
   });
 
   it('flush groupe les upserts par table puis retire les entrées', async () => {
-    setCheck('2026-S39', 'b1', true);
-    setCheck('2026-S39', 'b2', false);
+    setCheck('cycle:c1:0', 'b1', true);
+    setCheck('cycle:c1:0', 'b2', false);
     await flush();
     expect(client.upserts).toEqual([
       {
@@ -157,14 +170,14 @@ describe('sync: flush', () => {
         rows: [
           {
             household_id: '11111111-2222-3333-4444-555555555555',
-            semaine: '2026-S39',
+            semaine: 'cycle:c1:0',
             check_id: 'b1',
             done: true,
             updated_at: expect.any(String),
           },
           {
             household_id: '11111111-2222-3333-4444-555555555555',
-            semaine: '2026-S39',
+            semaine: 'cycle:c1:0',
             check_id: 'b2',
             done: false,
             updated_at: expect.any(String),
@@ -174,25 +187,6 @@ describe('sync: flush', () => {
     ]);
     expect(lireOutbox()).toEqual([]);
     expect(etatSync()).toBe('sync');
-  });
-
-  it('flush weeks : payload enveloppé (colonne jsonb serveur), jamais de champs plats', async () => {
-    empiler({
-      op: 'upsert',
-      table: 'weeks',
-      key: { semaine: '2026-S39' },
-      payload: { ...semaineFictive() },
-    });
-    await flush();
-    expect(client.upserts).toHaveLength(1);
-    const ligne = client.upserts[0].rows[0];
-    expect(ligne).toMatchObject({
-      semaine: '2026-S39',
-      payload: semaineFictive(),
-      household_id: '11111111-2222-3333-4444-555555555555',
-    });
-    expect('raw' in ligne).toBe(false);
-    expect('data' in ligne).toBe(false);
   });
 
   it('flush envoie les deletes (op delete → client.supprimer)', async () => {
@@ -215,7 +209,7 @@ describe('sync: flush', () => {
   });
 
   it('flush en échec : etat erreur, outbox conservée', async () => {
-    setCheck('2026-S39', 'b1', true);
+    setCheck('cycle:c1:0', 'b1', true);
     client.echouer(0);
     await flush();
     expect(etatSync()).toBe('erreur');
@@ -271,7 +265,7 @@ describe('sync: flush', () => {
         {
           op: 'upsert',
           table: 'checks',
-          key: { semaine: '2026-S39', check_id: 'b1' },
+          key: { semaine: 'cycle:c1:0', check_id: 'b1' },
           payload: { done: true },
         },
         { op: 'delete', table: 'depenses', key: { date_: '2026-09-21', magasin_key: 'lidl' } },
@@ -296,8 +290,8 @@ describe('sync: flush', () => {
 
   it('flushDiffere debounce : une seule flush après 300 ms, reset du timer', async () => {
     vi.useFakeTimers();
-    setCheck('2026-S39', 'b1', true);
-    setCheck('2026-S39', 'b2', true);
+    setCheck('cycle:c1:0', 'b1', true);
+    setCheck('cycle:c1:0', 'b2', true);
     flushDiffere();
     await vi.advanceTimersByTimeAsync(200);
     flushDiffere(); // reset : le premier timer (200 ms déjà écoulés) est annulé
@@ -327,32 +321,21 @@ describe('sync: pull / merge (outbox prime)', () => {
     vi.useRealTimers();
   });
 
-  it('applique une semaine remote absente localement', async () => {
-    // frontmatter complet requis par parseWeeklyFile (menu, du, au)
-    const raw = '---\nsemaine: 2026-S40\nmenu: B\ndu: 2026-09-28\nau: 2026-10-04\n---\n';
-    const { data } = parseWeeklyFile(raw);
-    const payload: ImportedWeek = { raw, data, importedAt: '2026-09-16T08:00:00.000Z' };
-    client.lues.weeks = [{ household_id: 'f', semaine: '2026-S40', payload }];
-    await pull();
-    expect(Object.keys(loadWeeks())).toEqual(['2026-S40']);
-    expect(etatSync()).toBe('sync');
-  });
-
   it('une coche en attente dans l\'outbox prime sur le remote', async () => {
-    setCheck('2026-S39', 'b1', true); // local + outbox
+    setCheck('cycle:c1:0', 'b1', true); // local + outbox
     client.lues.checks = [
-      { household_id: 'f', semaine: '2026-S39', check_id: 'b1', done: false },
+      { household_id: 'f', semaine: 'cycle:c1:0', check_id: 'b1', done: false },
     ];
     await pull();
-    expect(getChecks('2026-S39')['b1']).toBe(true); // outbox gagne
+    expect(getChecks('cycle:c1:0')['b1']).toBe(true); // outbox gagne
   });
 
   it('une coche remote s\'applique quand rien n\'est en attente', async () => {
     client.lues.checks = [
-      { household_id: 'f', semaine: '2026-S39', check_id: 'b1', done: true },
+      { household_id: 'f', semaine: 'cycle:c1:0', check_id: 'b1', done: true },
     ];
     await pull();
-    expect(getChecks('2026-S39')['b1']).toBe(true);
+    expect(getChecks('cycle:c1:0')['b1']).toBe(true);
   });
 
   it('pull démarre les 5 lectures en parallèle (avant la première réponse)', async () => {
@@ -444,15 +427,14 @@ describe('sync: pull / merge (outbox prime)', () => {
   });
 
   it('appliquerRemote retourne false sans changement', async () => {
-    const vide = { weeks: [], checks: [], weights: [], depenses: [], profiles: [] };
+    const vide = { checks: [], weights: [], depenses: [], profiles: [], etat: [] };
     expect(await appliquerRemote(vide)).toBe(false);
   });
 
   it('payload remote invalide → ignoré sans crash', async () => {
-    client.lues.weeks = [{ household_id: 'f', semaine: '2026-S40', payload: { nonsense: true } }];
     client.lues.weights = [{ household_id: 'f', profil: 'marc', date_: '2026-09-21', kg: 'invalide' }];
     await pull();
-    expect(loadWeeks()['2026-S40']).toBeUndefined();
+    expect(getWeights('marc')).toEqual([]);
     expect(etatSync()).toBe('sync');
   });
 
@@ -513,13 +495,13 @@ describe('sync: connexion foyer', () => {
     expect(weights?.rows[0]).toMatchObject({ profil: 'marc', date_: '2026-09-21', kg: 82.4 });
     expect(etatSync()).toBe('sync');
     // fusion union : le merge (lectures de toutes les tables) a bien eu lieu
-    expect(client.lectures).toContain('weeks');
+    expect(client.lectures).toContain('etat');
   });
 
   it('foyer alimenté → fusion : l\'état local part, le remote s\'applique', async () => {
     addWeight('marc', '2026-09-21', 82.4);
     client.lues.checks = [
-      { household_id: 'f', semaine: '2026-S39', check_id: 'b1', done: true },
+      { household_id: 'f', semaine: 'cycle:c1:0', check_id: 'b1', done: true },
     ];
     vi.stubGlobal(
       'fetch',
@@ -527,26 +509,26 @@ describe('sync: connexion foyer', () => {
     );
     await connecterFoyer('code');
     expect(client.upserts).not.toEqual([]); // le local est parti
-    expect(getChecks('2026-S39')['b1']).toBe(true); // le remote s'est appliqué
+    expect(getChecks('cycle:c1:0')['b1']).toBe(true); // le remote s'est appliqué
     expect(getWeights('marc')).toEqual([{ date: '2026-09-21', kg: 82.4 }]); // local intact
   });
 
   it('conflit à la connexion : le local gagne (outbox-prime) et repart vers le serveur', async () => {
-    const s = semaineFictive();
-    upsertWeek(s.raw, s.data); // la coche appartient à une semaine chargée
-    setCheck('2026-S39', 'b1', false); // local : b1 décoché
+    // la coche appartient à la semaine 1 du cycle en cours
+    saveCycle({ id: 'c1', numero: 1, debut: '2026-09-12', pauses: [], cycle: importerCycle(enFichiers(quatreFichiers())).cycle! });
+    setCheck('cycle:c1:0', 'b1', false); // local : b1 décoché
     client.lues.checks = [
-      { household_id: 'f', semaine: '2026-S39', check_id: 'b1', done: true },
+      { household_id: 'f', semaine: 'cycle:c1:0', check_id: 'b1', done: true },
     ];
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => new Response(JSON.stringify({ token: 'tok', foyerId: 'foyer-1' }), { status: 200 })),
     );
     await connecterFoyer('code');
-    expect(getChecks('2026-S39')['b1']).toBe(false); // outbox-prime : remote skippé
+    expect(getChecks('cycle:c1:0')['b1']).toBe(false); // outbox-prime : remote skippé
     const checks = client.upserts.find((u) => u.table === 'checks');
     expect(checks?.rows[0]).toMatchObject({
-      semaine: '2026-S39',
+      semaine: 'cycle:c1:0',
       check_id: 'b1',
       done: false,
       household_id: 'foyer-1',
@@ -564,7 +546,7 @@ describe('sync: connexion foyer', () => {
 
   it('deconnecterFoyer nettoie session + outbox', async () => {
     definirSession('t', 'f');
-    setCheck('2026-S39', 'b1', true);
+    setCheck('cycle:c1:0', 'b1', true);
     deconnecterFoyer();
     expect(lireSession()).toBeNull();
     expect(lireOutbox()).toEqual([]);
@@ -596,7 +578,7 @@ describe('sync: purge + init', () => {
 
   it('purgerFoyer purge le serveur AVANT le nettoyage local', async () => {
     definirSession('t', 'f');
-    setCheck('2026-S39', 'b1', true);
+    setCheck('cycle:c1:0', 'b1', true);
     await purgerFoyer();
     expect(client.purgees).toBe(true);
     expect(lireSession()).toBeNull();
@@ -606,7 +588,7 @@ describe('sync: purge + init', () => {
 
   it('purge en échec → session et outbox locales conservées', async () => {
     definirSession('t', 'f');
-    setCheck('2026-S39', 'b1', true);
+    setCheck('cycle:c1:0', 'b1', true);
     injecterClient({
       ...client,
       purger: async () => {
@@ -637,7 +619,7 @@ describe('sync: purge + init', () => {
 
   it('ressynchroniser → flush + pull immédiats', async () => {
     definirSession('t', 'f');
-    setCheck('2026-S39', 'b1', true);
+    setCheck('cycle:c1:0', 'b1', true);
     ressynchroniser();
     await vi.waitFor(() => expect(client.upserts.length).toBe(1));
     expect(etatSync()).toBe('sync');
@@ -645,7 +627,7 @@ describe('sync: purge + init', () => {
 
   it('purgerFoyer fence : la flush part avant la purge serveur', async () => {
     definirSession('t', 'f');
-    setCheck('2026-S39', 'b1', true);
+    setCheck('cycle:c1:0', 'b1', true);
     await purgerFoyer(); // pas de flush manuelle avant : la fence s'en charge
     expect(client.upserts.length).toBe(1); // le upsert est bien parti d'abord
     expect(client.purgees).toBe(true);
@@ -655,12 +637,12 @@ describe('sync: purge + init', () => {
 
   it('pull interrompu par une déconnexion → n\'écrit rien, pas d\'état fantôme', async () => {
     definirSession('t', 'f');
-    setCheck('2026-S39', 'b1', false);
+    setCheck('cycle:c1:0', 'b1', false);
     let resoudreLecture: (rows?: RowSync[]) => void = () => {};
     // Lectures parallèles : une promesse partagée par les 5 toutLire.
     const lue = new Promise<RowSync[]>((r) => {
       resoudreLecture = () =>
-        r([{ household_id: 'f', semaine: '2026-S39', check_id: 'b1', done: true }]);
+        r([{ household_id: 'f', semaine: 'cycle:c1:0', check_id: 'b1', done: true }]);
     });
     injecterClient({
       ...client,
@@ -670,7 +652,7 @@ describe('sync: purge + init', () => {
     deconnecterFoyer();
     resoudreLecture();
     await p;
-    expect(getChecks('2026-S39')['b1']).toBe(false); // le remote n'a PAS été appliqué
+    expect(getChecks('cycle:c1:0')['b1']).toBe(false); // le remote n'a PAS été appliqué
     expect(etatSync()).toBe('hors-foyer');
   });
 });
@@ -825,7 +807,7 @@ describe('sync: reconnexion', () => {
     // Canal coupé, puis une mutation s'empile (flush bloquée : canal fermé).
     statuts[0]?.(false);
     expect(etatSync()).toBe('erreur');
-    setCheck('2026-S39', 'courses:legumes-carottes', true);
+    setCheck('cycle:c1:0', 'courses:legumes-carottes', true);
     expect(lireOutbox().length).toBeGreaterThan(0);
 
     // Retour du canal : le statut ne doit être vert qu'après la flush.
@@ -883,5 +865,123 @@ describe('sync: reconnexion', () => {
     definirSession('token-test', 'foyer-1');
     await vi.runAllTimersAsync(); // ne doit ni crasher ni réabonner
     expect(client.abonner).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('sync: état v2 (table etat)', () => {
+  let client: FauxClient;
+
+  const cycleActif = (): CycleActif => {
+    const r = importerCycle(enFichiers(quatreFichiers()));
+    if (!r.cycle) throw new Error(r.erreurs.join('\n'));
+    return { id: 'c1', numero: 1, debut: '2026-10-10', pauses: [], cycle: r.cycle };
+  };
+
+  beforeEach(() => {
+    vi.setSystemTime(new Date('2026-10-07T10:00:00'));
+    localStorage.clear();
+    viderOutbox();
+    effacerSession();
+    reinitialiser();
+    client = fauxClient();
+    injecterClient(client);
+    definirSession('t', '11111111-2222-3333-4444-555555555555');
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  it('flush etat : payload enveloppé, clé cle', async () => {
+    saveFoyer(foyerParDefaut(null));
+    await flush();
+    const etat = client.upserts.find((u) => u.table === 'etat')!;
+    expect(etat.rows[0]).toMatchObject({ cle: 'foyer', payload: { valeur: foyerParDefaut(null) } });
+  });
+
+  it('applique foyer, cycle, cycle précédent et reports distants', async () => {
+    const c = cycleActif();
+    const report = { repas: 'menu:A:lundi:x', vers: 'abandon', cree: '2026-10-12T19:00:00.000Z' };
+    const change = await appliquerRemote({
+      ...vide(),
+      etat: [
+        { cle: 'foyer', payload: { valeur: foyerParDefaut(null) } },
+        { cle: 'cycle', payload: { valeur: c } },
+        { cle: 'cycle-precedent', payload: { valeur: ['Curry'] } },
+        { cle: 'reports:c1', payload: { valeur: [report] } },
+      ],
+    });
+    expect(change).toBe(true);
+    expect(loadFoyer()).toEqual(foyerParDefaut(null));
+    expect(loadCycle()).toEqual(c);
+    expect(loadPrecedent()).toEqual(['Curry']);
+    expect(getReports('c1')).toEqual([report]);
+    expect(lireOutbox()).toEqual([]); // écho : rien ne repart vers le serveur
+    expect(await appliquerRemote({ ...vide(), etat: [{ cle: 'foyer', payload: { valeur: foyerParDefaut(null) } }] })).toBe(false);
+  });
+
+  it('valeur distante illégale ou clé inconnue → ignorée, local intact', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    saveFoyer(foyerParDefaut(null));
+    viderOutbox();
+    const change = await appliquerRemote({
+      ...vide(),
+      etat: [
+        { cle: 'foyer', payload: { valeur: { version: 3 } } },
+        { cle: 'cycle', payload: { valeur: { id: 'c9' } } },
+        { cle: 'inconnue', payload: { valeur: 1 } },
+        { cle: 'reports:c1', payload: { valeur: 'pas une liste' } },
+      ],
+    });
+    expect(change).toBe(false);
+    expect(loadFoyer()).toEqual(foyerParDefaut(null));
+    expect(loadCycle()).toBeNull();
+  });
+
+  it('outbox prime : un foyer local en attente ne reçoit pas le distant', async () => {
+    const local = { ...foyerParDefaut(null), budgetMax: 120 };
+    saveFoyer(local);
+    await appliquerRemote({ ...vide(), etat: [{ cle: 'foyer', payload: { valeur: foyerParDefaut(null) } }] });
+    expect(loadFoyer()).toEqual(local);
+  });
+
+  it('cycle supprimé à distance (ligne absente) : le local reste (pas de suppression implicite)', async () => {
+    saveCycle(cycleActif());
+    viderOutbox();
+    await appliquerRemote(vide());
+    expect(loadCycle()).not.toBeNull();
+  });
+
+  it('les coches des semaines .md (téléphone resté en 1.x) sont ignorées', async () => {
+    await appliquerRemote({
+      ...vide(),
+      checks: [
+        { semaine: '2026-S39', check_id: 'b1', done: true },
+        { semaine: 'cycle:c1:0', check_id: 'courses:A:proteines:oeuf', done: true },
+      ],
+    });
+    expect(localStorage.getItem('sportapp:checks:2026-S39')).toBeNull();
+    expect(getChecks('cycle:c1:0')).toEqual({ 'courses:A:proteines:oeuf': true });
+  });
+
+  it('connexion : pousse foyer, cycle, précédent, reports et coches du cycle en cours', async () => {
+    effacerSession();
+    const c = cycleActif();
+    saveFoyer(foyerParDefaut(null));
+    saveCycle(c);
+    savePrecedent(['Curry']);
+    saveReports('c1', [{ repas: 'menu:A:lundi:x', vers: 'abandon', cree: '2026-10-12T19:00:00.000Z' }]);
+    setCheck(semaineCoches('c1', 1), 'courses:B:proteines:oeuf', true);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ token: 'tok', foyerId: 'foyer-1' }), { status: 200 })),
+    );
+    await connecterFoyer('rituel-2026');
+    vi.unstubAllGlobals();
+    const cles = client.upserts.filter((u) => u.table === 'etat').flatMap((u) => u.rows.map((r) => r.cle));
+    expect(cles.sort()).toEqual(['cycle', 'cycle-precedent', 'foyer', 'reports:c1']);
+    const coches = client.upserts.filter((u) => u.table === 'checks').flatMap((u) => u.rows);
+    expect(coches).toEqual([expect.objectContaining({ semaine: 'cycle:c1:1', check_id: 'courses:B:proteines:oeuf', done: true })]);
   });
 });

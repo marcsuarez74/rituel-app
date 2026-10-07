@@ -4,52 +4,7 @@ import { vi, type Mock } from 'vitest';
 import App from '../src/App';
 import { ProfilScreen } from '../src/components/ProfilScreen';
 import type { UserProfile } from '../src/lib/model';
-import { addWeight, getWeights, loadProfile, saveProfile, saveWeek } from '../src/lib/storage';
-import { parseWeeklyFile } from '../src/lib/parse';
-
-const fixture = () => `---
-semaine: 2026-S37
-menu: A
-du: 2026-09-07
-au: 2026-09-13
----
-
-## courses
-
-### Legumes
-- [ ] Carottes
-
-## menu
-
-### Lundi
-- diner-famille: Poulet rôti
-
-## batch
-
-- [ ] Riz (4 parts)
-
-## marc
-
-### Cibles
-- 78 kg
-
-### Seances
-- [ ] Full body
-
-### Rappels
-- Protéines
-
-## melanie
-
-### Cibles
-- Keto strict
-
-### Seances
-- [ ] Cardio
-
-### Rappels
-- Électrolytes
-`;
+import { addWeight, getWeights, loadProfile, saveProfile } from '../src/lib/storage';
 
 const profileMarc: UserProfile = {
   id: 'marc',
@@ -61,7 +16,6 @@ const profileMarc: UserProfile = {
 };
 
 const monterApp = () => {
-  saveWeek(fixture(), parseWeeklyFile(fixture()).data);
   saveProfile(profileMarc);
   const user = userEvent.setup();
   render(<App />);
@@ -79,14 +33,12 @@ describe('ProfilScreen (unité)', () => {
   let onBack: Mock<() => void>;
   let onChangeProfile: Mock<() => void>;
   let onProfileSaved: Mock<(p: UserProfile) => void>;
-  let onImported: Mock<() => void>;
 
   beforeEach(() => {
     localStorage.clear();
     onBack = vi.fn();
     onChangeProfile = vi.fn();
     onProfileSaved = vi.fn();
-    onImported = vi.fn();
   });
 
   afterEach(() => {
@@ -96,13 +48,13 @@ describe('ProfilScreen (unité)', () => {
   it('affiche le hub, le retour, mes infos et le changement de profil', async () => {
     const user = userEvent.setup();
     render(
-      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
     );
 
     expect(screen.getByRole('button', { name: /Retour/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Changer de profil/ })).toBeInTheDocument();
-    // Section « Semaine » : l'import du cycle est de retour dans le profil (rotation)
-    expect(screen.getByText('Importer un cycle (.md)')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Le foyer', level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Moi', level: 2 })).toBeInTheDocument();
 
     await user.click(ouvrirPage('Mes infos'));
     expect(screen.getByLabelText('Date de naissance')).toHaveValue('1985-04-12');
@@ -113,7 +65,7 @@ describe('ProfilScreen (unité)', () => {
   it('enregistre les infos modifiées dans le store', async () => {
     const user = userEvent.setup();
     render(
-      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
     );
     await user.click(ouvrirPage('Mes infos'));
 
@@ -133,7 +85,7 @@ describe('ProfilScreen (unité)', () => {
 
   it('Mes infos : champ Prénom prérempli, édité puis enregistré', async () => {
     render(
-      <ProfilScreen profile={{ ...profileMarc, prenom: 'Marc' }} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
+      <ProfilScreen profile={{ ...profileMarc, prenom: 'Marc' }} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
     );
     const user = userEvent.setup();
     await user.click(ouvrirPage('Mes infos'));
@@ -148,7 +100,7 @@ describe('ProfilScreen (unité)', () => {
 
   it('prénom vidé : le profil ne porte plus de prenom (défaut à l affichage)', async () => {
     render(
-      <ProfilScreen profile={{ ...profileMarc, prenom: 'Marc' }} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
+      <ProfilScreen profile={{ ...profileMarc, prenom: 'Marc' }} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
     );
     const user = userEvent.setup();
     await user.click(ouvrirPage('Mes infos'));
@@ -169,7 +121,7 @@ describe('ProfilScreen (unité)', () => {
     };
     saveProfile(partiel);
     render(
-      <ProfilScreen profile={partiel} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
+      <ProfilScreen profile={partiel} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
     );
     const user = userEvent.setup();
     await user.click(ouvrirPage('Mes infos'));
@@ -189,7 +141,7 @@ describe('ProfilScreen (unité)', () => {
 
   it('date et taille effacées : le profil partiel est enregistré sans erreur', async () => {
     render(
-      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
     );
     const user = userEvent.setup();
     await user.click(ouvrirPage('Mes infos'));
@@ -208,7 +160,7 @@ describe('ProfilScreen (unité)', () => {
 
   it('date sans taille : erreur paire (formulaire incomplet)', async () => {
     render(
-      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
     );
     const user = userEvent.setup();
     await user.click(ouvrirPage('Mes infos'));
@@ -222,7 +174,7 @@ describe('ProfilScreen (unité)', () => {
 
   it('refuse une date de naissance donnant un âge hors bornes (cohérent avec l’onboarding)', async () => {
     render(
-      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
     );
     const user = userEvent.setup();
     await user.click(ouvrirPage('Mes infos'));
@@ -236,7 +188,7 @@ describe('ProfilScreen (unité)', () => {
 
   it('prévient le parent après enregistrement (état App resynchronisé)', async () => {
     render(
-      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
     );
     const user = userEvent.setup();
     await user.click(ouvrirPage('Mes infos'));
@@ -258,7 +210,7 @@ describe('ProfilScreen (unité)', () => {
     const spy = vi.fn().mockReturnValue(true);
     vi.stubGlobal('confirm', spy);
     render(
-      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
     );
     const user = userEvent.setup();
 
@@ -280,7 +232,7 @@ describe('ProfilScreen (unité)', () => {
         onBack={onBack}
         onChangeProfile={onChangeProfile}
         onProfileSaved={onProfileSaved}
-        onImported={onImported}
+       
       />,
     );
     const user = userEvent.setup();
@@ -305,7 +257,7 @@ describe('ProfilScreen (unité)', () => {
         onBack={onBack}
         onChangeProfile={onChangeProfile}
         onProfileSaved={onProfileSaved}
-        onImported={onImported}
+       
       />,
     );
     const user = userEvent.setup();
@@ -319,7 +271,7 @@ describe('ProfilScreen (unité)', () => {
 
   it('affiche la version de l’app en pied d’écran', () => {
     render(
-      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
     );
 
     expect(
@@ -330,7 +282,7 @@ describe('ProfilScreen (unité)', () => {
   it('date de naissance vidée : le hint propose de saisir (pas d’âge fantôme « 2026 ans »)', async () => {
     vi.setSystemTime(new Date('2026-09-09T10:00:00'));
     render(
-      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
     );
     const user = userEvent.setup();
     await user.click(ouvrirPage('Mes infos'));
@@ -346,7 +298,7 @@ describe('ProfilScreen (unité)', () => {
 
   it('refuse un poids objectif hors bornes avec une erreur explicite', async () => {
     render(
-      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
     );
     const user = userEvent.setup();
     await user.click(ouvrirPage('Objectif'));
@@ -360,7 +312,7 @@ describe('ProfilScreen (unité)', () => {
 
   it('complément en doublon : alerte rendue dans la page Objectif', async () => {
     render(
-      <ProfilScreen profile={{ ...profileMarc, complements: ['Whey'] }} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
+      <ProfilScreen profile={{ ...profileMarc, complements: ['Whey'] }} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
     );
     const user = userEvent.setup();
     await user.click(ouvrirPage('Objectif'));
@@ -373,7 +325,7 @@ describe('ProfilScreen (unité)', () => {
 
   it('sections dédiées : objectif affiché et modifiable', async () => {
     render(
-      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
     );
     const user = userEvent.setup();
     await user.click(ouvrirPage('Objectif'));
@@ -392,7 +344,7 @@ describe('ProfilScreen (unité)', () => {
 
   it('sections dédiées : compléments ajoutés et retirés, persistés', async () => {
     render(
-      <ProfilScreen profile={{ ...profileMarc, complements: ['Whey'] }} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
+      <ProfilScreen profile={{ ...profileMarc, complements: ['Whey'] }} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
     );
     const user = userEvent.setup();
     await user.click(ouvrirPage('Objectif'));
@@ -411,7 +363,7 @@ describe('ProfilScreen (unité)', () => {
 
   it('sections dédiées : régime persisté', async () => {
     render(
-      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} />,
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
     );
     const user = userEvent.setup();
     await user.click(ouvrirPage('Objectif'));
@@ -426,7 +378,7 @@ describe('ProfilScreen (unité)', () => {
     vi.setSystemTime(new Date('2026-09-09T10:00:00'));
     const user = userEvent.setup();
     render(
-      <ProfilScreen profile={{ ...profileMarc, prenom: 'Marc' }} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} cycle={2} />,
+      <ProfilScreen profile={{ ...profileMarc, prenom: 'Marc' }} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} cycle={2} />,
     );
 
     // En-tête compte : initiale + prénom + duo/cycle
@@ -448,23 +400,23 @@ describe('ProfilScreen (unité)', () => {
 
   it('hub : sous-ligne duo selon syncEtat', () => {
     const { rerender } = render(
-      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} syncEtat="sync" cycle={2} />,
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} syncEtat="sync" cycle={2} />,
     );
     expect(screen.getByText('Duo connecté')).toBeInTheDocument();
 
     rerender(
-      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} syncEtat="hors-foyer" cycle={2} />,
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} syncEtat="hors-foyer" cycle={2} />,
     );
     expect(screen.getByText('Local')).toBeInTheDocument();
 
     rerender(
-      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} onImported={onImported} syncEtat="off" cycle={2} />,
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} syncEtat="off" cycle={2} />,
     );
     expect(screen.queryByText(/Duo|Local/)).not.toBeInTheDocument();
   });
 });
 
-describe('ProfilScreen — Maison & courses', () => {
+describe('ProfilScreen — Courses & budget', () => {
   beforeEach(() => {
     localStorage.clear();
   });
@@ -483,12 +435,12 @@ describe('ProfilScreen — Maison & courses', () => {
         }}
         onBack={() => {}}
         onChangeProfile={() => {}}
-        onImported={() => {}}
+       
       />,
     );
-    await user.click(ouvrirPage('Maison & courses'));
+    await user.click(ouvrirPage('Courses & budget'));
 
-    const maison = page('Maison & courses');
+    const maison = page('Courses & budget');
     expect(screen.getByLabelText('Magasin habituel')).toHaveValue('Lidl');
     expect(screen.getByLabelText('Magasin habituel')).toHaveAttribute('list', 'pf-magasins');
     // inputs texte (+ inputMode) : jest-dom renvoie la valeur sous forme de chaîne.
@@ -504,10 +456,10 @@ describe('ProfilScreen — Maison & courses', () => {
   it('enregistre la section (validation incluse)', async () => {
     const user = userEvent.setup();
     render(
-      <ProfilScreen profile={profileMarc} onBack={() => {}} onChangeProfile={() => {}} onImported={() => {}} />,
+      <ProfilScreen profile={profileMarc} onBack={() => {}} onChangeProfile={() => {}} />,
     );
-    await user.click(ouvrirPage('Maison & courses'));
-    const maison = page('Maison & courses');
+    await user.click(ouvrirPage('Courses & budget'));
+    const maison = page('Courses & budget');
 
     await user.type(screen.getByLabelText('Magasin habituel'), 'Lidl');
     await user.type(screen.getByLabelText('Budget max courses / semaine (€)'), '40');
@@ -525,14 +477,14 @@ describe('ProfilScreen — Maison & courses', () => {
   it('refuse un budget max invalide (erreur rendue dans la page)', async () => {
     const user = userEvent.setup();
     render(
-      <ProfilScreen profile={profileMarc} onBack={() => {}} onChangeProfile={() => {}} onImported={() => {}} />,
+      <ProfilScreen profile={profileMarc} onBack={() => {}} onChangeProfile={() => {}} />,
     );
-    await user.click(ouvrirPage('Maison & courses'));
+    await user.click(ouvrirPage('Courses & budget'));
 
     await user.type(screen.getByLabelText('Budget max courses / semaine (€)'), '0');
     await user.click(screen.getByRole('button', { name: 'Enregistrer maison & courses' }));
 
-    expect(within(page('Maison & courses')).getByRole('alert')).toHaveTextContent(/Budget max invalide/i);
+    expect(within(page('Courses & budget')).getByRole('alert')).toHaveTextContent(/Budget max invalide/i);
     expect(loadProfile()).toBeNull();
   });
 
@@ -550,10 +502,10 @@ describe('ProfilScreen — Maison & courses', () => {
         }}
         onBack={() => {}}
         onChangeProfile={() => {}}
-        onImported={() => {}}
+       
       />,
     );
-    await user.click(ouvrirPage('Maison & courses'));
+    await user.click(ouvrirPage('Courses & budget'));
 
     await user.clear(screen.getByLabelText('Magasin habituel'));
     await user.clear(screen.getByLabelText('Budget max courses / semaine (€)'));
@@ -566,82 +518,35 @@ describe('ProfilScreen — Maison & courses', () => {
   });
 });
 
-describe('ProfilScreen — Génération IA', () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-  afterEach(() => {
-    Reflect.deleteProperty(navigator, 'clipboard');
-    vi.useRealTimers();
-  });
-
-  it('est toujours visible (le contexte perso existe pour tout profil)', () => {
-    render(
-      <ProfilScreen profile={profileMarc} onBack={() => {}} onChangeProfile={() => {}} onImported={() => {}} />,
-    );
-
-    expect(screen.getByRole('button', { name: /Copier le prompt IA/ })).toBeInTheDocument();
-  });
-
-  it('copie le prompt complet avec confirmation', async () => {
-    vi.setSystemTime(new Date('2026-09-17T10:00:00'));
-    const user = userEvent.setup();
-    // user-event réinstalle le clipboard natif au setup() : le mock se pose APRÈS.
-    const writeText = vi.fn().mockResolvedValue(undefined);
-    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
-    addWeight('marc', '2026-09-14', 82.4);
-    addWeight('marc', '2026-09-07', 84);
-    render(
-      <ProfilScreen
-        profile={{ ...profileMarc, magasin: 'Lidl', budgetMax: 40, regime: 'keto', complements: ['Créatine'] }}
-        onBack={() => {}}
-        onChangeProfile={() => {}}
-        onImported={() => {}}
-      />,
-    );
-
-    await user.click(screen.getByRole('button', { name: /Copier le prompt IA/ }));
-    const texte = writeText.mock.calls[0][0] as string;
-    // at(-1) = la DERNIÈRE pesée (le storage est trié ascendant) — pas la plus ancienne.
-    expect(texte).toContain('Tu es un nutritionniste. Marc (41 ans, 82,4 kg — dernière pesée du 14/09, 178 cm)');
-    expect(texte).not.toContain('84 kg');
-    // formatEuro insère une espace insécable (U+00A0) avant € — cf. lib/prix.test.ts.
-    expect(texte).toContain('- Courses : Lidl, budget 40,00\u00a0€/semaine');
-    expect(texte).toContain('{{SEMAINE_DEPART}}');
-    expect(texte).toContain('## Règles dures');
-    expect(screen.getByText(/Prompt copié/)).toBeInTheDocument();
-  });
-});
-
 describe('ProfilScreen (intégration via App)', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.unstubAllGlobals();
   });
 
-  it('l’icône profil de la bannière ouvre l’écran, le retour revient au shell', async () => {
+  it('l’avatar de l’en-tête ouvre l’écran, le retour revient au shell', async () => {
     const user = monterApp();
 
-    await user.click(screen.getByRole('button', { name: 'Mon profil' }));
-    expect(screen.getByRole('button', { name: /Mes infos/ })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Cuisine' })).not.toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: 'Mon profil' }));
+    expect(await screen.findByRole('button', { name: /Mes infos/ })).toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Navigation principale' })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /Retour/ }));
-    expect(screen.getByRole('button', { name: 'Cuisine' })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Navigation principale' })).toBeInTheDocument();
   });
 
   it('la réouverture de l’écran montre les infos enregistrées (pas d’état périmé)', async () => {
     const user = monterApp();
 
-    await user.click(screen.getByRole('button', { name: 'Mon profil' }));
-    await user.click(ouvrirPage('Mes infos'));
+    await user.click(await screen.findByRole('button', { name: 'Mon profil' }));
+    await user.click(await screen.findByRole('button', { name: /Mes infos/ }));
     fireEvent.change(screen.getByLabelText('Date de naissance'), { target: { value: '1984-04-12' } });
     await user.click(screen.getByRole('button', { name: 'Enregistrer mes infos' }));
 
     await user.click(screen.getByRole('button', { name: /Profil/ })); // page → hub
     await user.click(screen.getByRole('button', { name: /Retour/ })); // hub → shell
     await user.click(screen.getByRole('button', { name: 'Mon profil' }));
-    await user.click(ouvrirPage('Mes infos'));
+    await user.click(await screen.findByRole('button', { name: /Mes infos/ }));
 
     expect(screen.getByLabelText('Date de naissance')).toHaveValue('1984-04-12');
   });
@@ -652,11 +557,11 @@ describe('ProfilScreen (intégration via App)', () => {
     vi.stubGlobal('confirm', spy);
     const user = monterApp();
 
-    await user.click(screen.getByRole('button', { name: 'Mon profil' }));
-    await user.click(screen.getByRole('button', { name: /Changer de profil/ }));
+    await user.click(await screen.findByRole('button', { name: 'Mon profil' }));
+    await user.click(await screen.findByRole('button', { name: /Changer de profil/ }));
 
     expect(loadProfile()).toBeNull();
-    expect(screen.getByRole('heading', { name: /Qui est derrière l'écran/ })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /Qui est derrière l'écran/ })).toBeInTheDocument();
     expect(getWeights('marc')).toEqual([{ date: '2026-09-22', kg: 84.2 }]);
   });
 });

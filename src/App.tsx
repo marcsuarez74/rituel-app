@@ -1,34 +1,42 @@
-import { useEffect, useRef, useState } from 'react';
-import type { PointerEvent as ReactPointerEvent } from 'react';
-import { ProfilScreen } from './components/ProfilScreen';
-import { ProfileView } from './components/ProfileView';
-import { SuiviHero } from './components/SuiviHero';
-import { TabBar } from './components/TabBar';
-import type { TabId } from './components/TabBar';
-import { Onboarding } from './components/onboarding/Onboarding';
-import { WeekBanner } from './components/WeekBanner';
-import { SemaineSwitcher } from './components/SemaineSwitcher';
-import { CuisineView } from './components/cuisine/CuisineView';
+import { Suspense, lazy, useEffect, useState, type ReactNode } from 'react';
+import { Aujourdhui } from './components/ecrans/Aujourdhui';
+import { BarreOnglets } from './components/shell/BarreOnglets';
+import { ONGLETS, type Onglet } from './components/shell/onglets';
+import { EnTete } from './components/shell/EnTete';
+import { LigneSemaine } from './components/shell/LigneSemaine';
+import { positionCycle } from './lib/cycle/calendrier';
+import { semaineCoches } from './lib/cycle/etat';
+import type { Jour } from './lib/cycle/types';
+import type { VueRituel } from './components/ecrans/Rituel';
+import { chargerCycleExemple, semaineParDefaut } from './lib/cycle/courant';
+import { type CycleActif, type ReglagesFoyer, foyerParDefaut, loadCycle, loadFoyer, saveFoyer } from './lib/cycle/etat';
+import { todayISO } from './lib/dates';
 import { prenomProfil } from './lib/model';
-import type { ImportedWeek, UserProfile } from './lib/model';
-import { parseWeeklyFile } from './lib/parse';
-import { effacerSelection, lireSelection, loadProfile, loadProfilLegacy, loadWeeks, removeProfile, sauverSelection } from './lib/storage';
-import { initSync, ressynchroniser, type SyncEtat } from './lib/sync/engine';
-import { indexSemaineCourante, semainesTriees } from './lib/weeks';
-import { numeroCycle, todayISO } from './lib/dates';
-import sampleRaw from './assets/semaine-exemple.md?raw';
+import type { UserProfile } from './lib/model';
+import { loadProfile, loadProfilLegacy, removeProfile } from './lib/storage';
+import { initSync, type SyncEtat } from './lib/sync/engine';
 
-// Fallback en mémoire : tant qu'aucune semaine n'a été importée, on affiche
-// la semaine d'exemple (les semaines réelles arrivent par l'import du cycle).
-const semaineExemple = (): ImportedWeek => {
-  const { data } = parseWeeklyFile(sampleRaw);
-  return { raw: sampleRaw, data, importedAt: '' };
-};
+// Chargés à la demande (spec v2 §10) : seul Aujourd'hui est dans le bundle initial.
+const Onboarding = lazy(() => import('./components/onboarding/Onboarding').then((m) => ({ default: m.Onboarding })));
+const ProfilScreen = lazy(() => import('./components/ProfilScreen').then((m) => ({ default: m.ProfilScreen })));
+const Suivi = lazy(() => import('./components/ecrans/Suivi').then((m) => ({ default: m.Suivi })));
+const Menu = lazy(() => import('./components/ecrans/Menu').then((m) => ({ default: m.Menu })));
+const Courses = lazy(() => import('./components/ecrans/Courses').then((m) => ({ default: m.Courses })));
+const Rituel = lazy(() => import('./components/ecrans/Rituel').then((m) => ({ default: m.Rituel })));
+const Guide = lazy(() => import('./components/ecrans/Guide').then((m) => ({ default: m.Guide })));
+const SemaineType = lazy(() => import('./components/ecrans/SemaineType').then((m) => ({ default: m.SemaineType })));
+const MonCycle = lazy(() => import('./components/ecrans/MonCycle').then((m) => ({ default: m.MonCycle })));
+const Recette = lazy(() => import('./components/ecrans/Recette').then((m) => ({ default: m.Recette })));
 
-const semainesInitiales = (): ImportedWeek[] => {
-  const stockees = semainesTriees(Object.values(loadWeeks()));
-  return stockees.length ? stockees : [semaineExemple()];
-};
+// Onglets avec la ligne semaine.
+const AVEC_SEMAINE: Onglet[] = ['menu', 'courses', 'rituel'];
+
+
+const Chargement = () => (
+  <p className="muted chargement" role="status">
+    Chargement…
+  </p>
+);
 
 function App() {
   // La lecture legacy précède loadProfile (strict) : loadProfile retire la clé v1
@@ -36,154 +44,275 @@ function App() {
   const [profile, setProfile] = useState<UserProfile | null>(() =>
     loadProfilLegacy() ? null : loadProfile(),
   );
-  const [semaines, setSemaines] = useState<ImportedWeek[]>(semainesInitiales);
-  // Navigation en session : null = auto (semaine du jour) ; sinon l'id de la
-  // semaine consultée via les chevrons. Persistée (sportapp:selection) pour
-  // retrouver la consultation à la relance — fallback auto si elle a disparu
-  // du stockage.
-  const [selection, setSelection] = useState<string | null>(() => lireSelection());
-  const selectionner = (id: string): void => {
-    setSelection(id);
-    sauverSelection(id);
-  };
+  const [cycleStocke, setCycleStocke] = useState<CycleActif | null>(loadCycle);
+  const [foyerStocke, setFoyerStocke] = useState(loadFoyer);
+  const [exemple, setExemple] = useState<CycleActif | null>(null);
+  const [onglet, setOnglet] = useState<Onglet>('aujourdhui');
+  // Semaine consultée dans Menu / Courses / Rituel (null = celle du jour).
+  const [semaineVue, setSemaineVue] = useState<number | null>(null);
+  const [jourVu, setJourVu] = useState<Jour | null>(null); // jour consulté dans Menu
+  const [vueRituel, setVueRituel] = useState<VueRituel>('jour');
+  const [guide, setGuide] = useState<number | null>(null); // étape du mode guidé ouvert
+  const [monCycle, setMonCycle] = useState(false);
+  // Semaine type : 'etape' = étape « Ta semaine » juste après l'onboarding.
+  const [semaineType, setSemaineType] = useState<'etape' | 'profil' | null>(null);
   const [profilOuvert, setProfilOuvert] = useState(false);
-  const [switcherOuvert, setSwitcherOuvert] = useState(false);
-  // SuiviHero lit les pesées au montage : onWeightsChanged (pesée ajoutée)
-  // incrémente weightsBump pour le remonter et relire les pesées.
-  const [weightsBump, setWeightsBump] = useState(0);
-  const [tab, setTab] = useState<TabId>('cuisine');
-  // Sync optionnelle : état (point bannière + bloc profil) et version de
-  // re-rendu — onRemote bump la version quand un pull a écrit dans le storage,
-  // les composants coches/pesées/dépenses relisent alors leur source.
+  // Fiche recette poussée ; `coche` = le repas d'où on vient (« C'est fait »).
+  const [recette, setRecette] = useState<{ id: string; coche?: { semaine: string; id: string } } | null>(null);
+  // Sync optionnelle : état (point sur l'avatar) et version de re-rendu —
+  // onRemote relit le storage quand un pull y a écrit.
   const [syncEtat, setSyncEtat] = useState<SyncEtat>('off');
   const [syncVersion, setSyncVersion] = useState(0);
 
-  // Sync optionnelle : no-op complet sans VITE_SYNC_URL (état 'off'). Effet
-  // posé avant les early returns — règle des hooks. Idempotent côté engine.
+  const aujourdhui = todayISO();
+  const foyer = foyerStocke ?? foyerParDefaut(profile);
+
+  // Effets posés avant les early returns — règle des hooks.
   useEffect(() => {
     initSync({
       onEtat: setSyncEtat,
       onRemote: () => {
-        setSemaines(semainesInitiales());
+        setCycleStocke(loadCycle());
+        setFoyerStocke(loadFoyer());
         setSyncVersion((v) => v + 1);
       },
     });
   }, []);
 
-  // Swipe Cuisine ↔ Suivi (pointer events). Chaque pointerdown repart d'un état
-  // propre : un geste exclu (contrôle interactif, second doigt, reduced-motion)
-  // ou annulé (scroll vertical → pointercancel) ne laisse aucun ref obsolète
-  // qu'un pointerup ultérieur transformerait en bascule fantôme.
-  const swipeX = useRef<number | null>(null);
-  const swipeY = useRef<number | null>(null);
-  const purgeSwipe = () => {
-    swipeX.current = null;
-    swipeY.current = null;
-  };
-  const onPointerDown = (e: ReactPointerEvent<HTMLElement>) => {
-    purgeSwipe();
-    if (!e.isPrimary) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const t = e.target as HTMLElement;
-    if (t.closest('button, input, textarea, select, label, a, .micro-batch, .rtabs')) return;
-    swipeX.current = e.clientX;
-    swipeY.current = e.clientY;
-  };
-  const onPointerUp = (e: ReactPointerEvent<HTMLElement>) => {
-    const x0 = swipeX.current;
-    const y0 = swipeY.current;
-    swipeX.current = null;
-    swipeY.current = null;
-    if (x0 == null || y0 == null) return;
-    const dx = e.clientX - x0;
-    const dy = e.clientY - y0;
-    if (Math.abs(dx) < 80 || Math.abs(dy) > 60) return;
-    setTab(dx < 0 ? 'suivi' : 'cuisine');
-  };
+  // Sans cycle importé : le cycle d'exemple (chunk séparé), en mémoire.
+  const besoinExemple = !cycleStocke && !exemple;
+  useEffect(() => {
+    if (!besoinExemple) return;
+    let actif = true;
+    void chargerCycleExemple(aujourdhui, foyer.jourCourses).then((c) => actif && setExemple(c));
+    return () => {
+      actif = false;
+    };
+  }, [besoinExemple, aujourdhui, foyer.jourCourses]);
 
   if (!profile) {
-    return <Onboarding onDone={setProfile} prefill={loadProfilLegacy() ?? undefined} />;
+    return (
+      <Suspense fallback={<Chargement />}>
+        <Onboarding
+          onDone={(p) => {
+            setProfile(p);
+            if (!loadFoyer()) setSemaineType('etape');
+          }}
+          prefill={loadProfilLegacy() ?? undefined}
+        />
+      </Suspense>
+    );
   }
 
-  const idx = indexSemaineCourante(semaines, todayISO());
-  // Sélection obsolète (semaine retirée du stockage, ex. purge du foyer) :
-  // repli sur la semaine du jour, jamais sur la 1re semaine stockée.
-  const trouve =
-    selection != null ? semaines.findIndex((w) => w.data.meta.semaine === selection) : -1;
-  const idxAffiche = Math.min(Math.max(trouve >= 0 ? trouve : idx, 0), semaines.length - 1);
-  const affichee = semaines[idxAffiche];
-  if (!affichee) return null;
+  const prenom = prenomProfil(profile.id, profile);
+  const actif = cycleStocke ?? exemple;
 
-  if (profilOuvert) {
+  const position = actif ? positionCycle(actif, aujourdhui) : null;
+
+  const enregistrerFoyer = (f: ReglagesFoyer) => {
+    saveFoyer(f);
+    setFoyerStocke(f);
+  };
+
+  if (semaineType) {
     return (
       <div className="main-content">
-        <ProfilScreen
-          profile={profile}
-          syncEtat={syncEtat}
-          cycle={numeroCycle(affichee.data.meta.semaine) ?? undefined}
-          onBack={() => setProfilOuvert(false)}
-          onChangeProfile={() => {
-            removeProfile();
-            setProfile(null);
-            setProfilOuvert(false);
-          }}
-          onProfileSaved={setProfile}
-          onImported={() => {
-            setSemaines(semainesInitiales());
-            setSelection(null);
-            effacerSelection();
-            setProfilOuvert(false);
-          }}
-        />
+        <Suspense fallback={<Chargement />}>
+          <SemaineType
+            foyer={foyer}
+            compact={semaineType === 'etape'}
+            onRetour={() => setSemaineType(null)}
+            onEnregistrer={(f) => {
+              enregistrerFoyer(f);
+              setSemaineType(null);
+            }}
+          />
+        </Suspense>
       </div>
     );
   }
 
-  return (
+  if (monCycle) {
+    return (
+      <div className="main-content">
+        <Suspense fallback={<Chargement />}>
+          <MonCycle
+            stocke={cycleStocke}
+            foyer={foyer}
+            profil={profile}
+            aujourdhui={aujourdhui}
+            onRetour={() => setMonCycle(false)}
+            onCycle={(c) => {
+              setCycleStocke(c);
+              setSemaineVue(null);
+              setJourVu(null);
+            }}
+            onFoyer={setFoyerStocke}
+            onVoirCourses={() => {
+              setMonCycle(false);
+              setProfilOuvert(false);
+              setOnglet('courses');
+            }}
+          />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (profilOuvert) {
+    return (
+      <div className="main-content">
+        <Suspense fallback={<Chargement />}>
+          <ProfilScreen
+            profile={profile}
+            syncEtat={syncEtat}
+            cycle={actif?.numero}
+            resumeCycle={
+              !cycleStocke
+                ? "Cycle d'exemple · crée le tien"
+                : position?.etat === 'semaine'
+                  ? `Cycle ${cycleStocke.numero} · semaine ${position.index + 1} sur 4 · menu ${position.lettre}`
+                  : position?.etat === 'termine'
+                    ? `Cycle ${cycleStocke.numero} terminé`
+                    : `Cycle ${cycleStocke.numero}`
+            }
+            onMonCycle={() => setMonCycle(true)}
+            resumeSemaine={`${foyer.membres.length} personnes · courses ${foyer.jourCourses.slice(0, 3)}. · rituel ${foyer.jourRituel.slice(0, 3)}.`}
+            onSemaineType={() => setSemaineType('profil')}
+            onBack={() => setProfilOuvert(false)}
+            onChangeProfile={() => {
+              removeProfile();
+              setProfile(null);
+              setProfilOuvert(false);
+            }}
+            onProfileSaved={(p) => {
+              setProfile(p);
+              // Magasin et budget vivent dans le foyer une fois celui-ci enregistré.
+              if (foyerStocke) {
+                // undefined → clé omise au JSON (champ vidé dans le profil).
+                enregistrerFoyer({ ...foyerStocke, magasin: p.magasin || undefined, budgetMax: p.budgetMax });
+              }
+            }}
+          />
+        </Suspense>
+      </div>
+    );
+  }
+
+  const semaine = semaineVue ?? (position ? semaineParDefaut(position) : 0);
+  const titre = ONGLETS.find((o) => o.id === onglet)!.label;
+  const ouvrirRecette = (n: number) => (id: string, coche: string) =>
+    actif && setRecette({ id, coche: { semaine: semaineCoches(actif.id, n), id: coche } });
+
+  const ecranPousse = (contenu: ReactNode) => (
     <div className="main-content">
-      <WeekBanner
-        meta={affichee.data.meta}
-        onOpenProfile={() => setProfilOuvert(true)}
-        onSwitcher={() => setSwitcherOuvert(true)}
-        syncEtat={syncEtat}
-        onSyncTap={() => ressynchroniser()}
-        onPrev={() => selectionner(semaines[Math.max(0, idxAffiche - 1)].data.meta.semaine)}
-        onNext={() =>
-          selectionner(semaines[Math.min(semaines.length - 1, idxAffiche + 1)].data.meta.semaine)
-        }
-        hasPrev={idxAffiche > 0}
-        hasNext={idxAffiche < semaines.length - 1}
-      />
-      {switcherOuvert && (
-        <SemaineSwitcher
-          semaines={semaines}
-          active={affichee.data.meta.semaine}
-          onSelect={(id) => {
-            selectionner(id);
-            setSwitcherOuvert(false);
-          }}
-          onClose={() => setSwitcherOuvert(false)}
-        />
-      )}
-      <TabBar active={tab} onSelect={setTab} />
-      <main onPointerDown={onPointerDown} onPointerUp={onPointerUp} onPointerCancel={purgeSwipe}>
-        {tab === 'cuisine' && (
-          <CuisineView data={affichee.data} profile={profile} syncVersion={syncVersion} />
+      <Suspense fallback={<Chargement />}>{contenu}</Suspense>
+    </div>
+  );
+
+  if (recette && actif) {
+    return (
+      <div className="main-content">
+        <Suspense fallback={<Chargement />}>
+          <Recette
+            cycle={actif.cycle}
+            recetteId={recette.id}
+            membres={foyer.membres}
+            moi={profile.id}
+            coche={recette.coche}
+            syncVersion={syncVersion}
+            onRetour={() => setRecette(null)}
+          />
+        </Suspense>
+      </div>
+    );
+  }
+
+  if (guide != null && actif) {
+    return ecranPousse(
+      <Guide
+        actif={actif}
+        semaine={semaine}
+        etape={guide}
+        syncVersion={syncVersion}
+        onEtape={setGuide}
+        onQuitter={() => setGuide(null)}
+        onReserve={() => {
+          setGuide(null);
+          setVueRituel('reserve');
+        }}
+        onOuvrirRecette={(id) => setRecette({ id })}
+      />,
+    );
+  }
+
+  return (
+    <div className="shell">
+      <div className="main-content">
+        <EnTete titre={titre} prenom={prenom} syncEtat={syncEtat} onProfil={() => setProfilOuvert(true)} />
+        {actif && AVEC_SEMAINE.includes(onglet) && (
+          <LigneSemaine
+            cal={actif}
+            index={semaine}
+            onChange={(n) => {
+              setSemaineVue(n);
+              setJourVu(null);
+            }}
+          />
         )}
-        {tab === 'suivi' && (
-          <>
-            <p className="greeting">Salut {prenomProfil(profile.id, profile)} 👋</p>
-            <SuiviHero key={`hero-${weightsBump}-${syncVersion}`} profile={profile} />
-            <ProfileView
-              profile={profile}
-              data={affichee.data.profiles[profile.id]}
-              semaine={affichee.data.meta.semaine}
-              syncVersion={syncVersion}
-              onWeightsChanged={() => setWeightsBump((b) => b + 1)}
-            />
-          </>
-        )}
-      </main>
+        <main>
+          {!actif || !position ? (
+            <Chargement />
+          ) : (
+            <Suspense fallback={<Chargement />}>
+              {onglet === 'aujourdhui' && (
+                <Aujourdhui
+                  actif={actif}
+                  foyer={foyer}
+                  moi={profile.id}
+                  prenom={prenom}
+                  aujourdhui={aujourdhui}
+                  position={position}
+                  exemple={!cycleStocke}
+                  syncVersion={syncVersion}
+                  onOuvrirRecette={ouvrirRecette(position.etat === 'semaine' ? position.index : 0)}
+                  onAller={setOnglet}
+                />
+              )}
+              {onglet === 'menu' && (
+                <Menu
+                  actif={actif}
+                  foyer={foyer}
+                  semaine={semaine}
+                  moi={profile.id}
+                  aujourdhui={aujourdhui}
+                  syncVersion={syncVersion}
+                  jourVu={jourVu}
+                  onJour={setJourVu}
+                  onOuvrirRecette={ouvrirRecette(semaine)}
+                />
+              )}
+              {onglet === 'courses' && (
+                <Courses actif={actif} foyer={foyer} semaine={semaine} aujourdhui={aujourdhui} syncVersion={syncVersion} />
+              )}
+              {onglet === 'rituel' && (
+                <Rituel
+                  actif={actif}
+                  foyer={foyer}
+                  semaine={semaine}
+                  syncVersion={syncVersion}
+                  vue={vueRituel}
+                  onVue={setVueRituel}
+                  onGuide={() => setGuide(0)}
+                  onOuvrirRecette={(id) => setRecette({ id })}
+                />
+              )}
+              {onglet === 'suivi' && <Suivi profile={profile} syncVersion={syncVersion} />}
+            </Suspense>
+          )}
+        </main>
+      </div>
+      <BarreOnglets actif={onglet} onSelect={setOnglet} />
     </div>
   );
 }

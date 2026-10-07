@@ -1,6 +1,6 @@
 # Rituel
 
-Suivi cuisine / diet / sport pour Marc & Mélanie — PWA installable, livrée avec une semaine d'exemple prête à cocher.
+Suivi cuisine / diet / sport pour Marc & Mélanie — PWA installable : un **cycle de 4 semaines** de menus généré par Claude, un **rituel batch** unique à maîtriser, les courses calculées et le suivi du poids. Livrée avec un cycle d'exemple prêt à cocher.
 
 ## Utilisation sur téléphone
 
@@ -10,156 +10,37 @@ Suivi cuisine / diet / sport pour Marc & Mélanie — PWA installable, livrée a
    - **Android** : Chrome → **Installer**
 3. L'app fonctionne **hors ligne** après la première visite (le service worker est installé à ce moment-là).
 
-Au premier lancement, un **onboarding en 5 étapes** personnalise l'app : seule la première (choix du profil + prénom) est obligatoire, les suivantes se passent d'un appui sur « Passer ». Le prénom se modifie ensuite dans **Mes infos** (Profil) — salutations, titre du suivi et prompt IA l'utilisent — et la date de naissance comme la taille restent optionnelles.
+Au premier lancement, un **onboarding en 5 étapes** (+ l'étape optionnelle « Ta semaine ») personnalise l'app : seule la première (choix du profil + prénom) est obligatoire, les suivantes se passent d'un appui sur « Passer ». Le prénom se modifie ensuite dans **Mes infos** (Profil) — salutations, titre du suivi et prompt IA l'utilisent — et la date de naissance comme la taille restent optionnelles.
 
-> **Note** : l'import de fichier `.md` est momentanément retiré de l'app (il reviendra avec une future convention « template »). La semaine d'exemple se charge automatiquement au premier lancement. Le format décrit ci-dessous reste le contrat de référence.
+## Les écrans
 
-## Le fichier .md de la semaine (contrat de référence)
+Barre du bas, 5 onglets sous le pouce ; le Profil s'ouvre par l'avatar (point = état de la sync).
 
-Chaque semaine est décrite par un fichier Markdown avec frontmatter YAML **obligatoire**. Extrait du fichier d'exemple (les blocs `## Recettes`, `## Bases`, `### Keto`, `### Rituel dimanche`, `### Micro-batch` et `### Réserve` sont optionnels) :
+- **Aujourd'hui** : la semaine en un coup d'œil (repas et courses faits), l'action du jour (rituel le jour du rituel, courses le jour des courses), les repas du jour cochables d'un tap.
+- **Menu** : bande des 7 jours à partir du jour des courses ; pour chaque repas, ta version, celle des autres, l'exception récurrente, la boîte du rituel ; « Ce soir, j'anticipe » (micro-batch). « Pas ce soir : reporter » → demain · semaine prochaine · on ne le fera pas (toast Annuler).
+- **Fiche recette** : macros et portion par membre suivi, ingrédients du foyer et étapes à cocher, minuteurs, conservation, lien au rituel, mode cuisine (écran allumé).
+- **Courses** : liste calculée depuis les recettes de la semaine + articles fixes, par rayon (extras keto en dernier), carte Estimé / Payé / Max avec alerte au-dessus du plafond, mode magasin, « J'ai payé… », placard à vérifier, « déjà au frigo ? » pour les plats reportés.
+- **Rituel** : le rituel du jour (production, avant de commencer, déroulé), le micro-batch de la semaine, la réserve ; **mode guidé** plein écran, une étape par écran, minuteur.
+- **Suivi** : objectif et poids (courbe, pesées).
+- **Profil** : Mon cycle, Ma semaine type, Courses & budget, Objectif & régime, Mes infos, synchronisation du foyer.
 
-```markdown
----
-semaine: 2026-S37
-menu: A
-titre: Menu A — Base poulet & bolo
-du: 2026-09-07
-au: 2026-09-13
----
+## Le cycle (contrat JSON v2)
 
-# Semaine 37
+Un cycle = **4 menus A, B, C, D** (une semaine chacun, sans dates) et **un seul rituel batch** commun aux 4 semaines : ce sont les dîners qui varient. L'app calcule les dates à partir du début du cycle et du jour des courses ; un nouveau cycle se débloque quand les 4 semaines (+ pauses) sont passées — sinon on relance le même.
 
-## Courses
-### Protéines
-- Cuisses de poulet (famille)
-- Œufs ×20
-### Keto
-- Avocats ×3-4
-- Chocolat noir ≥ 85 %
+1. Profil › **Mon cycle** › « Copier le prompt » : le prompt embarque le foyer, la semaine type, le budget, les recettes du cycle précédent, les règles dures et le schéma JSON (recopié de `src/lib/cycle/types.ts`).
+2. Le coller dans une nouvelle conversation Claude (abonnement) : Claude produit `menu-A.json` … `menu-D.json`.
+3. « Importer les fichiers » : l'app fusionne, vérifie (erreurs bloquantes, alertes budget / variété / keto), propose « Copier pour Claude » pour corriger, puis la date de début.
 
-## Menu
-### Lundi
-- dejeuner-marc: Boîte dinde-quinoa (batch dim) + légumes → R7
-- dejeuner-melanie: Restes dinde + gratin courgettes + ½ avocat → R7
-- diner-famille: Cuisses poulet rôties + carottes/patates douces + riz → R1
-- diner-melanie: Poulet + légumes rôtis + filet huile d'olive (sans riz/patate douce)
-- batch: Double riz + légumes rôtis → boîte mardi Marc
-
-## Recettes
-### R1 · Cuisses de poulet rôties + légumes + riz
-temps: 45 min · four 200°
-kcal: 680
-proteines: 48
-glucides: 45
-lipides: 28
-score: 7
-image: https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80&auto=format&fit=crop
-- pour 4: 6-8 cuisses · 600 g carottes · 600 g patates douces · 250 g riz · huile, paprika, thym
-1. Four 200°. Cuisses : huile + sel + paprika + thym, dans un plat avec les légumes en gros dés.
-2. Filet d'huile sur les légumes, four 40-45 min (retourner à mi-parcours).
-3. Riz en parallèle — cuire en double (boîte).
-- mel: pas de riz ni patate douce : poulet + légumes rôtis + filet d'huile d'olive
-- batch: double riz + légumes → boîte de mardi
-
-## Bases
-### B4 · Vinaigrette minute
-3 c.à.s huile d'olive + 1 moutarde + jus d'½ citron + sel. Le pot de 3 jours se garde au frigo.
-
-## Batch
-### Rituel dimanche
-- production: 2 boîtes frigo · 1 boîte congélateur · 1 sauce · 6 œufs durs — le riz : 2 jours au frigo max
-- 0-5 min · Four à 180° — egg muffins ×10 lancés, on fait le reste → R7
-- 5-30 min · Cuissons en double — dîner du soir ×2 + féculent ×2 → boîte lundi → R1
-- termine: 4 boîtes prêtes — la semaine est servie.
-
-### Micro-batch
-- lundi: doubler le plat (boîtes mar/mer) | 10 min | 2 boîtes → R1 | la boîte de mardi passe au frigo
-- mardi: doubler la sauce + courgettes en julienne (5 min le soir)
-
-### Réserve
-- lundi: Boîte dinde-quinoa | frigo, 2 j max
-- mel: Box keto (œufs durs + crudités) | à monter au rituel
-
-- [ ] Egg muffins ×10 → R7
-- [ ] Doubler dinde + quinoa → boîte lundi Marc → R7
-
-## Marc
-### Cibles
-- 2 450 kcal std · 2 750 sortie · 2 300 repos
-### Séances
-- [ ] Lundi — Muscu libre 10h30
-### Rappels
-- Pesée lun/mer/ven à jeun → moyenne hebdo
-
-## Melanie
-### Cibles
-- 1 450-1 500 kcal · protéines 110 g
-### Séances
-- [ ] Lundi — Danse 21h
-### Rappels
-- Jeûne matin : eau · café noir · thé uniquement
-```
-
-Règles du format :
-
-- **Frontmatter requis** : `semaine`, `menu`, `du`, `au` (le `titre` est optionnel).
-- `## Courses` : une `### Rayon` par sous-section, les items sont des listes `-` ; un rayon `### Keto` est rendu en **encadré dédié** (en fin de liste).
-- `## Menu` : une `### Jour` par jour, chaque repas est une ligne `- clé: texte` avec exactement **5 clés valides** : `dejeuner-marc`, `dejeuner-melanie`, `diner-famille`, `diner-melanie`, `batch`. Une clé inconnue génère un avertissement (non bloquant). Une référence `→ R1` en fin de ligne lie le repas à une recette de `## Recettes`.
-- `## Recettes` (optionnel) : une `### R1 · Nom` par recette, avec `temps:`, `kcal:`, `proteines:`, `bases: B4, B6` (renvois vers `## Bases`), les portions par personne `- portions marc:` / `- portions melanie:` (mesures maison), la liste d'ingrédients `- pour 4: …`, les étapes numérotées `1. …` et les adaptations `- mel: …` / `- batch: …`.
-  - `glucides:` / `lipides:` (optionnels, g par personne — chips 🌾 C / 💧 F de la fiche)
-  - `score:` (optionnel, entier 0-10 — Score n/10 en barre segmentée)
-  - `image:` (optionnel, URL https — photo du plat, mise en cache PWA après 1ʳᵉ vue)
-- `## Bases` (optionnel) : une `### B4 · Nom` par base + un texte court (technique réutilisable).
-- `## Batch` : la checklist `- [ ]`, plus trois blocs optionnels — `### Rituel dimanche` (étapes `- <créneau> · <label> — <détail>`, cochables en timeline, plus les lignes-clés `- production:` et `- termine:` — badge de durée calculé par l'app), `### Micro-batch` (`- jour: quoi | durée | quantité → slug | détail` — durée simple (`10 min`, `1 h`), la forme v1 ` | détail` reste acceptée, carrousel horizontal) et `### Réserve` (`- <jour|mel>: <plat> | <conservation>`, plats stockés, état disponible/consommé cochable). Une référence `→ slug` sur une étape du rituel (ou la quantité du micro-batch) lie l'étape à sa recette : le mode guidé affiche alors la fiche de l'étape, le micro-batch affiche la recette liée.
-- Puis `## Marc` et `## Melanie` (accents acceptés — `Mélanie` == `Melanie`), chacune avec les sous-sections `### Cibles`, `### Séances`, `### Rappels`.
-- Les items `- [ ]` (batch, rituel, séances) sont cochables dans l'app.
-- **Ids de coches stables**, dérivés du contenu : `courses:…`, `batch:…`, `batch:rituel:…`, `reserve:…`, `seances:…` — renommer un item = perdre son état coché. La ref `→ slug` n'entre jamais dans l'id : l'ajouter ou la retirer conserve l'état.
-- **Rétrocompatible** : une semaine v1 (sans Recettes/Bases/Rituel/Micro-batch) s'affiche comme avant — les blocs optionnels n'apparaissent que s'ils existent.
-
-Exemple canonique complet : [`src/assets/semaine-exemple.md`](src/assets/semaine-exemple.md).
-
-> **Entretien de la sample** : tant qu'il n'y a pas de convention template, `semaine-exemple.md` reste alignée sur la semaine courante (S37 au 08/09/2026). Pour la rafraîchir, bump en lockstep : frontmatter + `# Semaine` de la sample, `tests/parse.test.ts` (describe « sample réelle »), `tests/app.test.tsx`, `tests/profil-screen.test.tsx` et `tests/e2e/{onboarding-mobile,dock}.spec.ts` — cf. le commentaire en tête de ce describe dans `tests/parse.test.ts`.
-
-## Générer un cycle de semaines (rotation A/B/C/D)
-
-Le contenu vient d'une rotation de 4 menus avec batch commun. Une session de
-prompt IA génère le cycle complet (4 fichiers .md, un par semaine) :
-
-1. Dans l'app : Profil → « Copier le prompt IA » — le prompt embarque ton
-   contexte (objectif, régime, compléments, courses/budget…) et le format
-   complet ; le coller dans un chat IA avec les 4 documents du dossier
-   `diet/` en pièces jointes, compléter les 3 champs {{...}} (semaine de
-   départ, menus, événements) et envoyer
-2. Sauvegarder les 4 fichiers générés dans `diet/rotations/`
-3. Dans l'app : Profil → Semaine → « Importer un cycle (.md) » → sélectionner
-   les 4 fichiers d'un coup
-
-L'app garde toutes les semaines importées, ouvre sur celle qui contient
-aujourd'hui (le roulement est automatique) et permet de naviguer avec les
-chevrons ‹ › de la bannière. Les coches et pesées ne sont jamais perdues :
-elles vivent par semaine (`sportapp:checks:{semaine}`).
-
-Règle d'or : ne jamais modifier le libellé d'une coche d'une semaine déjà
-utilisée — le slug dérive du libellé, le renommer perd l'état cochée.
-
-## L'écran Cuisine
-
-Trois sous-onglets partagés (Courses · Menu · Mon Rituel), en segmented control (onglet actif en lime) :
-
-- **Bannière** : le menu courant (« Menu A ») reste visible en pill à côté du titre de semaine.
-- **Menu** : une barre d'onglets par **recette** (les 7 dîners du fichier + 🍱 Déjeuners) — aucun jour affiché, l'ordre du fichier est l'ordre conseillé (batch/frigo d'abord, frais ensuite) ; l'onglet du jour courant est présélectionné. La progression lit « Dîners X/N · Boxes X/N ».
-- **Onglet recette** : la fiche complète d'un bloc (temps, kcal, Score n/10, fraîcheur), « Qui mange quoi » (dîner famille + adaptation keto de Mél), « Portions — par personne » en **mesures maison** (pièces, poignées, c. à soupe, louches — les grammes entre parenthèses ne servent qu'à caler l'œil), la préparation (ingrédients « pour 4 », étapes, bases cliquables), le batch du jour en info, et la coche unique « C'est fait — dîner fini » (l'onglet se grise, nom barré + ✓).
-- **Déjeuners dynamiques** : une paire de boxes devient « prête » quand la recette qui la produit (`→ R#` sur la ligne déjeuner) est cochée ; verrouillée sinon (« débloquée quand … est fait ») ; une box sans ref est toujours disponible. Une coche par paire (« Boxes faites ») coche les lignes Marc + Mél du jour.
-- **Courses** : compteurs d'items par rayon, et le rayon `### Keto` devient un encadré dédié en fin de liste.
-- **Mon Rituel** : le rituel du dimanche s'affiche en **timeline cochable** et se lance en **mode guidé** — chaque étape portant une ref recette déplie sa fiche (ingrédients, étapes, temps, four) ; le micro-batch en **carrousel** enrichi (durée, quantité, recette liée) ; la réserve affiche son état (disponible/consommé). Un soir sans dîner prévu déclenche l'encart « Sors la réserve » dans le Menu.
+Contrat : `src/lib/cycle/types.ts` (types), `src/lib/cycle/schema.ts` (forme), `src/lib/cycle/valider.ts` (règles et alertes). Exemple : `src/assets/cycle-exemple.json` (anonymisé).
 
 ## Développement
 
 ```bash
 npm install
 npm run dev        # serveur de dev
-npm test           # tests unitaires (vitest) — 627 verts
-npm run e2e        # tests navigateur (Playwright, mobile 375/320) — 26 specs × 2 mobiles, 52 verts
+npm test           # tests unitaires (vitest)
+npm run e2e        # tests navigateur (Playwright, mobile 375/320)
 npm run build      # build de production
 npm run preview    # prévisualiser le build
 npm run icons      # régénérer les icônes après modification de public/icon-src.svg
@@ -195,14 +76,15 @@ L'app est déployée sur **GitHub Pages** via GitHub Actions (`.github/workflows
 ## Données
 
 - **Tout est stocké en local sur le téléphone** (localStorage) — aucun serveur, aucune donnée envoyée.
-- Les **pesées sont stockées par profil** : importer un nouveau fichier de semaine différent ne les remet pas à zéro.
-- Les **coches** (courses, batch, séances) sont réinitialisées à chaque nouvelle semaine.
+- Les **pesées sont stockées par profil**, indépendamment des cycles.
+- Les **coches** vivent par semaine du cycle : relancer un cycle repart de coches vides.
+- 2.0 : au premier lancement, les anciennes semaines `.md` et leurs coches sont effacées (une fois) ; profil, pesées, dépenses et sync sont gardés.
 
 ## Synchronisation entre téléphones (optionnelle)
 
 Par défaut, tout reste sur le téléphone. Si un foyer est configuré (voir
-[`docs/backend.md`](docs/backend.md)), les données (semaines, coches, pesées,
-dépenses, profils) se synchronisent entre Marc et Mélanie en quasi temps-réel,
+[`docs/backend.md`](docs/backend.md)), les données (foyer, cycle, reports, coches,
+pesées, dépenses, profils) se synchronisent entre Marc et Mélanie en quasi temps-réel,
 avec file d'attente hors ligne.
 
 > Vie privée : données synchronisées sur le serveur du foyer (VPS), accès

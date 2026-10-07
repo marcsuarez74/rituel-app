@@ -1,25 +1,18 @@
 import template from '../assets/prompt-cycle-template.md?raw';
-import { ageDepuis, formatDayMonth } from './dates';
-import { prenomProfil, type ObjectifType, type UserProfile } from './model';
-import { formatEuro } from './prix';
+import typesSource from './cycle/types.ts?raw';
+import { ordreJours } from './cycle/calendrier';
+import type { ReglagesFoyer } from './cycle/etat';
+import { prenomMembre } from './cycle/menu';
+import { ageDepuis } from './dates';
+import type { ObjectifType, UserProfile } from './model';
 import type { WeightEntry } from './storage';
 
-const MOIS = [
-  'janvier',
-  'février',
-  'mars',
-  'avril',
-  'mai',
-  'juin',
-  'juillet',
-  'août',
-  'septembre',
-  'octobre',
-  'novembre',
-  'décembre',
-];
+// Prompt maître du cycle v2 (spec 2026-10-07 §6.1 + annexe) : le template ne
+// contient que la structure ; l'app le remplit avec le foyer, la semaine type
+// et le profil stockés sur le téléphone. Une ligne absente disparaît.
 
-// Formulations orientées prompt (décidées hors libellés d'app).
+export const SEUIL_KETO_G = 30;
+
 const OBJECTIFS_PROMPT: Record<ObjectifType, string> = {
   perte: 'perdre du poids',
   affiner: 'affiner la silhouette',
@@ -27,65 +20,88 @@ const OBJECTIFS_PROMPT: Record<ObjectifType, string> = {
   maintien: 'maintenir le poids',
 };
 
-// 82.4 -> « 82,4 » (nombre à la française, sans unité).
-const formatKg = (kg: number): string => kg.toLocaleString('fr-FR', { maximumFractionDigits: 1 });
+const kg = (n: number): string => n.toLocaleString('fr-FR', { maximumFractionDigits: 1 });
 
-// '2027-03-01' -> « mars 2027 » (split, jamais de new Date sur une date seule).
-const formatMoisAnnee = (iso: string): string => {
-  const [y, m] = iso.split('-');
-  return `${MOIS[Number(m) - 1] ?? ''} ${y}`.trim();
+// Le contrat (interfaces Macros … CycleFichier) recopié tel quel depuis types.ts.
+export const schemaContrat = (): string => {
+  const debut = typesSource.indexOf('export interface Macros');
+  const fin = typesSource.indexOf('// </schema>');
+  return typesSource.slice(debut, fin).trim();
 };
 
-const objectifPhrase = (p: UserProfile): string => {
-  const cible = p.poidsObjectif != null ? ` vers ${formatKg(p.poidsObjectif)} kg` : '';
-  const echeance = p.objectif.echeance ? ` d'ici ${formatMoisAnnee(p.objectif.echeance)}` : '';
-  return `${OBJECTIFS_PROMPT[p.objectif.type]}${cible}${echeance}`;
-};
+export interface ContextePrompt {
+  foyer: ReglagesFoyer;
+  profil: UserProfile;
+  dernierPoids: WeightEntry | null;
+  precedentes: string[];
+}
 
-const ouverture = (p: UserProfile, dernierPoids: WeightEntry | null): string => {
-  const details = [
-    p.dateNaissance ? `${ageDepuis(p.dateNaissance)} ans` : '',
-    dernierPoids
-      ? `${formatKg(dernierPoids.kg)} kg — dernière pesée du ${formatDayMonth(dernierPoids.date)}`
-      : '',
-    p.taille != null ? `${p.taille} cm` : '',
-  ].filter(Boolean);
-  const qui =
-    details.length > 0 ? `${prenomProfil(p.id, p)} (${details.join(', ')})` : prenomProfil(p.id, p);
-  return `Tu es un nutritionniste. ${qui} te demande de lui réaliser une rotation de menus sur 4 semaines pour installer une routine durable. Objectif : ${objectifPhrase(p)}.`;
-};
+const membres = ({ foyer, profil, dernierPoids }: ContextePrompt): string =>
+  foyer.membres
+    .map((m) => {
+      const parties = [`- ${m.id} (${m.prenom}) · ${m.type}`];
+      if (m.suivi) parties.push('suivi');
+      if (m.regime && m.regime !== 'aucun') parties.push(`régime ${m.regime}`);
+      if (m.type === 'enfant') parties.push('mange normalement, portion enfant');
+      if (m.id === profil.id) {
+        const cible = profil.poidsObjectif != null ? ` vers ${kg(profil.poidsObjectif)} kg` : '';
+        parties.push(`objectif : ${OBJECTIFS_PROMPT[profil.objectif.type]}${cible}`);
+        const corps = [
+          profil.dateNaissance ? `${ageDepuis(profil.dateNaissance)} ans` : '',
+          dernierPoids ? `${kg(dernierPoids.kg)} kg` : '',
+          profil.taille != null ? `${profil.taille} cm` : '',
+        ].filter(Boolean);
+        if (corps.length) parties.push(corps.join(', '));
+        if (profil.complements.length) parties.push(`compléments : ${profil.complements.join(', ')}`);
+      }
+      return parties.join(' · ');
+    })
+    .join('\n');
 
-// Une ligne par donnée présente ; ligne omise si le champ ne l'est pas.
-// Renvoie '' si aucune donnée maison (pas de titre orphelin dans le prompt).
-const contexte = (p: UserProfile): string => {
-  const lignes: string[] = [];
-  if (p.regime !== 'aucun') lignes.push(`- Régime particulier : ${p.regime}`);
-  if (p.complements.length > 0) lignes.push(`- Compléments : ${p.complements.join(', ')}`);
-  if (p.magasin && p.budgetMax != null) {
-    lignes.push(`- Courses : ${p.magasin}, budget ${formatEuro(p.budgetMax)}/semaine`);
-  } else if (p.magasin) {
-    lignes.push(`- Courses : ${p.magasin}`);
-  } else if (p.budgetMax != null) {
-    lignes.push(`- Budget : ${formatEuro(p.budgetMax)}/semaine`);
-  }
-  if (p.personnes != null || p.repasJour != null) {
-    const parties: string[] = [];
-    if (p.personnes != null) parties.push(`${p.personnes}`);
-    if (p.repasJour != null) parties.push(`${p.repasJour} repas/jour`);
-    lignes.push(`- Personnes à table : ${parties.join(' · ')}`);
-  }
-  if (p.preferences && p.preferences.length > 0) {
-    lignes.push(`- Préférences : ${p.preferences.map((x) => x.toLowerCase()).join(', ')}`);
-  }
-  if (lignes.length === 0) return '';
-  return `Son contexte :\n${lignes.join('\n')}`;
-};
+const semaineType = (foyer: ReglagesFoyer): string =>
+  ordreJours(foyer.jourCourses)
+    .map((jour) => {
+      const j = foyer.semaine[jour];
+      const dej = Object.entries(j.dejeuner)
+        .map(([id, v]) => `${prenomMembre(foyer.membres, id)}=${v}`)
+        .join(', ');
+      const parties = [`- ${jour} : déjeuner ${dej || '—'} · dîner ${j.diner}`];
+      if (j.plusTard.length)
+        parties.push(`${j.plusTard.map((id) => prenomMembre(foyer.membres, id)).join(', ')} dîne plus tard`);
+      for (const [id, v] of Object.entries(j.journee ?? {}))
+        if (v !== 'standard') parties.push(`journée ${prenomMembre(foyer.membres, id)} : ${v}`);
+      if (j.note) parties.push(j.note);
+      return parties.join(' · ');
+    })
+    .join('\n');
 
-// Assemble le prompt maître : ouverture + contexte perso remplis ; les 3
-// placeholders de chat (semaine de départ, menus, événements) restent à éditer.
-// Forme fonction de replace : le texte utilisateur ne doit jamais être
-// interprété comme patterns ($&, $', $$…).
-export const assemblePromptIa = (profil: UserProfile, dernierPoids: WeightEntry | null): string =>
-  template
-    .replace('{{OUVERTURE}}', () => ouverture(profil, dernierPoids))
-    .replace('{{CONTEXTE}}', () => contexte(profil));
+export const assemblePromptIa = (c: ContextePrompt): string => {
+  const { foyer, profil } = c;
+  const magasin = foyer.magasin || profil.magasin;
+  const budget = foyer.budgetMax ?? profil.budgetMax;
+  const exceptions = foyer.exceptions.filter((e) => e.actif).map((e) => `${e.regle} → ${e.effet}`);
+  const valeurs: Record<string, string> = {
+    MEMBRES: membres(c),
+    JOUR_COURSES: foyer.jourCourses,
+    JOUR_RITUEL: foyer.jourRituel,
+    SEMAINE_TYPE: semaineType(foyer),
+    EXCEPTIONS: exceptions.length ? exceptions.join(' ; ') : 'aucune',
+    COURSES: [
+      `Magasin : ${magasin || 'supermarché habituel'}`,
+      budget != null
+        ? `budget max : ${budget} € par semaine pour TOUT le foyer (extras keto et articles fixes compris)`
+        : 'pas de budget max fixé',
+    ].join(' · '),
+    PREFERENCES: profil.preferences?.length ? profil.preferences.join(', ').toLowerCase() : 'aucune',
+    PRECEDENTES: c.precedentes.length ? c.precedentes.join(', ') : 'aucune (premier cycle)',
+    REGLE_BUDGET:
+      budget != null
+        ? `Vise ≤ ${budget} € par semaine (ingrédients + fixes hebdo) en privilégiant les protéines économiques ; si c'est impossible sans trahir les cibles, garde le réalisme et écris-le dans \`remarques\` (estimé, écart, ce qui coûte).`
+        : "Reste économique et indique l'estimation hebdomadaire dans `remarques`.",
+    SEUIL_KETO: String(SEUIL_KETO_G),
+    SCHEMA: schemaContrat(),
+  };
+  // Forme fonction de replace : le texte utilisateur n'est jamais lu comme un
+  // motif ($&, $'…).
+  return template.replace(/\{\{([A-Z_]+)\}\}/g, (brut, cle: string) => valeurs[cle] ?? brut);
+};

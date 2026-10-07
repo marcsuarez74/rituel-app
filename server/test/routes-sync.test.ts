@@ -34,6 +34,19 @@ describe('server: POST /sync/:table (upsert)', () => {
     expect(rows[0]!.updated_at).toMatch(/^\d{4}-\d{2}-\d{2}T/);
   });
 
+  it('etat : une ligne par clé, payload objet relu en objet, dernier écrit gagne', async () => {
+    const { app, token } = await creerContexte();
+    const post = (rows: unknown) =>
+      app.request('/sync/etat', { method: 'POST', headers: { 'Content-Type': 'application/json', ...bearer(token) }, body: JSON.stringify({ rows }) });
+    await post([{ cle: 'foyer', payload: { valeur: { budgetMax: 100 } } }, { cle: 'reports:c1', payload: { valeur: [] } }]);
+    await post([{ cle: 'foyer', payload: { valeur: { budgetMax: 120 } } }]);
+    const { rows } = (await (await app.request('/sync/etat', { headers: bearer(token) })).json()) as {
+      rows: Array<{ cle: string; payload: unknown }>;
+    };
+    expect(rows).toHaveLength(2);
+    expect(rows.find((r) => r.cle === 'foyer')!.payload).toEqual({ valeur: { budgetMax: 120 } });
+  });
+
   it('checks : done booléen à l\u2019écriture, booléen à la lecture (pas 0/1)', async () => {
     const { app, token } = await creerContexte();
     await app.request('/sync/checks', {
@@ -144,7 +157,7 @@ describe('server: DELETE /sync/:table', () => {
 });
 
 describe('server: DELETE /sync (purge)', () => {
-  it('vide les 5 tables du foyer, le foyer et son code survivent', async () => {
+  it('vide les 6 tables du foyer, le foyer et son code survivent', async () => {
     const { app, token } = await creerContexte();
     const post = (table: string, rows: unknown) =>
       app.request(`/sync/${table}`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...bearer(token) }, body: JSON.stringify({ rows }) });
@@ -153,10 +166,11 @@ describe('server: DELETE /sync (purge)', () => {
     await post('weights', [{ profil: 'marc', date_: '2026-09-25', kg: 78 }]);
     await post('depenses', [{ date_: '2026-09-25', magasin_key: 'c', magasin: 'C', total: 1 }]);
     await post('profiles', [{ profil: 'marc', payload: { id: 'marc' } }]);
+    await post('etat', [{ cle: 'foyer', payload: { valeur: { version: 3 } } }]);
 
     const res = await app.request('/sync', { method: 'DELETE', headers: bearer(token) });
     expect(res.status).toBe(200);
-    for (const t of ['weeks', 'checks', 'weights', 'depenses', 'profiles']) {
+    for (const t of ['weeks', 'checks', 'weights', 'depenses', 'profiles', 'etat']) {
       expect(((await (await app.request(`/sync/${t}`, { headers: bearer(token) })).json()) as { rows: unknown[] }).rows).toEqual([]);
     }
     // Le foyer survit : reconnexion possible au même code.

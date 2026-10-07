@@ -44,10 +44,9 @@ test.describe('Mon suivi — bloc objectif et carte Poids', () => {
     },
   });
 
-  test('bloc objectif, carte Poids et séances en liste libre', async ({ page }) => {
+  test('bloc objectif et carte Poids (séances reportées)', async ({ page }) => {
     await page.goto(ORIGIN);
-    await expect(page.getByText('Semaine 37')).toBeVisible();
-    await page.getByRole('button', { name: 'Mon suivi' }).click();
+    await page.getByRole('button', { name: 'Suivi', exact: true }).click();
 
     const obj = page.locator('.suivi-hero');
     await expect(obj).toBeVisible();
@@ -59,24 +58,20 @@ test.describe('Mon suivi — bloc objectif et carte Poids', () => {
     // delta 7 j dans la carte héro ; les anciennes stat-cards ont disparu
     await expect(obj).toContainText('vs 7 jours');
     await expect(page.getByText('Kcal du jour')).toHaveCount(0);
-
-    // séances : pastilles conseillé, compte dans le titre
-    await expect(page.locator('.seance-rec').first()).toContainText(/conseillé/);
-    await expect(page.getByText(/Séances de la semaine · \d+\/\d+/)).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Suivi poids' })).toBeVisible();
   });
 
   for (const largeur of [320, 375]) {
     test(`zéro débordement horizontal sur le suivi à ${largeur}px`, async ({ page }) => {
       await page.setViewportSize({ width: largeur, height: 700 });
       await page.goto(ORIGIN);
-      await expect(page.getByText('Semaine 37')).toBeVisible();
-      // document.fonts.ready fixe le layout avant la mesure (pattern dock.spec).
+      // document.fonts.ready fixe le layout avant la mesure.
       await page.evaluate(() => document.fonts.ready);
-      await page.getByRole('button', { name: 'Mon suivi' }).click();
+      await page.getByRole('button', { name: 'Suivi', exact: true }).click();
 
-      // le contenu dense est rendu avant l'assert : carte héro + pastilles
+      // le contenu dense est rendu avant l'assert : carte héro + pesées
       await expect(page.locator('.suivi-hero')).toBeVisible();
-      await expect(page.locator('.seance-rec').first()).toBeVisible();
+      await expect(page.locator('.weight-form')).toBeVisible();
       await assertPasDeDebordement(page);
     });
   }
