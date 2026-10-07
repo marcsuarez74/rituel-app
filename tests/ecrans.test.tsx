@@ -2,10 +2,11 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { Guide } from '../src/components/ecrans/Guide';
+import { MonCycle } from '../src/components/ecrans/MonCycle';
 import { Rituel, type VueRituel } from '../src/components/ecrans/Rituel';
 import { Courses } from '../src/components/ecrans/Courses';
 import { Recette } from '../src/components/ecrans/Recette';
-import { type CycleActif, type Membre, type ReglagesFoyer, foyerParDefaut } from '../src/lib/cycle/etat';
+import { type CycleActif, type Membre, type ReglagesFoyer, foyerParDefaut, loadCycle } from '../src/lib/cycle/etat';
 import { getChecks, getDepenses } from '../src/lib/storage';
 import { importerCycle } from '../src/lib/cycle/valider';
 import { enFichiers, quatreFichiers } from './lib/cycle/fabrique';
@@ -200,5 +201,94 @@ describe('Rituel', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Rituel terminé !' })).toBeInTheDocument();
     expect(screen.getByText('Fini.')).toBeInTheDocument();
     expect(getChecks('cycle:c1:0')).toEqual({ 'rituel:A:rituel-muffins': true, 'rituel:A:rituel-sauce': true });
+  });
+});
+
+describe('Mon cycle', () => {
+  const profilMarc = { id: 'marc' as const, objectif: { type: 'perte' as const }, complements: [], regime: 'aucun' as const };
+  const foyerTest = (): ReglagesFoyer => ({
+    ...foyerParDefaut(null),
+    membres: [
+      { id: 'alex', prenom: 'Alex', type: 'adulte', suivi: true },
+      { id: 'sam', prenom: 'Sam', type: 'adulte', suivi: true, regime: 'keto' },
+      { id: 'lou', prenom: 'Lou', type: 'enfant', suivi: false },
+      { id: 'noa', prenom: 'Noa', type: 'enfant', suivi: false },
+    ],
+  });
+  const Ecran = ({ stocke: initial = null as CycleActif | null }) => {
+    const [stocke, setStocke] = useState(initial);
+    return (
+      <MonCycle
+        stocke={stocke}
+        foyer={foyerTest()}
+        profil={profilMarc}
+        aujourdhui="2026-10-07"
+        onRetour={() => {}}
+        onCycle={setStocke}
+        onFoyer={() => {}}
+        onVoirCourses={() => {}}
+      />
+    );
+  };
+  const deposer = (fichiers: object[]) =>
+    fireEvent.change(document.querySelector('input[type="file"]')!, {
+      target: { files: fichiers.map((f, i) => new File([JSON.stringify(f)], `menu-${'ABCD'[i]}.json`, { type: 'application/json' })) },
+    });
+
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('sans cycle : génération en 3 étapes, import des 4 fichiers, aperçu, démarrage', async () => {
+    const user = userEvent.setup();
+    render(<Ecran />);
+    await user.click(screen.getByRole('button', { name: 'Créer mon premier cycle' }));
+    expect(screen.getByRole('link', { name: 'Ouvrir Claude' })).toHaveAttribute('href', 'https://claude.ai/new');
+
+    deposer(quatreFichiers());
+    expect(await screen.findByRole('heading', { name: 'Aperçu des 4 semaines' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'À corriger avant de démarrer' })).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/Début du cycle/)).toHaveValue('2026-10-10'); // prochain samedi
+
+    await user.click(screen.getByRole('button', { name: 'Démarrer le cycle' }));
+    expect(screen.getByRole('heading', { name: 'Cycle 1 prêt' })).toBeInTheDocument();
+    expect(loadCycle()).toMatchObject({ numero: 1, debut: '2026-10-10', pauses: [] });
+  });
+
+  it('fichiers incomplets : erreurs bloquantes, message à recoller pour Claude', async () => {
+    const user = userEvent.setup();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    render(<Ecran />);
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    await user.click(screen.getByRole('button', { name: 'Créer mon premier cycle' }));
+    deposer(quatreFichiers().slice(0, 3));
+    expect(await screen.findByRole('heading', { name: 'À corriger avant de démarrer' })).toBeInTheDocument();
+    expect(screen.getByText('Menu D manquant.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Démarrer le cycle' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Copier pour Claude/ }));
+    expect(writeText.mock.calls[0][0]).toContain('- Menu D manquant.');
+    Reflect.deleteProperty(navigator, 'clipboard');
+  });
+
+  it('cycle en cours : semaines A-D, verrou, pause après la semaine en cours', async () => {
+    const user = userEvent.setup();
+    const c: CycleActif = { id: 'c1', numero: 2, debut: '2026-09-26', pauses: [], cycle: cycle() };
+    render(<Ecran stocke={c} />);
+    expect(screen.getByRole('heading', { name: 'Semaine 2 sur 4' })).toBeInTheDocument();
+    expect(screen.getByText(/Prochain cycle le 24 oct\./)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Créer/ })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Faire une pause après cette semaine' }));
+    expect(loadCycle()?.pauses).toEqual([1]);
+    expect(screen.getByText(/Prochain cycle le 31 oct\./)).toBeInTheDocument();
+  });
+
+  it('cycle terminé : relancer le même cycle au prochain jour des courses', async () => {
+    const user = userEvent.setup();
+    const c: CycleActif = { id: 'c1', numero: 2, debut: '2026-09-05', pauses: [], cycle: cycle() };
+    render(<Ecran stocke={c} />);
+    expect(screen.getByText('Cycle 2 terminé')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Relancer le cycle' }));
+    expect(screen.getByRole('heading', { name: 'Cycle 3 prêt' })).toBeInTheDocument();
+    expect(loadCycle()).toMatchObject({ numero: 3, debut: '2026-10-10', relanceDe: 'c1' });
   });
 });

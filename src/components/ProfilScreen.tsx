@@ -40,6 +40,8 @@ export function ProfilScreen({
   onProfileSaved,
   syncEtat = 'off',
   cycle,
+  resumeCycle,
+  onMonCycle,
 }: {
   profile: UserProfile;
   onBack: () => void;
@@ -47,6 +49,8 @@ export function ProfilScreen({
   onProfileSaved?: (p: UserProfile) => void;
   syncEtat?: SyncEtat;
   cycle?: number;
+  resumeCycle?: string;
+  onMonCycle?: () => void;
 }) {
   const [vue, setVue] = useState<Vue>('hub');
 
@@ -84,6 +88,9 @@ export function ProfilScreen({
               </div>
             </div>
             <h2 className="hub-section">Le foyer</h2>
+            {onMonCycle && (
+              <LigneHub icone="refresh" titre="Mon cycle" resume={resumeCycle ?? ''} onClick={onMonCycle} />
+            )}
             <LigneHub icone="cart" titre="Courses & budget" resume={resumeMaison(profile)} onClick={() => setVue('maison')} />
             <h2 className="hub-section">Moi</h2>
             <LigneHub

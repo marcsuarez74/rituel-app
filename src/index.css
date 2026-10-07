@@ -324,6 +324,12 @@ textarea {
   color: var(--accent);
 }
 
+.bouton-plein:disabled,
+.bouton-contour:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .bouton-contour[aria-pressed='true'] {
   background: color-mix(in srgb, var(--accent) 14%, var(--surface));
 }
@@ -983,6 +989,74 @@ textarea {
   flex-direction: column;
   gap: var(--sp-12);
   padding-top: var(--sp-24);
+}
+
+.mon-cycle h1 {
+  font-weight: 700;
+}
+
+.semaines-cycle {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-6);
+}
+
+.semaine-cycle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  padding: var(--sp-8) var(--sp-4);
+  border-radius: 12px;
+  background: var(--surface-2);
+  font-size: var(--fs-meta);
+}
+
+.semaine-cycle b {
+  font-size: var(--fs-h3);
+}
+
+.semaine-cycle.fait {
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+}
+
+.semaine-cycle.courant {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.erreurs {
+  border: 2px solid var(--danger);
+}
+
+.erreurs h2 {
+  color: var(--danger);
+}
+
+.erreurs ul,
+.variante ul {
+  margin: 0 0 var(--sp-8);
+  padding-left: var(--sp-20);
+}
+
+.mon-cycle .bouton-plein,
+.mon-cycle .bouton-contour {
+  width: 100%;
+  margin-bottom: var(--sp-12);
+  text-decoration: none;
+}
+
+.import-fichiers {
+  cursor: pointer;
+}
+
+.debut-cycle {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  margin: var(--sp-16) 0;
+  font-size: var(--fs-sec);
+  font-weight: 600;
 }
 
 .pied-recette {

@@ -140,4 +140,27 @@ test.describe('Shell v2 — barre du bas', () => {
       await expect(page.getByRole('tab', { name: 'Réserve', selected: true })).toBeVisible();
     });
   }
+
+  for (const largeur of [320, 375]) {
+    test(`mon cycle : profil → génération en 3 étapes → import refusé expliqué, à ${largeur}px`, async ({ page }) => {
+      await page.setViewportSize({ width: largeur, height: 667 });
+      await page.goto('/');
+      await page.evaluate(() => document.fonts.ready);
+      await page.getByRole('button', { name: /Mon profil/ }).click();
+      await page.getByRole('button', { name: /Mon cycle/ }).click();
+      await page.getByRole('button', { name: 'Créer mon premier cycle' }).click();
+      await expect(page.getByRole('heading', { name: '3 · Importe les fichiers' })).toBeVisible();
+      const debord = () =>
+        page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      expect(await debord()).toBeLessThanOrEqual(OVERFLOW_TOLERANCE);
+
+      await page.locator('input[type="file"]').setInputFiles({
+        name: 'menu-A.json',
+        mimeType: 'application/json',
+        buffer: Buffer.from('{"format":"rituel-cycle"'),
+      });
+      await expect(page.getByRole('heading', { name: 'À corriger avant de démarrer' })).toBeVisible();
+      expect(await debord()).toBeLessThanOrEqual(OVERFLOW_TOLERANCE);
+    });
+  }
 });

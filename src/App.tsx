@@ -24,6 +24,7 @@ const Menu = lazy(() => import('./components/ecrans/Menu').then((m) => ({ defaul
 const Courses = lazy(() => import('./components/ecrans/Courses').then((m) => ({ default: m.Courses })));
 const Rituel = lazy(() => import('./components/ecrans/Rituel').then((m) => ({ default: m.Rituel })));
 const Guide = lazy(() => import('./components/ecrans/Guide').then((m) => ({ default: m.Guide })));
+const MonCycle = lazy(() => import('./components/ecrans/MonCycle').then((m) => ({ default: m.MonCycle })));
 const Recette = lazy(() => import('./components/ecrans/Recette').then((m) => ({ default: m.Recette })));
 
 // Onglets avec la ligne semaine.
@@ -51,6 +52,7 @@ function App() {
   const [jourVu, setJourVu] = useState<Jour | null>(null); // jour consulté dans Menu
   const [vueRituel, setVueRituel] = useState<VueRituel>('jour');
   const [guide, setGuide] = useState<number | null>(null); // étape du mode guidé ouvert
+  const [monCycle, setMonCycle] = useState(false);
   const [profilOuvert, setProfilOuvert] = useState(false);
   // Fiche recette poussée ; `coche` = le repas d'où on vient (« C'est fait »).
   const [recette, setRecette] = useState<{ id: string; coche?: { semaine: string; id: string } } | null>(null);
@@ -96,6 +98,35 @@ function App() {
   const prenom = prenomProfil(profile.id, profile);
   const actif = cycleStocke ?? exemple;
 
+  const position = actif ? positionCycle(actif, aujourdhui) : null;
+
+  if (monCycle) {
+    return (
+      <div className="main-content">
+        <Suspense fallback={<Chargement />}>
+          <MonCycle
+            stocke={cycleStocke}
+            foyer={foyer}
+            profil={profile}
+            aujourdhui={aujourdhui}
+            onRetour={() => setMonCycle(false)}
+            onCycle={(c) => {
+              setCycleStocke(c);
+              setSemaineVue(null);
+              setJourVu(null);
+            }}
+            onFoyer={setFoyerStocke}
+            onVoirCourses={() => {
+              setMonCycle(false);
+              setProfilOuvert(false);
+              setOnglet('courses');
+            }}
+          />
+        </Suspense>
+      </div>
+    );
+  }
+
   if (profilOuvert) {
     return (
       <div className="main-content">
@@ -104,6 +135,16 @@ function App() {
             profile={profile}
             syncEtat={syncEtat}
             cycle={actif?.numero}
+            resumeCycle={
+              !cycleStocke
+                ? "Cycle d'exemple · crée le tien"
+                : position?.etat === 'semaine'
+                  ? `Cycle ${cycleStocke.numero} · semaine ${position.index + 1} sur 4 · menu ${position.lettre}`
+                  : position?.etat === 'termine'
+                    ? `Cycle ${cycleStocke.numero} terminé`
+                    : `Cycle ${cycleStocke.numero}`
+            }
+            onMonCycle={() => setMonCycle(true)}
             onBack={() => setProfilOuvert(false)}
             onChangeProfile={() => {
               removeProfile();
@@ -117,7 +158,6 @@ function App() {
     );
   }
 
-  const position = actif ? positionCycle(actif, aujourdhui) : null;
   const semaine = semaineVue ?? (position ? semaineParDefaut(position) : 0);
   const titre = ONGLETS.find((o) => o.id === onglet)!.label;
   const ouvrirRecette = (n: number) => (id: string, coche: string) =>

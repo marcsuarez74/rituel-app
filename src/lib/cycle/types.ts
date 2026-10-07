@@ -39,6 +39,8 @@ export const MOMENTS: readonly Moment[] = ['dejeuner', 'diner', 'collation'];
 export type Difficulte = 'facile' | 'moyen' | 'exigeant';
 export const DIFFICULTES: readonly Difficulte[] = ['facile', 'moyen', 'exigeant'];
 
+// <schema> — extrait verbatim dans le prompt maître (src/lib/promptIa.ts) : une
+// seule source pour le contrat lu par Claude et vérifié par valider.ts.
 export interface Macros {
   kcal: number;
   proteines: number;
@@ -165,6 +167,8 @@ export interface CycleFichier {
   fixes?: ArticleFixe[];
   remarques?: string[];
 }
+
+// </schema>
 
 // Le cycle complet après fusion : 4 menus dans l'ordre A → D, un rituel.
 export interface Cycle {
