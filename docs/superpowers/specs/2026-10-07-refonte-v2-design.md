@@ -221,7 +221,7 @@ Alertes **non bloquantes** (affichées dans l'aperçu, citron) :
 
 - budget estimé d'un menu (ingrédients + fixes hebdo) > `budgetMax` — l'alerte propose 3 actions : *Garder* · *Ajuster mon budget à {estimé arrondi}* (1 tap) · *Demander une version éco à Claude* (copie un prompt de correction) ;
 - `remarques` de Claude, affichées telles quelles ;
-- **variété** : un dîner repris dans 2 menus ou plus est signalé, et un menu qui a moins de 5 dîners propres déclenche l'alerte « Menu D reprend 6 dîners d'autres menus » (essai réel : le menu D n'avait aucun dîner propre) ;
+- **variété** : un menu qui a moins de 5 dîners propres déclenche l'alerte « Menu D : seulement 4 dîners propres » (essai réel : le menu D n'avait aucun dîner propre) — reprendre un dîner dans 2 menus reste permis ;
 - glucides estimés d'un jour > seuil du régime keto (somme des macros de Mél sur la journée) ;
 - recette reprise du cycle précédent ;
 - repas incohérent avec la semaine type (box prévue un jour « maison », dîner manquant un jour « famille »).
@@ -304,7 +304,7 @@ Génération par API (option B) ; matériel, astuces, substitutions, images de r
 
 ## 12. Plan de livraison
 
-Le changement de contrat rend les étapes intermédiaires incohérentes pour l'utilisateur : on travaille sur une **branche d'intégration `refonte-v2`**, chaque PR ci-dessous cible cette branche (CI verte à chaque PR), puis **une PR finale `refonte-v2` → `main`** déclenche la 2.0.0.
+Le changement de contrat rend les étapes intermédiaires incohérentes pour l'utilisateur : on travaille sur une **branche d'intégration** (la branche de session `claude/confident-meitner-thvbh6`, qui porte déjà la spec), chaque PR ci-dessous cible cette branche (CI verte à chaque PR), puis **une PR finale branche d'intégration → `main`** déclenche la 2.0.0.
 
 | PR | Contenu | Tests |
 |---|---|---|

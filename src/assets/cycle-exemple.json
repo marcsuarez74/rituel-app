@@ -1,0 +1,5872 @@
+{
+  "format": "rituel-cycle",
+  "version": 2,
+  "titre": "Cycle d'exemple — poulet du dimanche, sauce tomate, lentilles",
+  "rituel": {
+    "dureeMin": 60,
+    "production": [
+      "10 cuisses de poulet rôties (dîner du dimanche + 4 repas de la semaine)",
+      "10 egg muffins boostés (6 frigo + 4 congélateur)",
+      "8 œufs durs",
+      "≈ 1,4 l de sauce tomate maison (½ frigo pour mardi, ½ congélateur pour jeudi)",
+      "≈ 500 g de lentilles vertes (déjeuner de Alex mardi + sa box de mercredi)",
+      "Box de Alex pour mercredi (poulet-lentilles) + box César de Sam pour mardi"
+    ],
+    "avantDeCommencer": [
+      {
+        "nom": "Cuisses de poulet",
+        "quantite": "10 (≈ 2,5 kg)"
+      },
+      {
+        "nom": "Œufs",
+        "quantite": "18 (10 muffins + 8 durs)"
+      },
+      {
+        "nom": "Haché de bœuf 5 %",
+        "quantite": "200 g"
+      },
+      {
+        "nom": "Tomates concassées + coulis",
+        "quantite": "3 boîtes + 500 ml"
+      },
+      {
+        "nom": "Lentilles vertes sèches",
+        "quantite": "200 g"
+      },
+      {
+        "nom": "Oignons, carottes, ail, poivron",
+        "quantite": "3 + 200 g + 7 gousses + 1"
+      },
+      {
+        "nom": "Épinards surgelés, emmental, parmesan",
+        "quantite": "100 g, 60 g, 20 g"
+      },
+      {
+        "nom": "Romaine, tomates, concombre",
+        "quantite": "1 cœur, 120 g, ½"
+      },
+      {
+        "nom": "Moules à muffins, 6 boîtes, 2 petits pots, feutre",
+        "quantite": "—"
+      }
+    ],
+    "etapes": [
+      {
+        "id": "rituel-prep",
+        "creneau": "0-5 min",
+        "label": "Four et casseroles",
+        "detail": "Four à 180° chaleur tournante. Une grande casserole d'eau (œufs durs), une casserole d'eau froide (lentilles), la cocotte (sauce)."
+      },
+      {
+        "id": "rituel-poulet",
+        "creneau": "5-12 min",
+        "label": "Plaque de cuisses au four",
+        "detail": "10 cuisses frottées huile, ail, paprika, herbes, sel ; four 180°, 50 min.",
+        "recette": "poulet-du-dimanche",
+        "enParallele": "Le poulet cuit pendant tout le reste du rituel.",
+        "minuteurMin": 50
+      },
+      {
+        "id": "rituel-muffins",
+        "creneau": "12-25 min",
+        "label": "Egg muffins boostés",
+        "detail": "Garniture à la poêle, 10 œufs battus + emmental, moules au four à côté du poulet.",
+        "recette": "egg-muffins-boostes",
+        "enParallele": "Poulet au four.",
+        "minuteurMin": 22
+      },
+      {
+        "id": "rituel-sauce",
+        "creneau": "25-35 min",
+        "label": "Sauce tomate maison",
+        "detail": "Oignons, carottes râpées, ail 5 min ; tomates, coulis, herbes ; mijoter 25 min à couvert.",
+        "recette": "sauce-tomate-maison",
+        "enParallele": "Lentilles et œufs durs sur les deux autres feux.",
+        "minuteurMin": 25
+      },
+      {
+        "id": "rituel-lentilles-oeufs",
+        "creneau": "25-45 min",
+        "label": "Lentilles + 8 œufs durs",
+        "detail": "Lentilles 25 min à frémissement ; œufs 10 min puis bain froid, gardés dans leur coquille.",
+        "recette": "lentilles-vertes-batch",
+        "sousEtapes": [
+          "Lentilles rincées + 3 fois leur volume d'eau froide + bouillon + laurier, 25 min",
+          "8 œufs dans l'eau bouillante 10 min, bain froid 5 min, marqués « D »"
+        ],
+        "enParallele": "Sauce qui mijote, poulet et muffins au four.",
+        "minuteurMin": 25
+      },
+      {
+        "id": "rituel-boites",
+        "creneau": "45-60 min",
+        "label": "Répartition & boîtes",
+        "detail": "Tout refroidit avant de fermer. Le poulet sort vers 57 min.",
+        "recette": "box-poulet-lentilles-alex",
+        "sousEtapes": [
+          "Muffins → 6 au frigo, 4 au congélateur",
+          "Sauce mixée → 2 boîtes : frigo (mardi) et congélateur (jeudi)",
+          "Lentilles égouttées → 250 g (mardi) et 200 g (box de mercredi)",
+          "Poulet : 5 cuisses pour le dîner, 2 pour la box de Alex lundi (mise de côté au dîner), 1 pour le déjeuner de Sam lundi, 1 effilochée pour sa box César, 1 ½ effilochée pour la box de Alex",
+          "Box de Alex mercredi : poulet + lentilles + crudités",
+          "Box César de Sam mardi : poulet + œuf dur + romaine + parmesan",
+          "Œufs durs → frigo, boîte « Sam »"
+        ]
+      }
+    ],
+    "termine": "Rituel bouclé ✅ — poulet, muffins, œufs durs, sauce, lentilles et 2 box sont prêts. Le poulet reste au chaud pour le dîner : il ne manque que l'accompagnement du menu de la semaine."
+  },
+  "menus": [
+    {
+      "lettre": "A",
+      "titre": "Menu A — boulettes, shakshuka, tacos",
+      "rappelsRituel": [
+        "Samedi : congeler le haché des boulettes (400 g) et des tacos (300 g) dès le retour des courses.",
+        "Dimanche, pendant le rituel : colin du congélateur → frigo pour lundi.",
+        "Dimanche soir : légumes du soleil au four à la sortie du poulet, riz pendant ce temps.",
+        "Lundi soir : haché des boulettes → frigo.",
+        "Mercredi soir : ½ sauce tomate du congélateur → frigo (shakshuka).",
+        "Jeudi soir : haché des tacos → frigo."
+      ],
+      "jours": [
+        {
+          "jour": "samedi",
+          "repas": [
+            {
+              "id": "samedi-dejeuner-famille",
+              "moment": "dejeuner",
+              "pour": "famille",
+              "recette": "pates-thon-tomate-courgettes"
+            },
+            {
+              "id": "samedi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "veloute-courgette-omelette-jambon"
+            }
+          ]
+        },
+        {
+          "jour": "dimanche",
+          "repas": [
+            {
+              "id": "dimanche-dejeuner-famille",
+              "moment": "dejeuner",
+              "pour": "famille",
+              "recette": "salade-nicoise-maison"
+            },
+            {
+              "id": "dimanche-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "poulet-dimanche-legumes-soleil-riz"
+            }
+          ]
+        },
+        {
+          "jour": "lundi",
+          "repas": [
+            {
+              "id": "lundi-dejeuner-alex",
+              "moment": "dejeuner",
+              "pour": [
+                "alex"
+              ],
+              "texte": "Box restes du dimanche : 2 cuisses + 1 poing de riz + légumes du soleil. 2 min au micro-ondes.",
+              "boite": {
+                "produitePar": "mb-dimanche",
+                "frigoJours": 1
+              }
+            },
+            {
+              "id": "lundi-dejeuner-sam",
+              "moment": "dejeuner",
+              "pour": [
+                "sam"
+              ],
+              "recette": "assiette-keto-poulet-avocat"
+            },
+            {
+              "id": "lundi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "colin-citron-brocoli-pdt"
+            }
+          ]
+        },
+        {
+          "jour": "mardi",
+          "repas": [
+            {
+              "id": "mardi-dejeuner-alex",
+              "moment": "dejeuner",
+              "pour": [
+                "alex"
+              ],
+              "recette": "salade-lentilles-maquereau"
+            },
+            {
+              "id": "mardi-dejeuner-sam",
+              "moment": "dejeuner",
+              "pour": [
+                "sam"
+              ],
+              "recette": "box-cesar-keto",
+              "boite": {
+                "produitePar": "rituel-boites",
+                "frigoJours": 2
+              }
+            },
+            {
+              "id": "mardi-collation-sam",
+              "moment": "collation",
+              "pour": [
+                "sam"
+              ],
+              "texte": "Avant la séance du soir : 2 œufs durs + ½ avocat salé (≈ 2 g de glucides nets).",
+              "boite": {
+                "produitePar": "rituel-lentilles-oeufs",
+                "frigoJours": 2
+              }
+            },
+            {
+              "id": "mardi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "boulettes-boeuf-sauce-tomate-pates"
+            }
+          ]
+        },
+        {
+          "jour": "mercredi",
+          "repas": [
+            {
+              "id": "mercredi-dejeuner-alex",
+              "moment": "dejeuner",
+              "pour": [
+                "alex"
+              ],
+              "recette": "box-poulet-lentilles-alex",
+              "boite": {
+                "produitePar": "rituel-boites",
+                "frigoJours": 3
+              }
+            },
+            {
+              "id": "mercredi-dejeuner-sam-lou-noa",
+              "moment": "dejeuner",
+              "pour": [
+                "sam",
+                "lou",
+                "noa"
+              ],
+              "recette": "croque-monsieur-keto"
+            },
+            {
+              "id": "mercredi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "wok-tofu-oeufs-nouilles"
+            }
+          ]
+        },
+        {
+          "jour": "jeudi",
+          "repas": [
+            {
+              "id": "jeudi-dejeuner-alex",
+              "moment": "dejeuner",
+              "pour": [
+                "alex"
+              ],
+              "texte": "Box wok tofu-œufs-nouilles (portion mise de côté mercredi). 2 min au micro-ondes.",
+              "boite": {
+                "produitePar": "mb-mercredi",
+                "frigoJours": 1
+              }
+            },
+            {
+              "id": "jeudi-dejeuner-sam",
+              "moment": "dejeuner",
+              "pour": [
+                "sam"
+              ],
+              "recette": "assiette-sardines-oeufs-avocat"
+            },
+            {
+              "id": "jeudi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "shakshuka-feta-pain"
+            }
+          ]
+        },
+        {
+          "jour": "vendredi",
+          "repas": [
+            {
+              "id": "vendredi-dejeuner-alex",
+              "moment": "dejeuner",
+              "pour": [
+                "alex"
+              ],
+              "texte": "Après la séance du midi : restes de shakshuka (4 œufs, sauce, feta) + 1 tranche de pain + 1 fromage blanc 0 %. 2 min au micro-ondes.",
+              "boite": {
+                "produitePar": "mb-jeudi",
+                "frigoJours": 1
+              }
+            },
+            {
+              "id": "vendredi-dejeuner-sam",
+              "moment": "dejeuner",
+              "pour": [
+                "sam"
+              ],
+              "recette": "box-keto-avocat-thon-oeuf",
+              "boite": {
+                "produitePar": "mb-jeudi",
+                "frigoJours": 1
+              }
+            },
+            {
+              "id": "vendredi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "tacos-maison-taco-bowl",
+              "exception": {
+                "quand": "1er et 3e vendredis du mois",
+                "pour": [
+                  "lou",
+                  "noa"
+                ],
+                "texte": "Soirée à deux, avec une baby-sitter : pas de dîner famille. Pour les enfants : pâtes au thon et à la tomate (1 poing de pâtes + 1 c. à soupe de thon + coulis), préparées à l'avance et réchauffées. Pour les adultes : protéine grillée + légumes ; version keto sans féculent."
+              }
+            }
+          ]
+        }
+      ],
+      "microBatch": [
+        {
+          "id": "mb-dimanche",
+          "jour": "dimanche",
+          "quoi": "Box de Alex pour lundi : restes de poulet et légumes du soleil",
+          "dureeMin": 3,
+          "quantite": "1 box",
+          "detail": "Au service du dîner, avant de servir."
+        },
+        {
+          "id": "mb-mardi",
+          "jour": "mardi",
+          "quoi": "Portion de Sam pour plus tard : boulettes sans pâtes",
+          "dureeMin": 2,
+          "detail": "Boîte au frigo dès le service ; elle la réchauffe en rentrant."
+        },
+        {
+          "id": "mb-mercredi",
+          "jour": "mercredi",
+          "quoi": "Box de Alex pour jeudi : wok tofu",
+          "dureeMin": 2,
+          "quantite": "1 box",
+          "recette": "wok-tofu-oeufs-nouilles",
+          "detail": "Portion complète mise de côté au service, refroidie avant le frigo."
+        },
+        {
+          "id": "mb-jeudi",
+          "jour": "jeudi",
+          "quoi": "Box de Sam pour vendredi + portion de Alex : box avocat-thon + restes de shakshuka",
+          "dureeMin": 5,
+          "quantite": "1 box + 1 portion",
+          "recette": "box-keto-avocat-thon-oeuf"
+        }
+      ],
+      "reserve": [
+        {
+          "pour": "alex",
+          "plat": "4 egg muffins (jeudi + vendredi)",
+          "conservation": "Congélateur — sortir 2 muffins la veille au soir",
+          "produitPar": "rituel-muffins"
+        },
+        {
+          "pour": "jeudi",
+          "plat": "½ sauce tomate maison (≈ 700 ml)",
+          "conservation": "Congélateur — sortir mercredi soir",
+          "produitPar": "rituel-sauce"
+        },
+        {
+          "pour": "sam",
+          "plat": "8 œufs durs",
+          "conservation": "Frigo, dans leur coquille, 7 jours max",
+          "produitPar": "rituel-lentilles-oeufs"
+        },
+        {
+          "pour": "mardi",
+          "plat": "400 g de haché (boulettes)",
+          "conservation": "Congelé dès samedi, décongélation au frigo lundi soir"
+        },
+        {
+          "pour": "vendredi",
+          "plat": "300 g de haché (tacos)",
+          "conservation": "Congelé dès samedi, décongélation au frigo jeudi soir"
+        }
+      ]
+    },
+    {
+      "lettre": "B",
+      "titre": "Menu B — chili, riz cantonais, pizza",
+      "rappelsRituel": [
+        "Samedi : congeler le haché du chili (350 g) dès le retour des courses ; garder au frais celui des burgers (dimanche midi).",
+        "Dimanche soir : carottes et courgettes au four à la sortie du poulet, semoule au dernier moment.",
+        "Lundi soir : haché du chili → frigo.",
+        "Mercredi soir : ½ sauce tomate du congélateur → frigo (gratin de pâtes)."
+      ],
+      "jours": [
+        {
+          "jour": "samedi",
+          "repas": [
+            {
+              "id": "samedi-dejeuner-famille",
+              "moment": "dejeuner",
+              "pour": "famille",
+              "recette": "tortilla-pdt-oignons"
+            },
+            {
+              "id": "samedi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "soupe-butternut-oeufs-brouilles"
+            }
+          ]
+        },
+        {
+          "jour": "dimanche",
+          "repas": [
+            {
+              "id": "dimanche-dejeuner-famille",
+              "moment": "dejeuner",
+              "pour": "famille",
+              "recette": "burger-maison-potatoes"
+            },
+            {
+              "id": "dimanche-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "poulet-dimanche-carottes-semoule"
+            }
+          ]
+        },
+        {
+          "jour": "lundi",
+          "repas": [
+            {
+              "id": "lundi-dejeuner-alex",
+              "moment": "dejeuner",
+              "pour": [
+                "alex"
+              ],
+              "texte": "Box restes du dimanche : 2 cuisses + 1 poing de semoule + carottes. 2 min au micro-ondes.",
+              "boite": {
+                "produitePar": "mb-dimanche",
+                "frigoJours": 1
+              }
+            },
+            {
+              "id": "lundi-dejeuner-sam",
+              "moment": "dejeuner",
+              "pour": [
+                "sam"
+              ],
+              "recette": "assiette-keto-poulet-feta-concombre"
+            },
+            {
+              "id": "lundi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "oeufs-mollets-epinards-creme-pdt"
+            }
+          ]
+        },
+        {
+          "jour": "mardi",
+          "repas": [
+            {
+              "id": "mardi-dejeuner-alex",
+              "moment": "dejeuner",
+              "pour": [
+                "alex"
+              ],
+              "recette": "salade-lentilles-sardines-oeuf"
+            },
+            {
+              "id": "mardi-dejeuner-sam",
+              "moment": "dejeuner",
+              "pour": [
+                "sam"
+              ],
+              "recette": "box-cesar-keto",
+              "boite": {
+                "produitePar": "rituel-boites",
+                "frigoJours": 2
+              }
+            },
+            {
+              "id": "mardi-collation-sam",
+              "moment": "collation",
+              "pour": [
+                "sam"
+              ],
+              "texte": "Avant la séance du soir : 2 œufs durs + ½ avocat salé (≈ 2 g de glucides nets).",
+              "boite": {
+                "produitePar": "rituel-lentilles-oeufs",
+                "frigoJours": 2
+              }
+            },
+            {
+              "id": "mardi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "chili-con-carne-sauce-maison"
+            }
+          ]
+        },
+        {
+          "jour": "mercredi",
+          "repas": [
+            {
+              "id": "mercredi-dejeuner-alex",
+              "moment": "dejeuner",
+              "pour": [
+                "alex"
+              ],
+              "recette": "box-poulet-lentilles-alex",
+              "boite": {
+                "produitePar": "rituel-boites",
+                "frigoJours": 3
+              }
+            },
+            {
+              "id": "mercredi-dejeuner-sam-lou-noa",
+              "moment": "dejeuner",
+              "pour": [
+                "sam",
+                "lou",
+                "noa"
+              ],
+              "recette": "frittata-epinards-pates-filles"
+            },
+            {
+              "id": "mercredi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "riz-cantonais-oeufs-jambon"
+            }
+          ]
+        },
+        {
+          "jour": "jeudi",
+          "repas": [
+            {
+              "id": "jeudi-dejeuner-alex",
+              "moment": "dejeuner",
+              "pour": [
+                "alex"
+              ],
+              "texte": "Box riz cantonais (portion mise de côté mercredi). 2 min au micro-ondes, bien chaud à cœur.",
+              "boite": {
+                "produitePar": "mb-mercredi",
+                "frigoJours": 1
+              }
+            },
+            {
+              "id": "jeudi-dejeuner-sam",
+              "moment": "dejeuner",
+              "pour": [
+                "sam"
+              ],
+              "recette": "assiette-keto-maquereau-oeufs"
+            },
+            {
+              "id": "jeudi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "gratin-pates-thon-tomate-mozza"
+            }
+          ]
+        },
+        {
+          "jour": "vendredi",
+          "repas": [
+            {
+              "id": "vendredi-dejeuner-alex",
+              "moment": "dejeuner",
+              "pour": [
+                "alex"
+              ],
+              "texte": "Après la séance du midi : restes du gratin de pâtes au thon. 2 min au micro-ondes.",
+              "boite": {
+                "produitePar": "mb-jeudi",
+                "frigoJours": 1
+              }
+            },
+            {
+              "id": "vendredi-dejeuner-sam",
+              "moment": "dejeuner",
+              "pour": [
+                "sam"
+              ],
+              "recette": "box-keto-jambon-oeufs-fromage",
+              "boite": {
+                "produitePar": "mb-jeudi",
+                "frigoJours": 1
+              }
+            },
+            {
+              "id": "vendredi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "pizza-jambon-champignons",
+              "exception": {
+                "quand": "1er et 3e vendredis du mois",
+                "pour": [
+                  "lou",
+                  "noa"
+                ],
+                "texte": "Soirée à deux, avec une baby-sitter : pas de dîner famille. Pour les enfants : pâtes au thon et à la tomate (1 poing de pâtes + 1 c. à soupe de thon + coulis), préparées à l'avance et réchauffées. Pour les adultes : protéine grillée + légumes ; version keto sans féculent."
+              }
+            }
+          ]
+        }
+      ],
+      "microBatch": [
+        {
+          "id": "mb-dimanche",
+          "jour": "dimanche",
+          "quoi": "Box de Alex pour lundi : restes de poulet, carottes et semoule",
+          "dureeMin": 3,
+          "quantite": "1 box",
+          "detail": "Au service du dîner, avant de servir."
+        },
+        {
+          "id": "mb-mardi",
+          "jour": "mardi",
+          "quoi": "Portion de Sam pour plus tard : chili sans riz",
+          "dureeMin": 2,
+          "detail": "Boîte au frigo dès le service ; elle la réchauffe en rentrant."
+        },
+        {
+          "id": "mb-mercredi",
+          "jour": "mercredi",
+          "quoi": "Box de Alex pour jeudi : riz cantonais",
+          "dureeMin": 2,
+          "quantite": "1 box",
+          "recette": "riz-cantonais-oeufs-jambon",
+          "detail": "Portion complète mise de côté au service, refroidie avant le frigo."
+        },
+        {
+          "id": "mb-jeudi",
+          "jour": "jeudi",
+          "quoi": "Box de Sam pour vendredi + portion de Alex : box jambon-œufs + 1 part de gratin",
+          "dureeMin": 5,
+          "quantite": "1 box + 1 portion",
+          "recette": "box-keto-jambon-oeufs-fromage"
+        }
+      ],
+      "reserve": [
+        {
+          "pour": "alex",
+          "plat": "4 egg muffins (jeudi + vendredi)",
+          "conservation": "Congélateur — sortir 2 muffins la veille au soir",
+          "produitPar": "rituel-muffins"
+        },
+        {
+          "pour": "jeudi",
+          "plat": "½ sauce tomate maison (≈ 700 ml)",
+          "conservation": "Congélateur — sortir mercredi soir",
+          "produitPar": "rituel-sauce"
+        },
+        {
+          "pour": "sam",
+          "plat": "8 œufs durs",
+          "conservation": "Frigo, dans leur coquille, 7 jours max",
+          "produitPar": "rituel-lentilles-oeufs"
+        },
+        {
+          "pour": "mardi",
+          "plat": "350 g de haché (chili)",
+          "conservation": "Congelé dès samedi, décongélation au frigo lundi soir"
+        },
+        {
+          "pour": "famille",
+          "plat": "Soupe butternut restante",
+          "conservation": "Congélateur en portions, 3 mois"
+        }
+      ]
+    },
+    {
+      "lettre": "C",
+      "titre": "Menu C — courgettes farcies, curry d'œufs, haricots au thon",
+      "rappelsRituel": [
+        "Samedi : congeler le haché des courgettes farcies (450 g) et des tacos (300 g) dès le retour des courses.",
+        "Dimanche, pendant le rituel : colin du congélateur → frigo pour lundi.",
+        "Dimanche soir : potatoes au four à la sortie du poulet, haricots verts à la poêle.",
+        "Lundi soir : haché des courgettes farcies → frigo.",
+        "Mercredi soir : ½ sauce tomate du congélateur → frigo (haricots au thon).",
+        "Jeudi soir : haché des tacos → frigo."
+      ],
+      "jours": [
+        {
+          "jour": "samedi",
+          "repas": [
+            {
+              "id": "samedi-dejeuner-famille",
+              "moment": "dejeuner",
+              "pour": "famille",
+              "recette": "pates-thon-tomate-courgettes"
+            },
+            {
+              "id": "samedi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "oeufs-cocotte-veloute-brocoli"
+            }
+          ]
+        },
+        {
+          "jour": "dimanche",
+          "repas": [
+            {
+              "id": "dimanche-dejeuner-famille",
+              "moment": "dejeuner",
+              "pour": "famille",
+              "recette": "taboule-lentilles-feta-oeufs"
+            },
+            {
+              "id": "dimanche-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "poulet-dimanche-potatoes-haricots"
+            }
+          ]
+        },
+        {
+          "jour": "lundi",
+          "repas": [
+            {
+              "id": "lundi-dejeuner-alex",
+              "moment": "dejeuner",
+              "pour": [
+                "alex"
+              ],
+              "texte": "Box restes du dimanche : 2 cuisses + potatoes + haricots verts. 2 min au micro-ondes.",
+              "boite": {
+                "produitePar": "mb-dimanche",
+                "frigoJours": 1
+              }
+            },
+            {
+              "id": "lundi-dejeuner-sam",
+              "moment": "dejeuner",
+              "pour": [
+                "sam"
+              ],
+              "recette": "assiette-keto-poulet-avocat"
+            },
+            {
+              "id": "lundi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "colin-citron-brocoli-pdt"
+            }
+          ]
+        },
+        {
+          "jour": "mardi",
+          "repas": [
+            {
+              "id": "mardi-dejeuner-alex",
+              "moment": "dejeuner",
+              "pour": [
+                "alex"
+              ],
+              "recette": "salade-lentilles-maquereau"
+            },
+            {
+              "id": "mardi-dejeuner-sam",
+              "moment": "dejeuner",
+              "pour": [
+                "sam"
+              ],
+              "recette": "box-cesar-keto",
+              "boite": {
+                "produitePar": "rituel-boites",
+                "frigoJours": 2
+              }
+            },
+            {
+              "id": "mardi-collation-sam",
+              "moment": "collation",
+              "pour": [
+                "sam"
+              ],
+              "texte": "Avant la séance du soir : 2 œufs durs + ½ avocat salé (≈ 2 g de glucides nets).",
+              "boite": {
+                "produitePar": "rituel-lentilles-oeufs",
+                "frigoJours": 2
+              }
+            },
+            {
+              "id": "mardi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "courgettes-farcies-boeuf-riz"
+            }
+          ]
+        },
+        {
+          "jour": "mercredi",
+          "repas": [
+            {
+              "id": "mercredi-dejeuner-alex",
+              "moment": "dejeuner",
+              "pour": [
+                "alex"
+              ],
+              "recette": "box-poulet-lentilles-alex",
+              "boite": {
+                "produitePar": "rituel-boites",
+                "frigoJours": 3
+              }
+            },
+            {
+              "id": "mercredi-dejeuner-sam-lou-noa",
+              "moment": "dejeuner",
+              "pour": [
+                "sam",
+                "lou",
+                "noa"
+              ],
+              "recette": "croque-monsieur-keto"
+            },
+            {
+              "id": "mercredi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "curry-oeufs-coco-epinards-lentilles"
+            }
+          ]
+        },
+        {
+          "jour": "jeudi",
+          "repas": [
+            {
+              "id": "jeudi-dejeuner-alex",
+              "moment": "dejeuner",
+              "pour": [
+                "alex"
+              ],
+              "texte": "Box curry d'œufs + lentilles corail (portion mise de côté mercredi). 2 min au micro-ondes.",
+              "boite": {
+                "produitePar": "mb-mercredi",
+                "frigoJours": 1
+              }
+            },
+            {
+              "id": "jeudi-dejeuner-sam",
+              "moment": "dejeuner",
+              "pour": [
+                "sam"
+              ],
+              "recette": "assiette-sardines-oeufs-avocat"
+            },
+            {
+              "id": "jeudi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "haricots-blancs-thon-tomate-gratines"
+            }
+          ]
+        },
+        {
+          "jour": "vendredi",
+          "repas": [
+            {
+              "id": "vendredi-dejeuner-alex",
+              "moment": "dejeuner",
+              "pour": [
+                "alex"
+              ],
+              "texte": "Après la séance du midi : restes de haricots blancs au thon gratinés + 1 tranche de pain. 2 min au micro-ondes.",
+              "boite": {
+                "produitePar": "mb-jeudi",
+                "frigoJours": 1
+              }
+            },
+            {
+              "id": "vendredi-dejeuner-sam",
+              "moment": "dejeuner",
+              "pour": [
+                "sam"
+              ],
+              "recette": "box-keto-avocat-thon-oeuf",
+              "boite": {
+                "produitePar": "mb-jeudi",
+                "frigoJours": 1
+              }
+            },
+            {
+              "id": "vendredi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "tacos-maison-taco-bowl",
+              "exception": {
+                "quand": "1er et 3e vendredis du mois",
+                "pour": [
+                  "lou",
+                  "noa"
+                ],
+                "texte": "Soirée à deux, avec une baby-sitter : pas de dîner famille. Pour les enfants : pâtes au thon et à la tomate (1 poing de pâtes + 1 c. à soupe de thon + coulis), préparées à l'avance et réchauffées. Pour les adultes : protéine grillée + légumes ; version keto sans féculent."
+              }
+            }
+          ]
+        }
+      ],
+      "microBatch": [
+        {
+          "id": "mb-dimanche",
+          "jour": "dimanche",
+          "quoi": "Box de Alex pour lundi : restes de poulet, potatoes et haricots verts",
+          "dureeMin": 3,
+          "quantite": "1 box",
+          "detail": "Au service du dîner, avant de servir."
+        },
+        {
+          "id": "mb-mardi",
+          "jour": "mardi",
+          "quoi": "Portion de Sam pour plus tard : courgettes farcies sans riz",
+          "dureeMin": 2,
+          "detail": "Boîte au frigo dès le service ; elle la réchauffe en rentrant."
+        },
+        {
+          "id": "mb-mercredi",
+          "jour": "mercredi",
+          "quoi": "Box de Alex pour jeudi : curry d'œufs",
+          "dureeMin": 2,
+          "quantite": "1 box",
+          "recette": "curry-oeufs-coco-epinards-lentilles",
+          "detail": "Portion complète mise de côté au service, refroidie avant le frigo."
+        },
+        {
+          "id": "mb-jeudi",
+          "jour": "jeudi",
+          "quoi": "Box de Sam pour vendredi + portion de Alex : box avocat-thon + 1 part de haricots au thon",
+          "dureeMin": 5,
+          "quantite": "1 box + 1 portion",
+          "recette": "box-keto-avocat-thon-oeuf"
+        }
+      ],
+      "reserve": [
+        {
+          "pour": "alex",
+          "plat": "4 egg muffins (jeudi + vendredi)",
+          "conservation": "Congélateur — sortir 2 muffins la veille au soir",
+          "produitPar": "rituel-muffins"
+        },
+        {
+          "pour": "jeudi",
+          "plat": "½ sauce tomate maison (≈ 700 ml)",
+          "conservation": "Congélateur — sortir mercredi soir",
+          "produitPar": "rituel-sauce"
+        },
+        {
+          "pour": "sam",
+          "plat": "8 œufs durs",
+          "conservation": "Frigo, dans leur coquille, 7 jours max",
+          "produitPar": "rituel-lentilles-oeufs"
+        },
+        {
+          "pour": "mardi",
+          "plat": "450 g de haché (courgettes farcies)",
+          "conservation": "Congelé dès samedi, décongélation au frigo lundi soir"
+        },
+        {
+          "pour": "vendredi",
+          "plat": "300 g de haché (tacos)",
+          "conservation": "Congelé dès samedi, décongélation au frigo jeudi soir"
+        }
+      ]
+    },
+    {
+      "lettre": "D",
+      "titre": "Menu D — minestrone, hachis, gratin au thon",
+      "rappelsRituel": [
+        "Samedi : congeler le haché du hachis (450 g) dès le retour des courses ; garder au frais celui des burgers (dimanche midi).",
+        "Dimanche soir : purée et brocoli pendant que le poulet repose.",
+        "Lundi soir : haché du hachis → frigo.",
+        "Mercredi soir : ½ sauce tomate du congélateur → frigo (gratin de chou-fleur)."
+      ],
+      "jours": [
+        {
+          "jour": "samedi",
+          "repas": [
+            {
+              "id": "samedi-dejeuner-famille",
+              "moment": "dejeuner",
+              "pour": "famille",
+              "recette": "tortilla-pdt-oignons"
+            },
+            {
+              "id": "samedi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "minestrone-oeufs-mimosa"
+            }
+          ]
+        },
+        {
+          "jour": "dimanche",
+          "repas": [
+            {
+              "id": "dimanche-dejeuner-famille",
+              "moment": "dejeuner",
+              "pour": "famille",
+              "recette": "burger-maison-potatoes"
+            },
+            {
+              "id": "dimanche-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "poulet-dimanche-puree-brocoli"
+            }
+          ]
+        },
+        {
+          "jour": "lundi",
+          "repas": [
+            {
+              "id": "lundi-dejeuner-alex",
+              "moment": "dejeuner",
+              "pour": [
+                "alex"
+              ],
+              "texte": "Box restes du dimanche : 2 cuisses + purée + brocoli. 2 min au micro-ondes.",
+              "boite": {
+                "produitePar": "mb-dimanche",
+                "frigoJours": 1
+              }
+            },
+            {
+              "id": "lundi-dejeuner-sam",
+              "moment": "dejeuner",
+              "pour": [
+                "sam"
+              ],
+              "recette": "assiette-keto-poulet-feta-concombre"
+            },
+            {
+              "id": "lundi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "oeufs-mollets-epinards-creme-pdt"
+            }
+          ]
+        },
+        {
+          "jour": "mardi",
+          "repas": [
+            {
+              "id": "mardi-dejeuner-alex",
+              "moment": "dejeuner",
+              "pour": [
+                "alex"
+              ],
+              "recette": "salade-lentilles-sardines-oeuf"
+            },
+            {
+              "id": "mardi-dejeuner-sam",
+              "moment": "dejeuner",
+              "pour": [
+                "sam"
+              ],
+              "recette": "box-cesar-keto",
+              "boite": {
+                "produitePar": "rituel-boites",
+                "frigoJours": 2
+              }
+            },
+            {
+              "id": "mardi-collation-sam",
+              "moment": "collation",
+              "pour": [
+                "sam"
+              ],
+              "texte": "Avant la séance du soir : 2 œufs durs + ½ avocat salé (≈ 2 g de glucides nets).",
+              "boite": {
+                "produitePar": "rituel-lentilles-oeufs",
+                "frigoJours": 2
+              }
+            },
+            {
+              "id": "mardi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "hachis-parmentier-tomate"
+            }
+          ]
+        },
+        {
+          "jour": "mercredi",
+          "repas": [
+            {
+              "id": "mercredi-dejeuner-alex",
+              "moment": "dejeuner",
+              "pour": [
+                "alex"
+              ],
+              "recette": "box-poulet-lentilles-alex",
+              "boite": {
+                "produitePar": "rituel-boites",
+                "frigoJours": 3
+              }
+            },
+            {
+              "id": "mercredi-dejeuner-sam-lou-noa",
+              "moment": "dejeuner",
+              "pour": [
+                "sam",
+                "lou",
+                "noa"
+              ],
+              "recette": "frittata-epinards-pates-filles"
+            },
+            {
+              "id": "mercredi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "wok-dinde-legumes-nouilles"
+            }
+          ]
+        },
+        {
+          "jour": "jeudi",
+          "repas": [
+            {
+              "id": "jeudi-dejeuner-alex",
+              "moment": "dejeuner",
+              "pour": [
+                "alex"
+              ],
+              "texte": "Box wok de dinde-nouilles (portion mise de côté mercredi). 2 min au micro-ondes.",
+              "boite": {
+                "produitePar": "mb-mercredi",
+                "frigoJours": 1
+              }
+            },
+            {
+              "id": "jeudi-dejeuner-sam",
+              "moment": "dejeuner",
+              "pour": [
+                "sam"
+              ],
+              "recette": "assiette-keto-maquereau-oeufs"
+            },
+            {
+              "id": "jeudi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "gratin-chou-fleur-thon-tomate"
+            }
+          ]
+        },
+        {
+          "jour": "vendredi",
+          "repas": [
+            {
+              "id": "vendredi-dejeuner-alex",
+              "moment": "dejeuner",
+              "pour": [
+                "alex"
+              ],
+              "texte": "Après la séance du midi : restes du gratin de chou-fleur au thon + pâtes + 1 fromage blanc 0 %. 2 min au micro-ondes.",
+              "boite": {
+                "produitePar": "mb-jeudi",
+                "frigoJours": 1
+              }
+            },
+            {
+              "id": "vendredi-dejeuner-sam",
+              "moment": "dejeuner",
+              "pour": [
+                "sam"
+              ],
+              "recette": "box-keto-jambon-oeufs-fromage",
+              "boite": {
+                "produitePar": "mb-jeudi",
+                "frigoJours": 1
+              }
+            },
+            {
+              "id": "vendredi-diner-famille",
+              "moment": "diner",
+              "pour": "famille",
+              "recette": "pizza-jambon-champignons",
+              "exception": {
+                "quand": "1er et 3e vendredis du mois",
+                "pour": [
+                  "lou",
+                  "noa"
+                ],
+                "texte": "Soirée à deux, avec une baby-sitter : pas de dîner famille. Pour les enfants : pâtes au thon et à la tomate (1 poing de pâtes + 1 c. à soupe de thon + coulis), préparées à l'avance et réchauffées. Pour les adultes : protéine grillée + légumes ; version keto sans féculent."
+              }
+            }
+          ]
+        }
+      ],
+      "microBatch": [
+        {
+          "id": "mb-dimanche",
+          "jour": "dimanche",
+          "quoi": "Box de Alex pour lundi : restes de poulet, purée et brocoli",
+          "dureeMin": 3,
+          "quantite": "1 box",
+          "detail": "Au service du dîner, avant de servir."
+        },
+        {
+          "id": "mb-mardi",
+          "jour": "mardi",
+          "quoi": "Portion de Sam pour plus tard : hachis (petit plat au chou-fleur)",
+          "dureeMin": 2,
+          "detail": "Boîte au frigo dès le service ; elle la réchauffe en rentrant."
+        },
+        {
+          "id": "mb-mercredi",
+          "jour": "mercredi",
+          "quoi": "Box de Alex pour jeudi : wok de dinde",
+          "dureeMin": 2,
+          "quantite": "1 box",
+          "recette": "wok-dinde-legumes-nouilles",
+          "detail": "Portion complète mise de côté au service, refroidie avant le frigo."
+        },
+        {
+          "id": "mb-jeudi",
+          "jour": "jeudi",
+          "quoi": "Box de Sam pour vendredi + portion de Alex : box jambon-œufs + 1 part de gratin",
+          "dureeMin": 5,
+          "quantite": "1 box + 1 portion",
+          "recette": "box-keto-jambon-oeufs-fromage"
+        }
+      ],
+      "reserve": [
+        {
+          "pour": "alex",
+          "plat": "4 egg muffins (jeudi + vendredi)",
+          "conservation": "Congélateur — sortir 2 muffins la veille au soir",
+          "produitPar": "rituel-muffins"
+        },
+        {
+          "pour": "jeudi",
+          "plat": "½ sauce tomate maison (≈ 700 ml)",
+          "conservation": "Congélateur — sortir mercredi soir",
+          "produitPar": "rituel-sauce"
+        },
+        {
+          "pour": "sam",
+          "plat": "8 œufs durs",
+          "conservation": "Frigo, dans leur coquille, 7 jours max",
+          "produitPar": "rituel-lentilles-oeufs"
+        },
+        {
+          "pour": "mardi",
+          "plat": "450 g de haché (hachis)",
+          "conservation": "Congelé dès samedi, décongélation au frigo lundi soir"
+        }
+      ]
+    }
+  ],
+  "recettes": [
+    {
+      "id": "poulet-du-dimanche",
+      "nom": "Poulet du dimanche (10 cuisses rôties)",
+      "difficulte": "facile",
+      "tempsMin": 60,
+      "tempsActifMin": 10,
+      "ingredients": [
+        {
+          "nom": "Cuisses de poulet (10 pièces)",
+          "quantite": 2.5,
+          "unite": "kg",
+          "rayon": "proteines",
+          "prixEstime": 8.73,
+          "fraisJours": 2
+        },
+        {
+          "nom": "Ail (gousses)",
+          "quantite": 4,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.28,
+          "fraisJours": 30
+        },
+        {
+          "nom": "Paprika + herbes de Provence",
+          "quantite": 3,
+          "unite": "cc",
+          "rayon": "epicerie",
+          "prixEstime": 0.15,
+          "placard": true
+        },
+        {
+          "nom": "Huile d'olive",
+          "quantite": 2,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.2,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "alex": "2 cuisses sans la peau au dîner du dimanche · 2 cuisses dans la box de lundi · 1 cuisse ½ effilochée dans la box de mercredi",
+        "sam": "1 cuisse ½ au dîner du dimanche · 1 cuisse au déjeuner de lundi · 1 cuisse effilochée dans la box César de mardi",
+        "lou": "½ cuisse désossée au dîner du dimanche",
+        "noa": "½ cuisse effilochée au dîner du dimanche"
+      },
+      "notes": [
+        "Une plaque pour 5 repas : dîner du dimanche, box de Alex lundi et mercredi, déjeuner de lundi et box César de Sam.",
+        "Les macros indiquées : 2 cuisses sans peau (Alex) et 1 cuisse ½ avec peau (Sam)."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 360,
+          "proteines": 52,
+          "glucides": 0,
+          "lipides": 16
+        },
+        "sam": {
+          "kcal": 340,
+          "proteines": 38,
+          "glucides": 0,
+          "lipides": 20
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Frotter les 10 cuisses : huile, ail écrasé, paprika, herbes, sel, poivre."
+        },
+        {
+          "texte": "Plaque, four 180°, 50 min (même four que les muffins).",
+          "minuteurMin": 50
+        },
+        {
+          "texte": "Laisser tiédir 10 min, puis répartir (voir portions)."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 3,
+        "congelable": true,
+        "rechauffage": "Micro-ondes 1-2 min couvert ; se mange aussi froid."
+      }
+    },
+    {
+      "id": "egg-muffins-boostes",
+      "nom": "Egg muffins boostés (×10)",
+      "difficulte": "facile",
+      "tempsMin": 35,
+      "tempsActifMin": 12,
+      "ingredients": [
+        {
+          "nom": "Œufs",
+          "quantite": 10,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 2.2,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Haché de bœuf 5 %",
+          "quantite": 200,
+          "unite": "g",
+          "rayon": "proteines",
+          "prixEstime": 1.96,
+          "fraisJours": 2
+        },
+        {
+          "nom": "Poivron",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.6,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Épinards surgelés",
+          "quantite": 100,
+          "unite": "g",
+          "rayon": "surgeles",
+          "prixEstime": 0.17
+        },
+        {
+          "nom": "Emmental râpé",
+          "quantite": 60,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.52,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Oignons",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.15,
+          "fraisJours": 21
+        }
+      ],
+      "portions": {
+        "alex": "2 muffins au petit-déjeuner du lundi au vendredi (avec skyr 150 g + 1 fruit)"
+      },
+      "notes": [
+        "6 au frigo pour lundi-mercredi, 4 au congélateur pour jeudi-vendredi."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 250,
+          "proteines": 24,
+          "glucides": 3,
+          "lipides": 15
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Oignon et poivron en dés 3 min, haché 4 min, épinards 2 min.",
+          "minuteurMin": 9
+        },
+        {
+          "texte": "Battre les 10 œufs avec l'emmental, sel, poivre."
+        },
+        {
+          "texte": "Répartir la garniture dans 10 moules, couvrir d'œufs battus aux ¾."
+        },
+        {
+          "texte": "Four 180°, 22 min.",
+          "minuteurMin": 22
+        },
+        {
+          "texte": "Tiédir 10 min avant de démouler.",
+          "minuteurMin": 10
+        }
+      ],
+      "conservation": {
+        "frigoJours": 4,
+        "congelable": true,
+        "rechauffage": "30-40 s au micro-ondes (1 min s'ils sortent du congélateur) ; bons froids aussi."
+      }
+    },
+    {
+      "id": "oeufs-durs-rituel",
+      "nom": "Œufs durs de la semaine (×8)",
+      "difficulte": "facile",
+      "tempsMin": 15,
+      "tempsActifMin": 2,
+      "ingredients": [
+        {
+          "nom": "Œufs",
+          "quantite": 8,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 1.76,
+          "fraisJours": 21
+        }
+      ],
+      "portions": {
+        "sam": "Snack de mardi (2), box César (1), déjeuner de lundi selon le menu (1), déjeuner de jeudi (2), box de vendredi (2)"
+      },
+      "notes": [
+        "Un œuf de marge selon le menu : dépannage pour Alex ou les filles."
+      ],
+      "macros": {},
+      "etapes": [
+        {
+          "texte": "Plonger les œufs dans l'eau bouillante, 10 min.",
+          "minuteurMin": 10
+        },
+        {
+          "texte": "Bain d'eau froide 5 min ; garder dans la coquille, marquer « D » au feutre.",
+          "minuteurMin": 5
+        }
+      ],
+      "conservation": {
+        "frigoJours": 7,
+        "congelable": false,
+        "rechauffage": "Se mangent froids."
+      }
+    },
+    {
+      "id": "sauce-tomate-maison",
+      "nom": "Sauce tomate maison (≈ 1,4 l)",
+      "difficulte": "facile",
+      "tempsMin": 35,
+      "tempsActifMin": 10,
+      "ingredients": [
+        {
+          "nom": "Tomates concassées (boîte 400 g)",
+          "quantite": 3,
+          "unite": "boite",
+          "rayon": "epicerie",
+          "prixEstime": 1.65
+        },
+        {
+          "nom": "Coulis de tomate",
+          "quantite": 500,
+          "unite": "ml",
+          "rayon": "epicerie",
+          "prixEstime": 0.6
+        },
+        {
+          "nom": "Oignons",
+          "quantite": 2,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.3,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Carottes",
+          "quantite": 200,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 0.2,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Ail (gousses)",
+          "quantite": 3,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.21,
+          "fraisJours": 30
+        },
+        {
+          "nom": "Huile d'olive",
+          "quantite": 2,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.2,
+          "placard": true
+        },
+        {
+          "nom": "Herbes de Provence",
+          "quantite": 2,
+          "unite": "cc",
+          "rayon": "epicerie",
+          "prixEstime": 0.1,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "alex": "Base des dîners de mardi (½) et de jeudi (½) : la quantité de chaque dîner est donnée dans sa recette"
+      },
+      "notes": [
+        "≈ 700 ml pour mardi (frigo) et ≈ 700 ml pour jeudi (congelée, sortie mercredi soir).",
+        "Pour Sam, ≈ 4 g de glucides nets par louche de 100 ml."
+      ],
+      "macros": {},
+      "etapes": [
+        {
+          "texte": "Oignons, carottes râpées et ail revenus 5 min dans l'huile.",
+          "minuteurMin": 5
+        },
+        {
+          "texte": "Tomates concassées, coulis, herbes, sel ; mijoter 25 min à couvert.",
+          "minuteurMin": 25
+        },
+        {
+          "texte": "Mixer grossièrement ; moitié au frigo, moitié au congélateur."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 4,
+        "congelable": true,
+        "rechauffage": "Directement dans la recette du jour ; décongeler la veille au frigo."
+      }
+    },
+    {
+      "id": "lentilles-vertes-batch",
+      "nom": "Lentilles vertes cuites (≈ 500 g)",
+      "difficulte": "facile",
+      "tempsMin": 30,
+      "tempsActifMin": 3,
+      "ingredients": [
+        {
+          "nom": "Lentilles vertes sèches",
+          "quantite": 200,
+          "unite": "g",
+          "rayon": "epicerie",
+          "prixEstime": 0.56
+        },
+        {
+          "nom": "Bouillon de légumes (cube)",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "epicerie",
+          "prixEstime": 0.1,
+          "placard": true
+        },
+        {
+          "nom": "Laurier, thym",
+          "quantite": 1,
+          "unite": "cc",
+          "rayon": "epicerie",
+          "prixEstime": 0.05,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "alex": "250 g pour le déjeuner de mardi + 200 g pour la box de mercredi"
+      },
+      "macros": {},
+      "etapes": [
+        {
+          "texte": "Lentilles rincées dans 3 fois leur volume d'eau froide + bouillon + laurier.",
+          "minuteurMin": 2
+        },
+        {
+          "texte": "25 min à frémissement, saler en fin de cuisson, égoutter.",
+          "minuteurMin": 25
+        }
+      ],
+      "conservation": {
+        "frigoJours": 4,
+        "congelable": true,
+        "rechauffage": "Se mangent froides en salade ou 1 min au micro-ondes."
+      }
+    },
+    {
+      "id": "box-poulet-lentilles-alex",
+      "nom": "Box poulet effiloché, lentilles & crudités",
+      "difficulte": "facile",
+      "tempsMin": 8,
+      "tempsActifMin": 8,
+      "ingredients": [
+        {
+          "nom": "Tomates",
+          "quantite": 120,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 0.31,
+          "fraisJours": 6
+        },
+        {
+          "nom": "Concombre",
+          "quantite": 0.5,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.4,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Huile d'olive",
+          "quantite": 0.5,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.05,
+          "placard": true
+        },
+        {
+          "nom": "Vinaigre",
+          "quantite": 1,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.03,
+          "placard": true
+        },
+        {
+          "nom": "Moutarde",
+          "quantite": 1,
+          "unite": "cc",
+          "rayon": "epicerie",
+          "prixEstime": 0.05,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "alex": "1 box : 1 cuisse ½ effilochée (≈ 150 g) + 200 g de lentilles du rituel + tomate et ½ concombre + vinaigrette moutarde à part"
+      },
+      "notes": [
+        "Box de Alex pour mercredi, identique chaque semaine."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 590,
+          "proteines": 58,
+          "glucides": 39,
+          "lipides": 19
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Effilocher le poulet sorti du four."
+        },
+        {
+          "texte": "Lentilles, crudités en dés, vinaigrette dans un petit pot."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 3,
+        "congelable": false,
+        "rechauffage": "Se mange froide."
+      }
+    },
+    {
+      "id": "box-cesar-keto",
+      "nom": "Box César keto",
+      "difficulte": "facile",
+      "tempsMin": 5,
+      "tempsActifMin": 5,
+      "ingredients": [
+        {
+          "nom": "Cœurs de romaine (sachet de 3)",
+          "quantite": 1,
+          "unite": "sachet",
+          "rayon": "legumes",
+          "prixEstime": 1.29,
+          "fraisJours": 5
+        },
+        {
+          "nom": "Parmesan râpé",
+          "quantite": 20,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.4,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Huile d'olive",
+          "quantite": 1.5,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.15,
+          "placard": true
+        },
+        {
+          "nom": "Moutarde",
+          "quantite": 0.5,
+          "unite": "cc",
+          "rayon": "epicerie",
+          "prixEstime": 0.03,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "sam": "1 box : 1 cuisse effilochée (≈ 110 g) + 1 œuf dur + 2 poignées de romaine + 2 c. à soupe de parmesan + vinaigrette olive-citron à part"
+      },
+      "notes": [
+        "Box de Sam pour mardi, identique chaque semaine. Citron des articles fixes. ≈ 3 g de glucides nets."
+      ],
+      "macros": {
+        "sam": {
+          "kcal": 565,
+          "proteines": 41,
+          "glucides": 3,
+          "lipides": 43
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Laver 1 cœur de romaine, l'essorer (les 2 autres : déjeuners de lundi selon le menu)."
+        },
+        {
+          "texte": "Poulet effiloché, œuf dur coupé, parmesan."
+        },
+        {
+          "texte": "Vinaigrette (huile, ½ citron, moutarde) dans un petit pot."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 2,
+        "congelable": false,
+        "rechauffage": "Se mange froide ; vinaigrette juste avant."
+      }
+    },
+    {
+      "id": "salade-lentilles-maquereau",
+      "nom": "Salade lentilles-maquereau express",
+      "difficulte": "facile",
+      "tempsMin": 8,
+      "tempsActifMin": 8,
+      "ingredients": [
+        {
+          "nom": "Maquereau au naturel (boîte)",
+          "quantite": 1,
+          "unite": "boite",
+          "rayon": "proteines",
+          "prixEstime": 1.15
+        },
+        {
+          "nom": "Tomates",
+          "quantite": 120,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 0.31,
+          "fraisJours": 6
+        },
+        {
+          "nom": "Concombre",
+          "quantite": 0.5,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.4,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Pain complet",
+          "quantite": 40,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.1,
+          "fraisJours": 4
+        },
+        {
+          "nom": "Huile d'olive",
+          "quantite": 0.33,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.03,
+          "placard": true
+        },
+        {
+          "nom": "Vinaigre",
+          "quantite": 1,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.03,
+          "placard": true
+        },
+        {
+          "nom": "Moutarde",
+          "quantite": 1,
+          "unite": "cc",
+          "rayon": "epicerie",
+          "prixEstime": 0.05,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "alex": "250 g de lentilles du rituel + 1 boîte de maquereau + tomate et ½ concombre + 1 tranche de pain complet"
+      },
+      "notes": [
+        "Mardi Après la séance du midi : 8 min. Poisson gras de la semaine pour Alex."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 690,
+          "proteines": 50,
+          "glucides": 67,
+          "lipides": 22
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Émietter le maquereau sur les lentilles du rituel."
+        },
+        {
+          "texte": "Crudités en dés, vinaigrette moutarde, pain grillé."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 2,
+        "congelable": false,
+        "rechauffage": "Se mange froide."
+      }
+    },
+    {
+      "id": "assiette-keto-poulet-avocat",
+      "nom": "Assiette keto poulet, œuf & avocat",
+      "difficulte": "facile",
+      "tempsMin": 5,
+      "tempsActifMin": 5,
+      "ingredients": [
+        {
+          "nom": "Huile d'olive",
+          "quantite": 1,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.1,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "sam": "1 cuisse du rituel + 1 œuf dur + ½ avocat + 2 poignées de romaine + 1 c. à soupe d'huile d'olive, citron, sel"
+      },
+      "notes": [
+        "Avocat et citron : articles fixes. ≈ 3 g de glucides nets."
+      ],
+      "macros": {
+        "sam": {
+          "kcal": 600,
+          "proteines": 36,
+          "glucides": 3,
+          "lipides": 49
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Désosser la cuisse, couper l'œuf dur."
+        },
+        {
+          "texte": "Romaine (sachet de la box César), avocat, huile, citron, sel."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 1,
+        "congelable": false,
+        "rechauffage": "Le poulet se mange froid ou 1 min au micro-ondes."
+      }
+    },
+    {
+      "id": "croque-monsieur-keto",
+      "nom": "Croque-monsieur (version keto pour Sam)",
+      "difficulte": "facile",
+      "tempsMin": 15,
+      "tempsActifMin": 10,
+      "ingredients": [
+        {
+          "nom": "Pain de mie complet (tranches)",
+          "quantite": 4,
+          "unite": "piece",
+          "rayon": "feculents",
+          "prixEstime": 0.48,
+          "fraisJours": 10
+        },
+        {
+          "nom": "Jambon blanc (tranches)",
+          "quantite": 4,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 1.6,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Emmental râpé",
+          "quantite": 100,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.86,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Œufs",
+          "quantite": 2,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 0.44,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Tomates",
+          "quantite": 200,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 0.52,
+          "fraisJours": 6
+        }
+      ],
+      "portions": {
+        "sam": "2 tranches de jambon roulées autour de 40 g d'emmental, gratinées + 2 œufs au plat au beurre + tomates",
+        "lou": "1 croque-monsieur (2 tranches de pain de mie, 1 tranche de jambon, emmental) + tomates",
+        "noa": "1 croque coupé en 4 + tomates"
+      },
+      "variantes": {
+        "sam": "Le jambon-fromage sans le pain, gratiné, + 2 œufs au plat. ≈ 5 g de glucides nets."
+      },
+      "macros": {
+        "sam": {
+          "kcal": 445,
+          "proteines": 40,
+          "glucides": 5,
+          "lipides": 29
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Four 220°."
+        },
+        {
+          "texte": "Croques des filles et rouleaux jambon-emmental de Sam sur la même plaque, 8 min.",
+          "minuteurMin": 8
+        },
+        {
+          "texte": "Œufs au plat 3 min au beurre.",
+          "minuteurMin": 3
+        }
+      ],
+      "conservation": {
+        "frigoJours": 1,
+        "congelable": false,
+        "rechauffage": "À manger minute."
+      }
+    },
+    {
+      "id": "assiette-sardines-oeufs-avocat",
+      "nom": "Assiette sardines, œufs durs & avocat",
+      "difficulte": "facile",
+      "tempsMin": 5,
+      "tempsActifMin": 5,
+      "ingredients": [
+        {
+          "nom": "Concombre",
+          "quantite": 0.5,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.4,
+          "fraisJours": 7
+        }
+      ],
+      "portions": {
+        "sam": "1 boîte de sardines égouttée + 2 œufs durs + ½ avocat + ½ concombre + citron, sel"
+      },
+      "notes": [
+        "Sardines, avocat et citron : articles fixes ; œufs durs du rituel. ≈ 4 g de glucides nets."
+      ],
+      "macros": {
+        "sam": {
+          "kcal": 535,
+          "proteines": 38,
+          "glucides": 4,
+          "lipides": 37
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Sardines, œufs durs et avocat coupés, concombre en rondelles."
+        },
+        {
+          "texte": "Citron, sel, poivre."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 1,
+        "congelable": false,
+        "rechauffage": "Se mange froide."
+      }
+    },
+    {
+      "id": "box-keto-avocat-thon-oeuf",
+      "nom": "Box keto avocat-thon-œuf",
+      "difficulte": "facile",
+      "tempsMin": 5,
+      "tempsActifMin": 5,
+      "ingredients": [
+        {
+          "nom": "Thon au naturel (boîte 140 g égoutté)",
+          "quantite": 1,
+          "unite": "boite",
+          "rayon": "proteines",
+          "prixEstime": 1.3
+        },
+        {
+          "nom": "Concombre",
+          "quantite": 0.5,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.4,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Huile d'olive",
+          "quantite": 1,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.1,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "sam": "¾ de boîte de thon (100 g) + 2 œufs durs + ½ avocat + ½ concombre + 1 c. à soupe d'huile d'olive, citron"
+      },
+      "notes": [
+        "Avocat et citron : articles fixes. Le ¼ de thon restant va dans le petit-déj de Alex. ≈ 4 g de glucides nets."
+      ],
+      "macros": {
+        "sam": {
+          "kcal": 555,
+          "proteines": 39,
+          "glucides": 4,
+          "lipides": 40
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Thon émietté, œufs durs et concombre coupés."
+        },
+        {
+          "texte": "Avocat arrosé de citron ; huile et sel à part."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 2,
+        "congelable": false,
+        "rechauffage": "Se mange froide."
+      }
+    },
+    {
+      "id": "pates-thon-tomate-courgettes",
+      "nom": "Pâtes au thon, tomate & courgettes",
+      "difficulte": "facile",
+      "tempsMin": 20,
+      "tempsActifMin": 15,
+      "ingredients": [
+        {
+          "nom": "Pâtes",
+          "quantite": 300,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.45
+        },
+        {
+          "nom": "Thon au naturel (boîte 140 g égoutté)",
+          "quantite": 3,
+          "unite": "boite",
+          "rayon": "proteines",
+          "prixEstime": 3.9
+        },
+        {
+          "nom": "Coulis de tomate",
+          "quantite": 500,
+          "unite": "ml",
+          "rayon": "epicerie",
+          "prixEstime": 0.6
+        },
+        {
+          "nom": "Courgettes",
+          "quantite": 700,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 1.54,
+          "fraisJours": 5
+        },
+        {
+          "nom": "Oignons",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.15,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Parmesan râpé",
+          "quantite": 40,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.8,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Huile d'olive",
+          "quantite": 2,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.2,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "alex": "Repas récup après le sport : 2 poings ½ de pâtes cuites (150 g crues) + 1 boîte de thon en sauce + courgettes + 1 c. à soupe de parmesan",
+        "sam": "Tagliatelles de courgette poêlées (350 g) + ¾ de boîte de thon dans 1 louche de sauce + 2 c. à soupe de parmesan + 1 c. à soupe d'huile",
+        "lou": "1 poing de pâtes + 1 c. à soupe bombée de thon en sauce",
+        "noa": "½ à 1 poing de pâtes + 1 c. à soupe de thon en sauce"
+      },
+      "variantes": {
+        "sam": "Tagliatelles de courgette à la place des pâtes. ≈ 13 g de glucides nets."
+      },
+      "notes": [
+        "Alex la mange au retour de la sortie sportive ; le reste se réchauffe à midi."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 860,
+          "proteines": 63,
+          "glucides": 121,
+          "lipides": 11
+        },
+        "sam": {
+          "kcal": 455,
+          "proteines": 43,
+          "glucides": 13,
+          "lipides": 24
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Oignon revenu 3 min, coulis, 10 min à frémir.",
+          "minuteurMin": 13
+        },
+        {
+          "texte": "Pâtes en parallèle."
+        },
+        {
+          "texte": "Courgettes en tagliatelles (éplucheur) poêlées 4 min.",
+          "minuteurMin": 4
+        },
+        {
+          "texte": "Thon dans la sauce au dernier moment."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 2,
+        "congelable": false,
+        "rechauffage": "Micro-ondes 2 min couvert avec un trait d'eau."
+      }
+    },
+    {
+      "id": "salade-nicoise-maison",
+      "nom": "Salade niçoise maison",
+      "difficulte": "facile",
+      "tempsMin": 25,
+      "tempsActifMin": 10,
+      "ingredients": [
+        {
+          "nom": "Thon au naturel (boîte 140 g égoutté)",
+          "quantite": 2,
+          "unite": "boite",
+          "rayon": "proteines",
+          "prixEstime": 2.6
+        },
+        {
+          "nom": "Œufs",
+          "quantite": 7,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 1.54,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Pommes de terre",
+          "quantite": 600,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.6,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Haricots verts surgelés",
+          "quantite": 300,
+          "unite": "g",
+          "rayon": "surgeles",
+          "prixEstime": 0.48
+        },
+        {
+          "nom": "Tomates",
+          "quantite": 350,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 0.91,
+          "fraisJours": 6
+        },
+        {
+          "nom": "Laitue",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.85,
+          "fraisJours": 4
+        },
+        {
+          "nom": "Huile d'olive",
+          "quantite": 4,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.4,
+          "placard": true
+        },
+        {
+          "nom": "Vinaigre",
+          "quantite": 1,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.03,
+          "placard": true
+        },
+        {
+          "nom": "Moutarde",
+          "quantite": 1,
+          "unite": "cc",
+          "rayon": "epicerie",
+          "prixEstime": 0.05,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "alex": "1 boîte de thon + 2 œufs + 2 poings de pommes de terre (300 g) + haricots verts + tomates + 1 c. à soupe de vinaigrette",
+        "sam": "½ boîte de thon + 3 œufs + haricots verts + tomates + salade + olives + 2 c. à soupe de vinaigrette",
+        "lou": "1 c. à soupe de thon + 1 œuf + 1 poing de pommes de terre + tomates",
+        "noa": "1 c. à soupe de thon + 1 œuf + ½ poing de pommes de terre"
+      },
+      "variantes": {
+        "sam": "Sans pommes de terre, + olives (articles fixes). ≈ 8 g de glucides nets."
+      },
+      "macros": {
+        "alex": {
+          "kcal": 690,
+          "proteines": 57,
+          "glucides": 57,
+          "lipides": 25
+        },
+        "sam": {
+          "kcal": 585,
+          "proteines": 39,
+          "glucides": 8,
+          "lipides": 44
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Pommes de terre à l'eau froide salée ; à l'ébullition, œufs (9 min) puis haricots verts (6 min). 15 min.",
+          "minuteurMin": 15
+        },
+        {
+          "texte": "Refroidir, écaler."
+        },
+        {
+          "texte": "Vinaigrette, dresser ; pommes de terre à part pour Alex et les filles."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 1,
+        "congelable": false,
+        "rechauffage": "Se mange froide."
+      }
+    },
+    {
+      "id": "colin-citron-brocoli-pdt",
+      "nom": "Colin au four citron-persil, brocoli & pommes de terre",
+      "difficulte": "facile",
+      "tempsMin": 35,
+      "tempsActifMin": 10,
+      "ingredients": [
+        {
+          "nom": "Filets de colin surgelés",
+          "quantite": 600,
+          "unite": "g",
+          "rayon": "surgeles",
+          "prixEstime": 3.96
+        },
+        {
+          "nom": "Pommes de terre",
+          "quantite": 600,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.6,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Brocoli surgelé",
+          "quantite": 600,
+          "unite": "g",
+          "rayon": "surgeles",
+          "prixEstime": 1.02
+        },
+        {
+          "nom": "Parmesan râpé",
+          "quantite": 15,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.3,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Huile d'olive",
+          "quantite": 2,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.2,
+          "placard": true
+        },
+        {
+          "nom": "Persil séché",
+          "quantite": 1,
+          "unite": "cc",
+          "rayon": "epicerie",
+          "prixEstime": 0.05,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "alex": "2 filets de colin (≈ 250 g) + 2 poings de pommes de terre (300 g) + 1 poignée de brocoli",
+        "sam": "1 filet ½ (≈ 180 g) + 2 grosses poignées de brocoli + 1 noisette de beurre + 1 c. à soupe de parmesan + 1 c. à soupe d'huile",
+        "lou": "⅔ de filet + 1 poing de pommes de terre + brocoli",
+        "noa": "½ filet émietté + ½ poing de pommes de terre écrasées + brocoli"
+      },
+      "variantes": {
+        "sam": "Sans pommes de terre ; brocoli au beurre (articles fixes) + parmesan + huile. ≈ 9 g de glucides nets."
+      },
+      "notes": [
+        "Dîner léger du lundi."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 535,
+          "proteines": 52,
+          "glucides": 58,
+          "lipides": 8
+        },
+        "sam": {
+          "kcal": 510,
+          "proteines": 42,
+          "glucides": 9,
+          "lipides": 32
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Four 200° : pommes de terre en quartiers + huile, 30 min.",
+          "minuteurMin": 30
+        },
+        {
+          "texte": "Au bout de 12 min : colin (décongelé) sur la plaque, sel, persil, citron, 18 min.",
+          "minuteurMin": 18
+        },
+        {
+          "texte": "Brocoli au micro-ondes couvert 6 min.",
+          "minuteurMin": 6
+        },
+        {
+          "texte": "Beurre + parmesan sur le brocoli de Sam."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 2,
+        "congelable": false,
+        "rechauffage": "1 min 30 au micro-ondes à puissance moyenne."
+      }
+    },
+    {
+      "id": "tacos-maison-taco-bowl",
+      "nom": "Tacos maison (taco bowl pour Sam)",
+      "difficulte": "facile",
+      "tempsMin": 20,
+      "tempsActifMin": 20,
+      "ingredients": [
+        {
+          "nom": "Haché de bœuf 5 %",
+          "quantite": 300,
+          "unite": "g",
+          "rayon": "proteines",
+          "prixEstime": 2.94,
+          "fraisJours": 2
+        },
+        {
+          "nom": "Tortillas de blé complètes",
+          "quantite": 5,
+          "unite": "piece",
+          "rayon": "feculents",
+          "prixEstime": 1.0,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Haricots rouges (boîte 400 g)",
+          "quantite": 2,
+          "unite": "boite",
+          "rayon": "epicerie",
+          "prixEstime": 1.2
+        },
+        {
+          "nom": "Tomates",
+          "quantite": 300,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 0.78,
+          "fraisJours": 6
+        },
+        {
+          "nom": "Concombre",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.79,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Oignons",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.15,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Épices tex-mex",
+          "quantite": 2,
+          "unite": "cc",
+          "rayon": "epicerie",
+          "prixEstime": 0.1,
+          "placard": true
+        },
+        {
+          "nom": "Emmental râpé",
+          "quantite": 80,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.69,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Fromage blanc 0 %",
+          "quantite": 200,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.4,
+          "fraisJours": 10
+        }
+      ],
+      "portions": {
+        "alex": "2 tortillas : ≈ 110 g de viande + 4 c. à soupe de haricots + crudités + emmental + sauce fromage blanc-citron",
+        "sam": "Taco bowl : ≈ 130 g de viande + crudités + 1 grosse poignée d'emmental + sauce fromage blanc-citron + guacamole (½ avocat)",
+        "lou": "1 tortilla : 30 g de viande + haricots + emmental + tomates",
+        "noa": "1 petite tortilla roulée, coupée en deux"
+      },
+      "variantes": {
+        "sam": "Taco bowl sans tortilla ni haricots, + guacamole (avocat et citron des articles fixes). ≈ 8 g de glucides nets."
+      },
+      "macros": {
+        "alex": {
+          "kcal": 640,
+          "proteines": 50,
+          "glucides": 62,
+          "lipides": 18
+        },
+        "sam": {
+          "kcal": 470,
+          "proteines": 39,
+          "glucides": 8,
+          "lipides": 33
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Haché (décongelé jeudi soir) revenu avec l'oignon et les épices 8 min ; prélever la part de Sam, puis ajouter les haricots 2 min.",
+          "minuteurMin": 10
+        },
+        {
+          "texte": "Crudités ; sauce fromage blanc + citron + sel."
+        },
+        {
+          "texte": "Tortillas 20 s à la poêle ; chacun garnit."
+        },
+        {
+          "texte": "Guacamole express pour Sam."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 2,
+        "congelable": true,
+        "rechauffage": "Viande : 2 min au micro-ondes ; tortillas 20 s à la poêle."
+      }
+    },
+    {
+      "id": "veloute-courgette-omelette-jambon",
+      "nom": "Velouté de courgette & omelette jambon-fromage",
+      "difficulte": "facile",
+      "tempsMin": 25,
+      "tempsActifMin": 15,
+      "ingredients": [
+        {
+          "nom": "Courgettes",
+          "quantite": 600,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 1.32,
+          "fraisJours": 5
+        },
+        {
+          "nom": "Poireau",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.6,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Bouillon de légumes (cube)",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "epicerie",
+          "prixEstime": 0.1,
+          "placard": true
+        },
+        {
+          "nom": "Œufs",
+          "quantite": 10,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 2.2,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Jambon blanc (tranches)",
+          "quantite": 4,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 1.6,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Emmental râpé",
+          "quantite": 70,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.6,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Pain complet",
+          "quantite": 200,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.52,
+          "fraisJours": 4
+        },
+        {
+          "nom": "Huile d'olive",
+          "quantite": 1,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.1,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "alex": "1 grand bol de velouté + omelette de 4 œufs, 1 tranche de jambon, 20 g d'emmental + 2 tranches de pain complet",
+        "sam": "1 bol de velouté + 1 c. à soupe de crème + omelette de 3 œufs, 2 tranches de jambon, 30 g d'emmental, cuite au beurre",
+        "lou": "½ bol de velouté + omelette de 1-2 œufs + ½ tranche de jambon + 1 tartine",
+        "noa": "½ bol de velouté + 1 œuf brouillé + ½ tranche de jambon + ½ tartine"
+      },
+      "variantes": {
+        "sam": "Sans pain ; crème et beurre (articles fixes). ≈ 7 g de glucides nets."
+      },
+      "notes": [
+        "Dîner léger du jour de sortie longue."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 680,
+          "proteines": 48,
+          "glucides": 45,
+          "lipides": 31
+        },
+        "sam": {
+          "kcal": 545,
+          "proteines": 45,
+          "glucides": 7,
+          "lipides": 35
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Poireau et courgettes 3 min dans l'huile.",
+          "minuteurMin": 3
+        },
+        {
+          "texte": "Eau + bouillon, 15 min, mixer.",
+          "minuteurMin": 15
+        },
+        {
+          "texte": "Omelettes 3-4 min, jambon + emmental au moment de plier.",
+          "minuteurMin": 4
+        }
+      ],
+      "conservation": {
+        "frigoJours": 3,
+        "congelable": true,
+        "rechauffage": "Velouté : 3-4 min à la casserole ; omelette minute."
+      }
+    },
+    {
+      "id": "poulet-dimanche-legumes-soleil-riz",
+      "nom": "Poulet du dimanche, légumes du soleil & riz",
+      "difficulte": "facile",
+      "tempsMin": 35,
+      "tempsActifMin": 10,
+      "ingredients": [
+        {
+          "nom": "Courgettes",
+          "quantite": 500,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 1.1,
+          "fraisJours": 5
+        },
+        {
+          "nom": "Poivrons",
+          "quantite": 2,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 1.2,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Oignons",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.15,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Riz basmati",
+          "quantite": 220,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.53
+        },
+        {
+          "nom": "Huile d'olive",
+          "quantite": 3,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.3,
+          "placard": true
+        },
+        {
+          "nom": "Herbes de Provence",
+          "quantite": 1,
+          "unite": "cc",
+          "rayon": "epicerie",
+          "prixEstime": 0.05,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "alex": "2 cuisses du rituel sans la peau + 1 poing de riz (60 g cru) + 2 poignées de légumes",
+        "sam": "1 cuisse ½ du rituel + 2 grosses poignées de légumes + 1 c. à soupe d'huile d'olive",
+        "lou": "½ cuisse + ½ poing de riz + légumes",
+        "noa": "½ cuisse effilochée + ½ poing de riz + légumes fondants"
+      },
+      "variantes": {
+        "sam": "Sans riz ; huile d'olive sur les légumes. ≈ 10 g de glucides nets."
+      },
+      "notes": [
+        "Mettre de côté : 2 cuisses + 1 poing de riz + 1 poignée de légumes → box de Alex lundi."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 680,
+          "proteines": 58,
+          "glucides": 56,
+          "lipides": 21
+        },
+        "sam": {
+          "kcal": 535,
+          "proteines": 41,
+          "glucides": 10,
+          "lipides": 34
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Légumes en morceaux + 2 c. à soupe d'huile + herbes, au four 200° 30 min dès la sortie du poulet.",
+          "minuteurMin": 30
+        },
+        {
+          "texte": "Riz 11 min.",
+          "minuteurMin": 11
+        },
+        {
+          "texte": "Poulet du rituel réchauffé 5 min au four avec les légumes.",
+          "minuteurMin": 5
+        },
+        {
+          "texte": "Mettre de côté la box de Alex pour lundi (voir notes)."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 3,
+        "congelable": true,
+        "rechauffage": "Micro-ondes 2 min couvert avec 1 c. à soupe d'eau."
+      }
+    },
+    {
+      "id": "boulettes-boeuf-sauce-tomate-pates",
+      "nom": "Boulettes de bœuf à la sauce tomate maison & pâtes",
+      "difficulte": "facile",
+      "tempsMin": 30,
+      "tempsActifMin": 20,
+      "ingredients": [
+        {
+          "nom": "Haché de bœuf 5 %",
+          "quantite": 400,
+          "unite": "g",
+          "rayon": "proteines",
+          "prixEstime": 3.92,
+          "fraisJours": 2
+        },
+        {
+          "nom": "Œufs",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 0.22,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Parmesan râpé",
+          "quantite": 40,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.8,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Pâtes",
+          "quantite": 250,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.38
+        },
+        {
+          "nom": "Courgettes",
+          "quantite": 300,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 0.66,
+          "fraisJours": 5
+        },
+        {
+          "nom": "Huile d'olive",
+          "quantite": 1,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.1,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "alex": "5 boulettes (≈ 150 g de viande) + 1 louche ½ de sauce + 1 poing de pâtes (80 g crues) + 1 c. à soupe de parmesan",
+        "sam": "5 boulettes (≈ 140 g) + 1 louche de sauce sur des courgettes poêlées + 1 c. à soupe de parmesan + 1 c. à soupe d'huile",
+        "lou": "2 boulettes + ½ louche de sauce + 1 poing de pâtes",
+        "noa": "1-2 boulettes écrasées + un peu de sauce + ½ poing de pâtes"
+      },
+      "variantes": {
+        "sam": "Boulettes et sauce sur des courgettes poêlées, sans pâtes. ≈ 12 g de glucides nets."
+      },
+      "notes": [
+        "Utilise la ½ sauce tomate du rituel gardée au frigo.",
+        "Se réchauffe très bien : Sam dîne plus tard ce soir-là."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 600,
+          "proteines": 47,
+          "glucides": 68,
+          "lipides": 12
+        },
+        "sam": {
+          "kcal": 450,
+          "proteines": 39,
+          "glucides": 12,
+          "lipides": 27
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Haché (décongelé lundi soir) + œuf + 2 c. à soupe de parmesan + sel, poivre ; former 16 boulettes."
+        },
+        {
+          "texte": "Dorer 6 min à la poêle.",
+          "minuteurMin": 6
+        },
+        {
+          "texte": "Ajouter la ½ sauce tomate du rituel (≈ 700 ml), mijoter 12 min.",
+          "minuteurMin": 12
+        },
+        {
+          "texte": "Pâtes et courgettes poêlées en parallèle."
+        },
+        {
+          "texte": "Mettre de côté la portion de Sam pour plus tard."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 3,
+        "congelable": true,
+        "rechauffage": "Casserole 5 min à feu doux ou micro-ondes 2 min 30."
+      }
+    },
+    {
+      "id": "wok-tofu-oeufs-nouilles",
+      "nom": "Wok tofu croustillant, œufs & légumes, nouilles",
+      "difficulte": "facile",
+      "tempsMin": 25,
+      "tempsActifMin": 20,
+      "ingredients": [
+        {
+          "nom": "Tofu ferme",
+          "quantite": 600,
+          "unite": "g",
+          "rayon": "proteines",
+          "prixEstime": 2.85,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Œufs",
+          "quantite": 8,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 1.76,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Nouilles de blé",
+          "quantite": 250,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.8
+        },
+        {
+          "nom": "Légumes pour wok surgelés (sans maïs)",
+          "quantite": 750,
+          "unite": "g",
+          "rayon": "surgeles",
+          "prixEstime": 1.99
+        },
+        {
+          "nom": "Sauce soja",
+          "quantite": 3,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.21
+        },
+        {
+          "nom": "Huile de colza",
+          "quantite": 2,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.16,
+          "placard": true
+        },
+        {
+          "nom": "Gingembre (morceau)",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.2,
+          "fraisJours": 21
+        }
+      ],
+      "portions": {
+        "alex": "1 paume de tofu (150 g) + 2 œufs brouillés + 1 poing de nouilles (60 g crues) + 2 poignées de légumes",
+        "sam": "1 paume de tofu (150 g) + 2 œufs + 2 poignées de légumes + 1 c. à soupe d'huile en finition",
+        "lou": "½ paume de tofu + 1 œuf + ½ poing de nouilles + légumes",
+        "noa": "quelques dés de tofu + 1 œuf brouillé + nouilles coupées courtes"
+      },
+      "variantes": {
+        "sam": "Sans nouilles ; filet d'huile. ≈ 9 g de glucides nets."
+      },
+      "notes": [
+        "Mettre de côté une 2e portion complète pour Alex (box de jeudi)."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 685,
+          "proteines": 46,
+          "glucides": 55,
+          "lipides": 27
+        },
+        "sam": {
+          "kcal": 475,
+          "proteines": 36,
+          "glucides": 9,
+          "lipides": 36
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Presser le tofu, cubes, dorer 8 min.",
+          "minuteurMin": 8
+        },
+        {
+          "texte": "Nouilles 4 min.",
+          "minuteurMin": 4
+        },
+        {
+          "texte": "Wok : légumes 6 min, œufs brouillés 2 min.",
+          "minuteurMin": 8
+        },
+        {
+          "texte": "Tofu, soja, gingembre 1 min ; nouilles à part pour Sam."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 2,
+        "congelable": false,
+        "rechauffage": "Micro-ondes 2 min couvert avec 1 c. à soupe d'eau."
+      }
+    },
+    {
+      "id": "shakshuka-feta-pain",
+      "nom": "Shakshuka à la sauce tomate maison, feta & pain",
+      "difficulte": "facile",
+      "tempsMin": 25,
+      "tempsActifMin": 12,
+      "ingredients": [
+        {
+          "nom": "Œufs",
+          "quantite": 15,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 3.3,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Feta",
+          "quantite": 150,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 1.12,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Poivron",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.6,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Épinards surgelés",
+          "quantite": 150,
+          "unite": "g",
+          "rayon": "surgeles",
+          "prixEstime": 0.26
+        },
+        {
+          "nom": "Pain complet",
+          "quantite": 250,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.65,
+          "fraisJours": 4
+        },
+        {
+          "nom": "Fromage blanc 0 %",
+          "quantite": 150,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.3,
+          "fraisJours": 10
+        },
+        {
+          "nom": "Cumin",
+          "quantite": 1,
+          "unite": "cc",
+          "rayon": "epicerie",
+          "prixEstime": 0.05,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "alex": "4 œufs pochés dans 1 louche ½ de sauce + 40 g de feta + 1 tranche ½ de pain complet + 1 bol de fromage blanc 0 % (150 g) en dessert",
+        "sam": "4 œufs pochés dans 1 louche de sauce + épinards + 60 g de feta, sans pain",
+        "lou": "2 œufs dans un peu de sauce + 1 tartine",
+        "noa": "1 œuf + un peu de sauce + mouillettes"
+      },
+      "variantes": {
+        "sam": "Sans pain ; avec épinards et plus de feta. ≈ 11 g de glucides nets."
+      },
+      "notes": [
+        "Utilise la ½ sauce tomate du rituel sortie du congélateur mercredi soir.",
+        "Mettre de côté 4 œufs bien cuits + sauce + 1 tranche de pain + 30 g de feta pour Alex vendredi midi (avec un fromage blanc)."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 735,
+          "proteines": 48,
+          "glucides": 52,
+          "lipides": 36
+        },
+        "sam": {
+          "kcal": 540,
+          "proteines": 38,
+          "glucides": 11,
+          "lipides": 33
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Grande poêle : poivron en lanières 5 min, cumin, ½ sauce tomate du rituel (décongelée), épinards.",
+          "minuteurMin": 7
+        },
+        {
+          "texte": "Creuser 15 puits, casser les œufs, couvrir 7 min à feu doux (cuire bien la part de Alex pour vendredi).",
+          "minuteurMin": 7
+        },
+        {
+          "texte": "Feta émiettée, pain grillé."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 2,
+        "congelable": false,
+        "rechauffage": "Sauce + œufs : 2 min au micro-ondes à puissance moyenne."
+      }
+    },
+    {
+      "id": "salade-lentilles-sardines-oeuf",
+      "nom": "Salade lentilles, sardines & œuf mollet",
+      "difficulte": "facile",
+      "tempsMin": 10,
+      "tempsActifMin": 10,
+      "ingredients": [
+        {
+          "nom": "Sardines à l'huile (boîte)",
+          "quantite": 1,
+          "unite": "boite",
+          "rayon": "proteines",
+          "prixEstime": 0.89
+        },
+        {
+          "nom": "Œufs",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 0.22,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Tomates",
+          "quantite": 120,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 0.31,
+          "fraisJours": 6
+        },
+        {
+          "nom": "Fromage blanc 0 %",
+          "quantite": 150,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.3,
+          "fraisJours": 10
+        },
+        {
+          "nom": "Vinaigre",
+          "quantite": 1,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.03,
+          "placard": true
+        },
+        {
+          "nom": "Moutarde",
+          "quantite": 1,
+          "unite": "cc",
+          "rayon": "epicerie",
+          "prixEstime": 0.05,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "alex": "250 g de lentilles du rituel + 1 boîte de sardines + 1 œuf mollet + 1 tomate + 1 bol de fromage blanc 0 % (150 g) en dessert"
+      },
+      "notes": [
+        "Mardi midi après la séance. Poisson gras de la semaine pour Alex."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 700,
+          "proteines": 63,
+          "glucides": 52,
+          "lipides": 24
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Œuf 6 min dans l'eau bouillante, refroidir, écaler.",
+          "minuteurMin": 6
+        },
+        {
+          "texte": "Lentilles du rituel, sardines, tomate, vinaigrette moutarde."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 1,
+        "congelable": false,
+        "rechauffage": "Se mange froide."
+      }
+    },
+    {
+      "id": "assiette-keto-poulet-feta-concombre",
+      "nom": "Assiette keto poulet, feta & concombre",
+      "difficulte": "facile",
+      "tempsMin": 5,
+      "tempsActifMin": 5,
+      "ingredients": [
+        {
+          "nom": "Feta",
+          "quantite": 50,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.38,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Concombre",
+          "quantite": 0.5,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.4,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Tomates",
+          "quantite": 80,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 0.21,
+          "fraisJours": 6
+        },
+        {
+          "nom": "Huile d'olive",
+          "quantite": 1,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.1,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "sam": "1 cuisse du rituel + 50 g de feta + ½ concombre + 1 petite tomate + quelques olives + 1 c. à soupe d'huile d'olive"
+      },
+      "notes": [
+        "Olives : articles fixes. ≈ 5 g de glucides nets."
+      ],
+      "macros": {
+        "sam": {
+          "kcal": 555,
+          "proteines": 36,
+          "glucides": 5,
+          "lipides": 43
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Désosser la cuisse."
+        },
+        {
+          "texte": "Concombre, tomate, feta en dés, olives, huile, origan."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 1,
+        "congelable": false,
+        "rechauffage": "Se mange froide."
+      }
+    },
+    {
+      "id": "frittata-epinards-pates-filles",
+      "nom": "Frittata épinards-emmental (petites pâtes pour les filles)",
+      "difficulte": "facile",
+      "tempsMin": 15,
+      "tempsActifMin": 12,
+      "ingredients": [
+        {
+          "nom": "Œufs",
+          "quantite": 7,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 1.54,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Épinards surgelés",
+          "quantite": 300,
+          "unite": "g",
+          "rayon": "surgeles",
+          "prixEstime": 0.51
+        },
+        {
+          "nom": "Emmental râpé",
+          "quantite": 70,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.6,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Petites pâtes",
+          "quantite": 120,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.18
+        },
+        {
+          "nom": "Tomates",
+          "quantite": 150,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 0.39,
+          "fraisJours": 6
+        }
+      ],
+      "portions": {
+        "sam": "¼ de frittata (≈ 4 œufs) aux épinards et emmental, cuite au beurre + tomates",
+        "lou": "1 part de frittata + 1 poing de petites pâtes au beurre",
+        "noa": "½ part de frittata + ½ poing de petites pâtes"
+      },
+      "variantes": {
+        "sam": "La frittata + tomates, sans pâtes. ≈ 6 g de glucides nets."
+      },
+      "macros": {
+        "sam": {
+          "kcal": 575,
+          "proteines": 41,
+          "glucides": 6,
+          "lipides": 40
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Petites pâtes 8 min.",
+          "minuteurMin": 8
+        },
+        {
+          "texte": "Poêle : épinards 3 min au beurre ; 7 œufs battus + emmental, 6 min à couvert à feu doux.",
+          "minuteurMin": 9
+        }
+      ],
+      "conservation": {
+        "frigoJours": 1,
+        "congelable": false,
+        "rechauffage": "Chaude ou froide."
+      }
+    },
+    {
+      "id": "assiette-keto-maquereau-oeufs",
+      "nom": "Assiette keto maquereau, œufs & avocat",
+      "difficulte": "facile",
+      "tempsMin": 5,
+      "tempsActifMin": 5,
+      "ingredients": [
+        {
+          "nom": "Maquereau au naturel (boîte)",
+          "quantite": 1,
+          "unite": "boite",
+          "rayon": "proteines",
+          "prixEstime": 1.15
+        },
+        {
+          "nom": "Concombre",
+          "quantite": 0.5,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.4,
+          "fraisJours": 7
+        }
+      ],
+      "portions": {
+        "sam": "1 boîte de maquereau + 2 œufs durs + ½ avocat + ½ concombre, citron, sel"
+      },
+      "notes": [
+        "Poisson gras de la semaine pour Sam. ≈ 4 g de glucides nets."
+      ],
+      "macros": {
+        "sam": {
+          "kcal": 555,
+          "proteines": 38,
+          "glucides": 4,
+          "lipides": 41
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Maquereau égoutté, œufs durs, avocat et concombre coupés."
+        },
+        {
+          "texte": "Citron, sel, poivre."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 1,
+        "congelable": false,
+        "rechauffage": "Se mange froide."
+      }
+    },
+    {
+      "id": "box-keto-jambon-oeufs-fromage",
+      "nom": "Box keto jambon, œufs durs & fromage",
+      "difficulte": "facile",
+      "tempsMin": 5,
+      "tempsActifMin": 5,
+      "ingredients": [
+        {
+          "nom": "Jambon blanc (tranches)",
+          "quantite": 3,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 1.2,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Concombre",
+          "quantite": 0.5,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.4,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Mayonnaise sans sucre",
+          "quantite": 1,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.08
+        }
+      ],
+      "portions": {
+        "sam": "3 tranches de jambon roulées + 2 œufs durs + 30 g de fromage + ½ concombre + quelques olives + 1 c. à soupe de mayonnaise"
+      },
+      "notes": [
+        "Fromage et olives : articles fixes. ≈ 4 g de glucides nets."
+      ],
+      "macros": {
+        "sam": {
+          "kcal": 535,
+          "proteines": 45,
+          "glucides": 4,
+          "lipides": 37
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Rouler le jambon, couper œufs, fromage, concombre."
+        },
+        {
+          "texte": "Mayonnaise dans un petit pot."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 2,
+        "congelable": false,
+        "rechauffage": "Se mange froide."
+      }
+    },
+    {
+      "id": "tortilla-pdt-oignons",
+      "nom": "Tortilla de pommes de terre (omelette aux courgettes pour Sam)",
+      "difficulte": "facile",
+      "tempsMin": 30,
+      "tempsActifMin": 15,
+      "ingredients": [
+        {
+          "nom": "Œufs",
+          "quantite": 12,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 2.64,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Pommes de terre",
+          "quantite": 600,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.6,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Oignons",
+          "quantite": 2,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.3,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Courgettes",
+          "quantite": 300,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 0.66,
+          "fraisJours": 5
+        },
+        {
+          "nom": "Emmental râpé",
+          "quantite": 60,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.52,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Jambon blanc (tranches)",
+          "quantite": 3,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 1.2,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Huile d'olive",
+          "quantite": 3,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.3,
+          "placard": true
+        },
+        {
+          "nom": "Laitue",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.85,
+          "fraisJours": 4
+        },
+        {
+          "nom": "Fromage blanc 0 %",
+          "quantite": 150,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.3,
+          "fraisJours": 10
+        }
+      ],
+      "portions": {
+        "alex": "⅓ de tortilla (≈ 4 œufs) + 1 tranche de jambon + salade + 1 bol de fromage blanc 0 % (150 g) en dessert",
+        "sam": "Omelette de 4 œufs aux courgettes + 1 grosse poignée d'emmental + 1 tranche de jambon + salade",
+        "lou": "1 part de tortilla (≈ 2 œufs) + ½ tranche de jambon",
+        "noa": "1 petite part de tortilla + ½ tranche de jambon"
+      },
+      "variantes": {
+        "sam": "Le même appareil aux œufs versé sur des courgettes. ≈ 4 g de glucides nets."
+      },
+      "macros": {
+        "alex": {
+          "kcal": 685,
+          "proteines": 54,
+          "glucides": 40,
+          "lipides": 33
+        },
+        "sam": {
+          "kcal": 625,
+          "proteines": 46,
+          "glucides": 4,
+          "lipides": 46
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Pommes de terre en fines rondelles + oignons, 15 min à la poêle dans 2 c. à soupe d'huile.",
+          "minuteurMin": 15
+        },
+        {
+          "texte": "Courgettes 6 min dans une petite poêle (Sam).",
+          "minuteurMin": 6
+        },
+        {
+          "texte": "12 œufs battus : 4 sur les courgettes + emmental, 8 sur les pommes de terre ; 6 min à couvert, retourner.",
+          "minuteurMin": 8
+        }
+      ],
+      "conservation": {
+        "frigoJours": 2,
+        "congelable": false,
+        "rechauffage": "Tiède ou froide."
+      }
+    },
+    {
+      "id": "burger-maison-potatoes",
+      "nom": "Burgers maison & potatoes (burger bowl pour Sam)",
+      "difficulte": "facile",
+      "tempsMin": 40,
+      "tempsActifMin": 15,
+      "ingredients": [
+        {
+          "nom": "Haché de bœuf 5 %",
+          "quantite": 450,
+          "unite": "g",
+          "rayon": "proteines",
+          "prixEstime": 4.41,
+          "fraisJours": 2
+        },
+        {
+          "nom": "Pains à burger complets",
+          "quantite": 3,
+          "unite": "piece",
+          "rayon": "feculents",
+          "prixEstime": 0.75,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Pommes de terre",
+          "quantite": 650,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.65,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Emmental râpé",
+          "quantite": 60,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.52,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Tomates",
+          "quantite": 250,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 0.65,
+          "fraisJours": 6
+        },
+        {
+          "nom": "Laitue",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.85,
+          "fraisJours": 4
+        },
+        {
+          "nom": "Oignons",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.15,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Paprika",
+          "quantite": 1,
+          "unite": "cc",
+          "rayon": "epicerie",
+          "prixEstime": 0.05,
+          "placard": true
+        },
+        {
+          "nom": "Huile d'olive",
+          "quantite": 2,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.2,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "alex": "Repas récup après le sport : 1 burger (steak de 170 g, emmental, crudités) + 2 poings ½ de potatoes (350 g)",
+        "sam": "Burger bowl : steak de 150 g + emmental fondu + salade, tomate + ½ avocat",
+        "lou": "1 mini-burger (steak de 60 g) + 1 poing de potatoes",
+        "noa": "½ burger ou steak émietté + ½ poing de potatoes"
+      },
+      "variantes": {
+        "sam": "Burger bowl sans pain ni potatoes, + ½ avocat (articles fixes). ≈ 5 g de glucides nets."
+      },
+      "notes": [
+        "Alex le mange au retour de la sortie sportive ; le reste se fait à midi."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 905,
+          "proteines": 58,
+          "glucides": 107,
+          "lipides": 24
+        },
+        "sam": {
+          "kcal": 535,
+          "proteines": 41,
+          "glucides": 5,
+          "lipides": 37
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Four 210° : potatoes + huile + paprika, 35 min.",
+          "minuteurMin": 35
+        },
+        {
+          "texte": "Former 4 steaks (170, 150, 60, 60 g)."
+        },
+        {
+          "texte": "Steaks 3-4 min par face, emmental à la fin.",
+          "minuteurMin": 8
+        },
+        {
+          "texte": "Burgers ; bowl de salade pour Sam."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 2,
+        "congelable": true,
+        "rechauffage": "Steak : 1 min 30 au micro-ondes ; potatoes 8 min au four."
+      }
+    },
+    {
+      "id": "oeufs-mollets-epinards-creme-pdt",
+      "nom": "Œufs mollets, épinards à la crème & pommes de terre",
+      "difficulte": "facile",
+      "tempsMin": 25,
+      "tempsActifMin": 15,
+      "ingredients": [
+        {
+          "nom": "Œufs",
+          "quantite": 11,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 2.42,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Épinards surgelés",
+          "quantite": 600,
+          "unite": "g",
+          "rayon": "surgeles",
+          "prixEstime": 1.02
+        },
+        {
+          "nom": "Crème légère 15 %",
+          "quantite": 200,
+          "unite": "ml",
+          "rayon": "laitiers",
+          "prixEstime": 0.8,
+          "fraisJours": 10
+        },
+        {
+          "nom": "Pommes de terre",
+          "quantite": 450,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.45,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Emmental râpé",
+          "quantite": 60,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.52,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Parmesan râpé",
+          "quantite": 20,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.4,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Fromage blanc 0 %",
+          "quantite": 150,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.3,
+          "fraisJours": 10
+        },
+        {
+          "nom": "Muscade",
+          "quantite": 1,
+          "unite": "cc",
+          "rayon": "epicerie",
+          "prixEstime": 0.05,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "alex": "4 œufs mollets + 1 louche d'épinards à la crème + 1 poing ½ de pommes de terre + 1 petite poignée d'emmental + 1 bol de fromage blanc 0 % (150 g) en dessert",
+        "sam": "4 œufs mollets + 2 louches d'épinards à la crème + 1 c. à soupe de parmesan + 1 petite poignée d'emmental",
+        "lou": "2 œufs mollets + épinards + 1 poing de pommes de terre",
+        "noa": "1 œuf mollet + un peu d'épinards + ½ poing de pommes de terre écrasées"
+      },
+      "variantes": {
+        "sam": "Sans pommes de terre ; plus d'épinards + parmesan. ≈ 5 g de glucides nets."
+      },
+      "notes": [
+        "Dîner léger, prêt en 25 min."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 680,
+          "proteines": 49,
+          "glucides": 43,
+          "lipides": 31
+        },
+        "sam": {
+          "kcal": 565,
+          "proteines": 42,
+          "glucides": 5,
+          "lipides": 39
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Pommes de terre vapeur 20 min.",
+          "minuteurMin": 20
+        },
+        {
+          "texte": "Épinards surgelés 8 min à la poêle, crème + muscade, 2 min.",
+          "minuteurMin": 10
+        },
+        {
+          "texte": "Œufs 6 min dans l'eau bouillante, bain froid, écaler.",
+          "minuteurMin": 6
+        },
+        {
+          "texte": "Emmental et parmesan sur les épinards au service."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 1,
+        "congelable": false,
+        "rechauffage": "À manger minute."
+      }
+    },
+    {
+      "id": "pizza-jambon-champignons",
+      "nom": "Pizza maison jambon-champignons (salade pizzaiola pour Sam)",
+      "difficulte": "facile",
+      "tempsMin": 25,
+      "tempsActifMin": 10,
+      "ingredients": [
+        {
+          "nom": "Pâte à pizza (rouleau)",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "feculents",
+          "prixEstime": 0.99,
+          "fraisJours": 10
+        },
+        {
+          "nom": "Coulis de tomate",
+          "quantite": 150,
+          "unite": "ml",
+          "rayon": "epicerie",
+          "prixEstime": 0.18
+        },
+        {
+          "nom": "Mozzarella (boule 125 g)",
+          "quantite": 2,
+          "unite": "piece",
+          "rayon": "laitiers",
+          "prixEstime": 1.38,
+          "fraisJours": 10
+        },
+        {
+          "nom": "Jambon blanc (tranches)",
+          "quantite": 6,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 2.4,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Champignons émincés surgelés",
+          "quantite": 200,
+          "unite": "g",
+          "rayon": "surgeles",
+          "prixEstime": 0.6
+        },
+        {
+          "nom": "Tomates",
+          "quantite": 250,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 0.65,
+          "fraisJours": 6
+        },
+        {
+          "nom": "Origan",
+          "quantite": 1,
+          "unite": "cc",
+          "rayon": "epicerie",
+          "prixEstime": 0.05,
+          "placard": true
+        },
+        {
+          "nom": "Huile d'olive",
+          "quantite": 1,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.1,
+          "placard": true
+        },
+        {
+          "nom": "Fromage blanc 0 %",
+          "quantite": 150,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.3,
+          "fraisJours": 10
+        }
+      ],
+      "portions": {
+        "alex": "½ pizza (≈ 3 grosses parts) + 1 bol de fromage blanc 0 % (150 g) en dessert",
+        "sam": "Salade pizzaiola : 1 boule de mozzarella + 2 tranches de jambon + 2 tomates + olives + 1 c. à soupe d'huile, origan",
+        "lou": "¼ de pizza + crudités",
+        "noa": "un peu moins de ¼ de pizza en petits carrés"
+      },
+      "variantes": {
+        "sam": "La garniture sans la pâte, en salade, + olives (articles fixes). ≈ 6 g de glucides nets."
+      },
+      "notes": [
+        "Le fromage blanc complète les protéines de Alex."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 680,
+          "proteines": 48,
+          "glucides": 70,
+          "lipides": 21
+        },
+        "sam": {
+          "kcal": 535,
+          "proteines": 38,
+          "glucides": 6,
+          "lipides": 39
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Four 240°."
+        },
+        {
+          "texte": "Pâte : coulis, champignons, 4 tranches de jambon, 1 mozzarella, origan, filet d'huile."
+        },
+        {
+          "texte": "12-14 min.",
+          "minuteurMin": 13
+        },
+        {
+          "texte": "Pendant ce temps : salade pizzaiola de Sam."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 2,
+        "congelable": true,
+        "rechauffage": "5 min au four à 200° ou à la poêle couverte."
+      }
+    },
+    {
+      "id": "soupe-butternut-oeufs-brouilles",
+      "nom": "Soupe butternut & œufs brouillés",
+      "difficulte": "facile",
+      "tempsMin": 35,
+      "tempsActifMin": 15,
+      "ingredients": [
+        {
+          "nom": "Courge butternut",
+          "quantite": 1000,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 1.5,
+          "fraisJours": 30
+        },
+        {
+          "nom": "Oignons",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.15,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Bouillon de légumes (cube)",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "epicerie",
+          "prixEstime": 0.1,
+          "placard": true
+        },
+        {
+          "nom": "Œufs",
+          "quantite": 11,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 2.42,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Jambon blanc (tranches)",
+          "quantite": 2,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 0.8,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Emmental râpé",
+          "quantite": 60,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.52,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Pain complet",
+          "quantite": 150,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.39,
+          "fraisJours": 4
+        },
+        {
+          "nom": "Fromage blanc 0 %",
+          "quantite": 150,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.3,
+          "fraisJours": 10
+        }
+      ],
+      "portions": {
+        "alex": "1 grand bol de soupe + 4 œufs brouillés + 20 g d'emmental + 1 tranche de pain complet + 1 bol de fromage blanc 0 % (150 g) en dessert",
+        "sam": "⅓ de bol de soupe + 4 œufs brouillés au beurre + 1 tranche de jambon + 30 g d'emmental + 1 c. à soupe de crème",
+        "lou": "1 bol de soupe + 2 œufs brouillés + ½ tranche de jambon + 1 tartine",
+        "noa": "½ bol de soupe + 1 œuf brouillé + ½ tranche de jambon"
+      },
+      "variantes": {
+        "sam": "Petite part de soupe (courge sucrée) ; œufs au beurre + crème (articles fixes). ≈ 10 g de glucides nets."
+      },
+      "notes": [
+        "Dîner léger du samedi. La soupe restante se congèle en portions."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 640,
+          "proteines": 47,
+          "glucides": 48,
+          "lipides": 27
+        },
+        "sam": {
+          "kcal": 610,
+          "proteines": 42,
+          "glucides": 10,
+          "lipides": 43
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Butternut en cubes + oignon + bouillon, couvrir d'eau, 20 min, mixer.",
+          "minuteurMin": 20
+        },
+        {
+          "texte": "Œufs brouillés 5 min au beurre, emmental à la fin.",
+          "minuteurMin": 5
+        }
+      ],
+      "conservation": {
+        "frigoJours": 3,
+        "congelable": true,
+        "rechauffage": "Soupe : 4 min à la casserole ; œufs minute."
+      }
+    },
+    {
+      "id": "poulet-dimanche-carottes-semoule",
+      "nom": "Poulet du dimanche, carottes rôties & semoule",
+      "difficulte": "facile",
+      "tempsMin": 35,
+      "tempsActifMin": 10,
+      "ingredients": [
+        {
+          "nom": "Carottes",
+          "quantite": 700,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 0.7,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Courgettes",
+          "quantite": 400,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 0.88,
+          "fraisJours": 5
+        },
+        {
+          "nom": "Oignons",
+          "quantite": 2,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.3,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Semoule complète",
+          "quantite": 250,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.35
+        },
+        {
+          "nom": "Ras-el-hanout",
+          "quantite": 2,
+          "unite": "cc",
+          "rayon": "epicerie",
+          "prixEstime": 0.1,
+          "placard": true
+        },
+        {
+          "nom": "Huile d'olive",
+          "quantite": 3,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.3,
+          "placard": true
+        },
+        {
+          "nom": "Bouillon de légumes (cube)",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "epicerie",
+          "prixEstime": 0.1,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "alex": "2 cuisses du rituel sans la peau + 1 poing de semoule (60 g crue) + 1 poignée ½ de carottes",
+        "sam": "1 cuisse ½ du rituel + 2 poignées de courgettes rôties + quelques carottes + 1 c. à soupe d'huile",
+        "lou": "½ cuisse + ½ poing de semoule + carottes",
+        "noa": "½ cuisse effilochée + ½ poing de semoule + carottes fondantes"
+      },
+      "variantes": {
+        "sam": "Sans semoule ; courgettes rôties et peu de carottes. ≈ 8 g de glucides nets."
+      },
+      "notes": [
+        "Mettre de côté : 2 cuisses + 1 poing de semoule + carottes → box de Alex lundi."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 685,
+          "proteines": 61,
+          "glucides": 56,
+          "lipides": 21
+        },
+        "sam": {
+          "kcal": 515,
+          "proteines": 40,
+          "glucides": 8,
+          "lipides": 34
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Carottes en bâtonnets, oignons, courgettes + huile + ras-el-hanout, four 200° 30 min dès la sortie du poulet.",
+          "minuteurMin": 30
+        },
+        {
+          "texte": "Semoule : eau bouillante + bouillon à hauteur, 5 min à couvert.",
+          "minuteurMin": 5
+        },
+        {
+          "texte": "Poulet du rituel réchauffé 5 min avec les légumes.",
+          "minuteurMin": 5
+        },
+        {
+          "texte": "Mettre de côté la box de Alex pour lundi."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 3,
+        "congelable": true,
+        "rechauffage": "Micro-ondes 2 min couvert ; semoule avec 1 c. à soupe d'eau."
+      }
+    },
+    {
+      "id": "chili-con-carne-sauce-maison",
+      "nom": "Chili con carne à la sauce tomate maison",
+      "difficulte": "facile",
+      "tempsMin": 30,
+      "tempsActifMin": 12,
+      "ingredients": [
+        {
+          "nom": "Haché de bœuf 5 %",
+          "quantite": 350,
+          "unite": "g",
+          "rayon": "proteines",
+          "prixEstime": 3.43,
+          "fraisJours": 2
+        },
+        {
+          "nom": "Haricots rouges (boîte 400 g)",
+          "quantite": 3,
+          "unite": "boite",
+          "rayon": "epicerie",
+          "prixEstime": 1.8
+        },
+        {
+          "nom": "Poivron",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.6,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Épices chili-cumin",
+          "quantite": 2,
+          "unite": "cc",
+          "rayon": "epicerie",
+          "prixEstime": 0.1,
+          "placard": true
+        },
+        {
+          "nom": "Riz basmati",
+          "quantite": 200,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.48
+        },
+        {
+          "nom": "Emmental râpé",
+          "quantite": 70,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.6,
+          "fraisJours": 14
+        }
+      ],
+      "portions": {
+        "alex": "2 grosses louches de chili (≈ 120 g de viande + ½ boîte de haricots) + 1 poing de riz (60 g cru) + 1 petite poignée d'emmental",
+        "sam": "2 louches prises côté viande (≈ 140 g, peu de haricots) + 1 grosse poignée d'emmental + 1 c. à soupe de crème",
+        "lou": "1 louche de chili + ½ poing de riz",
+        "noa": "½ louche de chili + ½ poing de riz"
+      },
+      "variantes": {
+        "sam": "Sans riz, peu de haricots, + emmental et crème (articles fixes). ≈ 12 g de glucides nets."
+      },
+      "notes": [
+        "Utilise la ½ sauce tomate du rituel gardée au frigo.",
+        "Se réchauffe parfaitement : Sam dîne plus tard ce soir-là."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 690,
+          "proteines": 48,
+          "glucides": 88,
+          "lipides": 14
+        },
+        "sam": {
+          "kcal": 425,
+          "proteines": 39,
+          "glucides": 12,
+          "lipides": 21
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Haché (décongelé lundi soir) + poivron 7 min.",
+          "minuteurMin": 7
+        },
+        {
+          "texte": "Épices, ½ sauce tomate du rituel, haricots rincés ; mijoter 15 min.",
+          "minuteurMin": 15
+        },
+        {
+          "texte": "Riz 11 min en parallèle.",
+          "minuteurMin": 11
+        },
+        {
+          "texte": "Mettre de côté la portion de Sam pour plus tard."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 3,
+        "congelable": true,
+        "rechauffage": "Casserole 5 min à feu doux ou micro-ondes 2 min 30."
+      }
+    },
+    {
+      "id": "riz-cantonais-oeufs-jambon",
+      "nom": "Riz cantonais maison (riz de chou-fleur pour Sam)",
+      "difficulte": "facile",
+      "tempsMin": 25,
+      "tempsActifMin": 20,
+      "ingredients": [
+        {
+          "nom": "Riz basmati",
+          "quantite": 260,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.62
+        },
+        {
+          "nom": "Œufs",
+          "quantite": 11,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 2.42,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Dés de jambon",
+          "quantite": 400,
+          "unite": "g",
+          "rayon": "proteines",
+          "prixEstime": 3.4,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Petits pois surgelés",
+          "quantite": 400,
+          "unite": "g",
+          "rayon": "surgeles",
+          "prixEstime": 0.72
+        },
+        {
+          "nom": "Chou-fleur surgelé",
+          "quantite": 300,
+          "unite": "g",
+          "rayon": "surgeles",
+          "prixEstime": 0.54
+        },
+        {
+          "nom": "Oignons",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.15,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Sauce soja",
+          "quantite": 3,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.21
+        },
+        {
+          "nom": "Huile de colza",
+          "quantite": 2,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.16,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "alex": "2 poings de riz sauté (70 g cru) avec 3 œufs, 90 g de jambon et 1 poignée de petits pois",
+        "sam": "2 poignées de chou-fleur râpé sauté + 3 œufs + 80 g de jambon + 1 c. à soupe de petits pois + 1 c. à soupe d'huile",
+        "lou": "1 poing de riz sauté avec 1 œuf, jambon, petits pois",
+        "noa": "½ poing de riz sauté avec ½ œuf et un peu de jambon"
+      },
+      "variantes": {
+        "sam": "Même garniture, prélevée avant le riz, sur du chou-fleur râpé sauté. ≈ 8 g de glucides nets."
+      },
+      "notes": [
+        "Mettre de côté une 2e portion complète pour Alex (box de jeudi), refroidie vite."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 700,
+          "proteines": 47,
+          "glucides": 64,
+          "lipides": 23
+        },
+        "sam": {
+          "kcal": 490,
+          "proteines": 40,
+          "glucides": 8,
+          "lipides": 32
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Riz 11 min, étalé pour refroidir.",
+          "minuteurMin": 11
+        },
+        {
+          "texte": "Wok : oignon, jambon, petits pois 4 min ; œufs brouillés 2 min.",
+          "minuteurMin": 6
+        },
+        {
+          "texte": "Prélever la part de Sam, sur du chou-fleur râpé poêlé 5 min.",
+          "minuteurMin": 5
+        },
+        {
+          "texte": "Riz + soja dans le wok, 3 min à feu vif.",
+          "minuteurMin": 3
+        }
+      ],
+      "conservation": {
+        "frigoJours": 1,
+        "congelable": false,
+        "rechauffage": "Micro-ondes 2 min avec 1 c. à soupe d'eau, bien chaud à cœur."
+      }
+    },
+    {
+      "id": "gratin-pates-thon-tomate-mozza",
+      "nom": "Gratin de pâtes au thon, sauce tomate maison & mozzarella",
+      "difficulte": "facile",
+      "tempsMin": 35,
+      "tempsActifMin": 12,
+      "ingredients": [
+        {
+          "nom": "Pâtes",
+          "quantite": 280,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.42
+        },
+        {
+          "nom": "Thon au naturel (boîte 140 g égoutté)",
+          "quantite": 3,
+          "unite": "boite",
+          "rayon": "proteines",
+          "prixEstime": 3.9
+        },
+        {
+          "nom": "Mozzarella (boule 125 g)",
+          "quantite": 2,
+          "unite": "piece",
+          "rayon": "laitiers",
+          "prixEstime": 1.38,
+          "fraisJours": 10
+        },
+        {
+          "nom": "Courgettes",
+          "quantite": 300,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 0.66,
+          "fraisJours": 5
+        },
+        {
+          "nom": "Huile d'olive",
+          "quantite": 1,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.1,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "alex": "1 grosse part : 1 poing de pâtes (90 g crues) + ¾ de boîte de thon + sauce + mozzarella gratinée",
+        "sam": "Petit plat : courgettes + ¾ de boîte de thon + 1 louche de sauce + ½ mozzarella gratinée + 1 c. à soupe d'huile",
+        "lou": "1 petite part de gratin",
+        "noa": "½ part de gratin"
+      },
+      "variantes": {
+        "sam": "Le gratin de Sam se fait sur des courgettes à la place des pâtes. ≈ 12 g de glucides nets."
+      },
+      "notes": [
+        "Utilise la ½ sauce tomate du rituel sortie du congélateur mercredi soir.",
+        "Mettre de côté 1 part pour Alex vendredi midi."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 605,
+          "proteines": 46,
+          "glucides": 75,
+          "lipides": 9
+        },
+        "sam": {
+          "kcal": 470,
+          "proteines": 42,
+          "glucides": 12,
+          "lipides": 26
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Four 210°. Pâtes 8 min (al dente).",
+          "minuteurMin": 8
+        },
+        {
+          "texte": "Grand plat : pâtes + thon + ½ sauce tomate du rituel (décongelée) + mozzarella. Petit plat : courgettes en rondelles + thon + sauce + mozzarella."
+        },
+        {
+          "texte": "Gratiner 20 min.",
+          "minuteurMin": 20
+        }
+      ],
+      "conservation": {
+        "frigoJours": 3,
+        "congelable": true,
+        "rechauffage": "Four 180° 10 min ou micro-ondes 2 min."
+      }
+    },
+    {
+      "id": "taboule-lentilles-feta-oeufs",
+      "nom": "Taboulé de lentilles, feta & œufs",
+      "difficulte": "facile",
+      "tempsMin": 20,
+      "tempsActifMin": 15,
+      "ingredients": [
+        {
+          "nom": "Lentilles cuites (boîte 400 g)",
+          "quantite": 2,
+          "unite": "boite",
+          "rayon": "epicerie",
+          "prixEstime": 1.5
+        },
+        {
+          "nom": "Feta",
+          "quantite": 200,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 1.5,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Œufs",
+          "quantite": 8,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 1.76,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Concombre",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.79,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Tomates",
+          "quantite": 300,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 0.78,
+          "fraisJours": 6
+        },
+        {
+          "nom": "Persil",
+          "quantite": 1,
+          "unite": "botte",
+          "rayon": "legumes",
+          "prixEstime": 0.69,
+          "fraisJours": 5
+        },
+        {
+          "nom": "Huile d'olive",
+          "quantite": 3,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.3,
+          "placard": true
+        },
+        {
+          "nom": "Fromage blanc 0 %",
+          "quantite": 150,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.3,
+          "fraisJours": 10
+        }
+      ],
+      "portions": {
+        "alex": "2 poings de lentilles + 50 g de feta + 2 œufs durs + crudités + 1 bol de fromage blanc 0 % (150 g) en dessert",
+        "sam": "Feta (70 g) + 4 œufs durs + concombre-tomate-persil + olives + 1 c. à soupe d'huile",
+        "lou": "1 poing de lentilles + 1 œuf + un peu de feta + tomates",
+        "noa": "½ poing de lentilles + 1 œuf + tomates"
+      },
+      "variantes": {
+        "sam": "Sans lentilles : feta, œufs, crudités, olives. ≈ 6 g de glucides nets."
+      },
+      "macros": {
+        "alex": {
+          "kcal": 720,
+          "proteines": 54,
+          "glucides": 62,
+          "lipides": 27
+        },
+        "sam": {
+          "kcal": 660,
+          "proteines": 36,
+          "glucides": 6,
+          "lipides": 52
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Œufs durs 10 min.",
+          "minuteurMin": 10
+        },
+        {
+          "texte": "Rincer les lentilles, couper crudités, persil, feta."
+        },
+        {
+          "texte": "Vinaigrette huile-citron ; lentilles à part pour Sam."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 2,
+        "congelable": false,
+        "rechauffage": "Se mange froid."
+      }
+    },
+    {
+      "id": "oeufs-cocotte-veloute-brocoli",
+      "nom": "Œufs cocotte jambon-fromage & velouté de brocoli",
+      "difficulte": "facile",
+      "tempsMin": 25,
+      "tempsActifMin": 12,
+      "ingredients": [
+        {
+          "nom": "Brocoli surgelé",
+          "quantite": 600,
+          "unite": "g",
+          "rayon": "surgeles",
+          "prixEstime": 1.02
+        },
+        {
+          "nom": "Oignons",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.15,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Bouillon de légumes (cube)",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "epicerie",
+          "prixEstime": 0.1,
+          "placard": true
+        },
+        {
+          "nom": "Œufs",
+          "quantite": 10,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 2.2,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Jambon blanc (tranches)",
+          "quantite": 3,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 1.2,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Emmental râpé",
+          "quantite": 60,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.52,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Pain complet",
+          "quantite": 150,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.39,
+          "fraisJours": 4
+        },
+        {
+          "nom": "Fromage blanc 0 %",
+          "quantite": 150,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.3,
+          "fraisJours": 10
+        }
+      ],
+      "portions": {
+        "alex": "1 grand bol de velouté + 3 œufs cocotte (jambon, emmental) + 1 tartine + 1 bol de fromage blanc 0 % (150 g) en dessert",
+        "sam": "½ bol de velouté + 3 œufs cocotte avec jambon, emmental et 1 c. à soupe de crème",
+        "lou": "½ bol de velouté + 2 œufs cocotte + 1 mouillette",
+        "noa": "quelques cuillères de velouté + 1-2 œufs cocotte + mouillettes"
+      },
+      "variantes": {
+        "sam": "Petit bol de velouté ; crème et beurre (articles fixes) dans ses cocottes. ≈ 7 g de glucides nets."
+      },
+      "notes": [
+        "Dîner léger du jour de sortie longue."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 580,
+          "proteines": 54,
+          "glucides": 33,
+          "lipides": 22
+        },
+        "sam": {
+          "kcal": 500,
+          "proteines": 39,
+          "glucides": 7,
+          "lipides": 33
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Brocoli + oignon + bouillon, couvrir d'eau, 15 min, mixer.",
+          "minuteurMin": 15
+        },
+        {
+          "texte": "Ramequins beurrés : jambon, œuf, emmental (+ crème pour Sam) ; bain-marie au four 180°, 12 min.",
+          "minuteurMin": 12
+        }
+      ],
+      "conservation": {
+        "frigoJours": 3,
+        "congelable": true,
+        "rechauffage": "Velouté : 3 min à la casserole ; œufs minute."
+      }
+    },
+    {
+      "id": "poulet-dimanche-potatoes-haricots",
+      "nom": "Poulet du dimanche, potatoes & haricots verts",
+      "difficulte": "facile",
+      "tempsMin": 35,
+      "tempsActifMin": 10,
+      "ingredients": [
+        {
+          "nom": "Pommes de terre",
+          "quantite": 800,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.8,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Haricots verts surgelés",
+          "quantite": 600,
+          "unite": "g",
+          "rayon": "surgeles",
+          "prixEstime": 0.96
+        },
+        {
+          "nom": "Huile d'olive",
+          "quantite": 3,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.3,
+          "placard": true
+        },
+        {
+          "nom": "Paprika",
+          "quantite": 1,
+          "unite": "cc",
+          "rayon": "epicerie",
+          "prixEstime": 0.05,
+          "placard": true
+        },
+        {
+          "nom": "Ail (gousses)",
+          "quantite": 2,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.14,
+          "fraisJours": 30
+        }
+      ],
+      "portions": {
+        "alex": "2 cuisses du rituel sans la peau + 2 poings de potatoes (250 g) + 1 poignée de haricots verts",
+        "sam": "1 cuisse ½ du rituel + 2 grosses poignées de haricots verts au beurre et à l'ail",
+        "lou": "½ cuisse + 1 poing de potatoes + haricots",
+        "noa": "½ cuisse effilochée + ½ poing de potatoes"
+      },
+      "variantes": {
+        "sam": "Sans potatoes ; haricots verts au beurre (articles fixes). ≈ 7 g de glucides nets."
+      },
+      "notes": [
+        "Mettre de côté : 2 cuisses + 2 poings de potatoes + haricots → box de Alex lundi."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 640,
+          "proteines": 60,
+          "glucides": 48,
+          "lipides": 21
+        },
+        "sam": {
+          "kcal": 475,
+          "proteines": 42,
+          "glucides": 7,
+          "lipides": 28
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Potatoes en quartiers + huile + paprika, four 210° 35 min (enfournées à la sortie du poulet).",
+          "minuteurMin": 35
+        },
+        {
+          "texte": "Haricots verts 8 min à la poêle avec l'ail.",
+          "minuteurMin": 8
+        },
+        {
+          "texte": "Poulet du rituel réchauffé 5 min au four.",
+          "minuteurMin": 5
+        },
+        {
+          "texte": "Mettre de côté la box de Alex pour lundi."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 3,
+        "congelable": true,
+        "rechauffage": "Micro-ondes 2 min ; potatoes 8 min au four."
+      }
+    },
+    {
+      "id": "courgettes-farcies-boeuf-riz",
+      "nom": "Courgettes farcies au bœuf, sauce tomate maison & riz",
+      "difficulte": "facile",
+      "tempsMin": 40,
+      "tempsActifMin": 20,
+      "ingredients": [
+        {
+          "nom": "Courgettes",
+          "quantite": 1200,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 2.64,
+          "fraisJours": 5
+        },
+        {
+          "nom": "Haché de bœuf 5 %",
+          "quantite": 450,
+          "unite": "g",
+          "rayon": "proteines",
+          "prixEstime": 4.41,
+          "fraisJours": 2
+        },
+        {
+          "nom": "Parmesan râpé",
+          "quantite": 50,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 1.0,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Riz basmati",
+          "quantite": 200,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.48
+        },
+        {
+          "nom": "Oignons",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.15,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Huile d'olive",
+          "quantite": 1,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.1,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "alex": "2 demi-courgettes farcies (≈ 170 g de viande) + 1 louche de sauce + 1 poing de riz (70 g cru)",
+        "sam": "2 demi-courgettes farcies (≈ 150 g de viande) + 1 louche de sauce + 1 c. à soupe d'huile",
+        "lou": "1 demi-courgette farcie + ½ poing de riz",
+        "noa": "½ courgette farcie écrasée + ½ poing de riz"
+      },
+      "variantes": {
+        "sam": "Sans riz ; filet d'huile d'olive. ≈ 12 g de glucides nets."
+      },
+      "notes": [
+        "Utilise la ½ sauce tomate du rituel gardée au frigo.",
+        "Se réchauffe très bien : Sam dîne plus tard ce soir-là."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 640,
+          "proteines": 47,
+          "glucides": 66,
+          "lipides": 16
+        },
+        "sam": {
+          "kcal": 470,
+          "proteines": 39,
+          "glucides": 12,
+          "lipides": 28
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Four 200°. Couper les courgettes en deux, creuser ; hacher la chair.",
+          "minuteurMin": 5
+        },
+        {
+          "texte": "Haché (décongelé lundi soir) + oignon + chair de courgette 8 min, parmesan.",
+          "minuteurMin": 8
+        },
+        {
+          "texte": "Farcir, napper de la ½ sauce tomate du rituel, 25 min au four.",
+          "minuteurMin": 25
+        },
+        {
+          "texte": "Riz 11 min en parallèle ; mettre de côté la portion de Sam pour plus tard.",
+          "minuteurMin": 11
+        }
+      ],
+      "conservation": {
+        "frigoJours": 3,
+        "congelable": true,
+        "rechauffage": "Micro-ondes 2 min 30 couvert ou four 180° 10 min."
+      }
+    },
+    {
+      "id": "curry-oeufs-coco-epinards-lentilles",
+      "nom": "Curry d'œufs coco-épinards & lentilles corail",
+      "difficulte": "facile",
+      "tempsMin": 30,
+      "tempsActifMin": 15,
+      "ingredients": [
+        {
+          "nom": "Œufs",
+          "quantite": 13,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 2.86,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Lait de coco (boîte 400 ml)",
+          "quantite": 1,
+          "unite": "boite",
+          "rayon": "epicerie",
+          "prixEstime": 1.19
+        },
+        {
+          "nom": "Épinards surgelés",
+          "quantite": 600,
+          "unite": "g",
+          "rayon": "surgeles",
+          "prixEstime": 1.02
+        },
+        {
+          "nom": "Lentilles corail sèches",
+          "quantite": 250,
+          "unite": "g",
+          "rayon": "epicerie",
+          "prixEstime": 0.75
+        },
+        {
+          "nom": "Oignons",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.15,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Ail (gousses)",
+          "quantite": 2,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.14,
+          "fraisJours": 30
+        },
+        {
+          "nom": "Gingembre (morceau)",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.2,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Curry doux",
+          "quantite": 2,
+          "unite": "cc",
+          "rayon": "epicerie",
+          "prixEstime": 0.1,
+          "placard": true
+        },
+        {
+          "nom": "Huile de colza",
+          "quantite": 1,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.08,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "alex": "3 œufs durs dans 1 louche ½ de sauce coco-épinards + 1 poing ½ de lentilles corail (80 g crues)",
+        "sam": "5 œufs durs dans 2 louches de sauce coco-épinards",
+        "lou": "1 œuf + ½ louche de sauce + 1 poing de lentilles",
+        "noa": "1 œuf écrasé + un peu de sauce + ½ poing de lentilles"
+      },
+      "variantes": {
+        "sam": "Sans lentilles ; 5 œufs dans la sauce. ≈ 8 g de glucides nets."
+      },
+      "notes": [
+        "Mettre de côté une 2e portion complète pour Alex (box de jeudi).",
+        "Lentilles corail : servies à part, pas dans la sauce."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 640,
+          "proteines": 47,
+          "glucides": 50,
+          "lipides": 27
+        },
+        "sam": {
+          "kcal": 560,
+          "proteines": 36,
+          "glucides": 8,
+          "lipides": 42
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Œufs durs 10 min, écaler.",
+          "minuteurMin": 10
+        },
+        {
+          "texte": "Lentilles corail 12 min à l'eau salée.",
+          "minuteurMin": 12
+        },
+        {
+          "texte": "Oignon, ail, gingembre, curry 3 min ; lait de coco + épinards 8 min ; ajouter les œufs coupés en deux.",
+          "minuteurMin": 11
+        }
+      ],
+      "conservation": {
+        "frigoJours": 2,
+        "congelable": true,
+        "rechauffage": "Micro-ondes 2 min couvert, en remuant."
+      }
+    },
+    {
+      "id": "haricots-blancs-thon-tomate-gratines",
+      "nom": "Haricots blancs au thon & sauce tomate maison, gratinés",
+      "difficulte": "facile",
+      "tempsMin": 30,
+      "tempsActifMin": 10,
+      "ingredients": [
+        {
+          "nom": "Haricots blancs (boîte 400 g)",
+          "quantite": 3,
+          "unite": "boite",
+          "rayon": "epicerie",
+          "prixEstime": 1.95
+        },
+        {
+          "nom": "Thon au naturel (boîte 140 g égoutté)",
+          "quantite": 3,
+          "unite": "boite",
+          "rayon": "proteines",
+          "prixEstime": 3.9
+        },
+        {
+          "nom": "Emmental râpé",
+          "quantite": 100,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.86,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Courgettes",
+          "quantite": 400,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 0.88,
+          "fraisJours": 5
+        },
+        {
+          "nom": "Pain complet",
+          "quantite": 200,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.52,
+          "fraisJours": 4
+        },
+        {
+          "nom": "Huile d'olive",
+          "quantite": 1,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.1,
+          "placard": true
+        },
+        {
+          "nom": "Thym",
+          "quantite": 1,
+          "unite": "cc",
+          "rayon": "epicerie",
+          "prixEstime": 0.05,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "alex": "1 grosse part : 200 g de haricots + ¾ de boîte de thon + sauce + emmental gratiné + 1 tranche de pain",
+        "sam": "Petit plat : courgettes + ¾ de boîte de thon + 1 louche de sauce + 40 g d'emmental gratiné + 1 c. à soupe d'huile",
+        "lou": "1 petite part + 1 tartine",
+        "noa": "½ part + mouillettes"
+      },
+      "variantes": {
+        "sam": "Le petit plat de Sam se fait sur des courgettes à la place des haricots. ≈ 12 g de glucides nets."
+      },
+      "notes": [
+        "Utilise la ½ sauce tomate du rituel sortie du congélateur mercredi soir.",
+        "Mettre de côté 1 part pour Alex vendredi midi."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 565,
+          "proteines": 52,
+          "glucides": 58,
+          "lipides": 9
+        },
+        "sam": {
+          "kcal": 470,
+          "proteines": 42,
+          "glucides": 12,
+          "lipides": 27
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Four 210°. Grand plat : haricots rincés + thon + ½ sauce tomate du rituel (décongelée) + thym + emmental."
+        },
+        {
+          "texte": "Petit plat : courgettes en rondelles + thon + sauce + emmental."
+        },
+        {
+          "texte": "Gratiner 20 min.",
+          "minuteurMin": 20
+        }
+      ],
+      "conservation": {
+        "frigoJours": 3,
+        "congelable": true,
+        "rechauffage": "Four 180° 10 min ou micro-ondes 2 min."
+      }
+    },
+    {
+      "id": "minestrone-oeufs-mimosa",
+      "nom": "Minestrone & œufs mimosa",
+      "difficulte": "facile",
+      "tempsMin": 35,
+      "tempsActifMin": 15,
+      "ingredients": [
+        {
+          "nom": "Carottes",
+          "quantite": 200,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 0.2,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Courgettes",
+          "quantite": 400,
+          "unite": "g",
+          "rayon": "legumes",
+          "prixEstime": 0.88,
+          "fraisJours": 5
+        },
+        {
+          "nom": "Poireau",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.6,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Haricots blancs (boîte 400 g)",
+          "quantite": 1,
+          "unite": "boite",
+          "rayon": "epicerie",
+          "prixEstime": 0.65
+        },
+        {
+          "nom": "Petites pâtes",
+          "quantite": 120,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.18
+        },
+        {
+          "nom": "Tomates concassées (boîte 400 g)",
+          "quantite": 1,
+          "unite": "boite",
+          "rayon": "epicerie",
+          "prixEstime": 0.55
+        },
+        {
+          "nom": "Bouillon de légumes (cube)",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "epicerie",
+          "prixEstime": 0.1,
+          "placard": true
+        },
+        {
+          "nom": "Œufs",
+          "quantite": 9,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 1.98,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Mayonnaise sans sucre",
+          "quantite": 3,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.24
+        },
+        {
+          "nom": "Parmesan râpé",
+          "quantite": 40,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.8,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Fromage blanc 0 %",
+          "quantite": 150,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.3,
+          "fraisJours": 10
+        }
+      ],
+      "portions": {
+        "alex": "1 grand bol de minestrone + 3 œufs mimosa + 1 c. à soupe de parmesan + 1 bol de fromage blanc 0 % (150 g) en dessert",
+        "sam": "1 bol de bouillon de légumes servi AVANT les pâtes et les haricots + 4 œufs mimosa + 2 c. à soupe de parmesan",
+        "lou": "1 bol de minestrone + 1 œuf mimosa",
+        "noa": "½ bol de minestrone + 1 œuf"
+      },
+      "variantes": {
+        "sam": "Son bol est servi avant l'ajout des pâtes et des haricots. ≈ 8 g de glucides nets."
+      },
+      "notes": [
+        "Dîner léger du samedi."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 620,
+          "proteines": 48,
+          "glucides": 55,
+          "lipides": 25
+        },
+        "sam": {
+          "kcal": 525,
+          "proteines": 35,
+          "glucides": 8,
+          "lipides": 39
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Légumes en dés revenus 3 min, tomates concassées + bouillon + 1,5 l d'eau, 15 min.",
+          "minuteurMin": 18
+        },
+        {
+          "texte": "Prélever le bol de Sam ; ajouter haricots et petites pâtes, 8 min.",
+          "minuteurMin": 8
+        },
+        {
+          "texte": "Œufs durs 10 min en parallèle ; jaunes écrasés à la mayonnaise, remplir les blancs.",
+          "minuteurMin": 10
+        }
+      ],
+      "conservation": {
+        "frigoJours": 3,
+        "congelable": true,
+        "rechauffage": "Minestrone : 4 min à la casserole ; œufs froids."
+      }
+    },
+    {
+      "id": "poulet-dimanche-puree-brocoli",
+      "nom": "Poulet du dimanche, purée maison & brocoli",
+      "difficulte": "facile",
+      "tempsMin": 30,
+      "tempsActifMin": 15,
+      "ingredients": [
+        {
+          "nom": "Pommes de terre",
+          "quantite": 900,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.9,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Lait demi-écrémé",
+          "quantite": 200,
+          "unite": "ml",
+          "rayon": "laitiers",
+          "prixEstime": 0.19,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Brocoli surgelé",
+          "quantite": 800,
+          "unite": "g",
+          "rayon": "surgeles",
+          "prixEstime": 1.36
+        },
+        {
+          "nom": "Muscade",
+          "quantite": 1,
+          "unite": "cc",
+          "rayon": "epicerie",
+          "prixEstime": 0.05,
+          "placard": true
+        }
+      ],
+      "portions": {
+        "alex": "2 cuisses du rituel sans la peau + 2 poings de purée (250 g) + 1 poignée de brocoli",
+        "sam": "1 cuisse ½ du rituel + 2½ poignées de brocoli + 1 noisette de beurre",
+        "lou": "½ cuisse + 1 poing de purée + brocoli",
+        "noa": "½ cuisse effilochée + 1 poing de purée"
+      },
+      "variantes": {
+        "sam": "Sans purée ; brocoli au beurre (articles fixes). ≈ 11 g de glucides nets."
+      },
+      "notes": [
+        "Mettre de côté : 2 cuisses + 2 poings de purée + brocoli → box de Alex lundi."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 620,
+          "proteines": 61,
+          "glucides": 44,
+          "lipides": 18
+        },
+        "sam": {
+          "kcal": 500,
+          "proteines": 45,
+          "glucides": 11,
+          "lipides": 28
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Pommes de terre à la vapeur 20 min, écraser avec le lait chaud et 15 g de beurre.",
+          "minuteurMin": 20
+        },
+        {
+          "texte": "Brocoli au micro-ondes 7 min.",
+          "minuteurMin": 7
+        },
+        {
+          "texte": "Poulet du rituel réchauffé 5 min au four.",
+          "minuteurMin": 5
+        },
+        {
+          "texte": "Mettre de côté la box de Alex pour lundi."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 3,
+        "congelable": true,
+        "rechauffage": "Micro-ondes 2 min couvert ; purée avec un trait de lait."
+      }
+    },
+    {
+      "id": "hachis-parmentier-tomate",
+      "nom": "Hachis parmentier à la sauce tomate (purée de chou-fleur pour Sam)",
+      "difficulte": "facile",
+      "tempsMin": 50,
+      "tempsActifMin": 25,
+      "ingredients": [
+        {
+          "nom": "Haché de bœuf 5 %",
+          "quantite": 450,
+          "unite": "g",
+          "rayon": "proteines",
+          "prixEstime": 4.41,
+          "fraisJours": 2
+        },
+        {
+          "nom": "Pommes de terre",
+          "quantite": 700,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.7,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Chou-fleur surgelé",
+          "quantite": 300,
+          "unite": "g",
+          "rayon": "surgeles",
+          "prixEstime": 0.54
+        },
+        {
+          "nom": "Lait demi-écrémé",
+          "quantite": 150,
+          "unite": "ml",
+          "rayon": "laitiers",
+          "prixEstime": 0.14,
+          "fraisJours": 7
+        },
+        {
+          "nom": "Emmental râpé",
+          "quantite": 70,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.6,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Oignons",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.15,
+          "fraisJours": 21
+        }
+      ],
+      "portions": {
+        "alex": "1 grosse part : ≈ 170 g de viande à la tomate sous 2 poings de purée + emmental gratiné",
+        "sam": "≈ 140 g de viande à la tomate sous 2 poignées de purée de chou-fleur au beurre + 1 grosse poignée d'emmental",
+        "lou": "1 petite part : 60 g de viande + 1 poing de purée",
+        "noa": "½ part enfant"
+      },
+      "variantes": {
+        "sam": "Même farce, sous une purée de chou-fleur au beurre (articles fixes) dans un petit plat. ≈ 13 g de glucides nets."
+      },
+      "notes": [
+        "Utilise la ½ sauce tomate du rituel gardée au frigo.",
+        "Se réchauffe parfaitement : Sam dîne plus tard ce soir-là."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 630,
+          "proteines": 49,
+          "glucides": 52,
+          "lipides": 17
+        },
+        "sam": {
+          "kcal": 490,
+          "proteines": 43,
+          "glucides": 13,
+          "lipides": 28
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Pommes de terre en cubes à l'eau, chou-fleur dans le panier vapeur au-dessus : 20 min.",
+          "minuteurMin": 20
+        },
+        {
+          "texte": "Pendant ce temps : oignon + haché (décongelé lundi soir) 8 min, + ½ sauce tomate du rituel, 5 min.",
+          "minuteurMin": 13
+        },
+        {
+          "texte": "Écraser les pommes de terre avec le lait ; mixer le chou-fleur avec 15 g de beurre."
+        },
+        {
+          "texte": "Grand plat et petit plat (Sam), emmental, gratiner 15 min à 210°.",
+          "minuteurMin": 15
+        }
+      ],
+      "conservation": {
+        "frigoJours": 3,
+        "congelable": true,
+        "rechauffage": "Four 180° 15 min ou micro-ondes 3 min couvert."
+      }
+    },
+    {
+      "id": "wok-dinde-legumes-nouilles",
+      "nom": "Wok de dinde, œufs & légumes, nouilles",
+      "difficulte": "facile",
+      "tempsMin": 25,
+      "tempsActifMin": 20,
+      "ingredients": [
+        {
+          "nom": "Escalopes de dinde",
+          "quantite": 500,
+          "unite": "g",
+          "rayon": "proteines",
+          "prixEstime": 4.95,
+          "fraisJours": 5
+        },
+        {
+          "nom": "Œufs",
+          "quantite": 5,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 1.1,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Légumes pour wok surgelés (sans maïs)",
+          "quantite": 750,
+          "unite": "g",
+          "rayon": "surgeles",
+          "prixEstime": 1.99
+        },
+        {
+          "nom": "Nouilles de blé",
+          "quantite": 250,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.8
+        },
+        {
+          "nom": "Sauce soja",
+          "quantite": 3,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.21
+        },
+        {
+          "nom": "Gingembre (morceau)",
+          "quantite": 1,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.2,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Huile de colza",
+          "quantite": 2,
+          "unite": "cs",
+          "rayon": "epicerie",
+          "prixEstime": 0.16,
+          "placard": true
+        },
+        {
+          "nom": "Ail (gousses)",
+          "quantite": 2,
+          "unite": "piece",
+          "rayon": "legumes",
+          "prixEstime": 0.14,
+          "fraisJours": 30
+        }
+      ],
+      "portions": {
+        "alex": "1 paume de dinde (140 g crus) + 1 œuf + 1 poing de nouilles (60 g crues) + 2 poignées de légumes",
+        "sam": "1 paume de dinde (130 g crus) + 1 œuf + 2 poignées de légumes + 1 c. à soupe d'huile + 15 g d'amandes effilées",
+        "lou": "quelques lanières de dinde + ½ œuf + ½ poing de nouilles + légumes",
+        "noa": "quelques lanières de dinde + ½ œuf + nouilles coupées courtes"
+      },
+      "variantes": {
+        "sam": "Sans nouilles ; + huile et amandes effilées (articles fixes). ≈ 9 g de glucides nets."
+      },
+      "notes": [
+        "Mettre de côté une 2e portion complète pour Alex (box de jeudi)."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 555,
+          "proteines": 50,
+          "glucides": 53,
+          "lipides": 12
+        },
+        "sam": {
+          "kcal": 475,
+          "proteines": 42,
+          "glucides": 9,
+          "lipides": 29
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Dinde en lanières saisie 5 min, réserver.",
+          "minuteurMin": 5
+        },
+        {
+          "texte": "Nouilles 4 min.",
+          "minuteurMin": 4
+        },
+        {
+          "texte": "Wok : légumes 6 min, œufs brouillés 2 min.",
+          "minuteurMin": 8
+        },
+        {
+          "texte": "Dinde, soja, gingembre, ail 1 min."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 2,
+        "congelable": false,
+        "rechauffage": "Micro-ondes 2 min couvert avec 1 c. à soupe d'eau."
+      }
+    },
+    {
+      "id": "gratin-chou-fleur-thon-tomate",
+      "nom": "Gratin de chou-fleur au thon & sauce tomate maison (pâtes à côté)",
+      "difficulte": "facile",
+      "tempsMin": 40,
+      "tempsActifMin": 12,
+      "ingredients": [
+        {
+          "nom": "Chou-fleur surgelé",
+          "quantite": 1000,
+          "unite": "g",
+          "rayon": "surgeles",
+          "prixEstime": 1.8
+        },
+        {
+          "nom": "Thon au naturel (boîte 140 g égoutté)",
+          "quantite": 3,
+          "unite": "boite",
+          "rayon": "proteines",
+          "prixEstime": 3.9
+        },
+        {
+          "nom": "Œufs",
+          "quantite": 4,
+          "unite": "piece",
+          "rayon": "proteines",
+          "prixEstime": 0.88,
+          "fraisJours": 21
+        },
+        {
+          "nom": "Emmental râpé",
+          "quantite": 150,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 1.29,
+          "fraisJours": 14
+        },
+        {
+          "nom": "Pâtes",
+          "quantite": 250,
+          "unite": "g",
+          "rayon": "feculents",
+          "prixEstime": 0.38
+        },
+        {
+          "nom": "Fromage blanc 0 %",
+          "quantite": 300,
+          "unite": "g",
+          "rayon": "laitiers",
+          "prixEstime": 0.6,
+          "fraisJours": 10
+        }
+      ],
+      "portions": {
+        "alex": "1 grosse part de gratin (≈ ¾ de boîte de thon) + 1 poing de pâtes (80 g crues) + 1 bol de fromage blanc 0 % (150 g) en dessert",
+        "sam": "1 grosse part de gratin + 1 noisette de beurre",
+        "lou": "1 petite part de gratin + 1 poing de pâtes",
+        "noa": "½ part de gratin + ½ poing de pâtes"
+      },
+      "variantes": {
+        "sam": "Le gratin seul, sans pâtes. ≈ 13 g de glucides nets."
+      },
+      "notes": [
+        "Utilise la ½ sauce tomate du rituel sortie du congélateur mercredi soir.",
+        "Mettre de côté 1 part + pâtes + 1 fromage blanc pour Alex vendredi midi."
+      ],
+      "macros": {
+        "alex": {
+          "kcal": 690,
+          "proteines": 58,
+          "glucides": 70,
+          "lipides": 15
+        },
+        "sam": {
+          "kcal": 475,
+          "proteines": 44,
+          "glucides": 13,
+          "lipides": 26
+        }
+      },
+      "etapes": [
+        {
+          "texte": "Four 210°. Chou-fleur surgelé 6 min au micro-ondes, égoutter.",
+          "minuteurMin": 6
+        },
+        {
+          "texte": "Plat : chou-fleur + thon + ½ sauce tomate du rituel (décongelée) ; 4 œufs battus versés dessus ; emmental."
+        },
+        {
+          "texte": "Gratiner 25 min.",
+          "minuteurMin": 25
+        },
+        {
+          "texte": "Pâtes à part."
+        }
+      ],
+      "conservation": {
+        "frigoJours": 3,
+        "congelable": true,
+        "rechauffage": "Four 180° 10 min ou micro-ondes 2 min."
+      }
+    }
+  ],
+  "fixes": [
+    {
+      "nom": "Skyr nature (pot 450 g)",
+      "quantite": 3,
+      "unite": "piece",
+      "rayon": "laitiers",
+      "prixEstime": 3.75,
+      "pour": [
+        "alex"
+      ],
+      "frequence": "hebdo"
+    },
+    {
+      "nom": "Bananes",
+      "quantite": 1,
+      "unite": "kg",
+      "rayon": "fruits",
+      "prixEstime": 1.49,
+      "pour": [
+        "alex"
+      ],
+      "frequence": "hebdo"
+    },
+    {
+      "nom": "Pommes",
+      "quantite": 1.5,
+      "unite": "kg",
+      "rayon": "fruits",
+      "prixEstime": 2.19,
+      "pour": "famille",
+      "frequence": "hebdo"
+    },
+    {
+      "nom": "Amandes",
+      "quantite": 200,
+      "unite": "g",
+      "rayon": "epicerie",
+      "prixEstime": 2.29,
+      "pour": [
+        "alex",
+        "sam"
+      ],
+      "frequence": "hebdo"
+    },
+    {
+      "nom": "Clear whey (pot ~30 doses)",
+      "quantite": 1,
+      "unite": "piece",
+      "rayon": "epicerie",
+      "prixEstime": 25.0,
+      "pour": [
+        "alex"
+      ],
+      "frequence": "mensuel"
+    },
+    {
+      "nom": "Avocats",
+      "quantite": 4,
+      "unite": "piece",
+      "rayon": "keto",
+      "prixEstime": 2.8,
+      "pour": [
+        "sam"
+      ],
+      "frequence": "hebdo"
+    },
+    {
+      "nom": "Beurre doux",
+      "quantite": 250,
+      "unite": "g",
+      "rayon": "keto",
+      "prixEstime": 2.19,
+      "pour": [
+        "sam"
+      ],
+      "frequence": "hebdo"
+    },
+    {
+      "nom": "Crème fraîche épaisse",
+      "quantite": 200,
+      "unite": "ml",
+      "rayon": "keto",
+      "prixEstime": 0.89,
+      "pour": [
+        "sam"
+      ],
+      "frequence": "hebdo"
+    },
+    {
+      "nom": "Fromages variés (emmental en bloc, bûche de chèvre)",
+      "quantite": 250,
+      "unite": "g",
+      "rayon": "keto",
+      "prixEstime": 2.5,
+      "pour": [
+        "sam"
+      ],
+      "frequence": "hebdo"
+    },
+    {
+      "nom": "Olives (bocal)",
+      "quantite": 1,
+      "unite": "piece",
+      "rayon": "keto",
+      "prixEstime": 1.29,
+      "pour": [
+        "sam"
+      ],
+      "frequence": "hebdo"
+    },
+    {
+      "nom": "Noix de Grenoble",
+      "quantite": 200,
+      "unite": "g",
+      "rayon": "keto",
+      "prixEstime": 2.39,
+      "pour": [
+        "sam"
+      ],
+      "frequence": "mensuel"
+    },
+    {
+      "nom": "Chocolat noir 85 %",
+      "quantite": 100,
+      "unite": "g",
+      "rayon": "keto",
+      "prixEstime": 1.39,
+      "pour": [
+        "sam"
+      ],
+      "frequence": "hebdo"
+    },
+    {
+      "nom": "Fruits rouges surgelés",
+      "quantite": 1,
+      "unite": "sachet",
+      "rayon": "surgeles",
+      "prixEstime": 2.79,
+      "pour": [
+        "sam"
+      ],
+      "frequence": "mensuel"
+    },
+    {
+      "nom": "Citrons",
+      "quantite": 3,
+      "unite": "piece",
+      "rayon": "fruits",
+      "prixEstime": 0.99,
+      "pour": "famille",
+      "frequence": "hebdo"
+    },
+    {
+      "nom": "Sardines à l'huile d'olive",
+      "quantite": 1,
+      "unite": "boite",
+      "rayon": "keto",
+      "prixEstime": 0.89,
+      "pour": [
+        "sam"
+      ],
+      "frequence": "hebdo"
+    },
+    {
+      "nom": "Eau pétillante (6 × 1,5 l)",
+      "quantite": 9,
+      "unite": "l",
+      "rayon": "epicerie",
+      "prixEstime": 1.74,
+      "pour": [
+        "sam"
+      ],
+      "frequence": "hebdo"
+    }
+  ]
+}
