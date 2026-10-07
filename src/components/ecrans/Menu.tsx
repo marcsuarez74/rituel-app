@@ -1,13 +1,15 @@
 import { dateDuJour, ordreJours } from '../../lib/cycle/calendrier';
 import type { CycleActif, ReglagesFoyer } from '../../lib/cycle/etat';
 import { semaineCoches } from '../../lib/cycle/etat';
-import { idCocheRepas, microBatchDuJour, repasDuJour } from '../../lib/cycle/menu';
+import { microBatchDuJour } from '../../lib/cycle/menu';
+import { repasAvecReports } from '../../lib/cycle/reports';
 import type { Jour, MembreId } from '../../lib/cycle/types';
 import { LETTRES } from '../../lib/cycle/types';
 import { capitalize } from '../../lib/text';
 import { Icon } from '../Icon';
-import { CarteRepas } from '../menu/CarteRepas';
+import { RepasDuJour } from '../menu/RepasDuJour';
 import { useCoches } from '../useCoches';
+import { useReports } from '../useReports';
 
 // Onglet Menu (spec v2 §3, écran 2) : bande des 7 jours à partir du jour des
 // courses (point = journée faite), repas du jour du membre, micro-batch du soir.
@@ -40,16 +42,17 @@ export function Menu({
   const jour = jourVu ?? (jours.find((j) => j.date === aujourdhui) ?? jours[0]).jour;
 
   const { coches, basculer } = useCoches(semaineCoches(actif.id, semaine), syncVersion);
-  const repas = repasDuJour(actif.cycle, lettre, jour, moi);
-  const faits = repas.filter((r) => coches[idCocheRepas(lettre, jour, r)]).length;
+  const { reports, enregistrer } = useReports(actif.id, syncVersion);
+  const repas = repasAvecReports(actif.cycle, semaine, jour, moi, reports);
+  const faits = repas.filter((x) => coches[x.id]).length;
   const date = jours.find((j) => j.jour === jour)!.date;
 
   return (
     <>
       <div className="bande-jours" role="tablist" aria-label="Jours">
         {jours.map((j) => {
-          const liste = repasDuJour(actif.cycle, lettre, j.jour, moi);
-          const complet = liste.length > 0 && liste.every((r) => coches[idCocheRepas(lettre, j.jour, r)]);
+          const liste = repasAvecReports(actif.cycle, semaine, j.jour, moi, reports);
+          const complet = liste.length > 0 && liste.every((x) => coches[x.id]);
           return (
             <button
               key={j.jour}
@@ -76,21 +79,18 @@ export function Menu({
         </p>
       </div>
       {repas.length === 0 && <p className="muted">Rien de prévu pour toi ce jour-là.</p>}
-      {repas.map((r) => {
-        const id = idCocheRepas(lettre, jour, r);
-        return (
-          <CarteRepas
-            key={r.id}
-            cycle={actif.cycle}
-            repas={r}
-            membres={foyer.membres}
-            moi={moi}
-            fait={!!coches[id]}
-            onBasculer={() => basculer(id)}
-            onOuvrir={(recetteId) => onOuvrirRecette(recetteId, id)}
-          />
-        );
-      })}
+      <RepasDuJour
+        actif={actif}
+        foyer={foyer}
+        semaine={semaine}
+        jour={jour}
+        moi={moi}
+        coches={coches}
+        reports={reports}
+        onReports={enregistrer}
+        onBasculer={basculer}
+        onOuvrir={onOuvrirRecette}
+      />
       {microBatchDuJour(actif.cycle, lettre, jour).map((m) => (
         <section key={m.id} className="anticipe">
           <Icon name="clock" size={20} />

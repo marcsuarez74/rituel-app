@@ -4,14 +4,16 @@ import { estimerSemaine } from '../../lib/cycle/budget';
 import { listeCourses } from '../../lib/cycle/courses';
 import type { CycleActif, ReglagesFoyer } from '../../lib/cycle/etat';
 import { semaineCoches } from '../../lib/cycle/etat';
-import { compteRepasSemaine, idCocheRepas, jourDeDate, repasDuJour } from '../../lib/cycle/menu';
+import { compteRepasSemaine, jourDeDate } from '../../lib/cycle/menu';
+import { repasAvecReports } from '../../lib/cycle/reports';
 import type { Lettre, MembreId } from '../../lib/cycle/types';
 import { formatJourMoisCourt } from '../../lib/dates';
 import { formatEuro } from '../../lib/prix';
 import { Icon } from '../Icon';
-import { CarteRepas } from '../menu/CarteRepas';
+import { RepasDuJour } from '../menu/RepasDuJour';
 import type { Onglet } from '../shell/onglets';
 import { useCoches } from '../useCoches';
+import { useReports } from '../useReports';
 
 const dateLongue = (iso: string): string =>
   new Date(`${iso}T12:00:00`).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -62,6 +64,7 @@ export function Aujourdhui({
 }) {
   const index = position.etat === 'semaine' ? position.index : 0;
   const { coches, basculer } = useCoches(semaineCoches(actif.id, index), syncVersion);
+  const { reports, enregistrer } = useReports(actif.id, syncVersion);
   const tete = (
     <>
       <p className="greeting">Salut {prenom} 👋</p>
@@ -84,7 +87,7 @@ export function Aujourdhui({
   const repas = compteRepasSemaine(actif.cycle, lettre, moi, coches);
   const courses = listeCourses(actif.cycle, lettre, index).lignes;
   const achetes = courses.filter((l) => coches[l.id]).length;
-  const duJour = repasDuJour(actif.cycle, lettre, jour, moi);
+  const duJour = repasAvecReports(actif.cycle, index, jour, moi, reports);
   const rituel = actif.cycle.rituel;
 
   return (
@@ -137,21 +140,18 @@ export function Aujourdhui({
         </button>
       </div>
       {duJour.length === 0 && <p className="muted">Rien de prévu pour toi aujourd'hui.</p>}
-      {duJour.map((r) => {
-        const id = idCocheRepas(lettre, jour, r);
-        return (
-          <CarteRepas
-            key={r.id}
-            cycle={actif.cycle}
-            repas={r}
-            membres={foyer.membres}
-            moi={moi}
-            fait={!!coches[id]}
-            onBasculer={() => basculer(id)}
-            onOuvrir={(recetteId) => onOuvrirRecette(recetteId, id)}
-          />
-        );
-      })}
+      <RepasDuJour
+        actif={actif}
+        foyer={foyer}
+        semaine={index}
+        jour={jour}
+        moi={moi}
+        coches={coches}
+        reports={reports}
+        onReports={enregistrer}
+        onBasculer={basculer}
+        onOuvrir={onOuvrirRecette}
+      />
     </>
   );
 }

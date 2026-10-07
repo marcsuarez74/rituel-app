@@ -271,13 +271,13 @@ Clés `localStorage` (préfixe historique conservé) :
 ```ts
 interface Report {
   repas: string;              // id de coche du repas d'origine (stable)
-  vers: { semaine: number; jour: Jour } | 'abandon';
+  vers: { semaine: number; jour?: Jour } | 'abandon'; // sans jour : « reporté », à placer
   cree: string;               // ISO
 }
 ```
 
 - **Reporter** (feuille sous un repas) : *Demain* (si le lendemain a déjà un plat du même moment, celui-ci passe en « reporté ») · *Semaine prochaine* · *On ne le fera pas*. Toast « Annuler » 5 s.
-- **Fin de semaine** : tout repas non coché, non reporté, non abandonné devient « reporté de la semaine dernière » (encadré en tête de Menu/Aujourd'hui : *Ce soir* · *Un autre jour* · *On ne le fera pas*).
+- **« Semaine prochaine »** : le plat arrive dans l'encadré « Reporté de la semaine dernière » (en tête de Menu/Aujourd'hui : *Le {jour affiché}* · *On ne le fera pas*). Décision d'implémentation : pas de bascule automatique des repas non cochés (sans coches, l'encadré se remplirait chaque semaine).
 - **Avertissement fraîcheur** : un ingrédient avec `fraisJours` dont la date d'achat (jour des courses) + `fraisJours` est dépassée à la date cible → message (« Poulet frais : à congeler ce soir »).
 - **Courses** : les ingrédients des plats reportés vers la semaine n apparaissent dans la liste de la semaine n **barrés « déjà au frigo ? »** ; un tap les remet dans la liste (si le produit n'est plus bon).
 - **Pause** (écran Mon cycle) : insère une semaine vide après la semaine courante ; annulable tant qu'elle n'a pas commencé.

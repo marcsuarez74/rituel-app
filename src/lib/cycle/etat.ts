@@ -53,7 +53,7 @@ export interface CycleActif {
 
 export interface Report {
   repas: string; // id de coche du repas d'origine (stable)
-  vers: { semaine: number; jour: Jour } | 'abandon';
+  vers: { semaine: number; jour?: Jour } | 'abandon'; // sans jour : « reporté », à placer
   cree: string; // ISO
 }
 
@@ -105,7 +105,7 @@ const FOYER = objet({
 
 const REPORT = objet({
   repas: 'texte',
-  vers: { ou: [{ parmi: ['abandon'] }, objet({ semaine: 'nombre', jour: JOUR })] },
+  vers: { ou: [{ parmi: ['abandon'] }, objet({ semaine: 'nombre', jour: opt(JOUR) })] },
   cree: 'texte',
 });
 

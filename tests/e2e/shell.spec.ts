@@ -163,4 +163,25 @@ test.describe('Shell v2 — barre du bas', () => {
       expect(await debord()).toBeLessThanOrEqual(OVERFLOW_TOLERANCE);
     });
   }
+
+  test('report : la feuille tient à 320 px, le toast permet d’annuler', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 640 });
+    await page.goto('/');
+    await page.evaluate(() => document.fonts.ready);
+    await page
+      .getByRole('navigation', { name: 'Navigation principale' })
+      .getByRole('button', { name: 'Menu', exact: true })
+      .click();
+    await page.getByRole('button', { name: 'Pas ce soir : reporter' }).first().click();
+    const feuille = page.getByRole('dialog');
+    await expect(feuille).toBeVisible();
+    const debord = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(debord).toBeLessThanOrEqual(OVERFLOW_TOLERANCE);
+    await feuille.getByRole('button', { name: 'On ne le fera pas' }).click();
+    await expect(page.getByRole('status')).toContainText('Retiré du menu');
+    await page.getByRole('button', { name: 'Annuler' }).click();
+    await expect(page.getByRole('status')).toHaveCount(0);
+  });
 });

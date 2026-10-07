@@ -1059,6 +1059,88 @@ textarea {
   font-weight: 600;
 }
 
+.reporter {
+  display: block;
+  margin-top: var(--sp-4);
+}
+
+.a-placer {
+  padding-top: var(--sp-8);
+  border-top: 1px solid var(--border);
+}
+
+.a-placer p {
+  margin: 0;
+}
+
+.voile {
+  position: fixed;
+  z-index: 20;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgb(38 49 43 / 0.45);
+}
+
+.feuille {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+  width: 100%;
+  max-width: 560px;
+  padding: var(--sp-20) var(--sp-16) calc(var(--sp-16) + env(safe-area-inset-bottom));
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: var(--surface);
+}
+
+.option-report {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-height: 56px;
+  padding: var(--sp-10) var(--sp-14);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+}
+
+.option-report span {
+  color: var(--danger);
+  font-size: var(--fs-sec);
+}
+
+.toast {
+  position: fixed;
+  z-index: 30;
+  left: var(--sp-16);
+  right: var(--sp-16);
+  bottom: calc(96px + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-12);
+  max-width: 528px;
+  margin: 0 auto;
+  padding: var(--sp-8) var(--sp-8) var(--sp-8) var(--sp-16);
+  border-radius: 14px;
+  background: var(--text);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.toast button {
+  min-height: 48px;
+  padding: 0 var(--sp-12);
+  border: 0;
+  background: none;
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
 .pied-recette {
   position: fixed;
   z-index: 10;

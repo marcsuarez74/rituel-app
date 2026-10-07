@@ -16,16 +16,20 @@ export function CarteRepas({
   membres,
   moi,
   fait,
+  origine,
   onBasculer,
   onOuvrir,
+  onReporter,
 }: {
   cycle: Cycle;
   repas: Repas;
   membres: Membre[];
   moi: MembreId;
   fait: boolean;
+  origine?: string; // jour d'origine d'un repas reporté
   onBasculer: () => void;
   onOuvrir: (recetteId: string) => void;
+  onReporter?: () => void;
 }) {
   const recette = trouverRecette(cycle, repas.recette);
   const titre = titreRepas(cycle, repas);
@@ -35,7 +39,10 @@ export function CarteRepas({
     : null;
   const corps = (
     <>
-      <span className="carte-repas-moment">{libelleMoment(repas)}</span>
+      <span className="carte-repas-moment">
+        {libelleMoment(repas)}
+        {origine && ` · reporté de ${origine}`}
+      </span>
       <span className="carte-repas-titre">{titre}</span>
       {meta && <span className="carte-repas-meta">{meta}</span>}
     </>
@@ -70,6 +77,11 @@ export function CarteRepas({
           <b>{repas.exception.quand}</b> {repas.exception.pour.map((id) => prenomMembre(membres, id)).join(', ')} :{' '}
           {repas.exception.texte}
         </p>
+      )}
+      {onReporter && !fait && (
+        <button type="button" className="lien reporter" onClick={onReporter}>
+          Pas ce soir : reporter
+        </button>
       )}
       {repas.boite && (
         <p className="carte-repas-ligne">

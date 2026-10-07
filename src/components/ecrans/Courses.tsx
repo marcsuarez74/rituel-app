@@ -2,7 +2,8 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { estimerSemaine, payeEntre } from '../../lib/cycle/budget';
 import { ajouterJours, debutSemaine } from '../../lib/cycle/calendrier';
-import { LIBELLES_RAYON, formatQuantite, listeCourses, type LigneCourse } from '../../lib/cycle/courses';
+import { LIBELLES_RAYON, cleIngredient, formatQuantite, listeCourses, type LigneCourse } from '../../lib/cycle/courses';
+import { ingredientsAuFrigo } from '../../lib/cycle/reports';
 import type { CycleActif, ReglagesFoyer } from '../../lib/cycle/etat';
 import { semaineCoches } from '../../lib/cycle/etat';
 import { LETTRES, RAYONS } from '../../lib/cycle/types';
@@ -10,6 +11,7 @@ import { formatEuro, parseEuro } from '../../lib/prix';
 import { getDepenses, saveDepense } from '../../lib/storage';
 import { Icon } from '../Icon';
 import { useCoches } from '../useCoches';
+import { useReports } from '../useReports';
 
 const environ = (n: number) => `≈ ${Math.round(n)} €`;
 
@@ -33,6 +35,8 @@ export function Courses({
   const { lignes, placard } = listeCourses(actif.cycle, lettre, semaine);
   const estime = estimerSemaine(actif.cycle, lettre);
   const { coches, basculer } = useCoches(semaineCoches(actif.id, semaine), syncVersion);
+  const { reports } = useReports(actif.id, syncVersion);
+  const auFrigo = ingredientsAuFrigo(actif.cycle, semaine, reports);
   const [magasin, setMagasin] = useState(false);
   const [saisie, setSaisie] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
@@ -165,6 +169,31 @@ export function Courses({
           </section>
         );
       })}
+
+      {auFrigo.length > 0 && (
+        <section className="profile-section" aria-labelledby="h-frigo">
+          <h2 id="h-frigo">Déjà au frigo ?</h2>
+          <p className="muted">Plats reportés : déjà achetés. Touche un produit s'il faut le racheter.</p>
+          {auFrigo.map((i) => {
+            const id = `frigo:${lettre}:${cleIngredient(i.nom)}`;
+            return (
+              <button
+                key={id}
+                type="button"
+                className="ligne-cochable au-frigo"
+                aria-pressed={!coches[id]}
+                onClick={() => basculer(id)}
+              >
+                <span className="case" aria-hidden="true">
+                  <Icon name="check" size={16} />
+                </span>
+                <span className="ligne-nom">{i.nom}</span>
+                <span className="ligne-qte">{coches[id] ? 'à racheter' : formatQuantite(i.quantite, i.unite)}</span>
+              </button>
+            );
+          })}
+        </section>
+      )}
 
       {placard.length > 0 && (
         <details className="profile-section placard">

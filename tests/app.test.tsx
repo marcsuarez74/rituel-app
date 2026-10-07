@@ -153,6 +153,45 @@ describe('App shell v2', () => {
     expect(await screen.findByRole('button', { name: 'Recette diner-a-jeudi : fait, annuler' })).toBeInTheDocument();
   });
 
+  it('report : demain (toast Annuler), semaine prochaine → à placer, courses « déjà au frigo ? »', async () => {
+    initProfile();
+    const { importerCycle } = await import('../src/lib/cycle/valider');
+    const { saveCycle, getReports } = await import('../src/lib/cycle/etat');
+    const { enFichiers, quatreFichiers } = await import('./lib/cycle/fabrique');
+    const fs = quatreFichiers();
+    for (const f of fs) for (const m of f.menus) for (const j of m.jours) for (const r of j.repas) r.pour = 'famille';
+    saveCycle({ id: 'c7', numero: 1, debut: '2026-10-03', pauses: [], cycle: importerCycle(enFichiers(fs)).cycle! });
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(await screen.findByRole('button', { name: /Toute la semaine/ }));
+    await user.click(await screen.findByRole('button', { name: 'Pas ce soir : reporter' }));
+    const feuille = screen.getByRole('dialog', { name: 'Reporter « Recette diner-a-mercredi »' });
+    await user.click(within(feuille).getByRole('button', { name: /Demain, jeudi/ }));
+    expect(screen.getByRole('status')).toHaveTextContent('Reporté : demain, jeudi');
+    expect(screen.queryByText('Recette diner-a-mercredi')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('tab', { name: 'Jeudi' }));
+    expect(screen.getByText(/reporté de mercredi/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Annuler' }));
+    expect(getReports('c7')).toEqual([]);
+
+    await user.click(screen.getByRole('tab', { name: 'Mercredi' }));
+    await user.click(screen.getByRole('button', { name: 'Pas ce soir : reporter' }));
+    await user.click(screen.getByRole('button', { name: /Semaine prochaine/ }));
+    await user.click(screen.getByRole('button', { name: 'Semaine suivante' }));
+    const encadre = screen.getByRole('region', { name: 'Reporté de la semaine dernière' });
+    expect(within(encadre).getByText('Recette diner-a-mercredi')).toBeInTheDocument();
+    await user.click(within(encadre).getByRole('button', { name: /^Le / }));
+    expect(screen.queryByRole('region', { name: 'Reporté de la semaine dernière' })).not.toBeInTheDocument();
+
+    await user.click(onglet('Courses'));
+    const frigo = await screen.findByRole('region', { name: 'Déjà au frigo ?' });
+    const oeufs = within(frigo).getByRole('button', { name: /Œufs/ });
+    expect(oeufs).toHaveAttribute('aria-pressed', 'true');
+    await user.click(oeufs);
+    expect(oeufs).toHaveTextContent('à racheter');
+  });
+
   it('ne pose pas data-profile sur <html> (accent unique)', () => {
     initProfile('melanie');
     render(<App />);
