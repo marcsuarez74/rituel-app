@@ -1,5 +1,5 @@
-import { positionCycle, prochainJour } from './calendrier';
-import type { CycleActif } from './etat';
+import { jourDe, positionCycle, prochainJour } from './calendrier';
+import type { CycleActif, ReglagesFoyer } from './etat';
 import type { Cycle, Jour } from './types';
 
 // Écran Mon cycle (spec 2026-10-07 §7) : verrou, démarrage, relance, pause.
@@ -20,6 +20,18 @@ export const demarrer = (cycle: Cycle, precedent: CycleActif | null, debut: stri
 export const relancer = (a: CycleActif, aujourdhui: string, jourCourses: Jour, id: string): CycleActif => ({
   ...demarrer(a.cycle, a, prochainJour(aujourdhui, jourCourses), id),
   relanceDe: a.id,
+});
+
+// Date de début corrigée à tout moment (passé autorisé : « courses faites
+// samedi dernier »). Le jour des courses du foyer suit, sinon les jours du
+// menu seraient décalés. Les coches (par semaine du cycle) restent.
+export const changerDebut = (
+  a: CycleActif,
+  f: ReglagesFoyer,
+  debut: string,
+): { actif: CycleActif; foyer: ReglagesFoyer } => ({
+  actif: { ...a, debut },
+  foyer: f.jourCourses === jourDe(debut) ? f : { ...f, jourCourses: jourDe(debut) },
 });
 
 export const ajouterPause = (a: CycleActif, apres: number): CycleActif =>
