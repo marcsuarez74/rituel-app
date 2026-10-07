@@ -225,50 +225,6 @@ describe('ProfilScreen (unité)', () => {
     vi.unstubAllGlobals();
   });
 
-  it('affiche les objectifs existants et enregistre leurs modifications', async () => {
-    render(
-      <ProfilScreen
-        profile={{ ...profileMarc, poidsObjectif: 72 }}
-        onBack={onBack}
-        onChangeProfile={onChangeProfile}
-        onProfileSaved={onProfileSaved}
-       
-      />,
-    );
-    const user = userEvent.setup();
-    await user.click(ouvrirPage('Objectif'));
-
-    expect(screen.getByLabelText('Poids objectif (kg)')).toHaveValue(72);
-    expect(screen.queryByLabelText('Objectif kcal/jour')).not.toBeInTheDocument();
-
-    await user.clear(screen.getByLabelText('Poids objectif (kg)'));
-    await user.type(screen.getByLabelText('Poids objectif (kg)'), '70');
-    await user.click(screen.getByRole('button', { name: "Enregistrer l'objectif" }));
-
-    const attendu = { ...profileMarc, poidsObjectif: 70 };
-    expect(loadProfile()).toEqual(attendu);
-    expect(onProfileSaved).toHaveBeenCalledWith(attendu);
-  });
-
-  it('permet de supprimer le poids objectif en vidant le champ', async () => {
-    render(
-      <ProfilScreen
-        profile={{ ...profileMarc, poidsObjectif: 72 }}
-        onBack={onBack}
-        onChangeProfile={onChangeProfile}
-        onProfileSaved={onProfileSaved}
-       
-      />,
-    );
-    const user = userEvent.setup();
-    await user.click(ouvrirPage('Objectif'));
-
-    await user.clear(screen.getByLabelText('Poids objectif (kg)'));
-    await user.click(screen.getByRole('button', { name: "Enregistrer l'objectif" }));
-
-    expect(loadProfile()).toEqual(profileMarc);
-  });
-
   it('affiche la version de l’app en pied d’écran', () => {
     render(
       <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
@@ -294,84 +250,6 @@ describe('ProfilScreen (unité)', () => {
     expect(screen.queryByText(/2026 ans/)).not.toBeInTheDocument();
     expect(screen.getByText(/Sélectionne ta date de naissance/)).toBeInTheDocument();
     vi.useRealTimers();
-  });
-
-  it('refuse un poids objectif hors bornes avec une erreur explicite', async () => {
-    render(
-      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
-    );
-    const user = userEvent.setup();
-    await user.click(ouvrirPage('Objectif'));
-
-    await user.type(screen.getByLabelText('Poids objectif (kg)'), '500');
-    await user.click(screen.getByRole('button', { name: "Enregistrer l'objectif" }));
-
-    expect(within(page('Objectif')).getByRole('alert')).toHaveTextContent(/poids objectif/i);
-    expect(loadProfile()).toBeNull();
-  });
-
-  it('complément en doublon : alerte rendue dans la page Objectif', async () => {
-    render(
-      <ProfilScreen profile={{ ...profileMarc, complements: ['Whey'] }} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
-    );
-    const user = userEvent.setup();
-    await user.click(ouvrirPage('Objectif'));
-
-    await user.type(screen.getByLabelText('Ajouter un complément'), 'whey');
-    await user.click(within(page('Objectif')).getByRole('button', { name: /Ajouter/ }));
-
-    expect(within(page('Objectif')).getByRole('alert')).toHaveTextContent(/déjà sélectionné/i);
-  });
-
-  it('sections dédiées : objectif affiché et modifiable', async () => {
-    render(
-      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
-    );
-    const user = userEvent.setup();
-    await user.click(ouvrirPage('Objectif'));
-
-    expect(screen.getByRole('heading', { name: 'Objectif', level: 2 })).toBeInTheDocument();
-    expect(screen.getByRole('radio', { name: 'Perte de poids' })).toBeChecked();
-    expect(screen.getByLabelText('Échéance (optionnelle)')).toHaveValue('2026-12-15');
-
-    await user.click(screen.getByRole('radio', { name: 'Maintien' }));
-    fireEvent.change(screen.getByLabelText('Échéance (optionnelle)'), { target: { value: '' } });
-    await user.click(screen.getByRole('button', { name: "Enregistrer l'objectif" }));
-
-    expect(loadProfile()?.objectif).toEqual({ type: 'maintien' });
-    expect(onProfileSaved).toHaveBeenCalled();
-  });
-
-  it('sections dédiées : compléments ajoutés et retirés, persistés', async () => {
-    render(
-      <ProfilScreen profile={{ ...profileMarc, complements: ['Whey'] }} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
-    );
-    const user = userEvent.setup();
-    await user.click(ouvrirPage('Objectif'));
-
-    expect(screen.getByRole('button', { name: /Whey/ })).toBeInTheDocument();
-    await user.type(screen.getByLabelText('Ajouter un complément'), 'Zinc');
-    await user.click(within(page('Objectif')).getByRole('button', { name: /Ajouter/ }));
-    await user.click(screen.getByRole('button', { name: 'Enregistrer les compléments' }));
-
-    expect(loadProfile()).toMatchObject({ complements: ['Whey', 'Zinc'] });
-
-    await user.click(screen.getByRole('button', { name: /Retirer Whey/ }));
-    await user.click(screen.getByRole('button', { name: 'Enregistrer les compléments' }));
-    expect(loadProfile()).toMatchObject({ complements: ['Zinc'] });
-  });
-
-  it('sections dédiées : régime persisté', async () => {
-    render(
-      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} />,
-    );
-    const user = userEvent.setup();
-    await user.click(ouvrirPage('Objectif'));
-
-    await user.click(screen.getByRole('radio', { name: 'Végétarien' }));
-    await user.click(screen.getByRole('button', { name: 'Enregistrer le régime' }));
-
-    expect(loadProfile()).toMatchObject({ regime: 'vegetarien' });
   });
 
   it('hub : tuile Mes infos avec résumé, ouvre la page, « ‹ Profil » revient', async () => {
@@ -563,5 +441,101 @@ describe('ProfilScreen (intégration via App)', () => {
     expect(loadProfile()).toBeNull();
     expect(await screen.findByRole('heading', { name: /Qui est derrière l'écran/ })).toBeInTheDocument();
     expect(getWeights('marc')).toEqual([{ date: '2026-09-22', kg: 84.2 }]);
+  });
+});
+
+describe('Page Objectif', () => {
+  const ouvrir = async (p: Partial<UserProfile> = {}) => {
+    vi.setSystemTime(new Date('2026-10-07T10:00:00'));
+    const onProfileSaved = vi.fn();
+    render(<ProfilScreen profile={{ ...profileMarc, ...p }} onBack={() => {}} onChangeProfile={() => {}} onProfileSaved={onProfileSaved} />);
+    const user = userEvent.setup();
+    await user.click(ouvrirPage('Objectif'));
+    return { user, onProfileSaved, pageObj: within(page('Objectif')) };
+  };
+
+  beforeEach(() => {
+    localStorage.clear();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('résumé : dernière pesée → poids visé, écart et rythme jusqu’à l’échéance', async () => {
+    addWeight('marc', '2026-10-05', 82.4);
+    const { pageObj } = await ouvrir({ poidsObjectif: 75, objectif: { type: 'perte', echeance: '2026-12-31' } });
+    expect(pageObj.getByText('82,4 kg')).toBeInTheDocument();
+    expect(pageObj.getByText('75 kg')).toBeInTheDocument();
+    expect(pageObj.getByText('−7,4 kg · d’ici le 31 déc.')).toBeInTheDocument();
+    expect(pageObj.getByText('≈ 0,6 kg / semaine')).toBeInTheDocument();
+    expect(pageObj.queryByText(/Rythme ambitieux/)).not.toBeInTheDocument();
+  });
+
+  it('rythme > 1 kg/semaine : alerte douce, non bloquante', async () => {
+    addWeight('marc', '2026-10-05', 82.4);
+    const { pageObj, user } = await ouvrir({ poidsObjectif: 75, objectif: { type: 'perte', echeance: '2026-12-31' } });
+    fireEvent.change(pageObj.getByLabelText(/Échéance/), { target: { value: '2026-11-15' } });
+    expect(pageObj.getByText(/Rythme ambitieux/)).toBeInTheDocument();
+    await user.click(pageObj.getByRole('button', { name: 'Enregistrer' }));
+    expect(loadProfile()?.objectif.echeance).toBe('2026-11-15');
+  });
+
+  it('sans pesée : invite à se peser', async () => {
+    const { pageObj } = await ouvrir({ poidsObjectif: 75 });
+    expect(pageObj.getByText('Pèse-toi dans Suivi pour voir l’écart.')).toBeInTheDocument();
+  });
+
+  it('un seul Enregistrer : cap, poids visé, échéance, régime et compléments ensemble', async () => {
+    const { pageObj, user, onProfileSaved } = await ouvrir({ complements: ['Whey', 'Spiruline'] });
+    expect(pageObj.getByRole('radio', { name: /Perte de poids/ })).toBeChecked();
+    expect(pageObj.getAllByRole('button', { name: /^Enregistrer/ })).toHaveLength(1);
+
+    await user.click(pageObj.getByRole('radio', { name: /Maintien/ }));
+    await user.type(pageObj.getByLabelText('Poids visé (kg)'), '70');
+    fireEvent.change(pageObj.getByLabelText(/Échéance/), { target: { value: '' } });
+    await user.click(pageObj.getByRole('radio', { name: 'Keto' }));
+    expect(pageObj.getByRole('button', { name: 'Spiruline' })).toHaveAttribute('aria-pressed', 'true'); // complément libre gardé
+    await user.click(pageObj.getByRole('button', { name: 'Whey' })); // décoché
+    await user.click(pageObj.getByRole('button', { name: 'Créatine' })); // preset coché
+    await user.click(pageObj.getByRole('button', { name: 'Enregistrer' }));
+
+    const attendu = {
+      ...profileMarc,
+      objectif: { type: 'maintien' },
+      poidsObjectif: 70,
+      regime: 'keto',
+      complements: ['Spiruline', 'Créatine'],
+    };
+    expect(loadProfile()).toEqual(attendu);
+    expect(onProfileSaved).toHaveBeenCalledWith(attendu);
+    expect(pageObj.getByRole('status')).toHaveTextContent(/enregistré/i);
+  });
+
+  it('poids visé vidé : retiré du profil', async () => {
+    const { pageObj, user } = await ouvrir({ poidsObjectif: 72 });
+    expect(pageObj.getByLabelText('Poids visé (kg)')).toHaveValue(72);
+    await user.clear(pageObj.getByLabelText('Poids visé (kg)'));
+    await user.click(pageObj.getByRole('button', { name: 'Enregistrer' }));
+    expect(loadProfile()).toEqual(profileMarc);
+  });
+
+  it('poids visé hors bornes : erreur explicite, rien d’enregistré', async () => {
+    const { pageObj, user } = await ouvrir();
+    await user.type(pageObj.getByLabelText('Poids visé (kg)'), '500');
+    await user.click(pageObj.getByRole('button', { name: 'Enregistrer' }));
+    expect(pageObj.getByRole('alert')).toHaveTextContent(/poids visé/i);
+    expect(loadProfile()).toBeNull();
+  });
+
+  it('« Autre… » : ajoute un complément coché ; doublon refusé', async () => {
+    const { pageObj, user } = await ouvrir({ complements: ['Whey'] });
+    await user.click(pageObj.getByRole('button', { name: /Autre/ }));
+    await user.type(pageObj.getByLabelText('Autre complément'), 'Zinc');
+    await user.click(pageObj.getByRole('button', { name: 'Ajouter' }));
+    expect(pageObj.getByRole('button', { name: 'Zinc' })).toHaveAttribute('aria-pressed', 'true');
+
+    await user.type(pageObj.getByLabelText('Autre complément'), 'whey');
+    await user.click(pageObj.getByRole('button', { name: 'Ajouter' }));
+    expect(pageObj.getByRole('alert')).toHaveTextContent(/déjà/i);
   });
 });

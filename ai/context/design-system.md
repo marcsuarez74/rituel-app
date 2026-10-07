@@ -90,7 +90,11 @@ Padding standard des cartes : `var(--sp-16)`. Gouttières page : `var(--sp-16)`.
 | `.btn` | action principale | fond `--accent`, texte blanc, 700, min-height 48 px, active `scale(0.97)` |
 | `.rcards` / `.rcard` (+ `.rcard-t` `.rcard-d` `.sel`) | cartes radio 2 colonnes (objectif 4 types) | grid 1fr 1fr gap 9px, ≥ 48px, radius 14px ; sélection = bordure basilic + fond accent 8 % + inset ring, titre basilic |
 | `.rline` / `.rl` (+ `.rl-dot` `.sel`) | radios en ligne (régime, poids objectif au Profil) | lignes pleine largeur ≥ 48px bordure `--border` ; dot 18px, sélection = point basilic 9px |
-| `.chips` / `.chip` (+ `.rm`) / `.addrow` | compléments (presets + ajout libre) | pills ≥ 42px, `.on` = plein basilic texte blanc ; `.addrow` = input (min-width: 0) + bouton pill |
+| `.chips` / `.chip` (+ `.rm`, `.chip-autre`) / `.addrow` | compléments, régime, préférences (presets + ajout libre) | pills ≥ 48px, `.on` / `[aria-pressed='true']` / `[aria-checked='true']` = plein basilic texte blanc ; `.chip-autre` = bordure pointillée basilic ; `.addrow` = input (min-width: 0) + bouton pill 48px |
+| `.obj-resume` (+ `.obj-poids` `.obj-fleche` `.obj-vise` `.obj-ecart` `.obj-rythme`) | résumé de la page Profil › Objectif : dernière pesée → poids visé, écart, rythme | carte citron (`--citron-surface` + `--citron-line`), poids `--fs-hero`/700, flèche et poids visé basilic, rythme muted mixé ≥ 4,5:1 |
+| `.rcards` / `.rcard` (+ `-i` `-t` `-d`) | choix du cap (radios en cartes) | grille auto-fit ≥ 128px ; carte surface + bordure, icône sur `--surface-2` ; `[aria-checked='true']` = bordure basilic + fond basilic 8 %, icône pleine basilic |
+| `.alerte-douce` | alerte non bloquante (« Rythme ambitieux ») | fond citron + filet citron, icône info basilic, texte `--fs-meta` |
+| `.pied-collant` | bouton « Enregistrer » unique collé en bas d'une page détail | sticky bottom, fond `--creme`, filet haut, bouton plein pleine largeur, safe-area iOS |
 | `.weight-chart` + `.weight-*` | courbe de poids SVG (WeightChart) dans la carte citron `.pesee-card` | chips Départ/Actuel/Objectif, aire dégradée `--accent` 22 %→0, ligne lissée Catmull-Rom, ligne objectif, points départ/actuel ; labels SVG 8-9px mix muted ≥ 4,5:1 sur fond citron mixé |
 | `.profil-screen` | écran Profil | sections `.profile-section` |
 | `.profil-ghost` | bouton secondaire du Profil (« Copier le prompt IA ») | ghost bordure `--border`, pill pleine largeur 48px, texte encre |
