@@ -38,6 +38,36 @@ défaut, cartes d'onboarding, cycle d'exemple).
   la famille dans le code.
 - Sync : le filtre pesées `marc|melanie` devient la garde de forme d'id.
 
+## 1 bis. Suivi optionnel (décision 2026-10-07)
+
+Rituel doit pouvoir n'être qu'une app de routine (menus, courses, rituel).
+
+- Étape 1 : « Et toi, tu veux aussi… » (•) **Juste la routine** (défaut) /
+  ( ) Suivre mon poids et un objectif. Réversible dans Profil.
+- `UserProfile.suivi: boolean` (absent = `true` : les profils existants gardent
+  leur suivi). Le membre du foyer porte le même drapeau (`Membre.suivi`).
+- Sans suivi : pas d'étapes corps / objectif, **pas d'onglet Suivi** (barre à
+  4 onglets), pas de macros exigées pour ce membre (le contrat les exige déjà
+  seulement pour les membres suivis), portions adulte standard dans le prompt.
+  Le **régime** (keto, végé…) reste demandé : il change les plats.
+- Le/la partenaire saisi·e à l'étape 1 est non suivi·e tant qu'il/elle n'a pas
+  rejoint avec son téléphone et choisi le suivi.
+
+## 1 ter. Prompt IA : tout le foyer, rien d'inutile
+
+Constat (2026-10-07) : le prompt ne détaille que le profil **du téléphone qui
+le copie** ; le profil synchronisé du/de la partenaire est ignoré (la sync ne
+garde que son propre profil) → Claude invente ses cibles.
+
+- La sync garde en lecture seule les profils des autres membres
+  (`sportapp:profils:foyer`, nouvelle clé) ; le prompt détaille chaque membre
+  suivi (objectif, âge, dernier poids synchronisé, taille, compléments).
+- `personnes` et `repasJour` (étape « Maison & courses ») ne servent à rien :
+  le foyer donne déjà qui est à table, la semaine type donne les repas → retirés
+  de l'onboarding (les valeurs stockées restent lisibles, ignorées).
+- Test garde-fou : chaque réponse d'onboarding qui doit influencer les menus
+  apparaît dans le prompt assemblé.
+
 ## 2. Onboarding (5 étapes, seule la 1re obligatoire)
 
 ```
@@ -123,8 +153,10 @@ de l'ancienne adresse github.io.
 
 1. Correctifs §0 (texte, 401 → hors foyer, date du cycle, écran allumé, installer).
 2. Page Objectif (§4).
-3. Identité ouverte (§1) : `ProfileKey` chaîne, `telephone`, `assurerMoi`,
-   foyer par défaut, cycle d'exemple, sync.
+3. Identité ouverte (§1) + suivi optionnel (§1 bis) : `ProfileKey` chaîne,
+   `telephone`, `assurerMoi`, `suivi`, foyer par défaut, cycle d'exemple, sync,
+   onglet Suivi conditionnel.
 4. Onboarding étape 1 + créer/rejoindre + rattachement (§2-3).
+5. Prompt IA de tout le foyer (§1 ter).
 
 Chaque PR : tests d'abord, `npm test && typecheck && lint && build` + e2e 320/375.
