@@ -26,7 +26,7 @@
   --radius: 18px;
   color-scheme: light;
   --fs-hero: 26px; --fs-h1: 22px; --fs-h2: 20px; --fs-h3: 17px; --fs-body: 16px;
-  --fs-sec: 14px; --fs-meta: 12px; --fs-micro: 11px; --fs-emoji: 38px;
+  --fs-sec: 14px; --fs-meta: 12px; --fs-micro: 11px; --fs-chart: 10px; --fs-emoji: 38px;
   --sp-2: 2px; --sp-4: 4px; --sp-6: 6px; --sp-8: 8px; --sp-10: 10px; --sp-12: 12px;
   --sp-14: 14px; --sp-16: 16px; --sp-20: 20px; --sp-24: 24px;
   --lh-none: 1; --lh-tight: 1.2; --lh-title: 1.25; --lh-body: 1.5;
@@ -204,6 +204,44 @@ input[type='text'], input[type='number'], input[type='date'], input[type='passwo
 .pied-collant { position: sticky; bottom: 0; margin: auto calc(-1 * var(--sp-16)) 0; padding: var(--sp-12) var(--sp-16) var(--sp-16); background: var(--surface); border-top: 1px solid var(--border); z-index: 2; }
 .pied-collant .ok { text-align: center; margin: 0 0 var(--sp-6); }
 .espace-pied { height: var(--sp-12); }
+
+/* Barre du bas (.barre-onglets / .onglet), en encart statique sous l'écran A */
+.mq-encart { margin-top: var(--sp-16); padding: var(--sp-14); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.mq-encart h3 { font-size: var(--fs-sec); font-weight: 700; margin: 0 0 var(--sp-4); }
+.mq-encart > p { font-size: var(--fs-meta); color: var(--muted-fort); margin: 0 0 var(--sp-10); }
+.mq-barre { margin: var(--sp-12) calc(-1 * var(--sp-14)) 0; }
+.mq-barre-tete { padding: 0 var(--sp-14); }
+.mq-barre .barre-onglets { border-radius: 0; border-left: 0; border-right: 0; }
+.mq-barre-tete { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-8); font-size: var(--fs-meta); font-weight: 700; margin-bottom: var(--sp-4); }
+.mq-barre .tag { visibility: hidden; }
+.mq-barre.actif .tag { visibility: visible; }
+.mq-barre.actif .barre-onglets { box-shadow: 0 0 0 2px var(--accent); }
+.barre-onglets { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); padding: var(--sp-6) var(--sp-4) var(--sp-8); background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
+.onglet { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--sp-2); min-width: 0; min-height: 56px; color: var(--muted-fort); font-size: var(--fs-meta); font-weight: 600; white-space: nowrap; }
+.onglet-icone { display: flex; padding: var(--sp-4) var(--sp-16); border-radius: 999px; }
+.onglet.actuel { color: var(--text); }
+.onglet.actuel .onglet-icone { background: color-mix(in srgb, var(--accent) 18%, var(--surface)); color: var(--accent); }
+.barre-onglets.cinq .onglet-icone { padding: var(--sp-4) var(--sp-10); }
+@media (max-width: 400px) {
+  .onglet { font-size: var(--fs-micro); }
+  .onglet-icone { padding: var(--sp-4) var(--sp-8); }
+  .barre-onglets.cinq .onglet-icone { padding: var(--sp-4) var(--sp-4); }
+  .barre-onglets.cinq { padding-left: 0; padding-right: 0; }
+  .barre-onglets.cinq .onglet { letter-spacing: -0.02em; }
+}
+@media (max-width: 340px) {
+  .barre-onglets.cinq .onglet { font-size: var(--fs-chart); }
+}
+
+/* Interrupteur (.interrupteur, checkbox role=switch) */
+.interrupteur { display: flex; align-items: center; gap: var(--sp-12); min-height: 48px; cursor: pointer; }
+.interrupteur input { appearance: none; -webkit-appearance: none; position: relative; flex-shrink: 0; width: 48px; height: 28px; margin: 0; border-radius: 999px; background: var(--surface-2); border: 1.5px solid color-mix(in srgb, var(--muted) 60%, var(--border)); cursor: pointer; }
+.interrupteur input::after { content: ''; position: absolute; top: 2px; left: 2px; width: 21px; height: 21px; border-radius: 50%; background: var(--surface); box-shadow: var(--shadow); transition: transform .2s ease; }
+.interrupteur input:checked { background: var(--accent); border-color: var(--accent); }
+.interrupteur input:checked::after { transform: translateX(20px); }
+.interrupteur-txt { display: flex; flex-direction: column; min-width: 0; font-size: var(--fs-sec); font-weight: 700; }
+.interrupteur-txt small { font-size: var(--fs-meta); font-weight: 500; color: var(--muted-fort); }
+.suivi-off { padding: var(--sp-16); border-radius: var(--radius); background: var(--surface); border: 1px dashed var(--border); font-size: var(--fs-sec); color: var(--muted-fort); margin-bottom: var(--sp-12); }
 </style>
 </head>
 <body>
@@ -221,6 +259,11 @@ input[type='text'], input[type='number'], input[type='date'], input[type='passwo
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5.5v13M5.5 12h13"/></symbol>
   <symbol id="i-croix" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
   <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8.1v.1"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v8a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z"/></symbol>
+  <symbol id="i-couverts" viewBox="0 0 24 24"><path d="M7 3v8a2 2 0 0 0 4 0V3"/><path d="M9 11v10"/><path d="M17 3c-2 0-3 2-3 5s1 4 3 4v9"/></symbol>
+  <symbol id="i-cart" viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M3 4h2l2.3 11.5h9.9l1.8-8H6.2"/></symbol>
+  <symbol id="i-pot" viewBox="0 0 24 24"><path d="M6 10.5h12v4.5a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4z"/><path d="M3.5 10.5h17M10 10.5V8h4v2.5"/></symbol>
+  <symbol id="i-courbe" viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M6 16v-5M11 16V6M16 16v-8"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></symbol>
 </svg>
 
@@ -245,8 +288,8 @@ input[type='text'], input[type='number'], input[type='date'], input[type='passwo
   <!-- ═════════ A · Onboarding étape 1 ═════════ -->
   <figure class="mq-ecran" id="ecran-a">
     <figcaption class="mq-legende">
-      <h2><b class="mq-lettre">A</b>Étape 1 — qui cuisine pour qui</h2>
-      <p>Prénom libre + composition du foyer. Seule étape obligatoire ; le foyer local (toi, partenaire, enfants) est créé dès ici. Change de réponse pour voir les champs apparaître.</p>
+      <h2><b class="mq-lettre">A</b>Étape 1 — qui cuisine, et pour quoi</h2>
+      <p>Prénom libre + composition du foyer + « Et toi, tu veux aussi… ». Seule étape obligatoire ; le foyer local est créé dès ici. Rituel peut n'être qu'une app de routine ; le suivi s'active ou se coupe à tout moment dans Profil.</p>
       <p class="mq-avant">Aujourd'hui : « Qui est derrière l'écran ? » avec deux cartes figées Marc / Mélanie.</p>
     </figcaption>
     <div class="mq-variantes" aria-hidden="true"></div>
@@ -286,17 +329,36 @@ input[type='text'], input[type='number'], input[type='date'], input[type='passwo
                 <button type="button" class="rl" role="radio" aria-checked="false" data-pour="famille"><span class="rl-dot"></span>En famille</button>
               </div>
             </div>
+            <div class="onboarding-field">
+              <span class="onb-legend" id="a-mode-l">Et toi, tu veux aussi…</span>
+              <div class="rline" role="radiogroup" aria-labelledby="a-mode-l" id="a-mode">
+                <button type="button" class="rl" role="radio" aria-checked="true" data-mode="routine"><span class="rl-dot"></span><span class="rl-txt">Juste la routine<small>menus, courses, rituel batch</small></span></button>
+                <button type="button" class="rl" role="radio" aria-checked="false" data-mode="suivi"><span class="rl-dot"></span><span class="rl-txt">Suivre mon poids et un objectif<small>portions et macros calculées pour toi, onglet Suivi</small></span></button>
+              </div>
+            </div>
             <p class="error" role="alert" id="a-err"></p>
           </div>
           <div class="onb-pied">
             <div class="onb-btnrow">
               <button type="submit" class="onb-next">Continuer <svg class="ic sm"><use href="#i-chev-right"/></svg></button>
             </div>
-            <p class="onb-hint">Ensuite : ta semaine, ton objectif, tes goûts — tout ça peut attendre.</p>
+            <p class="onb-hint" id="a-ensuite">Ensuite : ta semaine, ton régime et tes goûts — tout ça peut attendre.</p>
           </div>
         </form>
       </div>
     </div>
+  <aside class="mq-encart" aria-label="Barre du bas selon le choix">
+      <h3>Ensuite, dans l'app : la barre du bas</h3>
+      <p>Elle suit le choix « Et toi, tu veux aussi… » (et l'interrupteur de Profil › Objectif).</p>
+      <div class="mq-barre actif" id="barre-routine">
+        <div class="mq-barre-tete"><span>Juste la routine · 4 onglets</span><span class="tag toi">ton choix</span></div>
+        <div class="barre-onglets" aria-hidden="true"><span class="onglet actuel"><span class="onglet-icone"><svg class="ic"><use href="#i-home"/></svg></span>Aujourd'hui</span><span class="onglet"><span class="onglet-icone"><svg class="ic"><use href="#i-couverts"/></svg></span>Menu</span><span class="onglet"><span class="onglet-icone"><svg class="ic"><use href="#i-cart"/></svg></span>Courses</span><span class="onglet"><span class="onglet-icone"><svg class="ic"><use href="#i-pot"/></svg></span>Rituel</span></div>
+      </div>
+      <div class="mq-barre" id="barre-suivi">
+        <div class="mq-barre-tete"><span>Avec le suivi · 5 onglets</span><span class="tag toi">ton choix</span></div>
+        <div class="barre-onglets cinq" aria-hidden="true"><span class="onglet actuel"><span class="onglet-icone"><svg class="ic"><use href="#i-home"/></svg></span>Aujourd'hui</span><span class="onglet"><span class="onglet-icone"><svg class="ic"><use href="#i-couverts"/></svg></span>Menu</span><span class="onglet"><span class="onglet-icone"><svg class="ic"><use href="#i-cart"/></svg></span>Courses</span><span class="onglet"><span class="onglet-icone"><svg class="ic"><use href="#i-pot"/></svg></span>Rituel</span><span class="onglet"><span class="onglet-icone"><svg class="ic"><use href="#i-courbe"/></svg></span>Suivi</span></div>
+      </div>
+    </aside>
   </figure>
 
   <!-- ═════════ B · Partager avec ton foyer ═════════ -->
@@ -511,13 +573,20 @@ input[type='text'], input[type='number'], input[type='date'], input[type='passwo
         <form class="ecran-pousse" id="form-f" novalidate>
           <button type="button" class="profil-back"><svg class="ic sm"><use href="#i-chev-left"/></svg>Profil</button>
           <h1>Objectif</h1>
-          <div class="obj-resume" aria-live="polite">
+          <section class="profile-section">
+            <label class="interrupteur">
+              <input type="checkbox" role="switch" id="f-suivi" checked>
+              <span class="interrupteur-txt">Suivre mon poids et un objectif<small>Désactivé : plus d'onglet Suivi, portions adulte standard.</small></span>
+            </label>
+          </section>
+          <p class="suivi-off" id="f-off" hidden>Suivi coupé : Rituel reste une app de routine. Ton régime et tes compléments servent toujours aux menus.</p>
+          <div class="obj-resume" aria-live="polite" data-suivi>
             <div class="obj-kg" id="f-kg"></div>
             <p class="obj-ecart" id="f-ecart"></p>
             <p class="obj-rythme" id="f-rythme"></p>
           </div>
 
-          <section class="profile-section">
+          <section class="profile-section" data-suivi>
             <h2 id="f-cap">Ton cap</h2>
             <div class="rcards" role="radiogroup" aria-labelledby="f-cap" id="f-caps">
               <button type="button" class="rcard" role="radio" aria-checked="true" data-cap="perte"><span class="rcard-i"><svg class="ic"><use href="#i-scale"/></svg></span><span class="rcard-t">Perte de poids</span><span class="rcard-d">Réduire progressivement, sans yoyo</span></button>
@@ -672,6 +741,12 @@ input[type='text'], input[type='number'], input[type='date'], input[type='passwo
     rendreEnfants();
   });
   $('#a-enfant').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); $('#a-ajout').click(); } });
+  radios($('#a-mode'), function (r) {
+    var suivi = r.dataset.mode === 'suivi';
+    $('#a-ensuite').textContent = suivi ? 'Ensuite : tes mesures, ton objectif, ta semaine…' : 'Ensuite : ta semaine, ton régime et tes goûts — tout ça peut attendre.';
+    $('#barre-routine').classList.toggle('actif', !suivi);
+    $('#barre-suivi').classList.toggle('actif', suivi);
+  });
   $('#form-a').addEventListener('submit', function (e) {
     e.preventDefault();
     var err = $('#a-err');
@@ -746,6 +821,12 @@ input[type='text'], input[type='number'], input[type='date'], input[type='passwo
 
   // ——— F · objectif ———
   var avecPesee = true;
+  $('#f-suivi').addEventListener('change', function () {
+    var on = this.checked;
+    $$('[data-suivi]').forEach(function (el) { el.hidden = !on; });
+    $('#f-off').hidden = on;
+    dirty();
+  });
   var POIDS = 82.4;
   var cap = 'perte';
   radios($('#f-caps'), function (r) { cap = r.dataset.cap; dirty(); calculer(); });
