@@ -1,7 +1,7 @@
 import { syncActif } from './config';
 import { lireSession } from './session';
 
-export type TableSync = 'weeks' | 'checks' | 'weights' | 'depenses' | 'profiles';
+export type TableSync = 'weeks' | 'checks' | 'weights' | 'depenses' | 'profiles' | 'etat';
 
 // Mutation locale en attente d'envoi. `key` identifie la ligne (clé primaire
 // sans household_id), `payload` porte la valeur (absent pour un delete).
@@ -14,7 +14,7 @@ export interface MutationSync {
 
 const OUTBOX_KEY = 'sportapp:sync:outbox';
 
-export const TABLES: readonly TableSync[] = ['weeks', 'checks', 'weights', 'depenses', 'profiles'];
+export const TABLES: readonly TableSync[] = ['weeks', 'checks', 'weights', 'depenses', 'profiles', 'etat'];
 
 const estObjet = (v: unknown): v is Record<string, unknown> =>
   !!v && typeof v === 'object' && !Array.isArray(v);

@@ -4,7 +4,7 @@ import { DIFFICULTES, JOURS, LETTRES, MOMENTS, RAYONS, UNITES } from './types';
 // dépendance : un mini-schéma déclaratif interprété par `verifierForme`. Les
 // champs inconnus sont tolérés (le contrat peut s'enrichir sans casser).
 
-type Forme =
+export type Forme =
   | 'texte'
   | 'nombre'
   | 'booleen'
@@ -15,9 +15,9 @@ type Forme =
   | { option: Forme }
   | { ou: Forme[] };
 
-const opt = (f: Forme): Forme => ({ option: f });
-const liste = (f: Forme): Forme => ({ liste: f });
-const objet = (o: Record<string, Forme>): Forme => ({ objet: o });
+export const opt = (f: Forme): Forme => ({ option: f });
+export const liste = (f: Forme): Forme => ({ liste: f });
+export const objet = (o: Record<string, Forme>): Forme => ({ objet: o });
 const textes = liste('texte');
 
 const POUR: Forme = { ou: [{ parmi: ['famille'] }, textes] };

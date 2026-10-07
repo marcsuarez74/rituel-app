@@ -62,6 +62,31 @@ import {
   upsertWeek,
 } from '../../src/lib/storage';
 import type { ImportedWeek, UserProfile } from '../../src/lib/model';
+import {
+  type CycleActif,
+  foyerParDefaut,
+  getReports,
+  loadCycle,
+  loadFoyer,
+  loadPrecedent,
+  migrerV2,
+  saveCycle,
+  saveFoyer,
+  savePrecedent,
+  saveReports,
+  semaineCoches,
+} from '../../src/lib/cycle/etat';
+import { importerCycle } from '../../src/lib/cycle/valider';
+import { enFichiers, quatreFichiers } from '../lib/cycle/fabrique';
+
+const vide = (): Record<TableSync, RowSync[]> => ({
+  weeks: [],
+  checks: [],
+  weights: [],
+  depenses: [],
+  profiles: [],
+  etat: [],
+});
 
 // Faux client : enregistre les appels, pas de réseau.
 interface FauxClient extends SyncClient {
@@ -355,7 +380,7 @@ describe('sync: pull / merge (outbox prime)', () => {
     expect(getChecks('2026-S39')['b1']).toBe(true);
   });
 
-  it('pull démarre les 5 lectures en parallèle (avant la première réponse)', async () => {
+  it('pull démarre les 6 lectures en parallèle (avant la première réponse)', async () => {
     let demarrees = 0;
     let resoudre!: () => void;
     const barriere = new Promise<void>((r) => {
@@ -370,7 +395,7 @@ describe('sync: pull / merge (outbox prime)', () => {
     });
     void pull();
     await Promise.resolve(); // tick : laisser le corps de pull démarrer les lectures
-    expect(demarrees).toBe(5); // for...await séquentiel : 1 seule démarre avant la 1re réponse
+    expect(demarrees).toBe(6); // for...await séquentiel : 1 seule démarre avant la 1re réponse
     resoudre();
     await vi.waitFor(() => expect(etatSync()).toBe('sync'));
   });
@@ -444,7 +469,7 @@ describe('sync: pull / merge (outbox prime)', () => {
   });
 
   it('appliquerRemote retourne false sans changement', async () => {
-    const vide = { weeks: [], checks: [], weights: [], depenses: [], profiles: [] };
+    const vide = { weeks: [], checks: [], weights: [], depenses: [], profiles: [], etat: [] };
     expect(await appliquerRemote(vide)).toBe(false);
   });
 
@@ -883,5 +908,126 @@ describe('sync: reconnexion', () => {
     definirSession('token-test', 'foyer-1');
     await vi.runAllTimersAsync(); // ne doit ni crasher ni réabonner
     expect(client.abonner).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('sync: état v2 (table etat)', () => {
+  let client: FauxClient;
+
+  const cycleActif = (): CycleActif => {
+    const r = importerCycle(enFichiers(quatreFichiers()));
+    if (!r.cycle) throw new Error(r.erreurs.join('\n'));
+    return { id: 'c1', numero: 1, debut: '2026-10-10', pauses: [], cycle: r.cycle };
+  };
+
+  beforeEach(() => {
+    vi.setSystemTime(new Date('2026-10-07T10:00:00'));
+    localStorage.clear();
+    viderOutbox();
+    effacerSession();
+    reinitialiser();
+    client = fauxClient();
+    injecterClient(client);
+    definirSession('t', '11111111-2222-3333-4444-555555555555');
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  it('flush etat : payload enveloppé, clé cle', async () => {
+    saveFoyer(foyerParDefaut(null));
+    await flush();
+    const etat = client.upserts.find((u) => u.table === 'etat')!;
+    expect(etat.rows[0]).toMatchObject({ cle: 'foyer', payload: { valeur: foyerParDefaut(null) } });
+  });
+
+  it('applique foyer, cycle, cycle précédent et reports distants', async () => {
+    const c = cycleActif();
+    const report = { repas: 'menu:A:lundi:x', vers: 'abandon', cree: '2026-10-12T19:00:00.000Z' };
+    const change = await appliquerRemote({
+      ...vide(),
+      etat: [
+        { cle: 'foyer', payload: { valeur: foyerParDefaut(null) } },
+        { cle: 'cycle', payload: { valeur: c } },
+        { cle: 'cycle-precedent', payload: { valeur: ['Curry'] } },
+        { cle: 'reports:c1', payload: { valeur: [report] } },
+      ],
+    });
+    expect(change).toBe(true);
+    expect(loadFoyer()).toEqual(foyerParDefaut(null));
+    expect(loadCycle()).toEqual(c);
+    expect(loadPrecedent()).toEqual(['Curry']);
+    expect(getReports('c1')).toEqual([report]);
+    expect(lireOutbox()).toEqual([]); // écho : rien ne repart vers le serveur
+    expect(await appliquerRemote({ ...vide(), etat: [{ cle: 'foyer', payload: { valeur: foyerParDefaut(null) } }] })).toBe(false);
+  });
+
+  it('valeur distante illégale ou clé inconnue → ignorée, local intact', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    saveFoyer(foyerParDefaut(null));
+    viderOutbox();
+    const change = await appliquerRemote({
+      ...vide(),
+      etat: [
+        { cle: 'foyer', payload: { valeur: { version: 3 } } },
+        { cle: 'cycle', payload: { valeur: { id: 'c9' } } },
+        { cle: 'inconnue', payload: { valeur: 1 } },
+        { cle: 'reports:c1', payload: { valeur: 'pas une liste' } },
+      ],
+    });
+    expect(change).toBe(false);
+    expect(loadFoyer()).toEqual(foyerParDefaut(null));
+    expect(loadCycle()).toBeNull();
+  });
+
+  it('outbox prime : un foyer local en attente ne reçoit pas le distant', async () => {
+    const local = { ...foyerParDefaut(null), budgetMax: 120 };
+    saveFoyer(local);
+    await appliquerRemote({ ...vide(), etat: [{ cle: 'foyer', payload: { valeur: foyerParDefaut(null) } }] });
+    expect(loadFoyer()).toEqual(local);
+  });
+
+  it('cycle supprimé à distance (ligne absente) : le local reste (pas de suppression implicite)', async () => {
+    saveCycle(cycleActif());
+    viderOutbox();
+    await appliquerRemote(vide());
+    expect(loadCycle()).not.toBeNull();
+  });
+
+  it('après la remise à zéro v2 : les semaines .md et leurs coches distantes sont ignorées', async () => {
+    migrerV2();
+    await appliquerRemote({
+      ...vide(),
+      weeks: [{ semaine: '2026-S39', payload: semaineFictive() }],
+      checks: [
+        { semaine: '2026-S39', check_id: 'b1', done: true },
+        { semaine: 'cycle:c1:0', check_id: 'courses:A:proteines:oeuf', done: true },
+      ],
+    });
+    expect(loadWeeks()).toEqual({});
+    expect(getChecks('2026-S39')).toEqual({});
+    expect(getChecks('cycle:c1:0')).toEqual({ 'courses:A:proteines:oeuf': true });
+  });
+
+  it('connexion : pousse foyer, cycle, précédent, reports et coches du cycle en cours', async () => {
+    effacerSession();
+    const c = cycleActif();
+    saveFoyer(foyerParDefaut(null));
+    saveCycle(c);
+    savePrecedent(['Curry']);
+    saveReports('c1', [{ repas: 'menu:A:lundi:x', vers: 'abandon', cree: '2026-10-12T19:00:00.000Z' }]);
+    setCheck(semaineCoches('c1', 1), 'courses:B:proteines:oeuf', true);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ token: 'tok', foyerId: 'foyer-1' }), { status: 200 })),
+    );
+    await connecterFoyer('rituel-2026');
+    vi.unstubAllGlobals();
+    const cles = client.upserts.filter((u) => u.table === 'etat').flatMap((u) => u.rows.map((r) => r.cle));
+    expect(cles.sort()).toEqual(['cycle', 'cycle-precedent', 'foyer', 'reports:c1']);
+    const coches = client.upserts.filter((u) => u.table === 'checks').flatMap((u) => u.rows);
+    expect(coches).toEqual([expect.objectContaining({ semaine: 'cycle:c1:1', check_id: 'courses:B:proteines:oeuf', done: true })]);
   });
 });

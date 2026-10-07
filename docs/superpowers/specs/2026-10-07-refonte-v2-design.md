@@ -109,7 +109,7 @@ interface ReglagesFoyer {
 
 ### 4.2 Profil (v3, par personne suivie)
 
-Le profil v2.2 est conservé tel quel (prénom, date de naissance, taille, poids objectif, objectif, compléments, régime, préférences) **moins** `magasin`, `budgetMax`, `personnes`, `repasJour` (remontés ou remplacés par le foyer). Migration v2.2 → v3 silencieuse à la lecture : les champs déplacés alimentent `ReglagesFoyer` s'il n'existe pas encore.
+Le profil v2.2 est conservé tel quel (prénom, date de naissance, taille, poids objectif, objectif, compléments, régime, préférences) **moins** `magasin`, `budgetMax`, `personnes`, `repasJour` (remontés ou remplacés par le foyer). Migration v2.2 → v3 silencieuse à la lecture : les champs déplacés alimentent `ReglagesFoyer` s'il n'existe pas encore. Concrètement : tant que `sportapp:foyer` est absent, `foyerParDefaut(profil)` le dérive du profil (prénom, régime, magasin, budget) ; le type `UserProfile` ne perd ses champs qu'au moment où les écrans qui les éditent passent au foyer (PR 4 et 10), pour que l'UI actuelle continue de fonctionner d'ici là.
 
 ## 5. Contrat du cycle (JSON, version 2)
 
@@ -240,7 +240,7 @@ interface CycleActif {
   numero: number;             // 1, 2, … (affiché « Cycle N »)
   debut: string;              // AAAA-MM-JJ = jour de courses de la semaine 1
   pauses: number[];           // index de semaine (0-3) APRÈS lesquels une semaine de pause est insérée
-  fichier: CycleFichier;
+  cycle: Cycle;               // fusion validée des fichiers importés (src/lib/cycle/valider.ts)
   relanceDe?: string;         // id du cycle relancé
 }
 ```
@@ -258,13 +258,13 @@ Clés `localStorage` (préfixe historique conservé) :
 | `sportapp:profile` | profil v3 (§4.2) |
 | `sportapp:cycle` | `CycleActif` |
 | `sportapp:cycle:precedent` | titres/ids de recettes du cycle précédent (pour le prompt) |
-| `sportapp:coches:{cycleId}:{n}` | coches de la semaine n du cycle |
+| `sportapp:checks:cycle:{cycleId}:{n}` | coches de la semaine n du cycle (`getChecks`/`setCheck` existants, semaine = `cycle:{cycleId}:{n}`) |
 | `sportapp:reports:{cycleId}` | reports (§8) |
 | `sportapp:weights:*`, `sportapp:depenses`, `sportapp:sync:*` | inchangées |
 
-**Remise à zéro (v2.0.0)** : au premier lancement de la 2.0, suppression de `sportapp:week`, `sportapp:weeks`, `sportapp:checks:*`, `sportapp:selection` (une fois, drapeau `sportapp:v2`). Profil, pesées, dépenses, sync intacts.
+**Remise à zéro (v2.0.0)** : au premier lancement de la 2.0, suppression de `sportapp:week`, `sportapp:weeks`, `sportapp:checks:*` (sauf `sportapp:checks:cycle:*`), `sportapp:selection` (une fois, drapeau `sportapp:v2`). Profil, pesées, dépenses, sync intacts. Implémentée par `migrerV2()` (`src/lib/cycle/etat.ts`), appelée au basculement de l'app (PR 4).
 
-**Sync** : la table serveur `weeks` est abandonnée ; ajout d'une table générique `etat` (`foyer_id, cle, payload, updated_at`, PK `(foyer_id, cle)`, last-write-wins) pour `foyer`, `cycle`, `reports:{cycleId}` ; `checks` réutilisée avec `semaine = {cycleId}:{n}`. Les shapes passent par l'outbox existante (`empilerMutation`).
+**Sync** : la table serveur `weeks` est abandonnée ; ajout d'une table générique `etat` (`foyer_id, cle, payload, updated_at`, PK `(foyer_id, cle)`, last-write-wins, payload `{ valeur }`) pour `foyer`, `cycle`, `cycle-precedent`, `reports:{cycleId}` ; `checks` réutilisée avec `semaine = cycle:{cycleId}:{n}`. Après la remise à zéro, les lignes `weeks` et les coches hors `cycle:` reçues du serveur sont ignorées. **Déploiement : le serveur (table `etat`) avant l'app**, sinon la lecture de `etat` échoue (404) et la sync passe en erreur. Les shapes passent par l'outbox existante (`empilerMutation`).
 
 ## 8. Report et pause
 

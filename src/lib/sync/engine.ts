@@ -1,3 +1,23 @@
+import {
+  CLE_CYCLE,
+  CLE_FOYER,
+  CLE_PRECEDENT,
+  cleReports,
+  estCycleActifValide,
+  estFoyerValide,
+  estPrecedentValide,
+  estReportValide,
+  estV2,
+  getReports,
+  loadCycle,
+  loadFoyer,
+  loadPrecedent,
+  saveCycle,
+  saveFoyer,
+  savePrecedent,
+  saveReports,
+  semaineCoches,
+} from '../cycle/etat';
 import type { ImportedWeek, ProfileKey, UserProfile } from '../model';
 import {
   addWeight,
@@ -126,9 +146,9 @@ export const flush = (): Promise<void> => {
           .filter((m) => m.op === 'upsert' && m.payload)
           .map<RowSync>((m) => ({
             ...m.key,
-            // weeks et profiles : payload enveloppé (colonne jsonb serveur) —
+            // weeks, profiles et etat : payload enveloppé (colonne JSON serveur) —
             // checks/weights/depenses : colonnes scalaires (spread).
-            ...(t === 'weeks' || t === 'profiles'
+            ...(t === 'weeks' || t === 'profiles' || t === 'etat'
               ? { payload: m.payload }
               : { ...m.payload }),
             household_id: foyerId,
@@ -222,13 +242,31 @@ const reconstruireDepenses = (remoteRows: RowSync[]): boolean => {
   return change;
 };
 
+// Une ligne de la table `etat` : valeur gardée (jamais persistée si illégale),
+// écrite seulement si elle diffère du local. Clé inconnue → ignorée.
+const idReports = (cle: string): string => (cle.startsWith(cleReports('')) ? cle.slice(cleReports('').length) : '');
+
+const appliquerEtat = (cle: string, v: unknown): boolean => {
+  const differe = (local: unknown) => JSON.stringify(local) !== JSON.stringify(v);
+  if (cle === CLE_FOYER && estFoyerValide(v) && differe(loadFoyer())) saveFoyer(v);
+  else if (cle === CLE_CYCLE && estCycleActifValide(v) && differe(loadCycle())) saveCycle(v);
+  else if (cle === CLE_PRECEDENT && estPrecedentValide(v) && differe(loadPrecedent())) savePrecedent(v);
+  else if (idReports(cle) && Array.isArray(v) && v.every(estReportValide) && differe(getReports(idReports(cle))))
+    saveReports(idReports(cle), v);
+  else return false;
+  return true;
+};
+
 // Corps synchrone : garantit que la suspension d'empilement ne peut pas
 // fuiter entre deux opérations entrelacées.
 const appliquerRemoteSync = (rows: Record<TableSync, RowSync[]>): boolean => {
   const attente = clesOutbox();
   let change = false;
+  // Après la remise à zéro de la 2.0, les semaines .md (et leurs coches)
+  // qu'un téléphone resté en 1.x pousserait encore ne reviennent pas.
+  const v2 = estV2();
 
-  for (const r of rows.weeks) {
+  for (const r of v2 ? [] : rows.weeks) {
     const key = { semaine: String(r.semaine) };
     if (attente.has(signature('weeks', key))) continue;
     if (!key.semaine) continue; // clé vide → ignorée
@@ -244,6 +282,7 @@ const appliquerRemoteSync = (rows: Record<TableSync, RowSync[]>): boolean => {
     const key = { semaine: String(r.semaine), check_id: String(r.check_id) };
     if (attente.has(signature('checks', key))) continue;
     if (!key.semaine || !key.check_id) continue; // clé vide → ignorée
+    if (v2 && !key.semaine.startsWith('cycle:')) continue;
     if (getChecks(key.semaine)[key.check_id] !== r.done) {
       setCheck(key.semaine, key.check_id, r.done === true);
       change = true;
@@ -280,6 +319,13 @@ const appliquerRemoteSync = (rows: Record<TableSync, RowSync[]>): boolean => {
     }
   }
 
+  for (const r of rows.etat ?? []) {
+    const cle = String(r.cle ?? '');
+    if (!cle || attente.has(signature('etat', { cle }))) continue;
+    const payload = r.payload as { valeur?: unknown } | null | undefined;
+    if (appliquerEtat(cle, payload?.valeur)) change = true;
+  }
+
   return change;
 };
 
@@ -300,7 +346,7 @@ export const pull = async (): Promise<void> => {
   const c = client;
   if (!c) return;
   try {
-    // Lectures parallèles : 5 tables en 1 RTT au lieu de 5 RTT séquentiels.
+    // Lectures parallèles : toutes les tables en 1 RTT au lieu d'un RTT par table.
     const listes = await Promise.all(TABLES.map((t) => c.toutLire(t)));
     if (!client || !lireSession()) return; // déconnexion pendant les lectures → n'écrit rien
     const rows = {} as Record<TableSync, RowSync[]>;
@@ -318,18 +364,36 @@ export const pull = async (): Promise<void> => {
 // via outbox-prime pendant le merge, puis flush pousse l'union. Passe par
 // `empiler` directement (bypass de la gate de empilerMutation) : on est
 // connecté à ce moment, c'est voulu.
+const pousserCoches = (semaine: string): void => {
+  for (const [check_id, done] of Object.entries(getChecks(semaine))) {
+    empiler({
+      op: 'upsert',
+      table: 'checks',
+      key: { semaine, check_id },
+      payload: { done: done === true }, // valeur corrompue → jamais envoyée telle quelle
+    });
+  }
+};
+
+const pousserEtat = (cle: string, valeur: unknown): void =>
+  empiler({ op: 'upsert', table: 'etat', key: { cle }, payload: { valeur } });
+
 const pousserTout = (): void => {
   const semaines = loadWeeks();
   for (const [semaine, w] of Object.entries(semaines)) {
     empiler({ op: 'upsert', table: 'weeks', key: { semaine }, payload: { ...w } });
-    for (const [check_id, done] of Object.entries(getChecks(semaine))) {
-      empiler({
-        op: 'upsert',
-        table: 'checks',
-        key: { semaine, check_id },
-        payload: { done: done === true }, // valeur corrompue → jamais envoyée telle quelle
-      });
-    }
+    pousserCoches(semaine);
+  }
+  const foyer = loadFoyer();
+  if (foyer) pousserEtat(CLE_FOYER, foyer);
+  const precedent = loadPrecedent();
+  if (precedent.length > 0) pousserEtat(CLE_PRECEDENT, precedent);
+  const cycle = loadCycle();
+  if (cycle) {
+    pousserEtat(CLE_CYCLE, cycle);
+    const reports = getReports(cycle.id);
+    if (reports.length > 0) pousserEtat(cleReports(cycle.id), reports);
+    for (let n = 0; n < 4; n++) pousserCoches(semaineCoches(cycle.id, n));
   }
   for (const p of ['marc', 'melanie'] as const) {
     for (const w of getWeights(p)) {

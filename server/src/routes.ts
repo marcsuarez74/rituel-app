@@ -7,7 +7,7 @@ import { hashCode, signerToken, verifierCode, verifierToken } from './auth.js';
 import { creerLimiteur } from './rate-limit.js';
 import { creerRegistreSse, type RegistreSse } from './sse.js';
 
-export type TableSync = 'weeks' | 'checks' | 'weights' | 'depenses' | 'profiles';
+export type TableSync = 'weeks' | 'checks' | 'weights' | 'depenses' | 'profiles' | 'etat';
 
 // Clés métier (PK sans foyer) + colonnes de valeur par table — l'app envoie
 // exactement ces noms (port SyncClient inchangé). `household_id` stampé par
@@ -18,6 +18,7 @@ const DEFS: Record<TableSync, { cles: string[]; colonnes: string[] }> = {
   weights: { cles: ['profil', 'date_'], colonnes: ['kg'] },
   depenses: { cles: ['date_', 'magasin_key'], colonnes: ['magasin', 'total'] },
   profiles: { cles: ['profil'], colonnes: ['payload'] },
+  etat: { cles: ['cle'], colonnes: ['payload'] },
 };
 const ORIGINES_DEFAUT = ['https://marcsuarez74.github.io', 'http://localhost:5173'];
 
@@ -210,11 +211,11 @@ export const creerApp = ({ db, secret, origines, heartbeatMs }: OptionsApp): Hon
     return c.json({ ok: true });
   });
 
-  // Purge du foyer : les 5 tables sont vidées, le foyer et son code survivent
+  // Purge du foyer : les tables de sync sont vidées, le foyer et son code survivent
   // (même sémantique qu'au temps de Supabase — purge ≠ suppression du foyer).
   app.delete('/sync', (c) => {
     const foyerId = c.get('foyerId');
-    for (const t of ['weeks', 'checks', 'weights', 'depenses', 'profiles'] as const) {
+    for (const t of Object.keys(DEFS)) {
       db.prepare(`delete from ${t} where foyer_id = ?`).run(foyerId);
     }
     const rev = incrementerRev(foyerId);
