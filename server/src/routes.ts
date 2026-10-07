@@ -1,4 +1,7 @@
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { extname, join } from 'node:path';
+import { serveStatic } from '@hono/node-server/serve-static';
 import type { Database } from 'better-sqlite3';
 import { Hono } from 'hono';
 import type { Context } from 'hono';
@@ -29,6 +32,8 @@ export interface OptionsApp {
   origines?: string[];
   /** Tests : heartbeat SSE raccourci. */
   heartbeatMs?: number;
+  /** Dossier de la PWA buildée (dist/) : servie sur la même origine que l'API. */
+  statique?: string;
 }
 
 type EnvApp = { Variables: { foyerId: string } };
@@ -68,7 +73,12 @@ const normaliser = (r: Record<string, unknown>): Record<string, unknown> => {
   return out;
 };
 
-export const creerApp = ({ db, secret, origines, heartbeatMs }: OptionsApp): Hono<EnvApp> => {
+// Fichiers versionnés par Vite (assets/…-hash) : cache long ; le reste (index,
+// sw.js, manifest, icônes) revalidé à chaque visite pour que la PWA se mette à jour.
+const IMMUABLE = 'public, max-age=31536000, immutable';
+const cacheDe = (chemin: string): string => (chemin.startsWith('/assets/') ? IMMUABLE : 'no-cache');
+
+export const creerApp = ({ db, secret, origines, heartbeatMs, statique }: OptionsApp): Hono<EnvApp> => {
   const app = new Hono<EnvApp>();
   const limiter = creerLimiteur({ max: 10, fenetreMs: 60_000 });
   const registre: RegistreSse = creerRegistreSse({ heartbeatMs });
@@ -101,6 +111,9 @@ export const creerApp = ({ db, secret, origines, heartbeatMs }: OptionsApp): Hon
   };
   app.use('/sync/*', auth);
   app.use('/evenements', auth);
+
+  // Sonde de santé (Docker HEALTHCHECK, vérification après déploiement).
+  app.get('/sante', (c) => c.json({ ok: true }));
 
   // ---- Foyers (sans auth, rate-limitées) ----
 
@@ -257,6 +270,25 @@ export const creerApp = ({ db, secret, origines, heartbeatMs }: OptionsApp): Hon
       },
     });
   });
+
+  // ---- PWA (après l'API : ses routes gardent la main) ----
+
+  if (statique) {
+    const fichiers = serveStatic({ root: statique });
+    app.use('*', async (c, next) => {
+      const res = await fichiers(c, async () => {});
+      if (!res) return next();
+      res.headers.set('Cache-Control', cacheDe(c.req.path));
+      return res;
+    });
+    // Chemin sans extension inconnu → l'app (navigation interne) ; un fichier
+    // manquant reste un 404.
+    app.get('*', (c) => {
+      if (extname(c.req.path)) return c.notFound();
+      c.header('Cache-Control', 'no-cache');
+      return c.html(readFileSync(join(statique, 'index.html'), 'utf8'));
+    });
+  }
 
   return app;
 };

@@ -48,30 +48,20 @@ npm run icons      # régénérer les icônes après modification de public/icon
 
 ### Faire une release
 
-La version affichée dans l'app (`Profil` → « Rituel vX.Y.Z ») vient de `package.json` — le bump est **volontaire** :
+La version affichée dans l'app (`Profil` → « Rituel vX.Y.Z ») vient de `package.json` — le bump est **volontaire**, tout le reste est automatique :
 
-1. Renseigner le `CHANGELOG.md` (renommer la section `[Non publié]` en `[x.y.z] - AAAA-MM-JJ`), puis `npm version minor` (ou `patch` / `major`) — crée le commit de bump **et** le tag `vx.y.z` localement.
-2. `git push origin main` — le déploiement Pages embarque la nouvelle version.
-3. `git push origin v1.x.y` — le workflow `release.yml` crée la GitHub Release avec les notes du CHANGELOG.
+1. Dans la PR : renommer la section `[Non publié]` du `CHANGELOG.md` en `[x.y.z] - AAAA-MM-JJ`, puis `npm version minor --no-git-tag-version` (ou `patch` / `major`).
+2. Fusionner : le VPS se met à jour (≤ 2 min) et `publier.yml` pose le tag `vx.y.z` puis crée la GitHub Release avec les notes du CHANGELOG. Sans bump de version : déploiement, pas de release.
 
 ## Déploiement
 
-L'app est déployée sur **GitHub Pages** via GitHub Actions (`.github/workflows/deploy.yml`).
+L'app et la sync tournent sur le **VPS**, à **https://rituel.marco-studio.fr** : un conteneur Docker (`Dockerfile`, `docker-compose.yml`) sert la PWA et l'API derrière Caddy.
 
-1. Créer un repo nommé `rituel-app` sur GitHub. Il doit être **public** : GitHub Pages gratuit n'est disponible que pour les repos publics (les repos privés nécessitent un plan payant).
-2. Pousser le code :
+- **Automatique** : le VPS vérifie `main` toutes les 2 min (`deploy/deploy.sh`, timer systemd) et reconstruit l'image quand une PR est fusionnée. Aucun secret sur GitHub.
+- **CI des PR** (`.github/workflows/ci.yml`) : lint, types, tests, build, serveur, e2e 320/375 sur le build de prod, build de l'image Docker — verte avant toute fusion.
+- Installation, backup, retour arrière : [`server/README.md`](server/README.md).
 
-   ```bash
-   git remote add origin git@github.com:<user>/rituel-app.git
-   git push -u origin main
-   ```
-
-3. Sur GitHub : **Settings → Pages → Source: GitHub Actions**.
-4. Chaque push sur `main` reconstruit et déploie. URL : `https://<user>.github.io/rituel-app/`.
-
-> Le `base` dans `vite.config.ts` vaut `/rituel-app/` — à mettre à jour si le repo est renommé.
-
-> Septembre 2026 — l'app s'appelle désormais **Rituel** et le repo est `rituel-app` : la nouvelle URL est `https://marcsuarez74.github.io/rituel-app/`. L'ancienne URL (`…/sport-app/`) ne redirige pas — sur les téléphones où la PWA est déjà installée, il faut la **réinstaller** depuis le navigateur à la nouvelle adresse (les données localStorage sont conservées, même origine).
+> Octobre 2026 — l'app quitte GitHub Pages (`marcsuarez74.github.io/rituel-app`) pour https://rituel.marco-studio.fr. Le localStorage ne suit pas un changement d'adresse : sur chaque téléphone, installer la PWA depuis la nouvelle adresse puis Profil › Foyer › « Se connecter au foyer » avec le code — les données reviennent du serveur.
 
 ## Données
 

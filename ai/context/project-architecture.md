@@ -4,7 +4,7 @@
 
 **Rituel** est une PWA frontend (sync optionnelle sur un VPS, cf. `docs/backend.md`) de suivi cuisine / diet / sport pour Marc & Mélanie. Le contenu est un **cycle de 4 menus + un rituel batch** au format JSON v2, généré par Claude et importé dans l'app ; sans cycle, le cycle d'exemple est chargé à la demande. Les données utilisateur vivent en `localStorage`.
 
-Déployée sur GitHub Pages : https://marcsuarez74.github.io/rituel-app/
+Déployée sur le VPS : https://rituel.marco-studio.fr (conteneur Docker : PWA + API de sync, même origine)
 
 ---
 
@@ -61,7 +61,8 @@ src/
 tests/                    # Miroir de src/ (lib/cycle/fabrique.ts : cycles minimaux valides)
 tests/e2e/                # Playwright mobile 320 / 375 (zéro débordement horizontal)
 public/                   # Icônes PWA (générées via npm run icons)
-.github/workflows/deploy.yml  # CI : npm ci → test → build → e2e preview → Pages
+.github/workflows/ci.yml      # CI des PR : lint → types → tests → build → serveur → e2e preview → image Docker
+.github/workflows/publier.yml # main : tag + Release ; le VPS se déploie seul (deploy/deploy.sh)
 docs/superpowers/         # Specs + plans (refonte v2 : specs/2026-10-07-refonte-v2-design.md)
 ai/                       # Contexte et configs pour agents IA
 ```
@@ -103,18 +104,18 @@ Les champs inconnus du JSON sont tolérés ; tout écart au contrat produit un m
 
 ## Configuration Build
 
-- `base: '/rituel-app/'` — doit rester égal au nom du repo GitHub (sinon Pages casse)
+- `base: '/'` — PWA servie à la racine par le serveur Hono (`STATIC_DIR`)
 - `npm run build` = `tsc -b && vite build` → `dist/` avec `sw.js` + `manifest.webmanifest`
 - Icônes : `npm run icons` (régénère les PNG depuis `public/icon-src.svg`)
-- Preview locale du build : `npm run preview` (vérifier `/rituel-app/`, manifest, sw)
+- Preview locale du build : `npm run preview` (vérifier manifest, sw)
 
 ---
 
 ## Déploiement
 
-- GitHub Actions (`.github/workflows/deploy.yml`) à chaque push sur `main`
-- Pipeline : `npm ci` → `npm test` → `npm run build` → `configure-pages` → upload/deploy-pages v5
-- Prérequis repo : **public** + Settings → Pages → Source « GitHub Actions » (le token du workflow ne peut pas créer le site lui-même)
+- Image Docker unique (`Dockerfile`) : build Vite de la PWA + serveur Hono/better-sqlite3 ; `docker-compose.yml` publie `127.0.0.1:8787` derrière Caddy, base dans `./data`
+- Le VPS suit `main` : `deploy/deploy.sh` (timer systemd, 2 min) → pull, build, up, `/sante`
+- Tag + Release automatiques après fusion (`publier.yml`) quand la version de `package.json` change
 
 ---
 

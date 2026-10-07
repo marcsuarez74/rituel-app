@@ -17,21 +17,20 @@ Guide serveur (systemd, proxy, backup) : `server/README.md`.
 - Aucun secret dans le front : `VITE_SYNC_URL` est une URL publique ; le
   `JWT_SECRET` ne vit que dans `/etc/rituel.env` sur le VPS.
 
-## 1. Installer le serveur (une fois)
+## 1. Le serveur (VPS)
 
-Voir `server/README.md` : Node ≥ 22, `/opt/rituel` (utilisateur système
-`rituel`), `/opt/rituel/data/rituel.db` (WAL), systemd `rituel.service`,
-reverse proxy Caddy `rituel.marco-studio.fr` (SSE géré par défaut), backup
-cron quotidien + rétention 14 jours (`server/backup.sh`). Secret :
-`openssl rand -hex 32` → `JWT_SECRET` dans `/etc/rituel.env`.
+Un seul conteneur Docker sert **la PWA et l'API** sur https://rituel.marco-studio.fr
+(même origine) ; il suit `main` tout seul (déploiement automatique toutes les
+2 min). Installation, secrets, backup et retour arrière : `server/README.md`.
 
 ## 2. Brancher l'app (build)
 
-```bash
-# local
-VITE_SYNC_URL="https://rituel.marco-studio.fr" npm run build
+L'image Docker builde la PWA avec `VITE_SYNC_URL=https://rituel.marco-studio.fr`
+(argument du `Dockerfile`). En local, sans cette variable, la sync reste
+inactive :
 
-# CI Deploy : secret GitHub VITE_SYNC_URL (Settings → Secrets → Actions)
+```bash
+VITE_SYNC_URL="http://127.0.0.1:8787" npm run build   # essai local contre un serveur local
 ```
 
 Les téléphones se connectent ensuite **depuis l'app** :
@@ -80,8 +79,7 @@ Les téléphones sont la source primaire ; Supabase n'était qu'un miroir.
 
 1. **Avant tout** : vérifier les 2 téléphones « Synchronisé » sur Supabase
    (Supabase devient la copie de secours).
-2. Ajouter le secret GitHub `VITE_SYNC_URL`, merger la PR → déploiement Pages
-   → les PWA se mettent à jour (autoUpdate).
+2. Merger la PR → le VPS se met à jour → les PWA se mettent à jour (autoUpdate).
 3. Téléphone A : Profil → « Créer un foyer » → noter le code. Téléphone B :
    « Se connecter au foyer » avec ce code.
 4. La **fusion union existante** (`pousserTout` → merge outbox-prime → flush)

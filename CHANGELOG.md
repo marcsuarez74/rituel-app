@@ -8,7 +8,7 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 ## [2.0.0] - 2026-10-07
 
-> **Refonte 2.0 — version majeure** (contrat et stockage cassants). Déployer le serveur de sync **avant** l'app (nouvelle table `etat`).
+> **Refonte 2.0 — version majeure** (contrat et stockage cassants) et **nouvelle adresse** : https://rituel.marco-studio.fr (l'app et la sync sur le VPS). Sur chaque téléphone : installer la PWA depuis la nouvelle adresse puis Profil › Foyer › « Se connecter au foyer » avec le code — profil, pesées, dépenses, foyer et cycle reviennent du serveur.
 
 ### Ajouté
 
@@ -28,6 +28,7 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 ### Changé
 
+- **Hébergement** : l'app quitte GitHub Pages pour le VPS, à https://rituel.marco-studio.fr — un seul conteneur Docker sert la PWA et l'API de sync (même origine, mêmes routes). Déploiement automatique : le VPS suit `main` (contrôle toutes les 2 min), puis tag et Release GitHub posés automatiquement à chaque fusion d'une nouvelle version. La PWA est servie à la racine (`/`, plus `/rituel-app/`).
 - Onboarding tout sautable : chaque étape porte un CTA discret « Passer » (seul le choix du profil reste obligatoire) et le doublon d'objectif disparaît de l'étape 4. Le prénom s'édite à l'étape 1 (« C'est ton prénom ? ») puis dans Mes infos — salutations, titre du suivi et prompt IA l'utilisent. Profil v2.2 : date de naissance et taille deviennent optionnelles (sections silencieuses quand absentes) ; aucune donnée n'est réinitialisée.
 - La semaine consultée (chevrons/commutateur) est mémorisée : à la relance, l'app rouvre sur la semaine en cours de consultation au lieu de retomber sur la semaine du jour (nouvelle clé `sportapp:selection`) ; si la semaine a disparu du stockage, repli propre sur la semaine du jour.
 - Sync : une seule variable de build `VITE_SYNC_URL` (remplace `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY`) ; client sync en fetch natif + lecteur SSE (supabase-js retiré) ; engine/outbox/storage inchangés (port SyncClient identique, migration par re-jumelage des téléphones).

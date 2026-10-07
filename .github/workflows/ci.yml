@@ -35,3 +35,13 @@ jobs:
       - name: Server — check (typecheck + lint + test)
         run: npm run check
         working-directory: server
+      - name: Navigateurs e2e (Playwright)
+        run: |
+          # Le miroir apt google-chrome du runner peut être incohérent (hash sum
+          # mismatch) ; Playwright télécharge ses propres navigateurs.
+          sudo rm -f /etc/apt/sources.list.d/google-chrome.*
+          npx playwright install --with-deps chromium webkit
+      - name: Test e2e (build de prod, mobile 320/375)
+        run: npm run e2e:preview
+      - name: Image Docker (PWA + API, better-sqlite3 natif)
+        run: docker build -t rituel:ci .

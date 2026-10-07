@@ -4,7 +4,7 @@ import { defineConfig, devices } from '@playwright/test';
 // Mode par défaut : serveur dev (loop local). E2E_PREVIEW=1 : test du build de prod
 // via `vite preview` (utilisé par le workflow Deploy pour valider dist/ avant déploiement).
 const PREVIEW = !!process.env.E2E_PREVIEW;
-const BASE_URL = PREVIEW ? 'http://localhost:4173/rituel-app/' : 'http://localhost:5173/rituel-app/';
+const BASE_URL = PREVIEW ? 'http://localhost:4173/' : 'http://localhost:5173/';
 
 export default defineConfig({
   testDir: './tests/e2e',

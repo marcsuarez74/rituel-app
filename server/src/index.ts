@@ -11,6 +11,9 @@ const db = ouvrirDb(process.env.DB_PATH ?? 'rituel.db');
 const origines = process.env.CORS_ORIGINS?.split(',').map((s) => s.trim()).filter(Boolean);
 const port = Number(process.env.PORT ?? 8787);
 
-serve({ fetch: creerApp({ db, secret, origines }).fetch, port });
+// STATIC_DIR : dossier de la PWA buildée (image Docker) — absent = API seule.
+const statique = process.env.STATIC_DIR || undefined;
+
+serve({ fetch: creerApp({ db, secret, origines, statique }).fetch, port });
 console.log(`Rituel API sur :${port}`);
 
