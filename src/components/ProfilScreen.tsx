@@ -42,6 +42,8 @@ export function ProfilScreen({
   cycle,
   resumeCycle,
   onMonCycle,
+  resumeSemaine,
+  onSemaineType,
 }: {
   profile: UserProfile;
   onBack: () => void;
@@ -51,6 +53,8 @@ export function ProfilScreen({
   cycle?: number;
   resumeCycle?: string;
   onMonCycle?: () => void;
+  resumeSemaine?: string;
+  onSemaineType?: () => void;
 }) {
   const [vue, setVue] = useState<Vue>('hub');
 
@@ -90,6 +94,9 @@ export function ProfilScreen({
             <h2 className="hub-section">Le foyer</h2>
             {onMonCycle && (
               <LigneHub icone="refresh" titre="Mon cycle" resume={resumeCycle ?? ''} onClick={onMonCycle} />
+            )}
+            {onSemaineType && (
+              <LigneHub icone="home" titre="Ma semaine type" resume={resumeSemaine ?? ''} onClick={onSemaineType} />
             )}
             <LigneHub icone="cart" titre="Courses & budget" resume={resumeMaison(profile)} onClick={() => setVue('maison')} />
             <h2 className="hub-section">Moi</h2>

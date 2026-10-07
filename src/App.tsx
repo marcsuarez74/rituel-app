@@ -9,7 +9,7 @@ import { semaineCoches } from './lib/cycle/etat';
 import type { Jour } from './lib/cycle/types';
 import type { VueRituel } from './components/ecrans/Rituel';
 import { chargerCycleExemple, semaineParDefaut } from './lib/cycle/courant';
-import { type CycleActif, foyerParDefaut, loadCycle, loadFoyer } from './lib/cycle/etat';
+import { type CycleActif, type ReglagesFoyer, foyerParDefaut, loadCycle, loadFoyer, saveFoyer } from './lib/cycle/etat';
 import { todayISO } from './lib/dates';
 import { prenomProfil } from './lib/model';
 import type { UserProfile } from './lib/model';
@@ -24,6 +24,7 @@ const Menu = lazy(() => import('./components/ecrans/Menu').then((m) => ({ defaul
 const Courses = lazy(() => import('./components/ecrans/Courses').then((m) => ({ default: m.Courses })));
 const Rituel = lazy(() => import('./components/ecrans/Rituel').then((m) => ({ default: m.Rituel })));
 const Guide = lazy(() => import('./components/ecrans/Guide').then((m) => ({ default: m.Guide })));
+const SemaineType = lazy(() => import('./components/ecrans/SemaineType').then((m) => ({ default: m.SemaineType })));
 const MonCycle = lazy(() => import('./components/ecrans/MonCycle').then((m) => ({ default: m.MonCycle })));
 const Recette = lazy(() => import('./components/ecrans/Recette').then((m) => ({ default: m.Recette })));
 
@@ -53,6 +54,8 @@ function App() {
   const [vueRituel, setVueRituel] = useState<VueRituel>('jour');
   const [guide, setGuide] = useState<number | null>(null); // étape du mode guidé ouvert
   const [monCycle, setMonCycle] = useState(false);
+  // Semaine type : 'etape' = étape « Ta semaine » juste après l'onboarding.
+  const [semaineType, setSemaineType] = useState<'etape' | 'profil' | null>(null);
   const [profilOuvert, setProfilOuvert] = useState(false);
   // Fiche recette poussée ; `coche` = le repas d'où on vient (« C'est fait »).
   const [recette, setRecette] = useState<{ id: string; coche?: { semaine: string; id: string } } | null>(null);
@@ -90,7 +93,13 @@ function App() {
   if (!profile) {
     return (
       <Suspense fallback={<Chargement />}>
-        <Onboarding onDone={setProfile} prefill={loadProfilLegacy() ?? undefined} />
+        <Onboarding
+          onDone={(p) => {
+            setProfile(p);
+            if (!loadFoyer()) setSemaineType('etape');
+          }}
+          prefill={loadProfilLegacy() ?? undefined}
+        />
       </Suspense>
     );
   }
@@ -99,6 +108,29 @@ function App() {
   const actif = cycleStocke ?? exemple;
 
   const position = actif ? positionCycle(actif, aujourdhui) : null;
+
+  const enregistrerFoyer = (f: ReglagesFoyer) => {
+    saveFoyer(f);
+    setFoyerStocke(f);
+  };
+
+  if (semaineType) {
+    return (
+      <div className="main-content">
+        <Suspense fallback={<Chargement />}>
+          <SemaineType
+            foyer={foyer}
+            compact={semaineType === 'etape'}
+            onRetour={() => setSemaineType(null)}
+            onEnregistrer={(f) => {
+              enregistrerFoyer(f);
+              setSemaineType(null);
+            }}
+          />
+        </Suspense>
+      </div>
+    );
+  }
 
   if (monCycle) {
     return (
@@ -145,13 +177,22 @@ function App() {
                     : `Cycle ${cycleStocke.numero}`
             }
             onMonCycle={() => setMonCycle(true)}
+            resumeSemaine={`${foyer.membres.length} personnes · courses ${foyer.jourCourses.slice(0, 3)}. · rituel ${foyer.jourRituel.slice(0, 3)}.`}
+            onSemaineType={() => setSemaineType('profil')}
             onBack={() => setProfilOuvert(false)}
             onChangeProfile={() => {
               removeProfile();
               setProfile(null);
               setProfilOuvert(false);
             }}
-            onProfileSaved={setProfile}
+            onProfileSaved={(p) => {
+              setProfile(p);
+              // Magasin et budget vivent dans le foyer une fois celui-ci enregistré.
+              if (foyerStocke) {
+                // undefined → clé omise au JSON (champ vidé dans le profil).
+                enregistrerFoyer({ ...foyerStocke, magasin: p.magasin || undefined, budgetMax: p.budgetMax });
+              }
+            }}
           />
         </Suspense>
       </div>

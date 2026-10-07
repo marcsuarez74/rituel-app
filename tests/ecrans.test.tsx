@@ -1,8 +1,9 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { Guide } from '../src/components/ecrans/Guide';
 import { MonCycle } from '../src/components/ecrans/MonCycle';
+import { SemaineType } from '../src/components/ecrans/SemaineType';
 import { Rituel, type VueRituel } from '../src/components/ecrans/Rituel';
 import { Courses } from '../src/components/ecrans/Courses';
 import { Recette } from '../src/components/ecrans/Recette';
@@ -290,5 +291,46 @@ describe('Mon cycle', () => {
     await user.click(screen.getByRole('button', { name: 'Relancer le cycle' }));
     expect(screen.getByRole('heading', { name: 'Cycle 3 prêt' })).toBeInTheDocument();
     expect(loadCycle()).toMatchObject({ numero: 3, debut: '2026-10-10', relanceDe: 'c1' });
+  });
+});
+
+describe('Semaine type', () => {
+  it('foyer, rythme, jour par jour, exceptions → enregistrés ensemble', async () => {
+    const user = userEvent.setup();
+    const onEnregistrer = vi.fn();
+    render(<SemaineType foyer={foyerParDefaut(null)} onEnregistrer={onEnregistrer} onRetour={() => {}} />);
+
+    await user.selectOptions(screen.getByLabelText(/Jour des courses/), 'vendredi');
+    await user.type(screen.getByLabelText("Prénom d'un enfant"), 'Maëlle');
+    await user.click(screen.getAllByRole('button', { name: 'Ajouter' })[0]);
+    expect(screen.getByText('Maëlle')).toBeInTheDocument();
+
+    const titreLundi = screen.getByText('Lundi', { selector: 'summary b' });
+    const lundi = titreLundi.closest('details')!;
+    await user.click(titreLundi);
+    await user.click(within(within(lundi).getByRole('radiogroup', { name: 'Déjeuner de Marc' })).getByRole('radio', { name: 'box' }));
+    await user.click(within(within(lundi).getByRole('radiogroup', { name: 'Dîner' })).getByRole('radio', { name: 'rapide' }));
+    await user.click(within(lundi).getByLabelText('Mélanie dîne plus tard'));
+    expect(within(lundi).getByText('dîner rapide · 1 box · 1 plus tard')).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText('Quand'), '1er et 3e vendredis');
+    await user.type(screen.getByLabelText('Ce qui change'), 'resto à deux');
+    await user.click(screen.getAllByRole('button', { name: 'Ajouter' })[1]);
+
+    await user.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    const f = onEnregistrer.mock.calls[0][0] as ReglagesFoyer;
+    expect(f.jourCourses).toBe('vendredi');
+    expect(f.membres.map((m) => m.id)).toEqual(['marc', 'melanie', 'maelle']);
+    expect(f.semaine.lundi).toMatchObject({ dejeuner: { marc: 'box', maelle: 'dehors' }, diner: 'rapide', plusTard: ['melanie'] });
+    expect(f.exceptions).toEqual([{ regle: '1er et 3e vendredis', effet: 'resto à deux', actif: true }]);
+  });
+
+  it('étape « Ta semaine » : compacte, Passer garde les valeurs par défaut', async () => {
+    const user = userEvent.setup();
+    const onEnregistrer = vi.fn();
+    render(<SemaineType foyer={foyerParDefaut(null)} compact onEnregistrer={onEnregistrer} onRetour={() => {}} />);
+    expect(screen.queryByText('Jour par jour')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
+    expect(onEnregistrer).toHaveBeenCalledWith(foyerParDefaut(null));
   });
 });

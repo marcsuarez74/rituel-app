@@ -184,4 +184,22 @@ test.describe('Shell v2 — barre du bas', () => {
     await page.getByRole('button', { name: 'Annuler' }).click();
     await expect(page.getByRole('status')).toHaveCount(0);
   });
+
+  for (const largeur of [320, 375]) {
+    test(`semaine type : depuis le profil, jour déplié, sans débordement à ${largeur}px`, async ({ page }) => {
+      await page.setViewportSize({ width: largeur, height: 667 });
+      await page.goto('/');
+      await page.evaluate(() => document.fonts.ready);
+      await page.getByRole('button', { name: /Mon profil/ }).click();
+      await page.getByRole('button', { name: /Ma semaine type/ }).click();
+      await page.locator('summary', { hasText: 'Lundi' }).click();
+      await expect(page.getByRole('radiogroup', { name: 'Journée de Marc' })).toBeVisible();
+      const debord = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      expect(debord).toBeLessThanOrEqual(OVERFLOW_TOLERANCE);
+      await page.getByRole('button', { name: 'Enregistrer' }).click();
+      await expect(page.getByRole('button', { name: /Ma semaine type/ })).toBeVisible();
+    });
+  }
 });

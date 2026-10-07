@@ -111,8 +111,11 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     // — « Plus tard » poursuit ; sans sync, le shell arrive direct.
     const plusTard = page.getByRole('button', { name: 'Plus tard' });
     const shell = page.getByRole('navigation', { name: 'Navigation principale' });
-    await plusTard.or(shell).first().waitFor();
+    const taSemaine = page.getByRole('heading', { name: 'Ta semaine' });
+    await plusTard.or(taSemaine).first().waitFor();
     if (await plusTard.isVisible()) await plusTard.click();
+    // Étape optionnelle « Ta semaine » : on la passe.
+    await page.getByRole('button', { name: 'Passer' }).click();
 
     // Profil enregistré + cycle d'exemple auto-chargé → shell direct
     await expect(shell).toBeVisible();
@@ -145,11 +148,15 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     // Même tolérance à l'étape 6 optionnelle que le parcours complet.
     const plusTard = page.getByRole('button', { name: 'Plus tard' });
     const shell = page.getByRole('navigation', { name: 'Navigation principale' });
-    await plusTard.or(shell).first().waitFor();
+    const taSemaine = page.getByRole('heading', { name: 'Ta semaine' });
+    await plusTard.or(taSemaine).first().waitFor();
     if (await plusTard.isVisible()) await plusTard.click();
+    // Étape optionnelle « Ta semaine » : on la passe.
+    await page.getByRole('button', { name: 'Passer' }).click();
 
     // L'app s'affiche sans crash : salutation (Aujourd'hui) avec le prénom
     // prérempli + cycle d'exemple.
+    await expect(shell).toBeVisible();
     await expect(page.getByText('Salut Mélanie 👋')).toBeVisible();
     await expect(page.getByText(/Cycle d'exemple/)).toBeVisible();
     await assertPasDeDebordement(page);
@@ -189,8 +196,11 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     // Même tolérance à l'étape 6 optionnelle que le parcours complet.
     const plusTard = page.getByRole('button', { name: 'Plus tard' });
     const shell = page.getByRole('navigation', { name: 'Navigation principale' });
-    await plusTard.or(shell).first().waitFor();
+    const taSemaine = page.getByRole('heading', { name: 'Ta semaine' });
+    await plusTard.or(taSemaine).first().waitFor();
     if (await plusTard.isVisible()) await plusTard.click();
+    // Étape optionnelle « Ta semaine » : on la passe.
+    await page.getByRole('button', { name: 'Passer' }).click();
 
     await expect(shell).toBeVisible();
     const profil = await page.evaluate(() => JSON.parse(localStorage.getItem('sportapp:profile')!));

@@ -1141,6 +1141,65 @@ textarea {
   text-decoration: underline;
 }
 
+.semaine-type h1 {
+  font-weight: 700;
+}
+
+.semaine-type select {
+  min-height: 48px;
+  padding: 0 var(--sp-12);
+  border: 0;
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+}
+
+.membre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-4) var(--sp-8);
+  margin: 0 0 var(--sp-8);
+}
+
+.membre .lien {
+  margin-left: auto;
+}
+
+.jour-type summary {
+  flex-wrap: wrap;
+}
+
+.choix {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  margin-top: var(--sp-8);
+  font-size: var(--fs-sec);
+  font-weight: 600;
+}
+
+.choix .segment {
+  grid-auto-flow: row;
+  grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
+  margin-bottom: 0;
+}
+
+.choix .segment button {
+  min-width: 0;
+  padding: 0 var(--sp-4);
+  font-size: var(--fs-sec);
+}
+
+.interrupteur {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-10);
+  min-height: 48px;
+  font-size: var(--fs-sec);
+}
+
 .pied-recette {
   position: fixed;
   z-index: 10;

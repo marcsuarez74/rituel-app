@@ -227,7 +227,11 @@ describe('Onboarding — persistance via App', () => {
       complements: ['Créatine'],
       regime: 'keto',
     });
+    // Étape optionnelle « Ta semaine » (foyer encore jamais enregistré).
+    expect(await screen.findByRole('heading', { name: 'Ta semaine' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
     expect(screen.getByRole('navigation', { name: 'Navigation principale' })).toBeInTheDocument();
+    expect(localStorage.getItem('sportapp:foyer')).not.toBeNull();
   });
 });
 
@@ -264,7 +268,11 @@ describe('Migration profil v1 → v2', () => {
       objectif: { type: 'perte' },
       regime: 'aucun',
     });
+    // Étape optionnelle « Ta semaine » (foyer encore jamais enregistré).
+    expect(await screen.findByRole('heading', { name: 'Ta semaine' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Passer' }));
     expect(screen.getByRole('navigation', { name: 'Navigation principale' })).toBeInTheDocument();
+    expect(localStorage.getItem('sportapp:foyer')).not.toBeNull();
   });
 });
 
