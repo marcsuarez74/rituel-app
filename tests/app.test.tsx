@@ -44,8 +44,11 @@ describe('App shell v2', () => {
     expect(screen.getByRole('heading', { level: 1, name: "Aujourd'hui" })).toBeInTheDocument();
     expect(await screen.findByText(/Salut Jean/)).toBeInTheDocument();
     expect(screen.getByText('mercredi 7 octobre')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Cycle 1 · semaine 1 sur 4 · Menu A' })).toBeInTheDocument();
+    expect(await screen.findByText('Cycle 1 · semaine 1 sur 4 · Menu A')).toBeInTheDocument();
     expect(screen.getByText(/Cycle d'exemple/)).toBeInTheDocument();
+    // Le menu du jour (mercredi) de l'exemple, avec ses repas cochables.
+    expect(screen.getByRole('heading', { name: "Au menu aujourd'hui" })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /marquer comme fait/ }).length).toBeGreaterThan(0);
   });
 
   it('barre du bas : 5 onglets libellés, l’actif en aria-current, titre de l’en-tête suivi', async () => {
@@ -103,8 +106,51 @@ describe('App shell v2', () => {
     saveCycle({ id: 'c7', numero: 3, debut: '2026-09-26', pauses: [], cycle });
     render(<App />);
 
-    expect(await screen.findByRole('heading', { name: 'Cycle 3 · semaine 2 sur 4 · Menu B' })).toBeInTheDocument();
+    expect(await screen.findByText('Cycle 3 · semaine 2 sur 4 · Menu B')).toBeInTheDocument();
     expect(screen.queryByText(/Cycle d'exemple/)).not.toBeInTheDocument();
+  });
+
+  it('cocher un repas d’Aujourd’hui le compte dans la semaine et le retrouve dans Menu', async () => {
+    initProfile();
+    const { importerCycle } = await import('../src/lib/cycle/valider');
+    const { saveCycle } = await import('../src/lib/cycle/etat');
+    const { getChecks } = await import('../src/lib/storage');
+    const { enFichiers, quatreFichiers } = await import('./lib/cycle/fabrique');
+    const fs = quatreFichiers();
+    for (const f of fs) for (const m of f.menus) for (const j of m.jours) for (const r of j.repas) r.pour = 'famille';
+    saveCycle({ id: 'c7', numero: 1, debut: '2026-10-03', pauses: [], cycle: importerCycle(enFichiers(fs)).cycle! });
+    const user = userEvent.setup();
+    render(<App />);
+
+    const repas = await screen.findByRole('button', { name: 'Recette diner-a-mercredi : marquer comme fait' });
+    expect(screen.getByRole('button', { name: /Repas/ })).toHaveTextContent('0/7');
+    await user.click(repas);
+    expect(screen.getByRole('button', { name: /Repas/ })).toHaveTextContent('1/7');
+    expect(getChecks('cycle:c7:0')).toEqual({ 'menu:A:mercredi:mercredi-diner-famille': true });
+
+    await user.click(onglet('Menu'));
+    expect(await screen.findByRole('tab', { name: 'Mercredi', selected: true })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Recette diner-a-mercredi : fait, annuler' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('fiche recette : ouverte depuis le menu, « C’est fait » coche le repas, retour au menu', async () => {
+    initProfile();
+    const { importerCycle } = await import('../src/lib/cycle/valider');
+    const { saveCycle } = await import('../src/lib/cycle/etat');
+    const { enFichiers, quatreFichiers } = await import('./lib/cycle/fabrique');
+    saveCycle({ id: 'c7', numero: 1, debut: '2026-10-03', pauses: [], cycle: importerCycle(enFichiers(quatreFichiers())).cycle! });
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(await screen.findByRole('button', { name: /Toute la semaine/ }));
+    await user.click(await screen.findByRole('tab', { name: 'Jeudi' }));
+    await user.click(screen.getByRole('button', { name: /^Dîner famille/ }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Recette diner-a-jeudi' })).toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Navigation principale' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: "C'est fait" }));
+    await user.click(screen.getByRole('button', { name: /Retour/ }));
+    expect(await screen.findByRole('button', { name: 'Recette diner-a-jeudi : fait, annuler' })).toBeInTheDocument();
   });
 
   it('ne pose pas data-profile sur <html> (accent unique)', () => {

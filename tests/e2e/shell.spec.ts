@@ -69,4 +69,24 @@ test.describe('Shell v2 — barre du bas', () => {
     await expect(page.getByRole('button', { name: /Mes infos/ })).toBeVisible();
     await expect(nav).toHaveCount(0);
   });
+
+  for (const largeur of [320, 375]) {
+    test(`menu → fiche recette → retour, sans débordement à ${largeur}px`, async ({ page }) => {
+      await page.setViewportSize({ width: largeur, height: 667 });
+      await page.goto('/');
+      await page.evaluate(() => document.fonts.ready);
+      const nav = page.getByRole('navigation', { name: 'Navigation principale' });
+      await nav.getByRole('button', { name: 'Menu', exact: true }).click();
+      await expect(page.getByRole('tablist', { name: 'Jours' })).toBeVisible();
+      const debord = () =>
+        page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      expect(await debord()).toBeLessThanOrEqual(OVERFLOW_TOLERANCE);
+
+      await page.locator('.carte-repas-corps').first().click();
+      await expect(page.getByRole('heading', { name: 'Préparation' })).toBeVisible();
+      expect(await debord()).toBeLessThanOrEqual(OVERFLOW_TOLERANCE);
+      await page.getByRole('button', { name: /Retour/ }).click();
+      await expect(page.getByRole('tablist', { name: 'Jours' })).toBeVisible();
+    });
+  }
 });

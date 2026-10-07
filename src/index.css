@@ -292,6 +292,491 @@ textarea {
   text-transform: uppercase;
 }
 
+/* ---------- Écrans v2 : Aujourd'hui, Menu, Recette ---------- */
+
+.bouton-plein,
+.bouton-contour {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-8);
+  min-height: 52px;
+  padding: var(--sp-12) var(--sp-20);
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.bouton-plein {
+  border: 2px solid var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.bouton-plein[aria-pressed='true'] {
+  background: var(--surface);
+  color: var(--accent);
+}
+
+.bouton-contour {
+  border: 2px solid var(--accent);
+  background: var(--surface);
+  color: var(--accent);
+}
+
+.bouton-contour[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+}
+
+.lien {
+  min-height: 48px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-size: var(--fs-sec);
+  font-weight: 600;
+}
+
+.semaine-carte-titre {
+  font-weight: 700;
+}
+
+.jauges {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-8);
+}
+
+.jauge {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--sp-4) var(--sp-8);
+  align-items: baseline;
+  min-height: 48px;
+  padding: var(--sp-10) var(--sp-12);
+  border: 0;
+  border-radius: 12px;
+  background: var(--surface-2);
+  color: var(--text);
+  text-align: left;
+  font-size: var(--fs-sec);
+}
+
+.jauge progress {
+  grid-column: 1 / -1;
+  width: 100%;
+  height: 6px;
+  accent-color: var(--accent);
+}
+
+.action-du-jour {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+  margin-bottom: var(--sp-16);
+  padding: var(--sp-16);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.action-du-jour h2,
+.action-du-jour p {
+  margin: 0;
+}
+
+.anticipe-titre {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-6);
+  margin: 0;
+  color: var(--accent);
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.menu-jour-tete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-8);
+  margin: var(--sp-8) 0;
+}
+
+.menu-jour-tete h2,
+.menu-jour-tete p {
+  margin: 0;
+}
+
+.bande-jours {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-8);
+}
+
+.jour {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+  min-height: 64px;
+  padding: var(--sp-6) 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: var(--fs-meta);
+}
+
+.jour b {
+  font-size: var(--fs-h3);
+}
+
+.jour.aujourdhui {
+  border-color: var(--accent);
+}
+
+.jour[aria-selected='true'] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.point {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+}
+
+.point.plein {
+  background: currentColor;
+}
+
+.carte-repas {
+  margin-bottom: var(--sp-12);
+  padding: var(--sp-12);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.carte-repas-tete {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-8);
+}
+
+.carte-repas-corps {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text);
+  text-align: left;
+}
+
+.carte-repas-moment {
+  color: var(--accent);
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.carte-repas-titre {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.carte-repas-meta {
+  color: var(--muted);
+  font-size: var(--fs-sec);
+}
+
+.carte-repas.fait .carte-repas-titre {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.coche {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: transparent;
+}
+
+.coche[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.carte-repas-ligne {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-6);
+  margin: var(--sp-8) 0 0;
+  padding-top: var(--sp-8);
+  border-top: 1px solid var(--border);
+  font-size: var(--fs-sec);
+}
+
+.carte-repas-ligne b {
+  color: var(--accent);
+}
+
+.anticipe,
+.lie-rituel {
+  display: flex;
+  gap: var(--sp-12);
+  margin-bottom: var(--sp-12);
+  padding: var(--sp-16);
+  border: 1px dashed var(--accent);
+  border-radius: var(--radius);
+  color: var(--accent);
+}
+
+.anticipe p,
+.lie-rituel p {
+  margin: 0;
+  color: var(--text);
+}
+
+.lie-rituel {
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+
+.lie-rituel .anticipe-titre {
+  color: var(--accent);
+}
+
+.recette {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom)); /* pied fixe */
+}
+
+.recette-tete {
+  margin-bottom: var(--sp-12);
+}
+
+.recette-tete h1 {
+  font-weight: 700;
+}
+
+.pastilles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-8);
+}
+
+.pastille {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  padding: var(--sp-6) var(--sp-12);
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-size: var(--fs-sec);
+  font-weight: 600;
+}
+
+.macros {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-8);
+  text-align: center;
+}
+
+.macro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-10) var(--sp-4);
+  border-radius: 12px;
+  background: var(--surface-2);
+  font-size: var(--fs-meta);
+  font-weight: 600;
+}
+
+.macro b {
+  font-size: var(--fs-h3);
+}
+
+.macro.kcal {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.segment {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-12);
+  padding: var(--sp-4);
+  border-radius: 14px;
+  background: var(--surface-2);
+}
+
+.segment button {
+  min-height: 48px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.segment button[aria-checked='true'] {
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.variante {
+  padding: var(--sp-12);
+  border-radius: 12px;
+  background: var(--citron-surface);
+}
+
+.variante b {
+  display: block;
+}
+
+.ligne-cochable {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  width: 100%;
+  min-height: 48px;
+  padding: var(--sp-4) 0;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: none;
+  color: var(--text);
+  text-align: left;
+}
+
+.case {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--muted);
+  border-radius: 8px;
+  color: transparent;
+}
+
+.ligne-cochable[aria-pressed='true'] .case {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.ligne-cochable[aria-pressed='true'] > span:last-child {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.etapes {
+  margin: 0 0 var(--sp-16);
+  padding: 0;
+  list-style: none;
+}
+
+.etape {
+  display: flex;
+  gap: var(--sp-12);
+  margin-bottom: var(--sp-10);
+  padding: var(--sp-12);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.etape p {
+  margin: 0 0 var(--sp-8);
+}
+
+.etape.faite p {
+  color: var(--muted);
+}
+
+.etape-num {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border: 2px solid var(--accent);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.etape-num[aria-pressed='true'] {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.minuteur {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+  min-height: 48px;
+  padding: var(--sp-8) var(--sp-14);
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.minuteur.termine {
+  background: var(--accent-2);
+}
+
+.pied-recette {
+  position: fixed;
+  z-index: 10;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  gap: var(--sp-10);
+  max-width: 560px;
+  margin: 0 auto;
+  padding: var(--sp-12) var(--sp-16) calc(var(--sp-12) + env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.pied-recette:empty {
+  display: none;
+}
+
+.pied-recette > * {
+  flex: 1;
+}
+
+
 h1,
 h2,
 h3 {

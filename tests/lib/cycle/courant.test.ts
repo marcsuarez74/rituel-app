@@ -20,7 +20,16 @@ describe('semaineParDefaut', () => {
 describe('chargerCycleExemple', () => {
   it('cycle d’exemple valide, qui démarre au dernier jour des courses', async () => {
     const c = await chargerCycleExemple('2026-10-07', 'samedi');
-    expect(c).toMatchObject({ id: 'exemple', numero: 1, debut: '2026-10-03', pauses: [] });
+    // id lié au début : les coches d'exemple repartent à zéro chaque semaine.
+    expect(c).toMatchObject({ id: 'exemple-2026-10-03', numero: 1, debut: '2026-10-03', pauses: [] });
     expect(c.cycle.menus.map((m) => m.lettre)).toEqual(['A', 'B', 'C', 'D']);
+  });
+
+  it('les membres anonymisés du fichier deviennent ceux du foyer', async () => {
+    const c = await chargerCycleExemple('2026-10-07', 'samedi');
+    const r = c.cycle.recettes[0];
+    expect(Object.keys(r.macros).sort()).toEqual(['marc', 'melanie']);
+    expect(Object.keys(r.portions)).toEqual(expect.arrayContaining(['maelle', 'maxine']));
+    expect(JSON.stringify(c.cycle)).not.toMatch(/\b(Alex|Sam)\b|"(alex|sam|lou|noa)"/);
   });
 });

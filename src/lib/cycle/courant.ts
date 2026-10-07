@@ -14,9 +14,28 @@ export const debutParDefaut = (aujourdhui: string, jourCourses: Jour): string =>
 export const semaineParDefaut = (p: PositionCycle): number =>
   p.etat === 'semaine' ? p.index : p.etat === 'pause' ? p.apres : p.etat === 'termine' ? 3 : 0;
 
+// Le fichier du dépôt est anonymisé ; à l'écran, il parle du foyer.
+const MEMBRES_EXEMPLE: Array<[string, string, string]> = [
+  ['alex', 'marc', 'Marc'],
+  ['sam', 'melanie', 'Mélanie'],
+  ['lou', 'maelle', 'Maëlle'],
+  ['noa', 'maxine', 'Maxine'],
+];
+
+const personnaliser = (contenu: string): string =>
+  MEMBRES_EXEMPLE.reduce(
+    (s, [anonyme, id, prenom]) =>
+      s
+        .replaceAll(`"${anonyme}"`, `"${id}"`)
+        .replace(new RegExp(`\\b${anonyme[0].toUpperCase()}${anonyme.slice(1)}\\b`, 'g'), prenom),
+    contenu,
+  );
+
 export const chargerCycleExemple = async (aujourdhui: string, jourCourses: Jour): Promise<CycleActif> => {
-  const { default: contenu } = await import('../../assets/cycle-exemple.json?raw');
-  const { cycle, erreurs } = importerCycle([{ nom: 'cycle-exemple.json', contenu }]);
+  const { default: brut } = await import('../../assets/cycle-exemple.json?raw');
+  const { cycle, erreurs } = importerCycle([{ nom: 'cycle-exemple.json', contenu: personnaliser(brut) }]);
   if (!cycle) throw new Error(`Cycle d'exemple invalide : ${erreurs.join(' ; ')}`);
-  return { id: 'exemple', numero: 1, debut: debutParDefaut(aujourdhui, jourCourses), pauses: [], cycle };
+  const debut = debutParDefaut(aujourdhui, jourCourses);
+  // id lié au début : les coches de l'exemple repartent à zéro chaque semaine.
+  return { id: `exemple-${debut}`, numero: 1, debut, pauses: [], cycle };
 };

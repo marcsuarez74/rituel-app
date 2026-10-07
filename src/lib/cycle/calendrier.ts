@@ -26,7 +26,7 @@ const versISO = (t: number): string => new Date(t).toISOString().slice(0, 10);
 export const ajouterJours = (iso: string, n: number): string => versISO(versUTC(iso) + n * 86_400_000);
 const ecartJours = (de: string, a: string): number => Math.round((versUTC(a) - versUTC(de)) / 86_400_000);
 
-const jourDe = (iso: string): Jour => JOURS[(new Date(versUTC(iso)).getUTCDay() + 6) % 7];
+export const jourDe = (iso: string): Jour => JOURS[(new Date(versUTC(iso)).getUTCDay() + 6) % 7];
 
 // Prochaine occurrence d'un jour de la semaine (aujourd'hui compris).
 export const prochainJour = (aujourdhui: string, jour: Jour): string =>

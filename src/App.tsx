@@ -5,6 +5,8 @@ import { ONGLETS, type Onglet } from './components/shell/onglets';
 import { EnTete } from './components/shell/EnTete';
 import { LigneSemaine } from './components/shell/LigneSemaine';
 import { positionCycle } from './lib/cycle/calendrier';
+import { semaineCoches } from './lib/cycle/etat';
+import type { Jour } from './lib/cycle/types';
 import { chargerCycleExemple, semaineParDefaut } from './lib/cycle/courant';
 import { type CycleActif, foyerParDefaut, loadCycle, loadFoyer } from './lib/cycle/etat';
 import { todayISO } from './lib/dates';
@@ -17,9 +19,13 @@ import { initSync, type SyncEtat } from './lib/sync/engine';
 const Onboarding = lazy(() => import('./components/onboarding/Onboarding').then((m) => ({ default: m.Onboarding })));
 const ProfilScreen = lazy(() => import('./components/ProfilScreen').then((m) => ({ default: m.ProfilScreen })));
 const Suivi = lazy(() => import('./components/ecrans/Suivi').then((m) => ({ default: m.Suivi })));
+const Menu = lazy(() => import('./components/ecrans/Menu').then((m) => ({ default: m.Menu })));
+const Recette = lazy(() => import('./components/ecrans/Recette').then((m) => ({ default: m.Recette })));
+
+// Onglets avec la ligne semaine.
+const AVEC_SEMAINE: Onglet[] = ['menu', 'courses', 'rituel'];
 
 const AVENIR: Partial<Record<Onglet, string>> = {
-  menu: 'Le menu de la semaine arrive à la prochaine étape de la refonte.',
   courses: 'La liste de courses calculée arrive bientôt.',
   rituel: 'Le rituel et son mode guidé arrivent bientôt.',
 };
@@ -42,7 +48,10 @@ function App() {
   const [onglet, setOnglet] = useState<Onglet>('aujourdhui');
   // Semaine consultée dans Menu / Courses / Rituel (null = celle du jour).
   const [semaineVue, setSemaineVue] = useState<number | null>(null);
+  const [jourVu, setJourVu] = useState<Jour | null>(null); // jour consulté dans Menu
   const [profilOuvert, setProfilOuvert] = useState(false);
+  // Fiche recette poussée ; `coche` = le repas d'où on vient (« C'est fait »).
+  const [recette, setRecette] = useState<{ id: string; coche?: { semaine: string; id: string } } | null>(null);
   // Sync optionnelle : état (point sur l'avatar) et version de re-rendu —
   // onRemote relit le storage quand un pull y a écrit.
   const [syncEtat, setSyncEtat] = useState<SyncEtat>('off');
@@ -109,12 +118,41 @@ function App() {
   const position = actif ? positionCycle(actif, aujourdhui) : null;
   const semaine = semaineVue ?? (position ? semaineParDefaut(position) : 0);
   const titre = ONGLETS.find((o) => o.id === onglet)!.label;
+  const ouvrirRecette = (n: number) => (id: string, coche: string) =>
+    actif && setRecette({ id, coche: { semaine: semaineCoches(actif.id, n), id: coche } });
+
+  if (recette && actif) {
+    return (
+      <div className="main-content">
+        <Suspense fallback={<Chargement />}>
+          <Recette
+            cycle={actif.cycle}
+            recetteId={recette.id}
+            membres={foyer.membres}
+            moi={profile.id}
+            coche={recette.coche}
+            syncVersion={syncVersion}
+            onRetour={() => setRecette(null)}
+          />
+        </Suspense>
+      </div>
+    );
+  }
 
   return (
     <div className="shell">
       <div className="main-content">
         <EnTete titre={titre} prenom={prenom} syncEtat={syncEtat} onProfil={() => setProfilOuvert(true)} />
-        {actif && AVENIR[onglet] && <LigneSemaine cal={actif} index={semaine} onChange={setSemaineVue} />}
+        {actif && AVEC_SEMAINE.includes(onglet) && (
+          <LigneSemaine
+            cal={actif}
+            index={semaine}
+            onChange={(n) => {
+              setSemaineVue(n);
+              setJourVu(null);
+            }}
+          />
+        )}
         <main>
           {!actif || !position ? (
             <Chargement />
@@ -122,11 +160,29 @@ function App() {
             <Suspense fallback={<Chargement />}>
               {onglet === 'aujourdhui' && (
                 <Aujourdhui
+                  actif={actif}
+                  foyer={foyer}
+                  moi={profile.id}
                   prenom={prenom}
                   aujourdhui={aujourdhui}
-                  numero={actif.numero}
                   position={position}
                   exemple={!cycleStocke}
+                  syncVersion={syncVersion}
+                  onOuvrirRecette={ouvrirRecette(position.etat === 'semaine' ? position.index : 0)}
+                  onAller={setOnglet}
+                />
+              )}
+              {onglet === 'menu' && (
+                <Menu
+                  actif={actif}
+                  foyer={foyer}
+                  semaine={semaine}
+                  moi={profile.id}
+                  aujourdhui={aujourdhui}
+                  syncVersion={syncVersion}
+                  jourVu={jourVu}
+                  onJour={setJourVu}
+                  onOuvrirRecette={ouvrirRecette(semaine)}
                 />
               )}
               {onglet === 'suivi' && <Suivi profile={profile} syncVersion={syncVersion} />}
