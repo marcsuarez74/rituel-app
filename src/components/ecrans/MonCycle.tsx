@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { estimerSemaine } from '../../lib/cycle/budget';
-import { ajouterJours, positionCycle, prochainCycle, prochainJour } from '../../lib/cycle/calendrier';
+import { ajouterJours, jourDe, positionCycle, prochainCycle, prochainJour } from '../../lib/cycle/calendrier';
 import type { CycleActif, ReglagesFoyer } from '../../lib/cycle/etat';
 import { loadPrecedent, saveCycle, saveFoyer, savePrecedent } from '../../lib/cycle/etat';
-import { ajouterPause, demarrer, generationOuverte, messagePourClaude, relancer } from '../../lib/cycle/monCycle';
-import { LETTRES } from '../../lib/cycle/types';
+import { ajouterPause, changerDebut, demarrer, generationOuverte, messagePourClaude, relancer } from '../../lib/cycle/monCycle';
+import { type Jour, LETTRES } from '../../lib/cycle/types';
 import { importerCycle, type ResultatImport } from '../../lib/cycle/valider';
 import { formatJourMoisCourt, periodeCourte } from '../../lib/dates';
 import type { UserProfile } from '../../lib/model';
@@ -14,6 +14,20 @@ import { getWeights } from '../../lib/storage';
 import { Icon } from '../Icon';
 
 type Vue = 'etat' | 'generer' | 'apercu' | 'pret';
+
+// Début du cycle : passé autorisé (« courses faites samedi dernier ») ; le
+// jour des courses du foyer suit la date choisie (changerDebut).
+function ChampDebut({ valeur, jourCourses, onChange }: { valeur: string; jourCourses: Jour; onChange: (v: string) => void }) {
+  return (
+    <label className="debut-cycle">
+      Début du cycle (jour des courses de la semaine 1)
+      <input type="date" value={valeur} onChange={(e) => onChange(e.target.value)} />
+      {valeur && jourDe(valeur) !== jourCourses && (
+        <span className="muted">Le jour des courses passe au {jourDe(valeur)}.</span>
+      )}
+    </label>
+  );
+}
 
 const copier = async (texte: string) => {
   try {
@@ -57,9 +71,20 @@ export function MonCycle({
   const ouverte = generationOuverte(stocke, aujourdhui);
   const position = stocke ? positionCycle(stocke, aujourdhui) : null;
 
+  const [nouveauDebut, setNouveauDebut] = useState<string | null>(null); // édition en cours
+
   const enregistrer = (c: CycleActif) => {
     saveCycle(c);
     onCycle(c);
+  };
+  // Cycle + jour des courses du foyer alignés sur la date de début.
+  const enregistrerAvecDebut = (c: CycleActif, d: string) => {
+    const { actif, foyer: f } = changerDebut(c, foyer, d);
+    enregistrer(actif);
+    if (f !== foyer) {
+      saveFoyer(f);
+      onFoyer(f);
+    }
   };
   const copierEt = async (texte: string, quoi: string) => {
     await copier(texte);
@@ -84,7 +109,7 @@ export function MonCycle({
   const lancer = () => {
     if (!resultat?.cycle) return;
     if (stocke) savePrecedent(stocke.cycle.recettes.map((r) => r.id));
-    enregistrer(demarrer(resultat.cycle, stocke, debut, crypto.randomUUID()));
+    enregistrerAvecDebut(demarrer(resultat.cycle, stocke, debut, crypto.randomUUID()), debut);
     setVue('pret');
   };
 
@@ -116,6 +141,29 @@ export function MonCycle({
                 <p className="anticipe-titre">
                   Cycle {stocke.numero} · {periodeCourte(stocke.debut, ajouterJours(prochainCycle(stocke), -1))}
                 </p>
+                {nouveauDebut === null ? (
+                  <button type="button" className="lien" onClick={() => setNouveauDebut(stocke.debut)}>
+                    Changer la date de début
+                  </button>
+                ) : (
+                  <div className="ticket">
+                    <ChampDebut valeur={nouveauDebut} jourCourses={foyer.jourCourses} onChange={setNouveauDebut} />
+                    <button type="button" className="bouton-contour" onClick={() => setNouveauDebut(null)}>
+                      Annuler
+                    </button>
+                    <button
+                      type="button"
+                      className="bouton-plein"
+                      disabled={!nouveauDebut}
+                      onClick={() => {
+                        enregistrerAvecDebut(stocke, nouveauDebut);
+                        setNouveauDebut(null);
+                      }}
+                    >
+                      Enregistrer
+                    </button>
+                  </div>
+                )}
                 <h2>
                   {position.etat === 'semaine'
                     ? `Semaine ${position.index + 1} sur 4`
@@ -299,10 +347,7 @@ export function MonCycle({
                   </span>
                 </p>
               ))}
-              <label className="debut-cycle">
-                Début du cycle (jour des courses de la semaine 1)
-                <input type="date" value={debut} min={aujourdhui} onChange={(e) => setDebut(e.target.value)} />
-              </label>
+              <ChampDebut valeur={debut} jourCourses={foyer.jourCourses} onChange={setDebut} />
               <button type="button" className="bouton-plein" disabled={!ouverte || !debut} onClick={lancer}>
                 Démarrer le cycle
               </button>

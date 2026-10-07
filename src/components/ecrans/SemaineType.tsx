@@ -64,7 +64,7 @@ export function SemaineType({
       <h1>{compact ? 'Ta semaine' : 'Ma semaine type'}</h1>
       {compact && (
         <p className="muted">
-          Pour que Claude cale les menus sur votre vie : le jour des courses, le rituel et qui est à table. Le détail
+          Pour que Rituel cale les menus sur votre vie : le jour des courses, le rituel et qui est à table. Le détail
           jour par jour se règle ensuite dans Profil › Ma semaine type.
         </p>
       )}

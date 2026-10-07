@@ -11,7 +11,7 @@ const DIFFICULTE = { facile: 'Facile', moyen: 'Moyen', exigeant: 'Exigeant' } as
 
 // Fiche recette (écran poussé, spec v2 §3 écran 3) : macros et portion du
 // membre choisi, ingrédients du foyer et étapes cochables (mise en place, non
-// persistée), minuteurs, conservation, lien au rituel. Pied : écran allumé
+// persistée), minuteurs, conservation, lien au rituel. Pied : « Garder l’écran allumé »
 // (Wake Lock si dispo) et « C'est fait » quand on vient d'un repas.
 export function Recette({
   cycle,
@@ -65,7 +65,11 @@ export function Recette({
       return;
     }
     try {
-      setVerrou(await navigator.wakeLock.request('screen'));
+      const v = await navigator.wakeLock.request('screen');
+      // Le navigateur relâche le verrou quand l'app passe en arrière-plan :
+      // l'interrupteur doit le refléter.
+      v.addEventListener('release', () => setVerrou(null));
+      setVerrou(v);
     } catch {
       /* refusé (batterie faible, onglet caché) : rien à faire */
     }
@@ -204,9 +208,13 @@ export function Recette({
 
       <div className="pied-recette">
         {'wakeLock' in navigator && (
-          <button type="button" className="bouton-contour" aria-pressed={!!verrou} onClick={() => void ecranAllume()}>
-            {verrou ? 'Écran allumé' : 'Mode cuisine'}
-          </button>
+          <label className="interrupteur ecran-allume">
+            <input type="checkbox" role="switch" checked={!!verrou} onChange={() => void ecranAllume()} />
+            <span>
+              Garder l'écran allumé
+              <span className="muted">évite la mise en veille pendant que tu cuisines</span>
+            </span>
+          </label>
         )}
         {coche && (
           <button type="button" className="bouton-plein" aria-pressed={fait} onClick={() => basculer(coche.id)}>

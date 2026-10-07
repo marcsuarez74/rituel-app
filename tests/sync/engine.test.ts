@@ -462,6 +462,25 @@ describe('sync: pull / merge (outbox prime)', () => {
     await pull();
     expect(etatSync()).toBe('erreur');
   });
+
+  it('jeton refusé (401 : foyer inconnu du serveur) → session effacée, hors foyer', async () => {
+    client.toutLire = async () => {
+      throw new Error('sync-401');
+    };
+    await pull();
+    expect(lireSession()).toBeNull();
+    expect(etatSync()).toBe('hors-foyer');
+  });
+
+  it('jeton refusé à la flush → session effacée, hors foyer', async () => {
+    client.upsert = async () => {
+      throw new Error('sync-401');
+    };
+    setCheck('cycle:c1:0', 'x', true);
+    await flush();
+    expect(lireSession()).toBeNull();
+    expect(etatSync()).toBe('hors-foyer');
+  });
 });
 
 describe('sync: connexion foyer', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { CycleActif } from '../../../src/lib/cycle/etat';
-import { ajouterPause, demarrer, generationOuverte, messagePourClaude, relancer } from '../../../src/lib/cycle/monCycle';
+import { type CycleActif, foyerParDefaut } from '../../../src/lib/cycle/etat';
+import { ajouterPause, changerDebut, demarrer, generationOuverte, messagePourClaude, relancer } from '../../../src/lib/cycle/monCycle';
 import { importerCycle } from '../../../src/lib/cycle/valider';
 import { enFichiers, quatreFichiers } from './fabrique';
 
@@ -24,6 +24,14 @@ describe('Mon cycle', () => {
     const r = relancer(actif(), '2026-11-02', 'samedi', 'n2');
     expect(r).toMatchObject({ id: 'n2', numero: 3, debut: '2026-11-07', pauses: [], relanceDe: 'c1' });
     expect(r.cycle).toEqual(actif().cycle);
+  });
+
+  it('changer la date de début : passé autorisé, le jour des courses du foyer suit, ids inchangés', () => {
+    const foyer = foyerParDefaut(null); // courses le samedi
+    const { actif: a, foyer: f } = changerDebut(actif(), foyer, '2026-09-30'); // un mercredi
+    expect(a).toMatchObject({ id: 'c1', numero: 2, debut: '2026-09-30' });
+    expect(f.jourCourses).toBe('mercredi');
+    expect(changerDebut(actif(), foyer, '2026-09-26').foyer).toBe(foyer); // déjà un samedi : inchangé
   });
 
   it('pause : une semaine après la semaine en cours, une seule fois', () => {

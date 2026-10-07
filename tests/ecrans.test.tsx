@@ -7,7 +7,7 @@ import { SemaineType } from '../src/components/ecrans/SemaineType';
 import { Rituel, type VueRituel } from '../src/components/ecrans/Rituel';
 import { Courses } from '../src/components/ecrans/Courses';
 import { Recette } from '../src/components/ecrans/Recette';
-import { type CycleActif, type Membre, type ReglagesFoyer, foyerParDefaut, loadCycle } from '../src/lib/cycle/etat';
+import { type CycleActif, type Membre, type ReglagesFoyer, foyerParDefaut, loadCycle, loadFoyer } from '../src/lib/cycle/etat';
 import { getChecks, getDepenses } from '../src/lib/storage';
 import { importerCycle } from '../src/lib/cycle/valider';
 import { enFichiers, quatreFichiers } from './lib/cycle/fabrique';
@@ -72,6 +72,32 @@ describe('Recette', () => {
     });
     expect(screen.getByRole('button', { name: /Terminé/ })).toBeInTheDocument();
     vi.useRealTimers();
+  });
+
+  it('interrupteur « Garder l’écran allumé » : verrou d’écran demandé puis relâché', async () => {
+    const user = userEvent.setup();
+    const release = vi.fn().mockResolvedValue(undefined);
+    let surRelache = () => {};
+    const request = vi.fn().mockResolvedValue({
+      release,
+      addEventListener: (_: string, f: () => void) => {
+        surRelache = f;
+      },
+    });
+    Object.defineProperty(navigator, 'wakeLock', { value: { request }, configurable: true });
+    render(fiche());
+    const inter = screen.getByRole('switch', { name: /Garder l'écran allumé/ });
+    expect(inter).not.toBeChecked();
+    await user.click(inter);
+    expect(request).toHaveBeenCalledWith('screen');
+    expect(inter).toBeChecked();
+    await user.click(inter);
+    expect(release).toHaveBeenCalled();
+    expect(inter).not.toBeChecked();
+    await user.click(inter);
+    act(() => surRelache()); // app en arrière-plan : le navigateur relâche le verrou
+    expect(inter).not.toBeChecked();
+    Reflect.deleteProperty(navigator, 'wakeLock');
   });
 
   it('sans repas d’origine : pas de « C’est fait »', () => {
@@ -254,6 +280,38 @@ describe('Mon cycle', () => {
     await user.click(screen.getByRole('button', { name: 'Démarrer le cycle' }));
     expect(screen.getByRole('heading', { name: 'Cycle 1 prêt' })).toBeInTheDocument();
     expect(loadCycle()).toMatchObject({ numero: 1, debut: '2026-10-10', pauses: [] });
+  });
+
+  it('import : début dans le passé accepté, le jour des courses suit', async () => {
+    const user = userEvent.setup();
+    render(<Ecran />);
+    await user.click(screen.getByRole('button', { name: 'Créer mon premier cycle' }));
+    deposer(quatreFichiers());
+    // fireEvent.change : la saisie clavier d'un <input type="date"> n'est pas fiable sous happy-dom.
+    fireEvent.change(await screen.findByLabelText(/Début du cycle/), { target: { value: '2026-10-04' } }); // dimanche passé
+    expect(screen.getByText('Le jour des courses passe au dimanche.')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Démarrer le cycle' }));
+    expect(loadCycle()?.debut).toBe('2026-10-04');
+    expect(loadFoyer()?.jourCourses).toBe('dimanche');
+  });
+
+  it('cycle en cours : changer la date de début (coches gardées), ou annuler', async () => {
+    const user = userEvent.setup();
+    const c: CycleActif = { id: 'c1', numero: 2, debut: '2026-09-26', pauses: [], cycle: cycle() };
+    render(<Ecran stocke={c} />);
+    await user.click(screen.getByRole('button', { name: 'Changer la date de début' }));
+    await user.click(screen.getByRole('button', { name: 'Annuler' }));
+    expect(screen.queryByLabelText(/Début du cycle/)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Changer la date de début' }));
+    const champ = screen.getByLabelText(/Début du cycle/);
+    expect(champ).toHaveValue('2026-09-26');
+    fireEvent.change(champ, { target: { value: '2026-09-23' } }); // un mercredi
+    expect(screen.getByText('Le jour des courses passe au mercredi.')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    expect(loadCycle()).toMatchObject({ id: 'c1', debut: '2026-09-23' });
+    expect(loadFoyer()?.jourCourses).toBe('mercredi');
+    expect(screen.getByRole('heading', { name: 'Semaine 3 sur 4' })).toBeInTheDocument();
   });
 
   it('fichiers incomplets : erreurs bloquantes, message à recoller pour Claude', async () => {

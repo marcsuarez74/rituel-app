@@ -23,9 +23,11 @@ echo "3/6 Arrêt de l'ancien service + copie de sécurité de la base"
 if systemctl is-enabled --quiet rituel 2>/dev/null || systemctl is-active --quiet rituel 2>/dev/null; then
   systemctl disable --now rituel
 fi
-mkdir -p backups
-cp -a data/rituel.db "backups/rituel-avant-docker-$(date +%F-%H%M).db"
-for f in data/rituel.db-wal data/rituel.db-shm; do [ -f "$f" ] && cp -a "$f" backups/; done
+# Service arrêté : la base ET son journal WAL forment un tout (les dernières
+# écritures peuvent n'exister que dans rituel.db-wal) — copiés ensemble.
+SAUVE="backups/avant-docker-$(date +%F-%H%M)"
+mkdir -p "$SAUVE"
+for f in data/rituel.db data/rituel.db-wal data/rituel.db-shm; do [ -f "$f" ] && cp -a "$f" "$SAUVE/"; done
 chown -R 1000:1000 data
 
 echo "4/6 Build et démarrage du conteneur"
