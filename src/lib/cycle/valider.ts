@@ -107,7 +107,7 @@ const regles = (cycle: Cycle, ctx: ContexteValidation): string[] => {
             `${ou} : la boîte du repas « ${r.id} » vient de « ${r.boite.produitePar} », introuvable (étape du rituel, micro-batch ou recette).`,
           );
         const rec = r.recette ? recettes.get(r.recette) : undefined;
-        if (!rec || !ctx.membres || r.exception) continue;
+        if (!rec || !ctx.membres) continue;
         for (const mb of ctx.membres) {
           if (!mange(r, mb.id)) continue;
           if (mb.regime && r.moment === 'diner' && r.pour === 'famille' && !rec.variantes?.[mb.id])
@@ -163,7 +163,7 @@ const alertes = (cycle: Cycle, ctx: ContexteValidation): string[] => {
     for (const menu of cycle.menus)
       for (const { jour, repas } of menu.jours) {
         const g = repas
-          .filter((r) => r.recette && !r.exception && mange(r, mb.id))
+          .filter((r) => r.recette && mange(r, mb.id))
           .reduce((s, r) => s + (recettes.get(r.recette!)?.macros[mb.id]?.glucides ?? 0), 0);
         if (g > seuil) a.push(`Menu ${menu.lettre}, ${jour} : ≈ ${g} g de glucides pour ${mb.id} (seuil ${seuil} g).`);
       }
@@ -171,7 +171,7 @@ const alertes = (cycle: Cycle, ctx: ContexteValidation): string[] => {
   const diners = cycle.menus.map((menu) => ({
     lettre: menu.lettre,
     ids: new Set(
-      menu.jours.flatMap((j) => j.repas.filter((r) => r.moment === 'diner' && r.recette && !r.exception).map((r) => r.recette!)),
+      menu.jours.flatMap((j) => j.repas.filter((r) => r.moment === 'diner' && r.recette).map((r) => r.recette!)),
     ),
   }));
   for (const { lettre, ids } of diners) {

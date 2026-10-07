@@ -9,14 +9,15 @@ export interface EstimationSemaine {
 }
 
 // Recettes DISTINCTES à acheter pour la semaine d'un menu : celles servies par
-// un repas (hors exception), une étape du rituel ou un micro-batch. Une recette
+// un repas, une étape du rituel ou un micro-batch (l'`exception` d'un repas n'est
+// qu'un texte alternatif, sa recette reste achetée). Une recette
 // servie plusieurs fois (restes, box) n'est achetée qu'une fois.
 export const recettesDeLaSemaine = (cycle: Cycle, lettre: Lettre): Recette[] => {
   const menu = cycle.menus.find((m) => m.lettre === lettre);
   if (!menu) return [];
   const ids = new Set<string>();
   for (const j of menu.jours)
-    for (const r of j.repas) if (r.recette && !r.exception) ids.add(r.recette);
+    for (const r of j.repas) if (r.recette) ids.add(r.recette);
   for (const e of cycle.rituel.etapes) if (e.recette) ids.add(e.recette);
   for (const m of menu.microBatch) if (m.recette) ids.add(m.recette);
   return cycle.recettes.filter((r) => ids.has(r.id));
