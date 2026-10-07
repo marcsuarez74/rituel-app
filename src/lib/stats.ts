@@ -38,3 +38,27 @@ export function progressionPoids(
   const kgRestant = Math.round((type === 'perte' ? actuel - cible : cible - actuel) * 10) / 10;
   return { pct, kgRestant, sens: type === 'perte' ? 'restants' : 'à prendre' };
 }
+
+// Résumé de la page Objectif : dernière pesée → poids visé, écart signé et
+// rythme hebdo jusqu'à l'échéance (null sans échéance future). Au-delà de
+// 1 kg/semaine : « ambitieux » (alerte douce, jamais bloquante).
+export interface ResumeObjectif {
+  actuel: number;
+  vise: number;
+  ecart: number;
+  kgParSemaine: number | null;
+  ambitieux: boolean;
+}
+
+export const resumeObjectif = (
+  actuel: number | null,
+  vise: number | undefined,
+  echeance: string | undefined,
+  aujourdhui: string,
+): ResumeObjectif | null => {
+  if (actuel == null || vise == null) return null;
+  const ecart = vise - actuel;
+  const jours = echeance ? (time(echeance) - time(aujourdhui)) / JOUR_MS : 0;
+  const kgParSemaine = jours > 0 ? Math.abs(ecart) / (jours / 7) : null;
+  return { actuel, vise, ecart, kgParSemaine, ambitieux: kgParSemaine != null && kgParSemaine > 1 };
+};
