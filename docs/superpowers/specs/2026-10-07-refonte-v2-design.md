@@ -145,7 +145,7 @@ interface Repas {
   recette?: string;                    // id de Recette
   texte?: string;                      // si pas de recette (« Restes du dîner », « Resto à deux »)
   boite?: { produitePar: string; frigoJours: number }; // id d'étape rituel, id de micro-batch ou id de recette
-  exception?: string;                  // repas conditionnel (« 1er et 3e vendredis ») : affiché en option, hors compteurs, non reportable
+  exception?: { quand: string; pour: MembreId[]; texte: string }; // alternative conditionnelle (« 1er et 3e vendredis » → repas des enfants) : affichée en option sous le repas, hors compteurs, non reportable
 }
 
 interface Recette {
@@ -160,7 +160,7 @@ interface Recette {
   macros: Record<MembreId, Macros>;    // membres suivis uniquement, par portion
   etapes: Etape[];
   conservation: { frigoJours: number; congelable: boolean; rechauffage: string };
-  notes?: string;                      // conseil libre (« la 2e portion fait la box de jeudi ») — jamais dans variantes
+  notes?: string[];                    // conseils libres (« la 2e portion fait la box de jeudi ») — jamais dans variantes
 }
 interface Ingredient {
   nom: string;                         // « Courgettes »
@@ -168,6 +168,7 @@ interface Ingredient {
   unite: 'g' | 'kg' | 'ml' | 'l' | 'piece' | 'cs' | 'cc' | 'boite' | 'sachet' | 'botte';
   rayon: Rayon;
   prixEstime: number;                  // € pour cette quantité, magasin du foyer
+  placard?: boolean;                   // huile, épices, sel, moutarde… : liste « à vérifier au placard », hors estimé
   fraisJours?: number;                 // durée de vie après achat (produit frais)
 }
 type Rayon = 'proteines' | 'laitiers' | 'feculents' | 'legumes' | 'fruits' | 'epicerie' | 'surgeles' | 'keto';
@@ -190,7 +191,7 @@ Notes :
 
 - **Ids de coches stables** (contrat) : `repas:{lettre}:{repas.id}`, `courses:{lettre}:{rayon}:{slug(nom)}`, `rituel:{lettre}:{etape.id}`, `micro:{lettre}:{jour}`, `reserve:{lettre}:{slug(plat)}`, `etape:{recette.id}:{n}`, `mise:{recette.id}:{n}`. Les coches sont stockées **par semaine du cycle** (§7) : relancer le cycle repart de coches vides.
 - Liste de courses **calculée** (§9) — le JSON ne contient pas de liste, d'où la cohérence garantie avec le menu.
-- `variantes` = uniquement ce que le membre mange **à la place** ; les conseils vont dans `notes` (constat de l'essai réel : `variantes.marc` détourné en notes).
+- `variantes` = uniquement ce que le membre mange **à la place**, et seulement pour une recette partagée ; les conseils vont dans `notes` (constat de l'essai réel : `variantes.marc` détourné en notes, « Recette keto » sur des recettes mangées par Mél seule).
 - `fixes` couvre les éléments récurrents (skyr, whey mensuelle, extras keto de Mél…) : ils vont dans les courses et le budget sans être régénérés.
 
 ## 6. Génération (option A) et import
@@ -216,6 +217,7 @@ Alertes **non bloquantes** (affichées dans l'aperçu, citron) :
 
 - budget estimé d'un menu (ingrédients + fixes hebdo) > `budgetMax` — l'alerte propose 3 actions : *Garder* · *Ajuster mon budget à {estimé arrondi}* (1 tap) · *Demander une version éco à Claude* (copie un prompt de correction) ;
 - `remarques` de Claude, affichées telles quelles ;
+- **variété** : un dîner repris dans 2 menus ou plus est signalé, et un menu qui a moins de 5 dîners propres déclenche l'alerte « Menu D reprend 6 dîners d'autres menus » (essai réel : le menu D n'avait aucun dîner propre) ;
 - glucides estimés d'un jour > seuil du régime keto (somme des macros de Mél sur la journée) ;
 - recette reprise du cycle précédent ;
 - repas incohérent avec la semaine type (box prévue un jour « maison », dîner manquant un jour « famille »).

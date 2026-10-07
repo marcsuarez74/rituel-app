@@ -36,8 +36,9 @@ Magasin : {{MAGASIN}} · budget max : {{BUDGET_MAX}} € par semaine pour TOUT l
 Recettes du cycle précédent : {{RECETTES_PRECEDENTES}} (sauf si nous les redemandons).
 
 ## Règles dures (ne jamais les enfreindre)
-1. 4 menus DIFFÉRENTS (A, B, C, D), chacun avec 7 jours complets. Une recette peut
-   revenir au plus 2 fois dans le cycle.
+1. 4 menus DIFFÉRENTS (A, B, C, D), chacun avec 7 jours complets. Chaque menu a au
+   moins 5 dîners qui lui sont PROPRES ; au moins 20 dîners distincts sur le cycle.
+   Les box/assiettes keto de base peuvent tourner librement.
 2. La semaine commence le jour des courses : les plats aux produits les plus frais
    (poisson, salade, viande hachée) sont placés dans les 3 premiers jours ; les
    plats de placard / congélateur en fin de semaine.
@@ -71,9 +72,11 @@ Recettes du cycle précédent : {{RECETTES_PRECEDENTES}} (sauf si nous les redem
     pièce) — grammes entre parenthèses seulement pour caler l'œil.
 11. Macros par portion, pour chaque membre suivi, estimations réalistes.
 12. Conservation : `frigoJours`, `congelable` et une phrase de réchauffage pour chaque recette.
-13. `variantes` = UNIQUEMENT ce qu'un membre mange à la place ; tout conseil va dans `notes`.
-14. Un repas conditionnel (exception récurrente) porte `exception` (ex. « 1er et 3e vendredis ») ;
-    ce n'est pas un repas de plus.
+13. `variantes` = UNIQUEMENT ce qu'un membre mange à la place, sur une recette partagée ;
+    tout conseil va dans `notes` (liste de phrases).
+14. Une exception récurrente se met dans `exception: { quand, pour, texte }` du repas
+    concerné ; ce n'est pas un repas de plus.
+16. Huile, épices, sel, poivre, moutarde, vinaigre, bouillon : `placard: true`.
 15. `boite.produitePar` = l'`id` exact d'une étape du rituel, d'un micro-batch ou d'une recette
     (jamais un nom de jour). Chaque micro-batch a un `id`.
 
@@ -94,7 +97,7 @@ Schéma (TypeScript pour la lisibilité ; le JSON doit s'y conformer) :
 - [ ] glucides keto par jour ≤ {{SEUIL_KETO}} g
 - [ ] budget de chaque semaine ≤ {{BUDGET_MAX}} €, sinon écart expliqué dans `remarques`
 - [ ] semaine type respectée (box, maison, plus tard, rapide, léger, exceptions)
-- [ ] aucune recette du cycle précédent
+- [ ] aucune recette du cycle précédent ; ≥ 5 dîners propres par menu
 - [ ] JSON valide (guillemets doubles, pas de virgule finale, pas de commentaire)
 ```
 
