@@ -6,6 +6,10 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 ## [Non publié]
 
+### Changé
+
+- **Profil › Objectif** repensé : résumé « 82,4 kg → 75 kg · −7,4 kg d'ici le 31 déc. · ≈ 0,6 kg / semaine » (alerte douce « Rythme ambitieux » au-delà de 1 kg/semaine), cap en cartes avec description, régime et compléments en pastilles à cocher (suggestions + « Autre… »), **un seul bouton Enregistrer** collé en bas au lieu de trois. Pastilles à 48 px de haut partout.
+
 ### Ajouté
 
 - **Mon cycle** : « Changer la date de début » à tout moment, date passée comprise (« courses faites samedi dernier ») ; le jour des courses du foyer suit la date choisie, les coches restent.

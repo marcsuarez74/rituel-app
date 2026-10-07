@@ -261,7 +261,8 @@ test.describe('Écran Profil — mobile', () => {
     await page.getByRole('button', { name: 'Profil', exact: true }).click();
     await page.getByRole('button', { name: /Objectif/ }).click();
     await expect(page.getByRole('heading', { name: 'Objectif', level: 2 })).toBeVisible();
-    await expect(page.getByRole('radiogroup', { name: "Type d'objectif" })).toBeVisible();
+    await expect(page.getByRole('radiogroup', { name: 'Ton cap' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Enregistrer', exact: true })).toBeVisible(); // pied collant
     await expect(page.getByRole('radiogroup', { name: 'Régime' })).toBeVisible();
     await expect(page.getByText('Whey')).toBeVisible();
     await assertPasDeDebordement(page);
