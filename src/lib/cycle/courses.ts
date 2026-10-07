@@ -6,6 +6,17 @@ import { RAYONS } from './types';
 // recettes de la semaine + articles fixes, agrégés par ingrédient. Le JSON ne
 // contient pas de liste : elle colle toujours au menu.
 
+export const LIBELLES_RAYON: Record<Rayon, string> = {
+  proteines: 'Protéines',
+  laitiers: 'Laitiers',
+  feculents: 'Féculents',
+  legumes: 'Légumes',
+  fruits: 'Fruits',
+  epicerie: 'Épicerie',
+  surgeles: 'Surgelés',
+  keto: 'Extras keto',
+};
+
 export interface LigneCourse {
   id: string; // id de coche stable : courses:{lettre}:{rayon}:{clé}
   cle: string;

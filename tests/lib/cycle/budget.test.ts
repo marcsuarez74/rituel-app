@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { estimerSemaine } from '../../../src/lib/cycle/budget';
+import { estimerSemaine, payeEntre } from '../../../src/lib/cycle/budget';
 import { importerCycle } from '../../../src/lib/cycle/valider';
 import { enFichiers, quatreFichiers } from './fabrique';
 
@@ -39,5 +39,18 @@ describe('estimerSemaine', () => {
     const e = estimerSemaine(cycleDe(fs), 'D');
     expect(e.keto).toBeCloseTo(3);
     expect(e.total).toBeCloseTo(24);
+  });
+});
+
+describe('payeEntre', () => {
+  it('somme des dépenses réelles de la semaine (bornes comprises)', () => {
+    const depenses = [
+      { date: '2026-10-10', magasin: 'Lidl', total: 54.3 },
+      { date: '2026-10-04', magasin: 'Marché', total: 12 },
+      { date: '2026-10-03', magasin: 'Lidl', total: 61 },
+      { date: '2026-09-30', magasin: 'Lidl', total: 40 },
+    ];
+    expect(payeEntre(depenses, '2026-10-03', '2026-10-09')).toBeCloseTo(73);
+    expect(payeEntre([], '2026-10-03', '2026-10-09')).toBe(0);
   });
 });

@@ -690,7 +690,7 @@ textarea {
   color: #ffffff;
 }
 
-.ligne-cochable[aria-pressed='true'] > span:last-child {
+.ligne-cochable[aria-pressed='true'] > span:not(.case) {
   color: var(--muted);
   text-decoration: line-through;
 }
@@ -751,6 +751,128 @@ textarea {
 
 .minuteur.termine {
   background: var(--accent-2);
+}
+
+.budget-chiffres {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-8);
+  margin-bottom: var(--sp-8);
+}
+
+.budget-chiffres div {
+  display: flex;
+  flex-direction: column;
+  padding: var(--sp-10) var(--sp-8);
+  border-radius: 12px;
+  background: var(--surface-2);
+  font-size: var(--fs-meta);
+  font-weight: 600;
+}
+
+.budget-chiffres b {
+  font-size: var(--fs-h3);
+}
+
+.budget-chiffres .alerte {
+  background: color-mix(in srgb, var(--danger) 12%, var(--surface));
+  color: var(--danger);
+}
+
+.budget-alerte {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.chariot {
+  display: flex;
+  justify-content: space-between;
+  margin: var(--sp-12) 0 var(--sp-4);
+}
+
+.budget-v2 progress {
+  width: 100%;
+  height: 8px;
+  accent-color: var(--accent);
+}
+
+.budget-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-8);
+  margin-top: var(--sp-12);
+}
+
+.budget-actions > * {
+  flex: 1 1 140px;
+}
+
+.ticket {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--sp-8);
+  margin-top: var(--sp-12);
+}
+
+.ticket label {
+  flex: 1 1 160px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  font-size: var(--fs-sec);
+  font-weight: 600;
+}
+
+.rayon-tete {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.rayon.keto {
+  border: 2px solid var(--citron-line);
+  background: var(--citron-surface);
+}
+
+.ligne-nom {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ligne-qte {
+  flex: none;
+  color: var(--muted);
+  font-size: var(--fs-sec);
+  font-weight: 600;
+}
+
+.badge-rituel {
+  display: inline-block;
+  margin-left: var(--sp-6);
+  padding: 0 var(--sp-6);
+  border-radius: 999px;
+  background: var(--citron-surface);
+  border: 1px solid var(--citron-line);
+  color: var(--text);
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.placard summary {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.placard ul {
+  margin: 0;
+  padding-left: var(--sp-20);
 }
 
 .pied-recette {

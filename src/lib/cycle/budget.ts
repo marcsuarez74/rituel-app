@@ -45,3 +45,7 @@ export const estimerSemaine = (cycle: Cycle, lettre: Lettre): EstimationSemaine 
   }
   return { total: ingredients + fixes, ingredients, fixes, placard, keto };
 };
+
+// Payé = dépenses réelles saisies entre deux dates ISO (bornes comprises).
+export const payeEntre = (depenses: { date: string; total: number }[], du: string, au: string): number =>
+  depenses.filter((d) => d.date >= du && d.date <= au).reduce((t, d) => t + d.total, 0);

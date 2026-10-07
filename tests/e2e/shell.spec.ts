@@ -89,4 +89,27 @@ test.describe('Shell v2 — barre du bas', () => {
       await expect(page.getByRole('tablist', { name: 'Jours' })).toBeVisible();
     });
   }
+
+  for (const largeur of [320, 375]) {
+    test(`courses : carte budget, coche, mode magasin, sans débordement à ${largeur}px`, async ({ page }) => {
+      await page.setViewportSize({ width: largeur, height: 667 });
+      await page.goto('/');
+      await page.evaluate(() => document.fonts.ready);
+      await page
+        .getByRole('navigation', { name: 'Navigation principale' })
+        .getByRole('button', { name: 'Courses', exact: true })
+        .click();
+      await expect(page.getByText('Estimé')).toBeVisible();
+      const premiere = page.locator('.rayon .ligne-cochable').first();
+      await premiere.click();
+      await expect(premiere).toHaveAttribute('aria-pressed', 'true');
+      await page.getByRole('button', { name: /Mode magasin/ }).click();
+      await page.getByRole('button', { name: /J'ai payé/ }).click();
+      await expect(page.getByLabel('Total du ticket (€)')).toBeVisible();
+      const debord = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      expect(debord).toBeLessThanOrEqual(OVERFLOW_TOLERANCE);
+    });
+  }
 });

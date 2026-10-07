@@ -20,13 +20,13 @@ const Onboarding = lazy(() => import('./components/onboarding/Onboarding').then(
 const ProfilScreen = lazy(() => import('./components/ProfilScreen').then((m) => ({ default: m.ProfilScreen })));
 const Suivi = lazy(() => import('./components/ecrans/Suivi').then((m) => ({ default: m.Suivi })));
 const Menu = lazy(() => import('./components/ecrans/Menu').then((m) => ({ default: m.Menu })));
+const Courses = lazy(() => import('./components/ecrans/Courses').then((m) => ({ default: m.Courses })));
 const Recette = lazy(() => import('./components/ecrans/Recette').then((m) => ({ default: m.Recette })));
 
 // Onglets avec la ligne semaine.
 const AVEC_SEMAINE: Onglet[] = ['menu', 'courses', 'rituel'];
 
 const AVENIR: Partial<Record<Onglet, string>> = {
-  courses: 'La liste de courses calculée arrive bientôt.',
   rituel: 'Le rituel et son mode guidé arrivent bientôt.',
 };
 
@@ -184,6 +184,9 @@ function App() {
                   onJour={setJourVu}
                   onOuvrirRecette={ouvrirRecette(semaine)}
                 />
+              )}
+              {onglet === 'courses' && (
+                <Courses actif={actif} foyer={foyer} semaine={semaine} aujourdhui={aujourdhui} syncVersion={syncVersion} />
               )}
               {onglet === 'suivi' && <Suivi profile={profile} syncVersion={syncVersion} />}
               {AVENIR[onglet] && <p className="muted">{AVENIR[onglet]}</p>}
