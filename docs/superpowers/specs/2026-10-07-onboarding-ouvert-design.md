@@ -1,6 +1,6 @@
 # Onboarding ouvert, foyer à rejoindre, page Objectif — spec
 
-Date : 2026-10-07 · statut : **à valider**
+Date : 2026-10-07 · statut : validé (§0 en PR 1 ; maquettes §2-4 à valider)
 
 ## 0. Petits correctifs (inclus dans le lot)
 
@@ -8,12 +8,12 @@ Date : 2026-10-07 · statut : **à valider**
 - Profil › Foyer : « Déconnecter le foyer » n'apparaît que si le téléphone est
   vraiment dans un foyer. Bug réel : un jeton dont le foyer n'existe pas (401
   `token-invalide`) laissait la session en place → état « erreur » + bouton.
-  Désormais un 401 efface la session → « Local », formulaire créer/rejoindre,
-  message « Ce foyer n'existe plus sur le serveur. »
+  Désormais un 401 (pull ou flush) efface la session → « Local », formulaire
+  créer/rejoindre.
 - Mon cycle : date de début modifiable (déjà validé) ; fiche recette :
   interrupteur « Garder l'écran allumé » (déjà validé).
-- `deploy/installer.sh` : copie de sécurité via l'API backup de SQLite (le
-  `cp` du seul `rituel.db` ignorait le `-wal`).
+- `deploy/installer.sh` : la copie de sécurité prend `rituel.db` **et** son
+  `-wal`/`-shm` ensemble, dans un dossier daté.
 
 ## 1. Identité : n'importe qui
 

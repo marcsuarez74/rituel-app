@@ -18,8 +18,8 @@ le coût réel des vérifications et les pièges déjà payés une fois.
   décrite ci-dessous avait déjà changé).
 - Avant d'ouvrir une PR : ta branche doit contenir `origin/main` — `git merge origin/main`
   (jamais de rebase sur `main`, jamais de force-push). La CI PR est exigeante : lint →
-  typecheck → test → build **+ build de l'image Docker** (`rituel:ci`) **+ check du
-  `server/`**.
+  typecheck → test → build **+ check du `server/`** **+ e2e sur le build de prod**
+  **+ build de l'image Docker** (`rituel:ci`).
 - Un chantier = brainstorming → spec datée dans `docs/superpowers/specs/` → plan dans
   `docs/superpowers/plans/` → TDD.
 
@@ -58,8 +58,9 @@ Côté CI PR, s'ajoute le build de l'image Docker : plus long, mais c'est la CI 
 - Mode dev (`npm run e2e`) : `reuseExistingServer: !CI` — un serveur **orphelin** sur :5173
   est **adopté avec son état localStorage périmé** (échecs incompréhensibles garantis).
   Avant un run douteux : `lsof -nP -iTCP:5173 -sTCP:LISTEN` et tue l'orphelin.
-- `npm run e2e:preview` tourne sur :4173 contre le **build de prod** (`dist/`). La CI ne
-  lance pas l'e2e : c'est **à toi** de le passer avant la PR sur un changement d'UI.
+- `npm run e2e:preview` tourne sur :4173 contre le **build de prod** (`dist/`). La CI PR
+  le lance aussi (après installation de Chromium + WebKit) — passe-le **avant** la PR sur
+  un changement d'UI plutôt que de le découvrir rouge en CI.
   Une spec verte en dev et rouge en preview (ou l'inverse) : soupçonner le build, pas le test.
 - Pas de login : l'état app (profil, semaine) est injecté via `storageState` localStorage —
   pas d'import de modules app dans les specs.

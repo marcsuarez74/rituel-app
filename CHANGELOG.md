@@ -6,6 +6,18 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 ## [Non publié]
 
+### Ajouté
+
+- **Mon cycle** : « Changer la date de début » à tout moment, date passée comprise (« courses faites samedi dernier ») ; le jour des courses du foyer suit la date choisie, les coches restent.
+- **Fiche recette** : interrupteur « Garder l'écran allumé » (remplace le bouton « Mode cuisine »).
+
+### Corrigé
+
+- Profil › Foyer : un téléphone dont le foyer n'existe plus sur le serveur repasse « Local » (créer / rejoindre) au lieu de rester en erreur avec « Déconnecter le foyer ».
+- Ta semaine : « Pour que Rituel cale les menus… ».
+- Installation VPS : la copie de sécurité prend la base et son journal WAL ensemble.
+- CI : installation des navigateurs e2e bornée (3 essais de 5 min) — un miroir apt figé bloquait la PR 30 min.
+
 ## [2.0.0] - 2026-10-07
 
 > **Refonte 2.0 — version majeure** (contrat et stockage cassants) et **nouvelle adresse** : https://rituel.marco-studio.fr (l'app et la sync sur le VPS). Sur chaque téléphone : installer la PWA depuis la nouvelle adresse puis Profil › Foyer › « Se connecter au foyer » avec le code — profil, pesées, dépenses, foyer et cycle reviennent du serveur.
