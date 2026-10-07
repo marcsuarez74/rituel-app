@@ -10,8 +10,8 @@ const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 
 
 // https://vite.dev/config/
 export default defineConfig({
-  // Nom du repo GitHub — mettre à jour si le repo est renommé
-  base: '/rituel-app/',
+  // Servie à la racine de rituel.marco-studio.fr (conteneur Docker sur le VPS)
+  base: '/',
   // Version du build (package.json), affichée en bas de l'écran Profil
   define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   plugins: [

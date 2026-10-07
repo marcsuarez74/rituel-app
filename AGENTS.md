@@ -12,7 +12,7 @@ Guide pour les agents IA travaillant sur ce repo. Règles courtes, KISS : si une
 - **UX personnalisée** : onboarding en **5 étapes** dont seule l'étape 1 est obligatoire, puis l'étape optionnelle « Ta semaine » (rythme + enfants) ; accent unique (basilic #3e7a46 + citron #f2dc7b) ; le prénom (profil) sert aux salutations et au prompt
 - **Suivi** : objectif + poids (séances, cibles, rappels : reportés)
 - Coches, reports, pesées persistés en **localStorage**
-- Déployée en PWA offline-first sur GitHub Pages : https://marcsuarez74.github.io/rituel-app/
+- Déployée en PWA offline-first sur le VPS : https://rituel.marco-studio.fr (un conteneur Docker sert la PWA et l'API de sync)
 
 ## Commandes
 
@@ -59,8 +59,9 @@ tests/            # miroir de src/, vitest + Testing Library, environnement happ
 tests/e2e/        # specs Playwright (navigateur réel, config playwright.config.ts, projets mobile 375 + 320)
 server/           # serveur de sync VPS (Hono + better-sqlite3), hors tsconfig app ; ses propres scripts `npm run check` (typecheck + lint + test)
 CHANGELOG.md      # historique des versions (Keep a Changelog) ; source de vérité = package.json `version`
-.github/workflows/deploy.yml   # déploie sur GitHub Pages à chaque push sur main
-.github/workflows/release.yml  # crée la GitHub Release à chaque push de tag v* (notes = section CHANGELOG)
+.github/workflows/publier.yml  # sur main : tag v<version> s'il manque + GitHub Release (via release.yml)
+.github/workflows/release.yml  # crée la GitHub Release d'un tag v* (notes = section CHANGELOG)
+Dockerfile, docker-compose.yml # image unique PWA + API (prod), deploy/ = scripts VPS (déploiement auto, backup, installation)
 docs/ameliorations.md # axes d'amélioration futurs (mémoire d'idées, pas une spec)
 docs/superpowers/ # specs + plans (refonte v2 : specs/2026-10-07-refonte-v2-design.md)
 ai/               # configs d'agents IA (cf. section « Dossier ai/ »)
@@ -119,10 +120,11 @@ Toute lecture passe par `safeParse` + garde de forme : une donnée corrompue se 
 
 ## PWA & déploiement
 
-- `base: '/rituel-app/'` dans `vite.config.ts` = nom du repo GitHub. Si le repo est renommé, mettre à jour `base` ET l'URL dans le README.
+- `base: '/'` dans `vite.config.ts` : la PWA est servie à la racine de rituel.marco-studio.fr par le serveur (`server/`, option `statique`), sur la même origine que l'API.
 - **CI sur les PR** (`.github/workflows/ci.yml`) : Prepare → Lint → Typecheck → Test → Build — elle doit être verte avant tout merge ; ne pas y ajouter de step lent sans discussion.
-- **Deploy sur main** (`.github/workflows/deploy.yml`) : Test unitaire → Build → **Test e2e sur le build de prod** (`npm run e2e:preview`, nécessite `npx playwright install --with-deps chromium webkit`) → Pages. Si un e2e casse le déploiement, corriger et re-pousser (pas de contournement).
-- Le déploiement se fait tout seul (push sur `main` → Actions → Pages). Ne pas ajouter de build step qui ne serait pas aussi rapide en CI (le workflow lance déjà `npm ci && npm test && build`).
+- **Déploiement** : le VPS suit `main` (`deploy/deploy.sh`, timer systemd toutes les 2 min) → `docker compose build` + `up -d` + vérification `/sante`. Aucun secret sur GitHub. Une PR fusionnée = en prod sous ~2 min ; ne jamais fusionner un état dont l'image ne build pas (la CI PR construit l'image).
+- **Release** : `publier.yml` pose le tag `v<version de package.json>` s'il manque et crée la Release — le bump de version dans la PR suffit, jamais de tag à la main.
+- Changement d'infra VPS (Dockerfile, compose, `deploy/`) : documenter dans `server/README.md` ; aucune IP, clé ni secret dans le dépôt.
 - Après un changement PWA (manifest, service worker, icônes) : vérifier avec `npm run build && npm run preview` que `dist/` contient `sw.js` + `manifest.webmanifest`.
 
 ## Git

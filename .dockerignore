@@ -1,0 +1,11 @@
+**/node_modules
+dist/
+server/dist/
+data/
+backups/
+.git/
+.env*
+test-results/
+playwright-report/
+.superpowers/
+.worktrees/

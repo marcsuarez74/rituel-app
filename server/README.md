@@ -1,13 +1,10 @@
-# Serveur de sync Rituel (VPS)
+# Serveur Rituel (VPS)
 
-Mini-serveur Node (Hono + better-sqlite3) — API JSON + SSE, base `rituel.db` en
-fichier unique (WAL). Spécification : `docs/superpowers/specs/2026-09-26-sync-vps-sqlite-design.md`.
-Guide opérateur complet (création du foyer depuis l'app, migration, rotation) :
-`docs/backend.md`.
-
-Convention identique à Le Cahier (budget-app) : `/opt/rituel`, utilisateur
-système dédié `rituel`, unit systemd commitée dans ce dossier, Caddy en
-reverse proxy, backup cron.
+Mini-serveur Node (Hono + better-sqlite3) : **sert la PWA buildée et l'API de
+sync** (JSON + SSE) sur la même origine, https://rituel.marco-studio.fr. Base
+`rituel.db` en fichier unique (WAL). Spécification de la sync :
+`docs/superpowers/specs/2026-09-26-sync-vps-sqlite-design.md` ; guide opérateur
+(foyer, rotation du code) : `docs/backend.md`.
 
 ## Local
 
@@ -15,58 +12,40 @@ reverse proxy, backup cron.
 cd server
 npm ci
 npm run check                       # typecheck + lint + tests (SQLite en mémoire)
-npm run build && JWT_SECRET=dev DB_PATH=/tmp/rituel.db npm start   # :8787
+npm run build && JWT_SECRET=dev DB_PATH=/tmp/rituel.db npm start   # API seule, :8787
+# avec la PWA : (cd .. && npm run build) puis STATIC_DIR=../dist en plus
 ```
 
-## VPS (première installation — même machine que Le Cahier)
+## Production : un conteneur Docker
 
-1. Node ≥ 22 (`node -v` — sinon installer Node 22, ex. NodeSource) ;
-   utilisateur dédié sans shell :
-   `sudo useradd -r -s /usr/sbin/nologin rituel`
-2. Dépôt dans `/opt/rituel` (repo privé : même mécanique d'auth git que Le
-   Cahier — deploy key ou token) ; base et backups dans l'arbre :
-   ```bash
-   sudo mkdir -p /opt/rituel/data /opt/rituel/backups
-   sudo chown -R rituel:rituel /opt/rituel
-   sudo -u rituel -H git clone https://github.com/marcsuarez74/rituel-app.git /opt/rituel
-   ```
-3. Secret JWT : `openssl rand -hex 32` → `/etc/rituel.env` (root-only) :
-   ```bash
-   sudo install -m 600 /dev/null /etc/rituel.env
-   sudoedit /etc/rituel.env
-   ```
-   ```
-   JWT_SECRET=<64 hex>
-   PORT=8787
-   DB_PATH=/opt/rituel/data/rituel.db
-   CORS_ORIGINS=https://marcsuarez74.github.io,http://localhost:5173
-   ```
-4. Build :
-   `cd /opt/rituel/server && sudo -u rituel -H npm ci && sudo -u rituel -H npm run build`
-5. Unit systemd — commitée dans ce dossier (`rituel.service`) :
-   ```bash
-   sudo cp /opt/rituel/server/rituel.service /etc/systemd/system/
-   sudo systemctl daemon-reload && sudo systemctl enable --now rituel
-   ```
-   Règle sudoers ciblée pour les déploiements suivants (visudo) :
-   `rituel ALL=(root) NOPASSWD: /usr/bin/systemctl restart rituel`
-6. Caddy — bloc site dans `/etc/caddy/Caddyfile` (le streaming SSE est géré
-   par défaut) :
-   ```
-   rituel.marco-studio.fr {
-       reverse_proxy 127.0.0.1:8787
-   }
-   ```
-   puis `sudo systemctl reload caddy` — **indispensable si le certificat du
-   sous-domaine a raté une première tentative** (ex. DNS pas encore pointé au
-   moment du premier essai) : le reload relance immédiatement la demande ACME
-   au lieu d'attendre le backoff.
-7. **Backup** — cron quotidien + rétention 14 jours (`server/backup.sh`,
-   online-backup better-sqlite3, copie transactionnellement cohérente) :
-   `sudo crontab -u rituel -e` :
-   ```cron
-   15 4 * * * /opt/rituel/server/backup.sh
-   ```
-8. Déploiements suivants :
-   `sudo -u rituel -H /opt/rituel/server/deploy.sh` (git pull, npm ci, build,
-   restart).
+À la racine du dépôt : `Dockerfile` (PWA + serveur, `node:22-alpine`, utilisateur
+`node`), `docker-compose.yml` (`127.0.0.1:8787`, volume `./data`, secrets dans
+`.env`), `deploy/` (scripts VPS).
+
+- **Dossier** : `/opt/rituel` (clone du dépôt, propriétaire `rituel`) ; base
+  `/opt/rituel/data/rituel.db` ; `.env` (non commité) : `JWT_SECRET`,
+  `CORS_ORIGINS`.
+- **Caddy** : `rituel.marco-studio.fr { reverse_proxy 127.0.0.1:8787 }` (SSE géré
+  par défaut).
+- **Déploiement automatique** : `rituel-deploy.timer` lance `deploy/deploy.sh`
+  toutes les 2 min ; si `main` a avancé : `git pull`, `docker compose build`,
+  `up -d`, vérification de `/sante`. Forcer : `sudo /opt/rituel/deploy/deploy.sh --force`.
+  Journal : `journalctl -u rituel-deploy -n 50`.
+- **Backup** : cron root `15 4 * * * /opt/rituel/deploy/backup.sh` (online-backup
+  SQLite depuis le conteneur, `data/backups/`, rétention 14 jours).
+- **Santé** : `curl -s http://127.0.0.1:8787/sante` → `{"ok":true}`.
+
+### Mise en place (une fois)
+
+Depuis l'ancien service systemd `rituel` (API seule) :
+
+```bash
+sudo bash -c 'cd /opt/rituel && runuser -u rituel -- git pull --ff-only origin main && bash deploy/installer.sh'
+```
+
+`deploy/installer.sh` : secrets `/etc/rituel.env` → `.env`, arrêt de l'ancien
+service, copie de sécurité de la base (`backups/`), build + démarrage du conteneur
+(retour automatique à l'ancien service s'il ne répond pas), timer de déploiement,
+cron de backup. Même base, même port : Caddy ne change pas.
+
+Retour arrière manuel : `cd /opt/rituel && docker compose down && sudo systemctl enable --now rituel`.

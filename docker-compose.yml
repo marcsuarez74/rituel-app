@@ -1,0 +1,15 @@
+services:
+  app:
+    build: .
+    # Joignable seulement via Caddy sur l'hôte (Docker passe outre le pare-feu)
+    ports: ["127.0.0.1:8787:8787"]
+    # .env (non commité) : JWT_SECRET, CORS_ORIGINS — voir docs/backend.md
+    env_file: .env
+    environment:
+      - PORT=8787
+      - DB_PATH=/app/data/rituel.db
+      - STATIC_DIR=/app/public
+      - TZ=Europe/Paris
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

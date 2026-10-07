@@ -1,0 +1,8 @@
+[Unit]
+Description=Rituel — déploiement automatique depuis GitHub (main)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/rituel/deploy/deploy.sh
