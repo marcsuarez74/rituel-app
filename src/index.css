@@ -574,7 +574,7 @@ textarea {
 }
 
 .recette {
-  padding-bottom: calc(96px + env(safe-area-inset-bottom)); /* pied fixe */
+  padding-bottom: calc(160px + env(safe-area-inset-bottom)); /* pied fixe (interrupteur + bouton) */
 }
 
 .recette-tete {
@@ -928,7 +928,7 @@ textarea {
 }
 
 .guide {
-  padding-bottom: calc(96px + env(safe-area-inset-bottom)); /* pied fixe */
+  padding-bottom: calc(160px + env(safe-area-inset-bottom)); /* pied fixe (interrupteur + bouton) */
 }
 
 .guide-tete {
@@ -1207,6 +1207,7 @@ textarea {
   right: 0;
   bottom: 0;
   display: flex;
+  flex-wrap: wrap;
   gap: var(--sp-10);
   max-width: 560px;
   margin: 0 auto;
@@ -1221,6 +1222,15 @@ textarea {
 
 .pied-recette > * {
   flex: 1;
+}
+
+.ecran-allume {
+  flex-basis: 100%;
+}
+
+.ecran-allume .muted {
+  display: block;
+  font-size: var(--fs-meta);
 }
 
 h1,

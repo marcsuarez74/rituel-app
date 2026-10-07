@@ -77,7 +77,13 @@ describe('Recette', () => {
   it('interrupteur « Garder l’écran allumé » : verrou d’écran demandé puis relâché', async () => {
     const user = userEvent.setup();
     const release = vi.fn().mockResolvedValue(undefined);
-    const request = vi.fn().mockResolvedValue({ release });
+    let surRelache = () => {};
+    const request = vi.fn().mockResolvedValue({
+      release,
+      addEventListener: (_: string, f: () => void) => {
+        surRelache = f;
+      },
+    });
     Object.defineProperty(navigator, 'wakeLock', { value: { request }, configurable: true });
     render(fiche());
     const inter = screen.getByRole('switch', { name: /Garder l'écran allumé/ });
@@ -87,6 +93,9 @@ describe('Recette', () => {
     expect(inter).toBeChecked();
     await user.click(inter);
     expect(release).toHaveBeenCalled();
+    expect(inter).not.toBeChecked();
+    await user.click(inter);
+    act(() => surRelache()); // app en arrière-plan : le navigateur relâche le verrou
     expect(inter).not.toBeChecked();
     Reflect.deleteProperty(navigator, 'wakeLock');
   });
