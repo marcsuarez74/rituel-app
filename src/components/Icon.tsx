@@ -77,6 +77,7 @@ const ICONS = {
     </>
   ),
   check: <path d="M4 12.5l5 5L20 6.5" />,
+  croix: <path d="M6 6l12 12M18 6L6 18" />,
   couverts: (
     <>
       <path d="M7 3v8a2 2 0 0 0 4 0V3" />

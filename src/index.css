@@ -643,7 +643,8 @@ textarea {
   font-weight: 600;
 }
 
-.segment button[aria-checked='true'] {
+.segment button[aria-checked='true'],
+.segment button[aria-selected='true'] {
   background: var(--surface);
   box-shadow: var(--shadow);
 }
@@ -866,6 +867,7 @@ textarea {
   min-height: 48px;
   display: flex;
   align-items: center;
+  gap: var(--sp-6);
   font-weight: 600;
   cursor: pointer;
 }
@@ -873,6 +875,114 @@ textarea {
 .placard ul {
   margin: 0;
   padding-left: var(--sp-20);
+}
+
+.production {
+  margin: 0;
+  padding-left: var(--sp-20);
+}
+
+.etape-detail {
+  margin-top: var(--sp-8);
+  padding-top: var(--sp-8);
+  border-top: 1px solid var(--border);
+}
+
+.etape-detail p {
+  margin-bottom: var(--sp-6);
+}
+
+.ligne-reserve {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  width: 100%;
+  min-height: 64px;
+  margin-bottom: var(--sp-8);
+  padding: var(--sp-10) var(--sp-12);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+}
+
+.ligne-reserve .ligne-nom {
+  display: flex;
+  flex-direction: column;
+}
+
+.ligne-reserve[aria-pressed='true'] {
+  background: var(--surface-2);
+}
+
+.ligne-reserve[aria-pressed='true'] b {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.guide {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom)); /* pied fixe */
+}
+
+.guide-tete {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  padding: var(--sp-16) 0 var(--sp-8);
+}
+
+.guide-tete > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.guide-tete p {
+  margin: 0;
+}
+
+.avatar.quitter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.guide-progres {
+  display: flex;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-16);
+}
+
+.guide-progres span {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+}
+
+.guide-progres .fait {
+  background: var(--accent);
+}
+
+.guide-progres .courant {
+  background: var(--accent-2);
+}
+
+.guide h1 {
+  font-weight: 700;
+}
+
+.guide .anticipe {
+  display: block;
+}
+
+.guide-fin {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-12);
+  padding-top: var(--sp-24);
 }
 
 .pied-recette {

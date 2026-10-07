@@ -191,7 +191,7 @@ interface ArticleFixe { nom: string; quantite: number; unite: Ingredient['unite'
 
 Notes :
 
-- **Ids de coches stables** (contrat) : `repas:{lettre}:{repas.id}`, `courses:{lettre}:{rayon}:{slug(nom)}`, `rituel:{lettre}:{etape.id}`, `micro:{lettre}:{jour}`, `reserve:{lettre}:{slug(plat)}`, `etape:{recette.id}:{n}`, `mise:{recette.id}:{n}`. Les coches sont stockées **par semaine du cycle** (§7) : relancer le cycle repart de coches vides.
+- **Ids de coches stables** (contrat) : `menu:{lettre}:{jour}:{repas.id}`, `courses:{lettre}:{rayon}:{slug(nom)}`, `rituel:{lettre}:{etape.id}`, `mise:{lettre}:{n}` (avant de commencer), `micro:{lettre}:{microBatch.id}`, `reserve:{lettre}:{slug(plat)}`. Les cases de la fiche recette (mise en place, étapes) et les sous-étapes du mode guidé ne sont pas persistées. Les coches sont stockées **par semaine du cycle** (§7) : relancer le cycle repart de coches vides.
 - Liste de courses **calculée** (§9) — le JSON ne contient pas de liste, d'où la cohérence garantie avec le menu.
 - `variantes` = uniquement ce que le membre mange **à la place**, et seulement pour une recette partagée ; les conseils vont dans `notes` (constat de l'essai réel : `variantes.marc` détourné en notes, « Recette keto » sur des recettes mangées par Mél seule).
 - `fixes` couvre les éléments récurrents (skyr, whey mensuelle, extras keto de Mél…) : ils vont dans les courses et le budget sans être régénérés.

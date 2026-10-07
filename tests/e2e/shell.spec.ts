@@ -112,4 +112,32 @@ test.describe('Shell v2 — barre du bas', () => {
       expect(debord).toBeLessThanOrEqual(OVERFLOW_TOLERANCE);
     });
   }
+
+  for (const largeur of [320, 375]) {
+    test(`rituel : 3 onglets, mode guidé jusqu'à la fin, sans débordement à ${largeur}px`, async ({ page }) => {
+      await page.setViewportSize({ width: largeur, height: 667 });
+      await page.goto('/');
+      await page.evaluate(() => document.fonts.ready);
+      await page
+        .getByRole('navigation', { name: 'Navigation principale' })
+        .getByRole('button', { name: 'Rituel', exact: true })
+        .click();
+      const debord = () =>
+        page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      for (const onglet of ['En semaine', 'Réserve']) {
+        await page.getByRole('tab', { name: onglet }).click();
+        expect(await debord()).toBeLessThanOrEqual(OVERFLOW_TOLERANCE);
+      }
+      await page.getByRole('tab', { name: 'Dimanche' }).click();
+      await page.getByRole('button', { name: /Lancer le mode guidé/ }).click();
+      await expect(page.getByText(/Étape 1 sur/)).toBeVisible();
+      expect(await debord()).toBeLessThanOrEqual(OVERFLOW_TOLERANCE);
+      const terminer = page.getByRole('button', { name: 'Terminer' });
+      while (!(await terminer.isVisible())) await page.getByRole('button', { name: 'Suivant' }).click();
+      await terminer.click();
+      await expect(page.getByRole('heading', { name: 'Rituel terminé !' })).toBeVisible();
+      await page.getByRole('button', { name: 'Voir la réserve' }).click();
+      await expect(page.getByRole('tab', { name: 'Réserve', selected: true })).toBeVisible();
+    });
+  }
 });

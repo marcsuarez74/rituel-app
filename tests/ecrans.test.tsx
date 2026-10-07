@@ -1,5 +1,8 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
+import { Guide } from '../src/components/ecrans/Guide';
+import { Rituel, type VueRituel } from '../src/components/ecrans/Rituel';
 import { Courses } from '../src/components/ecrans/Courses';
 import { Recette } from '../src/components/ecrans/Recette';
 import { type CycleActif, type Membre, type ReglagesFoyer, foyerParDefaut } from '../src/lib/cycle/etat';
@@ -123,5 +126,79 @@ describe('Courses', () => {
     fireEvent.submit(document.querySelector('.ticket')!);
     expect(getDepenses()).toEqual([{ date: '2026-10-03', magasin: 'Courses', total: 54.3 }]);
     expect(screen.getByText('Payé').nextSibling).toHaveTextContent('54,30');
+  });
+});
+
+describe('Rituel', () => {
+  const actifRituel = (): CycleActif => {
+    const fs = quatreFichiers();
+    fs[0].rituel!.etapes.push({ id: 'rituel-sauce', creneau: '20-40 min', label: 'Sauce', detail: 'Mijoter.', enParallele: 'Les muffins cuisent.' });
+    fs[0].menus[0].reserve = [{ pour: 'jeudi', plat: '½ sauce tomate', conservation: 'Congélateur' }];
+    fs[0].menus[0].rappelsRituel = ['Colin : congélateur → frigo'];
+    return { id: 'c1', numero: 1, debut: '2026-10-03', pauses: [], cycle: importerCycle(enFichiers(fs)).cycle! };
+  };
+  const RituelEtat = ({ onGuide = () => {} }: { onGuide?: () => void }) => {
+    const [vue, setVue] = useState<VueRituel>('jour');
+    return (
+      <Rituel actif={actifRituel()} foyer={foyerParDefaut(null)} semaine={0} syncVersion={0} vue={vue} onVue={setVue} onGuide={onGuide} onOuvrirRecette={() => {}} />
+    );
+  };
+
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('jour du rituel : résumé, rappels de la semaine, avant de commencer, déroulé dépliable et cochable', async () => {
+    const user = userEvent.setup();
+    const onGuide = vi.fn();
+    render(<RituelEtat onGuide={onGuide} />);
+    expect(screen.getByRole('tab', { name: 'Dimanche', selected: true })).toBeInTheDocument();
+    expect(screen.getByText('Dimanche · 50 min · 2 étapes')).toBeInTheDocument();
+    expect(screen.getByText('Cette semaine aussi')).toBeInTheDocument(); // replié
+
+    await user.click(screen.getByRole('button', { name: /Sauce$/ }));
+    expect(screen.getByText('Mijoter.')).toBeInTheDocument();
+    expect(screen.getByText('Les muffins cuisent.')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Sauce : marquer comme fait' }));
+    expect(getChecks('cycle:c1:0')).toEqual({ 'rituel:A:rituel-sauce': true });
+
+    await user.click(screen.getByRole('button', { name: /Lancer le mode guidé/ }));
+    expect(onGuide).toHaveBeenCalledOnce();
+  });
+
+  it('en semaine (micro-batch) et réserve « au frigo » → « mangé »', async () => {
+    const user = userEvent.setup();
+    render(<RituelEtat />);
+    await user.click(screen.getByRole('tab', { name: 'En semaine' }));
+    expect(screen.getByText('Doubler le plat')).toBeInTheDocument();
+    await user.click(screen.getByRole('tab', { name: 'Réserve' }));
+    const sauce = screen.getByRole('button', { name: /½ sauce tomate/ });
+    expect(sauce).toHaveTextContent('Jeudi');
+    expect(sauce).toHaveTextContent('Au frigo');
+    await user.click(sauce);
+    expect(sauce).toHaveTextContent('Mangé');
+    expect(getChecks('cycle:c1:0')).toEqual({ 'reserve:A:sauce-tomate': true });
+  });
+
+  it('mode guidé : une étape par écran, « Suivant » coche, écran de fin', async () => {
+    const user = userEvent.setup();
+    const GuideEtat = () => {
+      const [etape, setEtape] = useState(0);
+      return (
+        <Guide actif={actifRituel()} semaine={0} etape={etape} syncVersion={0} onEtape={setEtape} onQuitter={() => {}} onReserve={() => {}} onOuvrirRecette={() => {}} />
+      );
+    };
+    render(<GuideEtat />);
+    expect(screen.getByText('Étape 1 sur 2')).toBeInTheDocument();
+    expect(screen.getByText('Colin : congélateur → frigo')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Muffins' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Précédent' })).toBeDisabled();
+
+    await user.click(screen.getByRole('button', { name: 'Suivant' }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Sauce' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Terminer' }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Rituel terminé !' })).toBeInTheDocument();
+    expect(screen.getByText('Fini.')).toBeInTheDocument();
+    expect(getChecks('cycle:c1:0')).toEqual({ 'rituel:A:rituel-muffins': true, 'rituel:A:rituel-sauce': true });
   });
 });

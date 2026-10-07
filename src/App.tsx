@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState, type ReactNode } from 'react';
 import { Aujourdhui } from './components/ecrans/Aujourdhui';
 import { BarreOnglets } from './components/shell/BarreOnglets';
 import { ONGLETS, type Onglet } from './components/shell/onglets';
@@ -7,6 +7,7 @@ import { LigneSemaine } from './components/shell/LigneSemaine';
 import { positionCycle } from './lib/cycle/calendrier';
 import { semaineCoches } from './lib/cycle/etat';
 import type { Jour } from './lib/cycle/types';
+import type { VueRituel } from './components/ecrans/Rituel';
 import { chargerCycleExemple, semaineParDefaut } from './lib/cycle/courant';
 import { type CycleActif, foyerParDefaut, loadCycle, loadFoyer } from './lib/cycle/etat';
 import { todayISO } from './lib/dates';
@@ -21,14 +22,13 @@ const ProfilScreen = lazy(() => import('./components/ProfilScreen').then((m) => 
 const Suivi = lazy(() => import('./components/ecrans/Suivi').then((m) => ({ default: m.Suivi })));
 const Menu = lazy(() => import('./components/ecrans/Menu').then((m) => ({ default: m.Menu })));
 const Courses = lazy(() => import('./components/ecrans/Courses').then((m) => ({ default: m.Courses })));
+const Rituel = lazy(() => import('./components/ecrans/Rituel').then((m) => ({ default: m.Rituel })));
+const Guide = lazy(() => import('./components/ecrans/Guide').then((m) => ({ default: m.Guide })));
 const Recette = lazy(() => import('./components/ecrans/Recette').then((m) => ({ default: m.Recette })));
 
 // Onglets avec la ligne semaine.
 const AVEC_SEMAINE: Onglet[] = ['menu', 'courses', 'rituel'];
 
-const AVENIR: Partial<Record<Onglet, string>> = {
-  rituel: 'Le rituel et son mode guidé arrivent bientôt.',
-};
 
 const Chargement = () => (
   <p className="muted chargement" role="status">
@@ -49,6 +49,8 @@ function App() {
   // Semaine consultée dans Menu / Courses / Rituel (null = celle du jour).
   const [semaineVue, setSemaineVue] = useState<number | null>(null);
   const [jourVu, setJourVu] = useState<Jour | null>(null); // jour consulté dans Menu
+  const [vueRituel, setVueRituel] = useState<VueRituel>('jour');
+  const [guide, setGuide] = useState<number | null>(null); // étape du mode guidé ouvert
   const [profilOuvert, setProfilOuvert] = useState(false);
   // Fiche recette poussée ; `coche` = le repas d'où on vient (« C'est fait »).
   const [recette, setRecette] = useState<{ id: string; coche?: { semaine: string; id: string } } | null>(null);
@@ -121,6 +123,12 @@ function App() {
   const ouvrirRecette = (n: number) => (id: string, coche: string) =>
     actif && setRecette({ id, coche: { semaine: semaineCoches(actif.id, n), id: coche } });
 
+  const ecranPousse = (contenu: ReactNode) => (
+    <div className="main-content">
+      <Suspense fallback={<Chargement />}>{contenu}</Suspense>
+    </div>
+  );
+
   if (recette && actif) {
     return (
       <div className="main-content">
@@ -136,6 +144,24 @@ function App() {
           />
         </Suspense>
       </div>
+    );
+  }
+
+  if (guide != null && actif) {
+    return ecranPousse(
+      <Guide
+        actif={actif}
+        semaine={semaine}
+        etape={guide}
+        syncVersion={syncVersion}
+        onEtape={setGuide}
+        onQuitter={() => setGuide(null)}
+        onReserve={() => {
+          setGuide(null);
+          setVueRituel('reserve');
+        }}
+        onOuvrirRecette={(id) => setRecette({ id })}
+      />,
     );
   }
 
@@ -188,8 +214,19 @@ function App() {
               {onglet === 'courses' && (
                 <Courses actif={actif} foyer={foyer} semaine={semaine} aujourdhui={aujourdhui} syncVersion={syncVersion} />
               )}
+              {onglet === 'rituel' && (
+                <Rituel
+                  actif={actif}
+                  foyer={foyer}
+                  semaine={semaine}
+                  syncVersion={syncVersion}
+                  vue={vueRituel}
+                  onVue={setVueRituel}
+                  onGuide={() => setGuide(0)}
+                  onOuvrirRecette={(id) => setRecette({ id })}
+                />
+              )}
               {onglet === 'suivi' && <Suivi profile={profile} syncVersion={syncVersion} />}
-              {AVENIR[onglet] && <p className="muted">{AVENIR[onglet]}</p>}
             </Suspense>
           )}
         </main>
