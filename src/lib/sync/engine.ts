@@ -68,6 +68,13 @@ let generationRealtime = 0;
 // les déclencheurs (mutations, realtime, réseau) peuvent se rafaler, les
 // demandes concurrentes reçoivent la même promesse et re-programment un tour.
 let flushPromise: Promise<void> | null = null;
+
+// 401 du serveur : jeton refusé (foyer supprimé, secret changé). Réessayer ne
+// sert à rien — on sort du foyer pour reproposer créer / rejoindre.
+const echecSync = (e: unknown): void => {
+  if (e instanceof Error && e.message === 'sync-401') deconnecterFoyer();
+  else definirEtat('erreur');
+};
 // Retour du réseau : si le client n'existe pas (échec au démarrage), on
 // relance la connexion ; sinon on rafale ce qui s'est empilé hors ligne.
 const surEnLigne = (): void => {
@@ -161,8 +168,8 @@ export const flush = (): Promise<void> => {
       for (const m of outbox) retirer(m);
       definirEtat('sync');
       ok = true;
-    } catch {
-      definirEtat('erreur'); // outbox conservée — retry au prochain déclencheur
+    } catch (e) {
+      echecSync(e); // outbox conservée — retry au prochain déclencheur
     } finally {
       // Mutations empilées pendant l'envol (corps sans exception) : partent
       // au tour suivant. En échec, on reste sur les déclencheurs existants.
@@ -338,8 +345,8 @@ export const pull = async (): Promise<void> => {
     });
     if (await appliquerRemote(rows)) onRemote?.();
     definirEtat('sync');
-  } catch {
-    definirEtat('erreur'); // symétrique de la flush : retry au prochain déclencheur
+  } catch (e) {
+    echecSync(e); // symétrique de la flush : retry au prochain déclencheur
   }
 };
 
