@@ -77,6 +77,19 @@ const ICONS = {
     </>
   ),
   check: <path d="M4 12.5l5 5L20 6.5" />,
+  couverts: (
+    <>
+      <path d="M7 3v8a2 2 0 0 0 4 0V3" />
+      <path d="M9 11v10" />
+      <path d="M17 3c-2 0-3 2-3 5s1 4 3 4v9" />
+    </>
+  ),
+  courbe: (
+    <>
+      <path d="M3 20h18" />
+      <path d="M6 16v-5M11 16V6M16 16v-8" />
+    </>
+  ),
   clock: (
     <>
       <circle cx="12" cy="12" r="8" />

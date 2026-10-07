@@ -5,7 +5,6 @@ import type {
   CourseItem,
   DepenseEntry,
   MenuDay,
-  ProfileData,
   Recette,
   ReserveLigne,
   UserProfile,
@@ -24,9 +23,7 @@ import { CoursesBudget, DepensesPanel } from '../src/components/cuisine/CoursesB
 import { MenuView } from '../src/components/cuisine/MenuView';
 import { BatchView } from '../src/components/cuisine/BatchView';
 import { CuisineView } from '../src/components/cuisine/CuisineView';
-import { ProfileView } from '../src/components/ProfileView';
-import { WeekBanner } from '../src/components/WeekBanner';
-import { SemaineSwitcher } from '../src/components/SemaineSwitcher';
+import { Pesees } from '../src/components/Pesees';
 import { Icon } from '../src/components/Icon';
 
 const profileV2 = (
@@ -1413,84 +1410,14 @@ describe('SuiviHero — carte héro objectif', () => {
   });
 });
 
-const profileData: ProfileData = {
-  cibles: ['Objectif 10 000 pas / jour', 'Protéines à chaque repas'],
-  seances: [
-    { id: 'seance-fullbody-a', label: 'Full body A' },
-    { id: 'seance-cardio-30', label: 'Cardio 30 min' },
-  ],
-  rappels: ['Pesée chaque matin', '3 L d’eau par jour'],
-};
-
-describe('ProfileView', () => {
+describe('Pesees', () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it('renders the title matching the profile', () => {
-    const { unmount } = render(<ProfileView profile={profileV2('marc')} data={profileData} semaine="S39" />);
-    expect(screen.getByRole('heading', { level: 2, name: 'Marc — Diet & Sport' })).toBeInTheDocument();
-    unmount();
-    render(<ProfileView profile={profileV2('melanie')} data={profileData} semaine="S39" />);
-    expect(screen.getByRole('heading', { level: 2, name: 'Mélanie — Keto & Sport' })).toBeInTheDocument();
-  });
-
-  it('affiche le prénom édité dans le titre (profil v2.2)', () => {
-    render(
-      <ProfileView profile={{ ...profileV2('marc'), prenom: 'Jean' }} data={profileData} semaine="S39" />,
-    );
-    expect(screen.getByText('Jean — Diet & Sport')).toBeInTheDocument();
-  });
-
-  it('renders cibles and rappels as list items with the exact strings', () => {
-    const { container } = render(<ProfileView profile={profileV2('marc')} data={profileData} semaine="S39" />);
-    const cibles = Array.from(container.querySelectorAll('ul.target-list > li')).map((li) => li.textContent);
-    expect(cibles).toEqual(profileData.cibles);
-    const rappels = Array.from(container.querySelectorAll('ul.rappel-list > li')).map((li) => li.textContent);
-    expect(rappels).toEqual(profileData.rappels);
-  });
-
-  it('renders the seances checklist and persists a toggle', async () => {
-    const user = userEvent.setup();
-    render(<ProfileView profile={profileV2('marc')} data={profileData} semaine="S39" />);
-    const checkbox = screen.getByRole('checkbox', { name: 'Full body A' });
-    expect(checkbox).not.toBeChecked();
-    await user.click(checkbox);
-    expect(checkbox).toBeChecked();
-    expect(getChecks('S39')).toEqual({ 'seance-fullbody-a': true });
-  });
-
-  it('séances : le préfixe jour devient une pastille « conseillé », le reste est la liste', () => {
-    const data: ProfileData = {
-      cibles: [],
-      seances: [
-        { id: 's-lun', label: 'Lundi — Muscu libre 10h30' },
-        { id: 's-libre', label: 'Course ou repos' },
-      ],
-      rappels: [],
-    };
-    render(<ProfileView profile={profileV2('marc')} data={data} semaine="S40" />);
-
-    expect(screen.getByText('Muscu libre 10h30')).toBeInTheDocument();
-    expect(screen.getByText('conseillé lun.')).toBeInTheDocument();
-    expect(screen.getByText('Course ou repos')).toBeInTheDocument();
-    // pas de pastille sans préfixe jour
-    expect(screen.getAllByText(/conseillé/)).toHaveLength(1);
-    // le titre porte le compte
-    expect(screen.getByText(/Séances de la semaine · 0\/2/)).toBeInTheDocument();
-  });
-
-  it('séances : le compte du titre se met à jour au cochage', async () => {
-    const user = userEvent.setup();
-    render(<ProfileView profile={profileV2('marc')} data={profileData} semaine="S40" />);
-    await user.click(screen.getByRole('checkbox', { name: 'Full body A' }));
-
-    expect(screen.getByText(/Séances de la semaine · 1\/2/)).toBeInTheDocument();
-  });
-
   it('adds a weight, shows it newest-first in the history and stores it', () => {
     addWeight('marc', '2026-09-05', 77.4);
-    const { container } = render(<ProfileView profile={profileV2('marc')} data={profileData} semaine="S39" />);
+    const { container } = render(<Pesees profile={profileV2('marc')} />);
     const dateInput = container.querySelector('input[name="date"]') as HTMLInputElement;
     const kgInput = container.querySelector('input[name="kg"]') as HTMLInputElement;
     expect(dateInput.value).toBe(todayISO());
@@ -1511,7 +1438,7 @@ describe('ProfileView', () => {
   });
 
   it.each(['', 'abc', '-1'])('rejects invalid weight %j and stores nothing', (raw) => {
-    const { container } = render(<ProfileView profile={profileV2('marc')} data={profileData} semaine="S39" />);
+    const { container } = render(<Pesees profile={profileV2('marc')} />);
     const kgInput = container.querySelector('input[name="kg"]') as HTMLInputElement;
     fireEvent.change(kgInput, { target: { value: raw } });
     fireEvent.submit(container.querySelector('form')!);
@@ -1520,7 +1447,7 @@ describe('ProfileView', () => {
   });
 
   it('replaces the entry when the same date is submitted twice', () => {
-    const { container } = render(<ProfileView profile={profileV2('marc')} data={profileData} semaine="S39" />);
+    const { container } = render(<Pesees profile={profileV2('marc')} />);
     const dateInput = container.querySelector('input[name="date"]') as HTMLInputElement;
     const kgInput = container.querySelector('input[name="kg"]') as HTMLInputElement;
     fireEvent.change(dateInput, { target: { value: '2026-09-07' } });
@@ -1538,23 +1465,23 @@ describe('ProfileView', () => {
 
   it('re-syncs per-profile state when profile changes without remount', () => {
     addWeight('marc', '2026-09-05', 77.4);
-    const { container, rerender } = render(<ProfileView profile={profileV2('marc')} data={profileData} semaine="S39" />);
+    const { container, rerender } = render(<Pesees profile={profileV2('marc')} />);
     fireEvent.submit(container.querySelector('form')!); // kg vide -> erreur
     expect(screen.getByRole('alert')).toBeInTheDocument();
 
-    rerender(<ProfileView profile={profileV2('melanie')} data={profileData} semaine="S39" />);
+    rerender(<Pesees profile={profileV2('melanie')} />);
     expect(container.querySelectorAll('ul.weight-list > li')).toHaveLength(0);
     expect(screen.queryByText('05/09 — 77.4 kg')).not.toBeInTheDocument();
     expect(screen.getByText('Ajoutez au moins 2 pesées pour voir la courbe.')).toBeInTheDocument();
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 
-    rerender(<ProfileView profile={profileV2('marc')} data={profileData} semaine="S39" />);
+    rerender(<Pesees profile={profileV2('marc')} />);
     const lis = Array.from(container.querySelectorAll('ul.weight-list > li')).map((li) => li.textContent);
     expect(lis).toEqual(['05/09 — 77.4 kg']);
   });
 
   it('clears the error when the kg input changes', () => {
-    const { container } = render(<ProfileView profile={profileV2('marc')} data={profileData} semaine="S39" />);
+    const { container } = render(<Pesees profile={profileV2('marc')} />);
     fireEvent.submit(container.querySelector('form')!); // kg vide -> erreur
     expect(screen.getByRole('alert')).toBeInTheDocument();
     fireEvent.change(container.querySelector('input[name="kg"]')!, { target: { value: '76.8' } });
@@ -1562,7 +1489,7 @@ describe('ProfileView', () => {
   });
 
   it('exposes the date and kg inputs with dedicated classes and aria-labels', () => {
-    const { container } = render(<ProfileView profile={profileV2('marc')} data={profileData} semaine="S39" />);
+    const { container } = render(<Pesees profile={profileV2('marc')} />);
     const dateInput = container.querySelector('input[name="date"]')!;
     expect(dateInput).toHaveClass('weight-date');
     expect(dateInput).toHaveAttribute('aria-label', 'Date de la pesée');
@@ -1572,7 +1499,7 @@ describe('ProfileView', () => {
   });
 
   it('shows the weight chart hint when there are fewer than 2 entries', () => {
-    const { container } = render(<ProfileView profile={profileV2('melanie')} data={profileData} semaine="S39" />);
+    const { container } = render(<Pesees profile={profileV2('melanie')} />);
     expect(screen.getByText('Ajoutez au moins 2 pesées pour voir la courbe.')).toBeInTheDocument();
     expect(container.querySelector('svg')).toBeNull();
   });
@@ -1580,7 +1507,7 @@ describe('ProfileView', () => {
   it('renders the weight curve (WeightChart) once there are 2+ entries', () => {
     addWeight('melanie', '2026-09-06', 64.2);
     addWeight('melanie', '2026-09-07', 63.8);
-    const { container } = render(<ProfileView profile={profileV2('melanie')} data={profileData} semaine="S39" />);
+    const { container } = render(<Pesees profile={profileV2('melanie')} />);
     expect(
       screen.getByRole('img', { name: 'Courbe de poids de 64.2 à 63.8 kg' }),
     ).toBeInTheDocument();
@@ -1600,120 +1527,6 @@ describe('ProfileView', () => {
 
   afterEach(() => {
     vi.useRealTimers();
-  });
-});
-
-describe('WeekBanner', () => {
-  const meta = { semaine: '2026-S39', menu: 'A', du: '2026-09-21', au: '2026-09-27' };
-
-  it('titre court « Semaine 39 » + dates courtes + pill cycle', () => {
-    render(<WeekBanner meta={meta} onSwitcher={() => {}} />);
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Semaine 39');
-    expect(screen.getByText('21 → 27 sept.')).toBeInTheDocument();
-    expect(screen.getByText('Cycle 3')).toHaveClass('cycle-pill');
-  });
-
-  it('id sans numéro de semaine : pas de pill cycle', () => {
-    render(<WeekBanner meta={{ ...meta, semaine: 'bizarr' }} />);
-    expect(screen.queryByText(/Cycle/)).not.toBeInTheDocument();
-  });
-
-  it('chevrons toujours visibles, désactivés aux bornes', () => {
-    render(<WeekBanner meta={meta} />);
-    expect(screen.getByRole('button', { name: 'Semaine précédente' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Semaine suivante' })).toBeDisabled();
-  });
-
-  it('navigue par chevrons quand les bornes le permettent', async () => {
-    const user = userEvent.setup();
-    const onPrev = vi.fn();
-    const onNext = vi.fn();
-    render(<WeekBanner meta={meta} onPrev={onPrev} onNext={onNext} hasPrev={false} hasNext />);
-    expect(screen.getByRole('button', { name: 'Semaine précédente' })).toBeDisabled();
-    const next = screen.getByRole('button', { name: 'Semaine suivante' });
-    expect(next).toBeEnabled();
-    await user.click(next);
-    expect(onNext).toHaveBeenCalledTimes(1);
-    expect(onPrev).not.toHaveBeenCalled();
-  });
-
-  it('tap sur le titre ouvre le changeur de semaine', async () => {
-    const user = userEvent.setup();
-    const onSwitcher = vi.fn();
-    render(<WeekBanner meta={meta} onSwitcher={onSwitcher} />);
-    await user.click(screen.getByRole('button', { name: 'Semaine 39 — changer de semaine' }));
-    expect(onSwitcher).toHaveBeenCalledTimes(1);
-  });
-
-  it('chip sync : « Local » hors foyer (tap = profil), « Duo » connecté (tap = resync)', async () => {
-    const user = userEvent.setup();
-    const onOpenProfile = vi.fn();
-    const onSyncTap = vi.fn();
-    const { rerender } = render(
-      <WeekBanner meta={meta} syncEtat="off" onOpenProfile={onOpenProfile} onSyncTap={onSyncTap} />,
-    );
-    const chip = screen.getByRole('button', { name: 'Hors foyer — ouvrir le profil pour connecter' });
-    expect(chip).toHaveTextContent('Local');
-    await user.click(chip);
-    expect(onOpenProfile).toHaveBeenCalledTimes(1);
-    expect(onSyncTap).not.toHaveBeenCalled();
-
-    rerender(
-      <WeekBanner meta={meta} syncEtat="sync" onOpenProfile={onOpenProfile} onSyncTap={onSyncTap} />,
-    );
-    const duo = screen.getByRole('button', { name: 'Duo — synchronisé, appuyer pour resynchroniser' });
-    expect(duo).toHaveTextContent('Duo');
-    await user.click(duo);
-    expect(onSyncTap).toHaveBeenCalledTimes(1);
-    expect(onOpenProfile).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe('SemaineSwitcher', () => {
-  const semaine = (id: string, du: string, au: string, menu = 'A') => {
-    const raw = mdSemaine(id, du, au, menu);
-    return { raw, data: parseWeeklyFile(raw).data, importedAt: '' };
-  };
-  const semaines = [
-    semaine('2026-S37', '2026-09-07', '2026-09-13', 'A'),
-    semaine('2026-S38', '2026-09-14', '2026-09-20', 'B'),
-  ];
-
-  it('liste les semaines, marque l\u2019active, sélectionne au clic', async () => {
-    const user = userEvent.setup();
-    const onSelect = vi.fn();
-    render(<SemaineSwitcher semaines={semaines} active="2026-S38" onSelect={onSelect} onClose={() => {}} />);
-    expect(screen.getByRole('dialog', { name: 'Choisir une semaine' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Semaine 37/ })).toBeInTheDocument();
-    const active = screen.getByRole('button', { name: /Semaine 38/ });
-    expect(active).toHaveClass('actif');
-    expect(active).toHaveAttribute('aria-current', 'true');
-    await user.click(active);
-    expect(onSelect).toHaveBeenCalledWith('2026-S38');
-  });
-
-  it('tap sur le voile ferme, tap sur la sheet non', async () => {
-    const user = userEvent.setup();
-    const onClose = vi.fn();
-    const { container } = render(
-      <SemaineSwitcher semaines={semaines} active="2026-S38" onSelect={vi.fn()} onClose={onClose} />,
-    );
-    const veil = container.querySelector('.switcher-veil');
-    expect(veil).not.toBeNull();
-    await user.click(veil as HTMLElement);
-    expect(onClose).toHaveBeenCalledTimes(1);
-
-    onClose.mockClear();
-    await user.click(screen.getByRole('dialog', { name: 'Choisir une semaine' }));
-    expect(onClose).not.toHaveBeenCalled();
-  });
-
-  it('Escape ferme la sheet', async () => {
-    const user = userEvent.setup();
-    const onClose = vi.fn();
-    render(<SemaineSwitcher semaines={semaines} active="2026-S38" onSelect={vi.fn()} onClose={onClose} />);
-    await user.keyboard('{Escape}');
-    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });
 

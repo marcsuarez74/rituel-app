@@ -6,7 +6,7 @@ import App from '../../src/App';
 import { Checklist } from '../../src/components/Checklist';
 import { Onboarding } from '../../src/components/onboarding/Onboarding';
 import { ProfilScreen } from '../../src/components/ProfilScreen';
-import { WeekBanner } from '../../src/components/WeekBanner';
+import { EnTete } from '../../src/components/shell/EnTete';
 import type { UserProfile } from '../../src/lib/model';
 import { syncActif } from '../../src/lib/sync/config';
 import { injecterClient, reinitialiser } from '../../src/lib/sync/engine';
@@ -60,9 +60,9 @@ describe('sync UI: app', () => {
     injecterClient(clientPassif());
   });
 
-  it('sans profil : onboarding, pas de crash sync', () => {
+  it('sans profil : onboarding, pas de crash sync', async () => {
     render(<App />);
-    expect(screen.getByRole('heading', { name: /Qui est derrière l'écran/ })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /Qui est derrière l'écran/ })).toBeInTheDocument();
   });
 
   it('avec session : l’app démarre en sync (pas de brique cassée)', async () => {
@@ -80,48 +80,37 @@ describe('sync UI: app', () => {
     await waitFor(() =>
       expect(screen.queryByRole('heading', { name: /Qui est derrière l'écran/ })).toBeNull(),
     );
-    expect(screen.getByText('Semaine 37')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: "Aujourd'hui" })).toBeInTheDocument();
   });
 });
 
-describe('sync UI: bannière', () => {
-  const metaFix = { semaine: '2026-S39', menu: 'A', du: '2026-09-21', au: '2026-09-27' };
+describe('sync UI: en-tête', () => {
+  const entete = (syncEtat: Parameters<typeof EnTete>[0]['syncEtat']) => (
+    <EnTete titre="Menu" prenom="Marc" syncEtat={syncEtat} onProfil={() => {}} />
+  );
 
-  it('sans sync (off / prop absente) : chip en mode Local, pas de bouton sync', () => {
-    render(<WeekBanner meta={{ semaine: '2026-S39', menu: 'A', du: '2026-09-21', au: '2026-09-27' }} />);
-    expect(screen.queryByRole('button', { name: /synchroni/i })).toBeNull();
-    expect(screen.getByText('Local')).toBeInTheDocument();
+  it('sans sync : avatar seul, sans point', () => {
+    const { container } = render(entete('off'));
+    expect(screen.getByRole('button', { name: 'Mon profil' })).toHaveTextContent('M');
+    expect(container.querySelector('.avatar-pt')).toBeNull();
   });
 
-  it('hors-foyer : chip en mode Local (pas de chip Duo)', () => {
-    render(<WeekBanner meta={metaFix} syncEtat="hors-foyer" />);
-    expect(screen.queryByRole('button', { name: /Synchronisation/ })).not.toBeInTheDocument();
-    // Garde : aucune chip Duo (quel que soit son état), la chip affiche Local.
-    expect(screen.queryByRole('button', { name: /Duo/ })).not.toBeInTheDocument();
-    expect(screen.getByText('Local')).toBeInTheDocument();
+  it('le point de l’avatar porte l’état de la sync', () => {
+    const { container, rerender } = render(entete('hors-foyer'));
+    expect(screen.getByRole('button', { name: 'Mon profil — Local' })).toBeInTheDocument();
+    expect(container.querySelector('.avatar-pt')).toHaveClass('gris');
+    rerender(entete('erreur'));
+    expect(container.querySelector('.avatar-pt')).toHaveClass('danger');
+    rerender(entete('sync'));
+    expect(screen.getByRole('button', { name: 'Mon profil — Duo connecté' })).toBeInTheDocument();
+    expect(container.querySelector('.avatar-pt')).toHaveClass('basilic');
   });
 
-  it('attente, erreur et sync : la chip reste visible (régression)', () => {
-    const { rerender } = render(<WeekBanner meta={metaFix} syncEtat="attente" />);
-    expect(screen.getByRole('button', { name: /synchronisation en cours/i })).toBeInTheDocument();
-    rerender(<WeekBanner meta={metaFix} syncEtat="erreur" />);
-    expect(screen.getByRole('button', { name: /erreur, appuyer/i })).toBeInTheDocument();
-    rerender(<WeekBanner meta={metaFix} syncEtat="sync" />);
-    expect(screen.getByRole('button', { name: /synchronisé, appuyer/i })).toBeInTheDocument();
-  });
-
-  it('chip visible en erreur, tap déclenche re-sync', async () => {
-    const onSyncTap = vi.fn();
-    render(
-      <WeekBanner
-        meta={{ semaine: '2026-S39', menu: 'A', du: '2026-09-21', au: '2026-09-27' }}
-        syncEtat="erreur"
-        onSyncTap={onSyncTap}
-      />,
-    );
-    const chip = screen.getByRole('button', { name: /erreur, appuyer pour réessayer/i });
-    await userEvent.setup().click(chip);
-    expect(onSyncTap).toHaveBeenCalledOnce();
+  it('tap sur l’avatar : ouvre le profil', async () => {
+    const onProfil = vi.fn();
+    render(<EnTete titre="Menu" prenom="Marc" syncEtat="sync" onProfil={onProfil} />);
+    await userEvent.setup().click(screen.getByRole('button', { name: /Mon profil/ }));
+    expect(onProfil).toHaveBeenCalledOnce();
   });
 });
 
@@ -143,7 +132,6 @@ describe('sync UI: bloc profil', () => {
         onBack={() => {}}
         onChangeProfile={() => {}}
         onProfileSaved={() => {}}
-        onImported={() => {}}
       />,
     );
 
@@ -226,7 +214,6 @@ describe('profil: création de foyer (VPS)', () => {
         onBack={() => {}}
         onChangeProfile={() => {}}
         onProfileSaved={() => {}}
-        onImported={() => {}}
       />,
     );
 

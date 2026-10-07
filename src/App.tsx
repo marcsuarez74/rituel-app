@@ -1,34 +1,34 @@
-import { useEffect, useRef, useState } from 'react';
-import type { PointerEvent as ReactPointerEvent } from 'react';
-import { ProfilScreen } from './components/ProfilScreen';
-import { ProfileView } from './components/ProfileView';
-import { SuiviHero } from './components/SuiviHero';
-import { TabBar } from './components/TabBar';
-import type { TabId } from './components/TabBar';
-import { Onboarding } from './components/onboarding/Onboarding';
-import { WeekBanner } from './components/WeekBanner';
-import { SemaineSwitcher } from './components/SemaineSwitcher';
-import { CuisineView } from './components/cuisine/CuisineView';
+import { Suspense, lazy, useEffect, useState } from 'react';
+import { Aujourdhui } from './components/ecrans/Aujourdhui';
+import { BarreOnglets } from './components/shell/BarreOnglets';
+import { ONGLETS, type Onglet } from './components/shell/onglets';
+import { EnTete } from './components/shell/EnTete';
+import { LigneSemaine } from './components/shell/LigneSemaine';
+import { positionCycle } from './lib/cycle/calendrier';
+import { chargerCycleExemple, semaineParDefaut } from './lib/cycle/courant';
+import { type CycleActif, foyerParDefaut, loadCycle, loadFoyer } from './lib/cycle/etat';
+import { todayISO } from './lib/dates';
 import { prenomProfil } from './lib/model';
-import type { ImportedWeek, UserProfile } from './lib/model';
-import { parseWeeklyFile } from './lib/parse';
-import { effacerSelection, lireSelection, loadProfile, loadProfilLegacy, loadWeeks, removeProfile, sauverSelection } from './lib/storage';
-import { initSync, ressynchroniser, type SyncEtat } from './lib/sync/engine';
-import { indexSemaineCourante, semainesTriees } from './lib/weeks';
-import { numeroCycle, todayISO } from './lib/dates';
-import sampleRaw from './assets/semaine-exemple.md?raw';
+import type { UserProfile } from './lib/model';
+import { loadProfile, loadProfilLegacy, removeProfile } from './lib/storage';
+import { initSync, type SyncEtat } from './lib/sync/engine';
 
-// Fallback en mémoire : tant qu'aucune semaine n'a été importée, on affiche
-// la semaine d'exemple (les semaines réelles arrivent par l'import du cycle).
-const semaineExemple = (): ImportedWeek => {
-  const { data } = parseWeeklyFile(sampleRaw);
-  return { raw: sampleRaw, data, importedAt: '' };
+// Chargés à la demande (spec v2 §10) : seul Aujourd'hui est dans le bundle initial.
+const Onboarding = lazy(() => import('./components/onboarding/Onboarding').then((m) => ({ default: m.Onboarding })));
+const ProfilScreen = lazy(() => import('./components/ProfilScreen').then((m) => ({ default: m.ProfilScreen })));
+const Suivi = lazy(() => import('./components/ecrans/Suivi').then((m) => ({ default: m.Suivi })));
+
+const AVENIR: Partial<Record<Onglet, string>> = {
+  menu: 'Le menu de la semaine arrive à la prochaine étape de la refonte.',
+  courses: 'La liste de courses calculée arrive bientôt.',
+  rituel: 'Le rituel et son mode guidé arrivent bientôt.',
 };
 
-const semainesInitiales = (): ImportedWeek[] => {
-  const stockees = semainesTriees(Object.values(loadWeeks()));
-  return stockees.length ? stockees : [semaineExemple()];
-};
+const Chargement = () => (
+  <p className="muted chargement" role="status">
+    Chargement…
+  </p>
+);
 
 function App() {
   // La lecture legacy précède loadProfile (strict) : loadProfile retire la clé v1
@@ -36,154 +36,106 @@ function App() {
   const [profile, setProfile] = useState<UserProfile | null>(() =>
     loadProfilLegacy() ? null : loadProfile(),
   );
-  const [semaines, setSemaines] = useState<ImportedWeek[]>(semainesInitiales);
-  // Navigation en session : null = auto (semaine du jour) ; sinon l'id de la
-  // semaine consultée via les chevrons. Persistée (sportapp:selection) pour
-  // retrouver la consultation à la relance — fallback auto si elle a disparu
-  // du stockage.
-  const [selection, setSelection] = useState<string | null>(() => lireSelection());
-  const selectionner = (id: string): void => {
-    setSelection(id);
-    sauverSelection(id);
-  };
+  const [cycleStocke, setCycleStocke] = useState<CycleActif | null>(loadCycle);
+  const [foyerStocke, setFoyerStocke] = useState(loadFoyer);
+  const [exemple, setExemple] = useState<CycleActif | null>(null);
+  const [onglet, setOnglet] = useState<Onglet>('aujourdhui');
+  // Semaine consultée dans Menu / Courses / Rituel (null = celle du jour).
+  const [semaineVue, setSemaineVue] = useState<number | null>(null);
   const [profilOuvert, setProfilOuvert] = useState(false);
-  const [switcherOuvert, setSwitcherOuvert] = useState(false);
-  // SuiviHero lit les pesées au montage : onWeightsChanged (pesée ajoutée)
-  // incrémente weightsBump pour le remonter et relire les pesées.
-  const [weightsBump, setWeightsBump] = useState(0);
-  const [tab, setTab] = useState<TabId>('cuisine');
-  // Sync optionnelle : état (point bannière + bloc profil) et version de
-  // re-rendu — onRemote bump la version quand un pull a écrit dans le storage,
-  // les composants coches/pesées/dépenses relisent alors leur source.
+  // Sync optionnelle : état (point sur l'avatar) et version de re-rendu —
+  // onRemote relit le storage quand un pull y a écrit.
   const [syncEtat, setSyncEtat] = useState<SyncEtat>('off');
   const [syncVersion, setSyncVersion] = useState(0);
 
-  // Sync optionnelle : no-op complet sans VITE_SYNC_URL (état 'off'). Effet
-  // posé avant les early returns — règle des hooks. Idempotent côté engine.
+  const aujourdhui = todayISO();
+  const foyer = foyerStocke ?? foyerParDefaut(profile);
+
+  // Effets posés avant les early returns — règle des hooks.
   useEffect(() => {
     initSync({
       onEtat: setSyncEtat,
       onRemote: () => {
-        setSemaines(semainesInitiales());
+        setCycleStocke(loadCycle());
+        setFoyerStocke(loadFoyer());
         setSyncVersion((v) => v + 1);
       },
     });
   }, []);
 
-  // Swipe Cuisine ↔ Suivi (pointer events). Chaque pointerdown repart d'un état
-  // propre : un geste exclu (contrôle interactif, second doigt, reduced-motion)
-  // ou annulé (scroll vertical → pointercancel) ne laisse aucun ref obsolète
-  // qu'un pointerup ultérieur transformerait en bascule fantôme.
-  const swipeX = useRef<number | null>(null);
-  const swipeY = useRef<number | null>(null);
-  const purgeSwipe = () => {
-    swipeX.current = null;
-    swipeY.current = null;
-  };
-  const onPointerDown = (e: ReactPointerEvent<HTMLElement>) => {
-    purgeSwipe();
-    if (!e.isPrimary) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const t = e.target as HTMLElement;
-    if (t.closest('button, input, textarea, select, label, a, .micro-batch, .rtabs')) return;
-    swipeX.current = e.clientX;
-    swipeY.current = e.clientY;
-  };
-  const onPointerUp = (e: ReactPointerEvent<HTMLElement>) => {
-    const x0 = swipeX.current;
-    const y0 = swipeY.current;
-    swipeX.current = null;
-    swipeY.current = null;
-    if (x0 == null || y0 == null) return;
-    const dx = e.clientX - x0;
-    const dy = e.clientY - y0;
-    if (Math.abs(dx) < 80 || Math.abs(dy) > 60) return;
-    setTab(dx < 0 ? 'suivi' : 'cuisine');
-  };
+  // Sans cycle importé : le cycle d'exemple (chunk séparé), en mémoire.
+  const besoinExemple = !cycleStocke && !exemple;
+  useEffect(() => {
+    if (!besoinExemple) return;
+    let actif = true;
+    void chargerCycleExemple(aujourdhui, foyer.jourCourses).then((c) => actif && setExemple(c));
+    return () => {
+      actif = false;
+    };
+  }, [besoinExemple, aujourdhui, foyer.jourCourses]);
 
   if (!profile) {
-    return <Onboarding onDone={setProfile} prefill={loadProfilLegacy() ?? undefined} />;
+    return (
+      <Suspense fallback={<Chargement />}>
+        <Onboarding onDone={setProfile} prefill={loadProfilLegacy() ?? undefined} />
+      </Suspense>
+    );
   }
 
-  const idx = indexSemaineCourante(semaines, todayISO());
-  // Sélection obsolète (semaine retirée du stockage, ex. purge du foyer) :
-  // repli sur la semaine du jour, jamais sur la 1re semaine stockée.
-  const trouve =
-    selection != null ? semaines.findIndex((w) => w.data.meta.semaine === selection) : -1;
-  const idxAffiche = Math.min(Math.max(trouve >= 0 ? trouve : idx, 0), semaines.length - 1);
-  const affichee = semaines[idxAffiche];
-  if (!affichee) return null;
+  const prenom = prenomProfil(profile.id, profile);
+  const actif = cycleStocke ?? exemple;
 
   if (profilOuvert) {
     return (
       <div className="main-content">
-        <ProfilScreen
-          profile={profile}
-          syncEtat={syncEtat}
-          cycle={numeroCycle(affichee.data.meta.semaine) ?? undefined}
-          onBack={() => setProfilOuvert(false)}
-          onChangeProfile={() => {
-            removeProfile();
-            setProfile(null);
-            setProfilOuvert(false);
-          }}
-          onProfileSaved={setProfile}
-          onImported={() => {
-            setSemaines(semainesInitiales());
-            setSelection(null);
-            effacerSelection();
-            setProfilOuvert(false);
-          }}
-        />
+        <Suspense fallback={<Chargement />}>
+          <ProfilScreen
+            profile={profile}
+            syncEtat={syncEtat}
+            cycle={actif?.numero}
+            onBack={() => setProfilOuvert(false)}
+            onChangeProfile={() => {
+              removeProfile();
+              setProfile(null);
+              setProfilOuvert(false);
+            }}
+            onProfileSaved={setProfile}
+          />
+        </Suspense>
       </div>
     );
   }
 
+  const position = actif ? positionCycle(actif, aujourdhui) : null;
+  const semaine = semaineVue ?? (position ? semaineParDefaut(position) : 0);
+  const titre = ONGLETS.find((o) => o.id === onglet)!.label;
+
   return (
-    <div className="main-content">
-      <WeekBanner
-        meta={affichee.data.meta}
-        onOpenProfile={() => setProfilOuvert(true)}
-        onSwitcher={() => setSwitcherOuvert(true)}
-        syncEtat={syncEtat}
-        onSyncTap={() => ressynchroniser()}
-        onPrev={() => selectionner(semaines[Math.max(0, idxAffiche - 1)].data.meta.semaine)}
-        onNext={() =>
-          selectionner(semaines[Math.min(semaines.length - 1, idxAffiche + 1)].data.meta.semaine)
-        }
-        hasPrev={idxAffiche > 0}
-        hasNext={idxAffiche < semaines.length - 1}
-      />
-      {switcherOuvert && (
-        <SemaineSwitcher
-          semaines={semaines}
-          active={affichee.data.meta.semaine}
-          onSelect={(id) => {
-            selectionner(id);
-            setSwitcherOuvert(false);
-          }}
-          onClose={() => setSwitcherOuvert(false)}
-        />
-      )}
-      <TabBar active={tab} onSelect={setTab} />
-      <main onPointerDown={onPointerDown} onPointerUp={onPointerUp} onPointerCancel={purgeSwipe}>
-        {tab === 'cuisine' && (
-          <CuisineView data={affichee.data} profile={profile} syncVersion={syncVersion} />
-        )}
-        {tab === 'suivi' && (
-          <>
-            <p className="greeting">Salut {prenomProfil(profile.id, profile)} 👋</p>
-            <SuiviHero key={`hero-${weightsBump}-${syncVersion}`} profile={profile} />
-            <ProfileView
-              profile={profile}
-              data={affichee.data.profiles[profile.id]}
-              semaine={affichee.data.meta.semaine}
-              syncVersion={syncVersion}
-              onWeightsChanged={() => setWeightsBump((b) => b + 1)}
-            />
-          </>
-        )}
-      </main>
+    <div className="shell">
+      <div className="main-content">
+        <EnTete titre={titre} prenom={prenom} syncEtat={syncEtat} onProfil={() => setProfilOuvert(true)} />
+        {actif && AVENIR[onglet] && <LigneSemaine cal={actif} index={semaine} onChange={setSemaineVue} />}
+        <main>
+          {!actif || !position ? (
+            <Chargement />
+          ) : (
+            <Suspense fallback={<Chargement />}>
+              {onglet === 'aujourdhui' && (
+                <Aujourdhui
+                  prenom={prenom}
+                  aujourdhui={aujourdhui}
+                  numero={actif.numero}
+                  position={position}
+                  exemple={!cycleStocke}
+                />
+              )}
+              {onglet === 'suivi' && <Suivi profile={profile} syncVersion={syncVersion} />}
+              {AVENIR[onglet] && <p className="muted">{AVENIR[onglet]}</p>}
+            </Suspense>
+          )}
+        </main>
+      </div>
+      <BarreOnglets actif={onglet} onSelect={setOnglet} />
     </div>
   );
 }

@@ -14,7 +14,7 @@ export interface CalendrierCycle {
 export type PositionCycle =
   | { etat: 'avant'; debut: string }
   | { etat: 'semaine'; index: number; lettre: Lettre; du: string; au: string }
-  | { etat: 'pause'; du: string; au: string }
+  | { etat: 'pause'; apres: number; du: string; au: string } // apres = index de la semaine qui précède
   | { etat: 'termine'; prochain: string };
 
 const versUTC = (iso: string): number => {
@@ -55,9 +55,14 @@ export const positionCycle = (cal: CalendrierCycle, aujourdhui: string): Positio
   if (c === undefined) return { etat: 'termine', prochain: prochainCycle(cal) };
   const du = debutCreneau(cal, rang);
   const au = ajouterJours(du, 6);
-  return c === 'pause' ? { etat: 'pause', du, au } : { etat: 'semaine', index: c, lettre: LETTRES[c], du, au };
+  if (c === 'pause') return { etat: 'pause', apres: creneaux(cal)[rang - 1] as number, du, au };
+  return { etat: 'semaine', index: c, lettre: LETTRES[c], du, au };
 };
+
+// Premier jour (jour des courses) de la semaine `index` (0-3).
+export const debutSemaine = (cal: CalendrierCycle, index: number): string =>
+  debutCreneau(cal, creneaux(cal).indexOf(index));
 
 // Date d'un jour du menu `index` (0-3), selon le jour des courses du foyer.
 export const dateDuJour = (cal: CalendrierCycle, index: number, jour: Jour, jourCourses: Jour): string =>
-  ajouterJours(debutCreneau(cal, creneaux(cal).indexOf(index)), ordreJours(jourCourses).indexOf(jour));
+  ajouterJours(debutSemaine(cal, index), ordreJours(jourCourses).indexOf(jour));

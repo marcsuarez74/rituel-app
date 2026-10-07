@@ -110,11 +110,12 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     // Build de prod avec sync compilée : l'étape 6 optionnelle s'intercale
     // — « Plus tard » poursuit ; sans sync, le shell arrive direct.
     const plusTard = page.getByRole('button', { name: 'Plus tard' });
-    await plusTard.or(page.getByText('Semaine 37')).first().waitFor();
+    const shell = page.getByRole('navigation', { name: 'Navigation principale' });
+    await plusTard.or(shell).first().waitFor();
     if (await plusTard.isVisible()) await plusTard.click();
 
-    // Profil enregistré + semaine d'exemple auto-chargée → shell direct
-    await expect(page.getByText('Semaine 37')).toBeVisible();
+    // Profil enregistré + cycle d'exemple auto-chargé → shell direct
+    await expect(shell).toBeVisible();
     const profil = await page.evaluate(() => JSON.parse(localStorage.getItem('sportapp:profile')!));
     expect(profil).toEqual({
       id: 'melanie',
@@ -143,14 +144,14 @@ test.describe('Onboarding 5 étapes — mobile', () => {
 
     // Même tolérance à l'étape 6 optionnelle que le parcours complet.
     const plusTard = page.getByRole('button', { name: 'Plus tard' });
-    await plusTard.or(page.getByText('Semaine 37')).first().waitFor();
+    const shell = page.getByRole('navigation', { name: 'Navigation principale' });
+    await plusTard.or(shell).first().waitFor();
     if (await plusTard.isVisible()) await plusTard.click();
 
-    // L'app s'affiche sans crash : salutation (onglet Mon suivi) avec le prénom
-    // prérempli + semaine d'exemple dans l'onglet par défaut.
-    await page.getByRole('button', { name: 'Mon suivi' }).click();
+    // L'app s'affiche sans crash : salutation (Aujourd'hui) avec le prénom
+    // prérempli + cycle d'exemple.
     await expect(page.getByText('Salut Mélanie 👋')).toBeVisible();
-    await expect(page.getByText('Semaine 37')).toBeVisible();
+    await expect(page.getByText(/Cycle d'exemple/)).toBeVisible();
     await assertPasDeDebordement(page);
 
     // Profil partiel enregistré : aucun champ sauté n'apparaît dans le storage.
@@ -187,10 +188,11 @@ test.describe('Onboarding 5 étapes — mobile', () => {
 
     // Même tolérance à l'étape 6 optionnelle que le parcours complet.
     const plusTard = page.getByRole('button', { name: 'Plus tard' });
-    await plusTard.or(page.getByText('Semaine 37')).first().waitFor();
+    const shell = page.getByRole('navigation', { name: 'Navigation principale' });
+    await plusTard.or(shell).first().waitFor();
     if (await plusTard.isVisible()) await plusTard.click();
 
-    await expect(page.getByText('Semaine 37')).toBeVisible();
+    await expect(shell).toBeVisible();
     const profil = await page.evaluate(() => JSON.parse(localStorage.getItem('sportapp:profile')!));
     expect(profil).toEqual({
       id: 'melanie',
@@ -234,7 +236,7 @@ test.describe('Écran Profil — mobile', () => {
     await page.evaluate(() => document.fonts.ready);
     await page.getByRole('button', { name: 'Mon profil' }).click();
 
-    // Hub : tuiles du compte visibles (le h1 « Profil » a laissé place au hub).
+    // Hub : lignes du compte visibles.
     const tuileInfos = page.getByRole('button', { name: /Mes infos/ });
     await expect(tuileInfos).toBeVisible();
     await assertPasDeDebordement(page);
@@ -255,13 +257,13 @@ test.describe('Écran Profil — mobile', () => {
     await assertPasDeDebordement(page);
   });
 
-  test('profil : les champs maison & courses suivent le style guideline', async ({ page }) => {
+  test('profil : les champs courses & budget suivent le style guideline', async ({ page }) => {
     await page.goto('/');
     await page.evaluate(() => document.fonts.ready);
     await page.getByRole('button', { name: 'Mon profil' }).click();
-    await page.getByRole('button', { name: /Maison & courses/ }).click(); // tuile → page détail
+    await page.getByRole('button', { name: /Courses & budget/ }).click(); // ligne → page détail
 
-    await expect(page.getByRole('heading', { name: 'Maison & courses', level: 2 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Courses & budget', level: 2 })).toBeVisible();
     await assertPasDeDebordement(page);
     for (const label of [
       'Magasin habituel',

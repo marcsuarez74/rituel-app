@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ajouterJours,
   dateDuJour,
+  debutSemaine,
   ordreJours,
   positionCycle,
   prochainCycle,
@@ -48,7 +49,7 @@ describe('positionCycle', () => {
 
   it('une pause après la semaine 2 décale la suite et la fin de 7 jours', () => {
     const p = { debut: '2025-10-04', pauses: [1] };
-    expect(positionCycle(p, '2025-10-18')).toEqual({ etat: 'pause', du: '2025-10-18', au: '2025-10-24' });
+    expect(positionCycle(p, '2025-10-18')).toEqual({ etat: 'pause', apres: 1, du: '2025-10-18', au: '2025-10-24' });
     expect(positionCycle(p, '2025-10-25')).toMatchObject({ etat: 'semaine', index: 2, lettre: 'C' });
     expect(prochainCycle(p)).toBe('2025-11-08');
   });
@@ -59,5 +60,12 @@ describe('dateDuJour', () => {
     expect(dateDuJour(cal, 0, 'samedi', 'samedi')).toBe('2025-10-04');
     expect(dateDuJour(cal, 0, 'vendredi', 'samedi')).toBe('2025-10-10');
     expect(dateDuJour({ ...cal, pauses: [0] }, 1, 'lundi', 'samedi')).toBe('2025-10-20');
+  });
+});
+
+describe('debutSemaine', () => {
+  it('jour des courses de la semaine, pauses comprises', () => {
+    expect(debutSemaine(cal, 2)).toBe('2025-10-18');
+    expect(debutSemaine({ ...cal, pauses: [0] }, 2)).toBe('2025-10-25');
   });
 });
