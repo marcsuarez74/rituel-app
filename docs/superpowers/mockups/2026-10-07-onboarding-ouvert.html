@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Onboarding ouvert — maquette</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Tokens repris tels quels de src/index.css (:root) — thème clair Herbes unique. */
+:root {
+  --bg: #f0f2eb;
+  --creme: #f5f1e6;
+  --surface: #fcfdf9;
+  --surface-2: #e7eae0;
+  --border: #e1e6da;
+  --text: #26312b;
+  --muted: #6e7a6c;
+  --accent: #3e7a46;
+  --accent-2: #f2dc7b;
+  --citron-surface: #fdf6d8;
+  --citron-line: #e3c94f;
+  --danger: #b4452f;
+  --shadow: 0 4px 16px rgb(38 49 43 / 0.08);
+  --radius: 18px;
+  color-scheme: light;
+  --fs-hero: 26px; --fs-h1: 22px; --fs-h2: 20px; --fs-h3: 17px; --fs-body: 16px;
+  --fs-sec: 14px; --fs-meta: 12px; --fs-micro: 11px; --fs-emoji: 38px;
+  --sp-2: 2px; --sp-4: 4px; --sp-6: 6px; --sp-8: 8px; --sp-10: 10px; --sp-12: 12px;
+  --sp-14: 14px; --sp-16: 16px; --sp-20: 20px; --sp-24: 24px;
+  --lh-none: 1; --lh-tight: 1.2; --lh-title: 1.25; --lh-body: 1.5;
+  /* Texte secondaire ≥ 4,5:1 (mélange déjà utilisé par .onb-skip / compteurs) */
+  --muted-fort: color-mix(in srgb, var(--muted) 70%, var(--text));
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--surface-2); }
+body {
+  margin: 0;
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: 'Poppins', -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+}
+button, input, label { font: inherit; transition: background-color .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease, transform .15s ease; }
+button { cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation-duration: .01ms !important; scroll-behavior: auto !important; } }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+svg.ic { width: 20px; height: 20px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+svg.ic.sm { width: 16px; height: 16px; }
+[hidden] { display: none !important; }
+h1, h2, h3 { margin: 0 0 var(--sp-8); line-height: var(--lh-title); }
+p { margin: 0 0 var(--sp-8); }
+
+/* ———————— Habillage de la maquette (hors app) ———————— */
+.mq-tete { background: var(--text); color: var(--bg); padding: var(--sp-20) var(--sp-16); }
+.mq-tete-in { max-width: 1240px; margin: 0 auto; }
+.mq-tete h1 { font-size: var(--fs-h1); font-weight: 700; margin: 0; }
+.mq-tete p { margin: var(--sp-4) 0 0; font-size: var(--fs-sec); color: var(--surface-2); }
+.mq-tete .mq-badge { display: inline-block; margin-top: var(--sp-8); padding: var(--sp-4) var(--sp-10); border-radius: 999px; background: var(--accent-2); color: var(--text); font-size: var(--fs-meta); font-weight: 700; }
+.mq-sommaire { display: flex; flex-wrap: wrap; gap: var(--sp-8); margin-top: var(--sp-12); }
+.mq-sommaire a { display: inline-flex; align-items: center; min-height: 48px; padding: 0 var(--sp-14); border: 1px solid color-mix(in srgb, var(--bg) 35%, transparent); border-radius: 999px; color: var(--bg); text-decoration: none; font-size: var(--fs-meta); font-weight: 600; }
+.mq-scene { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 375px), 375px)); justify-content: center; gap: var(--sp-24) 40px; max-width: 1280px; margin: 0 auto; padding: var(--sp-24) var(--sp-16) 60px; }
+.mq-ecran { margin: 0; min-width: 0; scroll-margin-top: var(--sp-16); }
+.mq-legende { min-height: 132px; margin-bottom: var(--sp-12); font-size: var(--fs-sec); line-height: var(--lh-body); }
+.mq-legende b.mq-lettre { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; margin-right: var(--sp-6); border-radius: 50%; background: var(--accent); color: #ffffff; font-size: var(--fs-sec); }
+.mq-legende h2 { display: flex; align-items: center; font-size: var(--fs-h3); font-weight: 700; margin-bottom: var(--sp-6); }
+.mq-legende p { margin: 0; color: var(--text); }
+.mq-legende .mq-avant { color: var(--muted-fort); font-size: var(--fs-meta); margin-top: var(--sp-4); }
+.mq-variantes { display: flex; flex-wrap: wrap; gap: var(--sp-6); margin-bottom: var(--sp-10); }
+.mq-variantes button { min-height: 48px; padding: 0 var(--sp-12); border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text); font-size: var(--fs-meta); font-weight: 600; }
+.mq-variantes button[aria-pressed='true'] { background: var(--text); border-color: var(--text); color: var(--bg); }
+.tel { width: 100%; height: 780px; border: 8px solid var(--text); border-radius: 34px; background: var(--bg); box-shadow: 0 24px 60px rgb(38 49 43 / .28); overflow: hidden; display: flex; flex-direction: column; }
+.tel.flash { box-shadow: 0 0 0 6px var(--accent-2), 0 24px 60px rgb(38 49 43 / .28); }
+.vue { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; }
+.vue:not(.on) { display: none; }
+@media (max-width: 480px) {
+  .tel { border-width: 4px; border-radius: 22px; height: 740px; }
+  .mq-legende { min-height: 0; }
+}
+
+/* ———————— Classes de l'app (src/index.css), reprises ou proposées ———————— */
+.onboarding {
+  display: flex; flex-direction: column; min-height: 100%;
+  padding: var(--sp-24) var(--sp-20);
+  background:
+    radial-gradient(120% 90% at 15% 0%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 55%),
+    radial-gradient(120% 90% at 85% 100%, color-mix(in srgb, var(--accent-2) 16%, transparent), transparent 55%),
+    var(--bg);
+}
+.onboarding h1 { margin-top: var(--sp-16); font-size: var(--fs-h1); font-weight: 700; line-height: var(--lh-tight); }
+.onboarding-sub { margin: var(--sp-4) 0 0; color: var(--muted-fort); font-size: var(--fs-sec); }
+.onboarding-dots { display: flex; gap: var(--sp-6); }
+.onboarding-dots span { width: 12px; height: 5px; border-radius: 999px; background: var(--border); }
+.onboarding-dots .onboarding-dot-active { width: 22px; background: var(--accent); }
+.onboarding-dots .fait { background: color-mix(in srgb, var(--accent) 45%, var(--border)); }
+.onb-emoji { font-size: var(--fs-emoji); line-height: var(--lh-none); margin-top: var(--sp-20); }
+.onboarding-form { display: flex; flex-direction: column; gap: var(--sp-12); margin-top: var(--sp-20); }
+.onboarding-field { display: flex; flex-direction: column; gap: var(--sp-6); min-width: 0; }
+.onboarding-field label, .onb-legend { color: var(--muted-fort); font-size: var(--fs-meta); font-weight: 700; }
+.onb-opt { font-weight: 500; }
+.onb-hint { font-size: var(--fs-micro); color: var(--muted-fort); margin: var(--sp-4) 0 0; line-height: var(--lh-body); }
+.onb-label { font-size: var(--fs-meta); font-weight: 700; color: var(--muted-fort); text-transform: uppercase; letter-spacing: .06em; margin: var(--sp-20) 0 0; }
+input[type='text'], input[type='number'], input[type='date'], input[type='password'] {
+  width: 100%; min-width: 0; min-height: 48px; padding: var(--sp-10) var(--sp-12);
+  background: var(--surface-2); color: var(--text); font-size: var(--fs-body);
+  border: 1px solid var(--border); border-radius: 12px;
+}
+.onb-row2 { display: flex; flex-wrap: wrap; gap: var(--sp-10); }
+.onb-row2 > * { flex: 1 1 120px; min-width: 0; }
+.onb-btnrow { display: flex; gap: var(--sp-10); margin-top: var(--sp-24); align-items: center; }
+.onb-next { flex: 1; display: flex; align-items: center; justify-content: center; gap: var(--sp-8); min-height: 48px; border: 0; border-radius: 999px; background: var(--accent); color: #ffffff; font-size: var(--fs-sec); font-weight: 700; }
+.onb-next:active, .bouton-plein:active, .bouton-contour:active, .rl:active, .chip:active, .rcard:active, .onb-back:active { transform: scale(.97); }
+.onb-back { min-height: 48px; border: 1.5px solid var(--border); background: var(--surface); color: var(--text); border-radius: 999px; padding: 0 var(--sp-20); font-size: var(--fs-meta); font-weight: 600; display: inline-flex; align-items: center; gap: var(--sp-4); }
+.onb-pied { margin-top: auto; padding-top: var(--sp-24); }
+.error { color: var(--danger); font-weight: 600; font-size: var(--fs-sec); margin: var(--sp-8) 0 0; }
+
+/* radios en ligne (.rline/.rl) */
+.rline { display: flex; flex-direction: column; gap: var(--sp-8); margin-top: var(--sp-8); }
+.rl { display: flex; align-items: center; gap: var(--sp-10); width: 100%; border: 1.5px solid var(--border); background: var(--surface); border-radius: 12px; padding: var(--sp-12) var(--sp-14); min-height: 48px; font-size: var(--fs-sec); font-weight: 600; color: var(--text); text-align: left; }
+.rl-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border); flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }
+.rl[aria-checked='true'] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 6%, var(--surface)); }
+.rl[aria-checked='true'] .rl-dot { border-color: var(--accent); }
+.rl[aria-checked='true'] .rl-dot::after { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); }
+.rl-txt { display: flex; flex-direction: column; min-width: 0; }
+.rl-txt small { font-size: var(--fs-micro); font-weight: 500; color: var(--muted-fort); }
+.rl-sous { display: flex; flex-direction: column; gap: var(--sp-12); margin: var(--sp-4) 0 var(--sp-4) var(--sp-14); padding-left: var(--sp-14); border-left: 2px solid color-mix(in srgb, var(--accent) 30%, var(--border)); }
+
+/* chips (.chips/.chip/.addrow) — hauteur portée à 48px */
+.chips { display: flex; flex-wrap: wrap; gap: var(--sp-8); margin-top: var(--sp-8); }
+.chip { display: inline-flex; align-items: center; gap: var(--sp-6); border: 1.5px solid var(--border); background: var(--surface); border-radius: 999px; padding: var(--sp-8) var(--sp-14); min-height: 48px; font-size: var(--fs-meta); font-weight: 600; color: var(--text); }
+.chip[aria-pressed='true'], .chip[aria-checked='true'] { background: var(--accent); border-color: var(--accent); color: #ffffff; }
+.chip.autre { border-style: dashed; color: var(--accent); }
+.chip .rm { opacity: .75; }
+.addrow { display: flex; gap: var(--sp-8); margin-top: var(--sp-10); }
+.addrow input { flex: 1; min-width: 0; }
+.addrow button { display: inline-flex; align-items: center; gap: var(--sp-4); min-height: 48px; padding: 0 var(--sp-14); border: 0; border-radius: 999px; background: var(--accent); color: #ffffff; font-size: var(--fs-meta); font-weight: 700; flex-shrink: 0; }
+
+/* boutons v2 */
+.bouton-plein, .bouton-contour { display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-8); width: 100%; min-height: 52px; padding: var(--sp-12) var(--sp-20); border-radius: 14px; font-size: var(--fs-body); font-weight: 700; }
+.bouton-plein { border: 2px solid var(--accent); background: var(--accent); color: #ffffff; }
+.bouton-contour { border: 2px solid var(--accent); background: var(--surface); color: var(--accent); }
+.pile { display: flex; flex-direction: column; gap: var(--sp-10); }
+.duo { display: flex; flex-wrap: wrap; gap: var(--sp-10); }
+.duo > * { flex: 1 1 120px; min-width: 0; }
+.lien { display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-4); min-height: 48px; padding: 0 var(--sp-8); border: 0; background: none; color: var(--accent); font-size: var(--fs-sec); font-weight: 600; }
+.lien-discret { color: var(--muted-fort); text-decoration: underline; text-underline-offset: 3px; }
+
+/* code de foyer (.sync-code) */
+.sync-code { margin: var(--sp-16) 0 var(--sp-12); padding: var(--sp-16); background: var(--surface); border: 2px dashed color-mix(in srgb, var(--accent) 45%, var(--border)); border-radius: var(--radius); font-size: var(--fs-h2); line-height: var(--lh-title); font-weight: 700; letter-spacing: .03em; word-break: break-all; text-align: center; }
+.sync-code.masque { color: var(--muted-fort); letter-spacing: .12em; }
+.sync-code.compact { font-size: var(--fs-h3); margin: var(--sp-8) 0; }
+.onb-note { display: flex; gap: var(--sp-10); align-items: flex-start; background: color-mix(in srgb, var(--accent-2) 32%, var(--surface)); border: 1px solid color-mix(in srgb, var(--accent-2) 55%, var(--border)); border-radius: 14px; padding: var(--sp-12) var(--sp-14); font-size: var(--fs-meta); line-height: var(--lh-body); margin: var(--sp-12) 0 0; }
+.onb-note svg { color: var(--accent); margin-top: var(--sp-2); }
+.onb-note b { font-weight: 700; }
+
+/* membres du foyer */
+.membres { list-style: none; margin: var(--sp-8) 0 0; padding: 0; display: flex; flex-direction: column; gap: var(--sp-8); }
+.membres li { display: flex; align-items: center; gap: var(--sp-10); min-height: 56px; padding: var(--sp-8) var(--sp-12); background: var(--surface); border: 1px solid var(--border); border-radius: 14px; }
+.ini { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #ffffff; font-weight: 700; font-size: var(--fs-sec); flex-shrink: 0; }
+.ini.cit { background: var(--accent-2); color: var(--text); }
+.ini.gr { background: var(--surface-2); color: var(--text); }
+.membres .nom { flex: 1; min-width: 0; display: flex; flex-direction: column; font-weight: 600; font-size: var(--fs-sec); }
+.membres .nom small { font-weight: 500; font-size: var(--fs-micro); color: var(--muted-fort); }
+.tag { flex-shrink: 0; padding: var(--sp-2) var(--sp-8); border-radius: 999px; background: var(--surface-2); color: var(--text); font-size: var(--fs-micro); font-weight: 700; }
+.tag.toi { background: var(--accent); color: #ffffff; }
+
+/* écran poussé Profil */
+.ecran-pousse { display: flex; flex-direction: column; min-height: 100%; padding: var(--sp-12) var(--sp-16) 0; background: var(--bg); }
+.profil-back { display: inline-flex; align-items: center; gap: var(--sp-6); align-self: flex-start; min-height: 48px; padding: var(--sp-10) var(--sp-4) var(--sp-10) 0; border: none; background: none; color: var(--text); font-size: var(--fs-sec); font-weight: 600; }
+.ecran-pousse > h1 { font-size: var(--fs-h1); font-weight: 700; margin: 0 0 var(--sp-12); }
+.profile-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: var(--sp-16); margin-bottom: var(--sp-12); }
+.profile-section > h2 { font-size: var(--fs-h3); font-weight: 700; margin-bottom: var(--sp-4); }
+.profile-section .membres li { background: var(--bg); }
+.etat-sync { align-self: flex-start; display: inline-flex; align-items: center; gap: var(--sp-6); font-size: var(--fs-meta); font-weight: 700; padding: var(--sp-4) var(--sp-10); border-radius: 999px; background: color-mix(in srgb, var(--accent) 12%, var(--surface)); color: var(--accent); margin-bottom: var(--sp-12); }
+.etat-sync::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.etat-sync.local { background: var(--surface-2); color: var(--text); }
+.zone-danger { border: 1.5px solid color-mix(in srgb, var(--danger) 45%, var(--border)); box-shadow: none; }
+.zone-danger > h2 { color: var(--danger); }
+.sync-danger { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 48px; margin-top: var(--sp-8); padding: var(--sp-10) var(--sp-12); border: 1.5px solid var(--danger); color: var(--danger); background: var(--surface); border-radius: 12px; font-size: var(--fs-sec); font-weight: 700; }
+.ok { color: var(--accent); font-weight: 700; font-size: var(--fs-sec); margin: var(--sp-8) 0 0; min-height: 1px; }
+
+/* Objectif : résumé, cartes radio, pied collant */
+.obj-resume { padding: var(--sp-16); border-radius: var(--radius); background: color-mix(in srgb, var(--accent-2) 26%, var(--surface)); border: 1px solid color-mix(in srgb, var(--accent-2) 55%, var(--border)); margin-bottom: var(--sp-12); }
+.obj-kg { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--sp-4) var(--sp-10); font-size: var(--fs-hero); font-weight: 700; line-height: var(--lh-tight); }
+.obj-kg .fl { color: var(--accent); font-size: var(--fs-h2); }
+.obj-kg .vise { color: var(--accent); }
+.obj-ecart { margin: var(--sp-8) 0 0; font-size: var(--fs-sec); font-weight: 600; }
+.obj-rythme { margin: var(--sp-2) 0 0; font-size: var(--fs-sec); color: var(--muted-fort); }
+.obj-rythme b { color: var(--text); }
+.rcards { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: var(--sp-10); margin-top: var(--sp-10); }
+.rcard { display: flex; flex-direction: column; align-items: flex-start; gap: var(--sp-6); min-height: 48px; padding: var(--sp-12); border: 1.5px solid var(--border); background: var(--surface); border-radius: 14px; text-align: left; color: var(--text); }
+.rcard-i { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 10px; background: var(--surface-2); color: var(--accent); }
+.rcard-t { font-size: var(--fs-sec); font-weight: 700; line-height: var(--lh-title); }
+.rcard-d { font-size: var(--fs-micro); color: var(--muted-fort); line-height: var(--lh-body); }
+.rcard[aria-checked='true'] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--surface)); box-shadow: inset 0 0 0 1px var(--accent); }
+.rcard[aria-checked='true'] .rcard-t { color: var(--accent); }
+.rcard[aria-checked='true'] .rcard-i { background: var(--accent); color: #ffffff; }
+.alerte-douce { display: flex; gap: var(--sp-10); align-items: flex-start; margin-top: var(--sp-12); padding: var(--sp-12) var(--sp-14); border-radius: 14px; background: var(--citron-surface); border: 1px solid var(--citron-line); font-size: var(--fs-meta); line-height: var(--lh-body); }
+.alerte-douce svg { color: var(--accent); margin-top: var(--sp-2); }
+.pied-collant { position: sticky; bottom: 0; margin: auto calc(-1 * var(--sp-16)) 0; padding: var(--sp-12) var(--sp-16) var(--sp-16); background: var(--surface); border-top: 1px solid var(--border); z-index: 2; }
+.pied-collant .ok { text-align: center; margin: 0 0 var(--sp-6); }
+.espace-pied { height: var(--sp-12); }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 4v16M8.5 20h7M5 7h14M5 7l-2.8 5.5a3.2 3.2 0 0 0 5.6 0zM19 7l-2.8 5.5a3.2 3.2 0 0 0 5.6 0z"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 3.5c.8 2.8 3.5 4.2 3.5 7.5a3.5 3.5 0 0 1-7 0c0-1.3.4-2.4 1.2-3.4.4.9 1 1.6 1.9 2-.7-2-.4-4.2.4-6.1z"/></symbol>
+  <symbol id="i-meat" viewBox="0 0 24 24"><circle cx="13.5" cy="8.5" r="4.7"/><path d="M10.2 11.8L6.5 15.5"/><circle cx="5.6" cy="16.4" r="1.1"/><circle cx="7.6" cy="18.4" r="1.2"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="3.2"/><circle cx="12" cy="12" r=".5"/></symbol>
+  <symbol id="i-chev-left" viewBox="0 0 24 24"><path d="M14.5 6l-6 6 6 6"/></symbol>
+  <symbol id="i-chev-right" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 5H6a2 2 0 00-2 2v9"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V4M8 8l4-4 4 4M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5.5v13M5.5 12h13"/></symbol>
+  <symbol id="i-croix" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8.1v.1"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></symbol>
+</svg>
+
+<header class="mq-tete">
+  <div class="mq-tete-in">
+    <h1>Onboarding ouvert, foyer à rejoindre, page Objectif</h1>
+    <p>Maquette cliquable · 7 octobre 2026 · spec <code>2026-10-07-onboarding-ouvert-design.md</code> §2, §3, §4</p>
+    <span class="mq-badge">À valider</span>
+    <nav class="mq-sommaire" aria-label="Écrans">
+      <a href="#ecran-a">A · Étape 1</a>
+      <a href="#ecran-b">B · Partager</a>
+      <a href="#ecran-c">C · Créer</a>
+      <a href="#ecran-d">D · Rejoindre</a>
+      <a href="#ecran-e">E · Profil › Foyer</a>
+      <a href="#ecran-f">F · Objectif</a>
+    </nav>
+  </div>
+</header>
+
+<main class="mq-scene">
+
+  <!-- ═════════ A · Onboarding étape 1 ═════════ -->
+  <figure class="mq-ecran" id="ecran-a">
+    <figcaption class="mq-legende">
+      <h2><b class="mq-lettre">A</b>Étape 1 — qui cuisine pour qui</h2>
+      <p>Prénom libre + composition du foyer. Seule étape obligatoire ; le foyer local (toi, partenaire, enfants) est créé dès ici. Change de réponse pour voir les champs apparaître.</p>
+      <p class="mq-avant">Aujourd'hui : « Qui est derrière l'écran ? » avec deux cartes figées Marc / Mélanie.</p>
+    </figcaption>
+    <div class="mq-variantes" aria-hidden="true"></div>
+    <div class="tel" data-tel="a">
+      <div class="vue on" data-vue="a1">
+        <form class="onboarding" id="form-a" novalidate>
+          <div class="onboarding-dots" role="group" aria-label="Progression : étape 1 sur 5">
+            <span class="onboarding-dot-active"></span><span></span><span></span><span></span><span></span>
+          </div>
+          <h1>Bienvenue sur Rituel 👋</h1>
+          <p class="onboarding-sub">Deux questions et tu peux commencer. Le reste est optionnel.</p>
+          <div class="onboarding-form">
+            <div class="onboarding-field">
+              <label for="a-prenom">Comment tu t'appelles ?</label>
+              <input id="a-prenom" type="text" value="Jean" autocomplete="given-name" maxlength="30">
+            </div>
+            <div class="onboarding-field">
+              <span class="onb-legend" id="a-pour">Tu cuisines pour…</span>
+              <div class="rline" role="radiogroup" aria-labelledby="a-pour" id="a-radios">
+                <button type="button" class="rl" role="radio" aria-checked="false" data-pour="moi"><span class="rl-dot"></span>Juste moi</button>
+                <button type="button" class="rl" role="radio" aria-checked="true" data-pour="deux"><span class="rl-dot"></span>À deux</button>
+                <div class="rl-sous" data-si="deux famille">
+                  <div class="onboarding-field">
+                    <label for="a-partenaire">Prénom de ton/ta partenaire <span class="onb-opt">(optionnel)</span></label>
+                    <input id="a-partenaire" type="text" value="Thérèse" maxlength="30">
+                  </div>
+                  <div class="onboarding-field" data-si="famille">
+                    <span class="onb-legend">Enfants</span>
+                    <div class="chips" id="a-enfants" aria-live="polite"></div>
+                    <div class="addrow">
+                      <input id="a-enfant" type="text" placeholder="Prénom de l'enfant" aria-label="Prénom de l'enfant à ajouter" maxlength="30">
+                      <button type="button" id="a-ajout"><svg class="ic sm"><use href="#i-plus"/></svg>Ajouter</button>
+                    </div>
+                    <p class="onb-hint">Les enfants n'ont pas de suivi : juste les bonnes portions.</p>
+                  </div>
+                </div>
+                <button type="button" class="rl" role="radio" aria-checked="false" data-pour="famille"><span class="rl-dot"></span>En famille</button>
+              </div>
+            </div>
+            <p class="error" role="alert" id="a-err"></p>
+          </div>
+          <div class="onb-pied">
+            <div class="onb-btnrow">
+              <button type="submit" class="onb-next">Continuer <svg class="ic sm"><use href="#i-chev-right"/></svg></button>
+            </div>
+            <p class="onb-hint">Ensuite : ta semaine, ton objectif, tes goûts — tout ça peut attendre.</p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </figure>
+
+  <!-- ═════════ B · Partager avec ton foyer ═════════ -->
+  <figure class="mq-ecran" id="ecran-b">
+    <figcaption class="mq-legende">
+      <h2><b class="mq-lettre">B</b>Fin d'onboarding — partager</h2>
+      <p>Deux portes claires : créer le foyer (premier téléphone) ou le rejoindre (téléphones suivants). Passable sans rien perdre.</p>
+      <p class="mq-avant">Aujourd'hui : « Synchroniser les téléphones », un seul champ code, sans dire qui crée et qui rejoint.</p>
+    </figcaption>
+    <div class="mq-variantes" aria-hidden="true"></div>
+    <div class="tel" data-tel="b">
+      <div class="vue on" data-vue="b1">
+        <div class="onboarding">
+          <div class="onboarding-dots" role="group" aria-label="Inscription terminée">
+            <span class="fait"></span><span class="fait"></span><span class="fait"></span><span class="fait"></span><span class="onboarding-dot-active"></span>
+          </div>
+          <div class="onb-emoji" aria-hidden="true">🏡</div>
+          <h1>Partager avec ton foyer</h1>
+          <p class="onboarding-sub">Optionnel — menus, courses, coches et pesées sur tous vos téléphones.</p>
+          <div class="pile" style="margin-top: var(--sp-24)">
+            <button type="button" class="bouton-plein" data-aller="c">Créer mon foyer</button>
+            <p class="onb-hint" style="margin: 0 0 var(--sp-6)">Tu es le premier téléphone de la maison.</p>
+            <button type="button" class="bouton-contour" data-aller="d" data-variante="d1">Rejoindre un foyer</button>
+            <p class="onb-hint" style="margin: 0">Quelqu'un t'a donné un code de foyer.</p>
+          </div>
+          <div class="onb-pied" style="text-align:center">
+            <button type="button" class="lien" data-aller="e" data-variante="e2">Plus tard <svg class="ic sm"><use href="#i-chev-right"/></svg></button>
+            <p class="onb-hint">Toujours possible depuis Profil › Foyer.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+  <!-- ═════════ C · Code créé ═════════ -->
+  <figure class="mq-ecran" id="ecran-c">
+    <figcaption class="mq-legende">
+      <h2><b class="mq-lettre">C</b>Créer — le code du foyer</h2>
+      <p>Code en gros, Copier / Partager (feuille de partage du téléphone), consigne qui nomme la partenaire saisie à l'étape 1.</p>
+      <p class="mq-avant">Aujourd'hui : code montré une seule fois, « non stocké en clair » → code perdu si on ne l'a pas noté.</p>
+    </figcaption>
+    <div class="mq-variantes" aria-hidden="true"></div>
+    <div class="tel" data-tel="c">
+      <div class="vue on" data-vue="c1">
+        <div class="onboarding">
+          <button type="button" class="onb-back" style="align-self:flex-start" data-aller="b"><svg class="ic sm"><use href="#i-chev-left"/></svg>Retour</button>
+          <h1>Votre code de foyer</h1>
+          <p class="onboarding-sub">Ton foyer est créé : Jean, Thérèse et Léo.</p>
+          <p class="sync-code" id="c-code">basilic-citron-3f9a1c2e</p>
+          <div class="duo">
+            <button type="button" class="bouton-contour" id="c-copier"><svg class="ic"><use href="#i-copy"/></svg><span>Copier</span></button>
+            <button type="button" class="bouton-contour" id="c-partager"><svg class="ic"><use href="#i-share"/></svg><span>Partager</span></button>
+          </div>
+          <p class="ok" role="status" id="c-statut"></p>
+          <p class="onb-note"><svg class="ic sm"><use href="#i-info"/></svg><span>Donne-le à <b>Thérèse</b> : elle choisira « Rejoindre un foyer » à la fin de son inscription. Retrouvable dans Profil › Foyer sur ce téléphone.</span></p>
+          <div class="onb-pied">
+            <button type="button" class="onb-next" style="width:100%" data-aller="e" data-variante="e1">C'est noté <svg class="ic sm"><use href="#i-chev-right"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+  <!-- ═════════ D · Rejoindre ═════════ -->
+  <figure class="mq-ecran" id="ecran-d">
+    <figcaption class="mq-legende">
+      <h2><b class="mq-lettre">D</b>Rejoindre — sur le téléphone de Thérèse</h2>
+      <p>Code → rattachement. Même prénom qu'un adulte sans téléphone : automatique. Prénom différent (ici « Tess ») : on demande. Le foyer du serveur gagne.</p>
+      <p class="mq-avant">Aujourd'hui : connexion sèche ; le foyer du nouveau téléphone pouvait écraser celui de Jean.</p>
+    </figcaption>
+    <div class="mq-variantes" role="group" aria-label="Variantes D">
+      <button type="button" data-v="d1" aria-pressed="true">1 · Code</button>
+      <button type="button" data-v="d2" aria-pressed="false">2 · Es-tu Thérèse ?</button>
+      <button type="button" data-v="d3" aria-pressed="false">3 · Connecté</button>
+    </div>
+    <div class="tel" data-tel="d">
+      <div class="vue on" data-vue="d1">
+        <form class="onboarding" id="form-d" novalidate>
+          <button type="button" class="onb-back" style="align-self:flex-start" data-aller="b"><svg class="ic sm"><use href="#i-chev-left"/></svg>Retour</button>
+          <h1>Rejoindre un foyer</h1>
+          <p class="onboarding-sub">Saisis le code que t'a donné la personne qui a créé le foyer.</p>
+          <div class="onboarding-form">
+            <div class="onboarding-field">
+              <label for="d-code">Code de foyer</label>
+              <input id="d-code" type="password" value="basilic-citron-3f9a1c2e" autocomplete="off" spellcheck="false">
+              <p class="onb-hint">Format : deux mots et des chiffres, ex. basilic-citron-3f9a1c2e.</p>
+            </div>
+            <p class="error" role="alert" id="d-err"></p>
+          </div>
+          <div class="onb-pied">
+            <button type="submit" class="bouton-plein">Rejoindre</button>
+          </div>
+        </form>
+      </div>
+      <div class="vue" data-vue="d2">
+        <form class="onboarding" id="form-d2" novalidate>
+          <h1>Es-tu Thérèse ?</h1>
+          <p class="onboarding-sub">Le foyer de Jean prévoit Thérèse, qui n'a pas encore de téléphone. Tu t'es inscrite en tant que « Tess ».</p>
+          <div class="rline" role="radiogroup" aria-label="Rattachement" id="d-radios" style="margin-top: var(--sp-20)">
+            <button type="button" class="rl" role="radio" aria-checked="true" data-r="oui"><span class="rl-dot"></span><span class="rl-txt">Oui, c'est moi<small>Tu reprends ses repas, ses macros et ses pesées.</small></span></button>
+            <button type="button" class="rl" role="radio" aria-checked="false" data-r="non"><span class="rl-dot"></span><span class="rl-txt">Non, ajoute-moi<small>Tu rejoins le foyer comme nouvel adulte suivi.</small></span></button>
+          </div>
+          <div class="onb-pied">
+            <button type="submit" class="bouton-plein">Valider</button>
+          </div>
+        </form>
+      </div>
+      <div class="vue" data-vue="d3">
+        <div class="onboarding">
+          <div class="onb-emoji" aria-hidden="true">🎉</div>
+          <h1>Connecté au foyer</h1>
+          <p class="onboarding-sub" id="d-resume">Jean · Thérèse (toi) · Léo</p>
+          <ul class="membres" id="d-membres"></ul>
+          <p class="onb-hint">Menus, courses et coches viennent du foyer de Jean. Ton profil et tes pesées le rejoignent.</p>
+          <div class="onb-pied">
+            <button type="button" class="onboarding-cta bouton-plein" data-aller="e" data-variante="e1">C'est parti ! 🚀</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+  <!-- ═════════ E · Profil › Foyer ═════════ -->
+  <figure class="mq-ecran" id="ecran-e">
+    <figcaption class="mq-legende">
+      <h2><b class="mq-lettre">E</b>Profil › Foyer</h2>
+      <p>Connecté : membres, code consultable (masqué par défaut), déconnexion discrète, suppression isolée en zone danger. Local : créer / rejoindre, pas de « Déconnecter ».</p>
+      <p class="mq-avant">Aujourd'hui : « Déconnecter » visible même quand le foyer n'existe plus (bug 401) ; pas de liste de membres ; code introuvable.</p>
+    </figcaption>
+    <div class="mq-variantes" role="group" aria-label="Variantes E">
+      <button type="button" data-v="e1" aria-pressed="true">Connecté</button>
+      <button type="button" data-v="e2" aria-pressed="false">Local</button>
+      <button type="button" data-v="e3" aria-pressed="false">Foyer disparu</button>
+    </div>
+    <div class="tel" data-tel="e">
+      <div class="vue on" data-vue="e1">
+        <div class="ecran-pousse">
+          <button type="button" class="profil-back"><svg class="ic sm"><use href="#i-chev-left"/></svg>Profil</button>
+          <h1>Foyer</h1>
+          <span class="etat-sync">Synchronisé</span>
+          <section class="profile-section">
+            <h2>Membres</h2>
+            <ul class="membres">
+              <li><span class="ini">J</span><span class="nom">Jean<small>Ce téléphone</small></span><span class="tag toi">toi</span></li>
+              <li><span class="ini cit">T</span><span class="nom">Thérèse<small>Son téléphone est connecté</small></span><span class="tag">adulte</span></li>
+              <li><span class="ini gr">L</span><span class="nom">Léo<small>Sans suivi</small></span><span class="tag">enfant</span></li>
+            </ul>
+          </section>
+          <section class="profile-section">
+            <h2>Code du foyer</h2>
+            <p class="onb-hint" style="margin-top:0">À donner pour ajouter un téléphone. Gardé sur ce téléphone, jamais en clair sur le serveur.</p>
+            <p class="sync-code compact masque" id="e-code" aria-live="polite">•••••••-••••••-••••••••</p>
+            <div class="duo">
+              <button type="button" class="bouton-contour" id="e-afficher" aria-pressed="false"><svg class="ic"><use href="#i-eye"/></svg><span>Afficher</span></button>
+              <button type="button" class="bouton-contour" id="e-copier"><svg class="ic"><use href="#i-copy"/></svg><span>Copier</span></button>
+            </div>
+            <p class="ok" role="status" id="e-statut"></p>
+          </section>
+          <div style="text-align:center">
+            <button type="button" class="lien lien-discret" id="e-deco">Déconnecter le foyer</button>
+            <p class="onb-hint" style="margin-top:0">Ce téléphone repasse en local ; le foyer continue pour les autres.</p>
+          </div>
+          <section class="profile-section zone-danger" style="margin-top: var(--sp-16)">
+            <h2>Zone danger</h2>
+            <p class="onb-hint" style="margin-top:0">Efface menus, coches, pesées et dépenses partagés, sur le serveur et sur tous les téléphones. Définitif.</p>
+            <button type="button" class="sync-danger" id="e-purge">Supprimer les données du foyer</button>
+          </section>
+          <div class="espace-pied"></div>
+        </div>
+      </div>
+      <div class="vue" data-vue="e2">
+        <div class="ecran-pousse">
+          <button type="button" class="profil-back"><svg class="ic sm"><use href="#i-chev-left"/></svg>Profil</button>
+          <h1>Foyer</h1>
+          <span class="etat-sync local">Local · ce téléphone seulement</span>
+          <p class="onb-note" id="e-disparu" hidden><svg class="ic sm"><use href="#i-info"/></svg><span><b>Ce foyer n'existe plus sur le serveur.</b> Tes données sont restées sur ce téléphone : crée un foyer ou rejoins-en un autre.</span></p>
+          <section class="profile-section" style="margin-top: var(--sp-12)">
+            <h2>Membres</h2>
+            <ul class="membres">
+              <li><span class="ini">J</span><span class="nom">Jean<small>Ce téléphone</small></span><span class="tag toi">toi</span></li>
+              <li><span class="ini cit">T</span><span class="nom">Thérèse<small>Sans téléphone</small></span><span class="tag">adulte</span></li>
+              <li><span class="ini gr">L</span><span class="nom">Léo<small>Sans suivi</small></span><span class="tag">enfant</span></li>
+            </ul>
+          </section>
+          <section class="profile-section">
+            <h2>Partager avec ton foyer</h2>
+            <p class="onb-hint" style="margin-top:0">Menus, courses, coches et pesées sur tous vos téléphones.</p>
+            <div class="pile" style="margin-top: var(--sp-12)">
+              <button type="button" class="bouton-plein" data-aller="c">Créer mon foyer</button>
+              <button type="button" class="bouton-contour" data-aller="d" data-variante="d1">Rejoindre un foyer</button>
+            </div>
+          </section>
+          <div class="espace-pied"></div>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+  <!-- ═════════ F · Objectif ═════════ -->
+  <figure class="mq-ecran" id="ecran-f">
+    <figcaption class="mq-legende">
+      <h2><b class="mq-lettre">F</b>Profil › Objectif</h2>
+      <p>Résumé chiffré en tête, cap en cartes, régime et compléments en chips, un seul « Enregistrer » collé en bas. Avance l'échéance au 15 nov. ou vise 70 kg pour voir « Rythme ambitieux ».</p>
+      <p class="mq-avant">Aujourd'hui : radios sans description, 3 boutons Enregistrer, aucun écart ni rythme affiché.</p>
+    </figcaption>
+    <div class="mq-variantes" role="group" aria-label="Variantes F">
+      <button type="button" data-v="f-pesee" aria-pressed="true">Avec pesée</button>
+      <button type="button" data-v="f-sans" aria-pressed="false">Sans pesée</button>
+    </div>
+    <div class="tel" data-tel="f">
+      <div class="vue on" data-vue="f1">
+        <form class="ecran-pousse" id="form-f" novalidate>
+          <button type="button" class="profil-back"><svg class="ic sm"><use href="#i-chev-left"/></svg>Profil</button>
+          <h1>Objectif</h1>
+          <div class="obj-resume" aria-live="polite">
+            <div class="obj-kg" id="f-kg"></div>
+            <p class="obj-ecart" id="f-ecart"></p>
+            <p class="obj-rythme" id="f-rythme"></p>
+          </div>
+
+          <section class="profile-section">
+            <h2 id="f-cap">Ton cap</h2>
+            <div class="rcards" role="radiogroup" aria-labelledby="f-cap" id="f-caps">
+              <button type="button" class="rcard" role="radio" aria-checked="true" data-cap="perte"><span class="rcard-i"><svg class="ic"><use href="#i-scale"/></svg></span><span class="rcard-t">Perte de poids</span><span class="rcard-d">Réduire progressivement, sans yoyo</span></button>
+              <button type="button" class="rcard" role="radio" aria-checked="false" data-cap="affiner"><span class="rcard-i"><svg class="ic"><use href="#i-flame"/></svg></span><span class="rcard-t">Affiner</span><span class="rcard-d">Recomposition : même poids, moins de gras</span></button>
+              <button type="button" class="rcard" role="radio" aria-checked="false" data-cap="masse"><span class="rcard-i"><svg class="ic"><use href="#i-meat"/></svg></span><span class="rcard-t">Prise de masse</span><span class="rcard-d">Prendre du muscle</span></button>
+              <button type="button" class="rcard" role="radio" aria-checked="false" data-cap="maintien"><span class="rcard-i"><svg class="ic"><use href="#i-target"/></svg></span><span class="rcard-t">Maintien</span><span class="rcard-d">Stabiliser ce qui est en place</span></button>
+            </div>
+            <div class="onb-row2" style="margin-top: var(--sp-16)">
+              <div class="onboarding-field">
+                <label for="f-poids">Poids visé (kg)</label>
+                <input id="f-poids" type="number" inputmode="decimal" step="0.1" min="30" max="250" value="75">
+              </div>
+              <div class="onboarding-field">
+                <label for="f-date">Échéance <span class="onb-opt">(optionnelle)</span></label>
+                <input id="f-date" type="date" value="2026-12-31">
+              </div>
+            </div>
+            <div class="alerte-douce" id="f-alerte" role="note" hidden>
+              <svg class="ic sm"><use href="#i-info"/></svg>
+              <span><b>Rythme ambitieux</b> — <span id="f-alerte-txt"></span> Au-delà de 1 kg par semaine, c'est dur à tenir : tu peux reculer l'échéance. Rien n'est bloqué.</span>
+            </div>
+          </section>
+
+          <section class="profile-section">
+            <h2 id="f-reg">Régime</h2>
+            <div class="chips" role="radiogroup" aria-labelledby="f-reg" id="f-regimes">
+              <button type="button" class="chip" role="radio" aria-checked="true">Aucun</button>
+              <button type="button" class="chip" role="radio" aria-checked="false">Keto</button>
+              <button type="button" class="chip" role="radio" aria-checked="false">Végétarien</button>
+              <button type="button" class="chip" role="radio" aria-checked="false">Vegan</button>
+              <button type="button" class="chip" role="radio" aria-checked="false">Sans gluten</button>
+            </div>
+          </section>
+
+          <section class="profile-section">
+            <h2>Compléments</h2>
+            <p class="onb-hint" style="margin-top:0">Touche pour cocher ou décocher.</p>
+            <div class="chips" id="f-comps">
+              <button type="button" class="chip" aria-pressed="true">Whey</button>
+              <button type="button" class="chip" aria-pressed="true">Créatine</button>
+              <button type="button" class="chip" aria-pressed="false">Oméga-3</button>
+              <button type="button" class="chip" aria-pressed="false">Collagène</button>
+              <button type="button" class="chip" aria-pressed="false">Magnésium</button>
+              <button type="button" class="chip" aria-pressed="false">Vitamine D</button>
+              <button type="button" class="chip autre" id="f-autre" aria-expanded="false"><svg class="ic sm"><use href="#i-plus"/></svg>Autre…</button>
+            </div>
+            <div class="addrow" id="f-addrow" hidden>
+              <input id="f-autre-in" type="text" placeholder="Ex. Spiruline" aria-label="Autre complément" maxlength="40">
+              <button type="button" id="f-ajout"><svg class="ic sm"><use href="#i-plus"/></svg>Ajouter</button>
+            </div>
+            <p class="error" role="alert" id="f-err"></p>
+          </section>
+
+          <div class="pied-collant">
+            <p class="ok" role="status" id="f-statut"></p>
+            <button type="submit" class="bouton-plein">Enregistrer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </figure>
+</main>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var AUJ = new Date(2026, 9, 7); // « aujourd'hui » figé pour la maquette
+  var nf = function (n) { return n.toLocaleString('fr-FR', { maximumFractionDigits: 1 }); };
+
+  // ——— Navigation entre écrans / variantes ———
+  function variante(tel, v) {
+    var fig = $('[data-tel="' + tel + '"]').closest('.mq-ecran');
+    $$('.mq-variantes [data-v]', fig).forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.v === v)); });
+    if (tel === 'e') {
+      var vue = v === 'e1' ? 'e1' : 'e2';
+      $$('[data-vue]', fig).forEach(function (el) { el.classList.toggle('on', el.dataset.vue === vue); });
+      $('#e-disparu').hidden = v !== 'e3';
+    } else if (tel === 'f') {
+      avecPesee = v === 'f-pesee';
+      calculer();
+    } else {
+      $$('[data-vue]', fig).forEach(function (el) { el.classList.toggle('on', el.dataset.vue === v); });
+    }
+    var vueOn = $('.vue.on', fig);
+    if (vueOn) vueOn.scrollTop = 0;
+  }
+  function aller(tel, v) {
+    if (v) variante(tel, v);
+    var fig = document.getElementById('ecran-' + tel);
+    var reduit = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    fig.scrollIntoView({ behavior: reduit ? 'auto' : 'smooth', block: 'start', inline: 'nearest' });
+    var t = $('.tel', fig);
+    t.classList.add('flash');
+    setTimeout(function () { t.classList.remove('flash'); }, 900);
+  }
+  $$('.mq-variantes [data-v]').forEach(function (b) {
+    b.addEventListener('click', function () { variante($('.tel', b.closest('.mq-ecran')).dataset.tel, b.dataset.v); });
+  });
+  $$('[data-aller]').forEach(function (b) {
+    b.addEventListener('click', function () { aller(b.dataset.aller, b.dataset.variante); });
+  });
+
+  // Radios génériques (role=radio dans un radiogroup)
+  function radios(groupe, onChange) {
+    $$('[role="radio"]', groupe).forEach(function (r) {
+      r.addEventListener('click', function () {
+        $$('[role="radio"]', groupe).forEach(function (x) { x.setAttribute('aria-checked', String(x === r)); });
+        if (onChange) onChange(r);
+      });
+    });
+  }
+
+  // ——— A · étape 1 ———
+  var pour = 'deux';
+  var enfants = ['Léo'];
+  function majPour() {
+    $$('[data-si]', $('#form-a')).forEach(function (el) { el.hidden = el.dataset.si.split(' ').indexOf(pour) < 0; });
+    // Le bloc partenaire/enfants suit le choix sélectionné
+    var sous = $('.rl-sous', $('#form-a'));
+    var sel = $('[data-pour="' + pour + '"]', $('#form-a'));
+    sel.after(sous);
+  }
+  function rendreEnfants() {
+    var box = $('#a-enfants');
+    box.innerHTML = '';
+    enfants.forEach(function (p, i) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip';
+      b.innerHTML = '<span></span><svg class="ic sm rm" aria-hidden="true"><use href="#i-croix"/></svg>';
+      b.firstChild.textContent = p;
+      b.setAttribute('aria-label', 'Retirer ' + p);
+      b.addEventListener('click', function () { enfants.splice(i, 1); rendreEnfants(); });
+      box.appendChild(b);
+    });
+    if (!enfants.length) {
+      var m = document.createElement('p');
+      m.className = 'onb-hint';
+      m.style.margin = '0';
+      m.textContent = 'Aucun enfant ajouté.';
+      box.appendChild(m);
+    }
+  }
+  radios($('#a-radios'), function (r) { pour = r.dataset.pour; majPour(); });
+  $('#a-ajout').addEventListener('click', function () {
+    var v = $('#a-enfant').value.trim();
+    if (!v) return;
+    enfants.push(v);
+    $('#a-enfant').value = '';
+    rendreEnfants();
+  });
+  $('#a-enfant').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); $('#a-ajout').click(); } });
+  $('#form-a').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var err = $('#a-err');
+    if (!$('#a-prenom').value.trim()) { err.textContent = 'Ton prénom, pour commencer.'; $('#a-prenom').focus(); return; }
+    err.textContent = '';
+    aller('b');
+  });
+  majPour();
+  rendreEnfants();
+
+  // ——— C · copier / partager ———
+  function copier(texte, statut, libelle) {
+    var fait = function () { statut.textContent = libelle; setTimeout(function () { statut.textContent = ''; }, 2500); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(texte).then(fait, fait);
+    else fait();
+  }
+  var CODE = 'basilic-citron-3f9a1c2e';
+  $('#c-copier').addEventListener('click', function () { copier(CODE, $('#c-statut'), 'Code copié ✓'); });
+  $('#c-partager').addEventListener('click', function () {
+    var data = { title: 'Rituel — code du foyer', text: 'Rejoins notre foyer sur Rituel avec le code : ' + CODE };
+    if (navigator.share) navigator.share(data).catch(function () {});
+    else { $('#c-statut').textContent = 'Ouvre la feuille de partage du téléphone (simulé ici).'; }
+  });
+
+  // ——— D · rejoindre ———
+  var choixD = 'oui';
+  radios($('#d-radios'), function (r) { choixD = r.dataset.r; });
+  $('#form-d').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var v = $('#d-code').value.trim();
+    if (!/^[a-z]+-[a-z]+-[0-9a-f]{8}$/i.test(v)) { $('#d-err').textContent = 'Code inconnu : vérifie-le avec la personne qui a créé le foyer.'; return; }
+    $('#d-err').textContent = '';
+    variante('d', 'd2');
+  });
+  $('#form-d2').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var membres = choixD === 'oui'
+      ? [['Jean', 'adulte', ''], ['Thérèse', 'toi', 'cit']]
+      : [['Jean', 'adulte', ''], ['Thérèse', 'adulte', 'cit'], ['Tess', 'toi', 'cit']];
+    membres.push(['Léo', 'enfant', 'gr']);
+    $('#d-resume').textContent = membres.map(function (m) { return m[0] + (m[1] === 'toi' ? ' (toi)' : ''); }).join(' · ');
+    var ul = $('#d-membres');
+    ul.innerHTML = '';
+    membres.forEach(function (m) {
+      var li = document.createElement('li');
+      li.innerHTML = '<span class="ini ' + m[2] + '"></span><span class="nom"></span><span class="tag' + (m[1] === 'toi' ? ' toi' : '') + '"></span>';
+      li.children[0].textContent = m[0].charAt(0);
+      li.children[1].textContent = m[0];
+      li.children[2].textContent = m[1];
+      ul.appendChild(li);
+    });
+    variante('d', 'd3');
+  });
+
+  // ——— E · code consultable ———
+  $('#e-afficher').addEventListener('click', function () {
+    var b = this, vu = b.getAttribute('aria-pressed') !== 'true';
+    b.setAttribute('aria-pressed', String(vu));
+    $('span', b).textContent = vu ? 'Masquer' : 'Afficher';
+    var c = $('#e-code');
+    c.textContent = vu ? CODE : '•••••••-••••••-••••••••';
+    c.classList.toggle('masque', !vu);
+  });
+  $('#e-copier').addEventListener('click', function () { copier(CODE, $('#e-statut'), 'Code copié ✓'); });
+  $('#e-deco').addEventListener('click', function () {
+    if (window.confirm('Déconnecter ce téléphone du foyer ? Ses données restent ici ; le foyer continue pour les autres.')) variante('e', 'e2');
+  });
+  $('#e-purge').addEventListener('click', function () {
+    if (window.confirm('Supprimer les données du foyer ? Menus, coches, pesées et dépenses partagés seront effacés partout.') &&
+        window.confirm('Dernière confirmation : cette action est définitive.')) variante('e', 'e2');
+  });
+
+  // ——— F · objectif ———
+  var avecPesee = true;
+  var POIDS = 82.4;
+  var cap = 'perte';
+  radios($('#f-caps'), function (r) { cap = r.dataset.cap; dirty(); calculer(); });
+  radios($('#f-regimes'), dirty);
+  function dateCourte(d) {
+    var o = { day: 'numeric', month: 'short' };
+    if (d.getFullYear() !== AUJ.getFullYear()) o.year = 'numeric';
+    return d.toLocaleDateString('fr-FR', o);
+  }
+  function calculer() {
+    var vise = parseFloat(String($('#f-poids').value).replace(',', '.'));
+    var dv = $('#f-date').value;
+    var ech = dv ? new Date(dv + 'T12:00:00') : null;
+    var kg = $('#f-kg'), ecart = $('#f-ecart'), ry = $('#f-rythme');
+    var alerte = $('#f-alerte');
+    alerte.hidden = true;
+    var visOk = !isNaN(vise) && vise >= 30 && vise <= 250;
+    var dTxt = ech ? 'd’ici le ' + dateCourte(ech) : 'sans échéance';
+    if (!avecPesee) {
+      kg.innerHTML = visOk ? '<span class="vise"></span>' : '<span>Poids visé à définir</span>';
+      if (visOk) kg.firstChild.textContent = nf(vise) + ' kg visés';
+      ecart.textContent = (ech ? 'D’ici le ' + dateCourte(ech) : 'Sans échéance');
+      ry.textContent = 'Pèse-toi dans Suivi pour voir l’écart.';
+      return;
+    }
+    if (!visOk) {
+      kg.innerHTML = '<span></span>';
+      kg.firstChild.textContent = nf(POIDS) + ' kg';
+      ecart.textContent = 'Dernière pesée · indique un poids visé (30 à 250 kg).';
+      ry.textContent = '';
+      return;
+    }
+    kg.innerHTML = '<span></span><span class="fl" aria-hidden="true">→</span><span class="vise"></span>';
+    kg.children[0].textContent = nf(POIDS) + ' kg';
+    kg.children[2].textContent = nf(vise) + ' kg';
+    var diff = Math.round((vise - POIDS) * 10) / 10;
+    var signe = diff < 0 ? '−' : diff > 0 ? '+' : '';
+    if (diff === 0) { ecart.textContent = 'Tu es à ton poids visé · ' + dTxt; ry.textContent = ''; return; }
+    ecart.textContent = signe + nf(Math.abs(diff)) + ' kg · ' + dTxt;
+    if (!ech) { ry.textContent = 'Ajoute une échéance pour voir le rythme.'; return; }
+    var semaines = (ech - AUJ) / (7 * 864e5);
+    if (semaines <= 0) { ry.textContent = 'Échéance passée : choisis une nouvelle date.'; return; }
+    var rythme = Math.abs(diff) / semaines;
+    ry.innerHTML = '<b></b> / semaine';
+    ry.firstChild.textContent = '≈ ' + nf(Math.round(rythme * 10) / 10) + ' kg';
+    if (rythme > 1) {
+      alerte.hidden = false;
+      $('#f-alerte-txt').textContent = '≈ ' + nf(Math.round(rythme * 10) / 10) + ' kg par semaine.';
+    }
+  }
+  function dirty() { $('#f-statut').textContent = ''; }
+  ['input', 'change'].forEach(function (ev) {
+    $('#f-poids').addEventListener(ev, function () { dirty(); calculer(); });
+    $('#f-date').addEventListener(ev, function () { dirty(); calculer(); });
+  });
+  function brancherComp(b) {
+    b.addEventListener('click', function () { b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true')); dirty(); });
+  }
+  $$('#f-comps .chip[aria-pressed]').forEach(brancherComp);
+  $('#f-autre').addEventListener('click', function () {
+    var ouvert = $('#f-addrow').hidden;
+    $('#f-addrow').hidden = !ouvert;
+    this.setAttribute('aria-expanded', String(ouvert));
+    if (ouvert) $('#f-autre-in').focus();
+  });
+  var norm = function (s) { return s.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); };
+  $('#f-ajout').addEventListener('click', function () {
+    var v = $('#f-autre-in').value.trim();
+    if (!v) return;
+    var existe = $$('#f-comps .chip[aria-pressed]').some(function (c) { return norm(c.textContent) === norm(v); });
+    if (existe) { $('#f-err').textContent = 'Ce complément est déjà dans la liste.'; return; }
+    $('#f-err').textContent = '';
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'chip'; b.setAttribute('aria-pressed', 'true'); b.textContent = v;
+    brancherComp(b);
+    $('#f-autre').before(b);
+    $('#f-autre-in').value = '';
+    dirty();
+  });
+  $('#f-autre-in').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); $('#f-ajout').click(); } });
+  $('#form-f').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var v = $('#f-poids').value;
+    var n = parseFloat(String(v).replace(',', '.'));
+    if (v && (isNaN(n) || n < 30 || n > 250)) { $('#f-statut').textContent = ''; $('#f-err').textContent = 'Poids visé invalide : entre 30 et 250 kg.'; return; }
+    $('#f-err').textContent = '';
+    $('#f-statut').textContent = 'Objectif enregistré ✓';
+  });
+  calculer();
+})();
+</script>
+</body>
+</html>
