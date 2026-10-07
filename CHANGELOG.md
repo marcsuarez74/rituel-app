@@ -6,7 +6,9 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 ## [Non publié]
 
-> **Refonte 2.0 — version majeure** (contrat et stockage cassants) : à publier en `2.0.0` (`npm version major`). Déployer le serveur de sync **avant** l'app (nouvelle table `etat`).
+## [2.0.0] - 2026-10-07
+
+> **Refonte 2.0 — version majeure** (contrat et stockage cassants). Déployer le serveur de sync **avant** l'app (nouvelle table `etat`).
 
 ### Ajouté
 
