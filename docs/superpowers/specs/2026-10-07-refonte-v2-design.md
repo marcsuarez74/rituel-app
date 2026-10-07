@@ -28,6 +28,7 @@ Inchangé : PWA offline-first, données d'abord sur le téléphone, sync VPS opt
 | Génération | **Option A — abonnement Claude** : l'app copie le prompt → claude.ai → fichier(s) `.json` → import. 0 € d'API. Option B (bouton + API via le VPS) reportée, réutilisera prompt et schéma. |
 | Données existantes | **On repart de zéro** pour la cuisine : semaines `.md` et leurs coches supprimées (§7). Profils, pesées, dépenses et sync conservés. |
 | Champs recette | Ingrédients (quantité + unité) et portions par personne · difficulté · conservation et réchauffage · version par membre (keto de Mél) · macros par portion et par profil suivi. Pas de matériel, pas d'astuces, pas de substitutions, pas d'image. |
+| Rituel | **Un seul rituel batch pour tout le cycle** : les 4 semaines refont le même geste du dimanche (mêmes étapes, même production, même « avant de commencer »). C'est lui qu'on apprend à maîtriser ; ce sont les **dîners** qui changent d'un menu à l'autre et qui s'appuient sur ce que le batch produit. Seuls de petits rappels propres au menu (« sortir le colin du congélateur ») varient. |
 | Cycle | **Un seul à la fois**, verrouillé jusqu'à sa **date de fin**. À la fin : **relancer le même cycle** (recommandé) ou nouveau cycle. **Pause** d'une semaine possible. |
 | Rythme | La semaine du cycle démarre le **jour des courses** (réglage foyer, samedi par défaut) ; le rituel suit (dimanche par défaut). |
 | Report | 3 niveaux : reporter un repas (demain / semaine prochaine / abandon), « reporté de la semaine dernière », pause du cycle. Déjeuners **et** dîners reportables. Ingrédients d'un plat reporté : **barrés « déjà au frigo ? »** dans la liste suivante, confirmés d'un tap. |
@@ -121,6 +122,7 @@ interface CycleFichier {
   titre: string;                       // « Automne — poulet, poisson, soupes »
   menus: MenuSemaine[];                // 1 à 4 (import multi-fichiers, §6)
   recettes: Recette[];                 // toutes celles référencées par les menus
+  rituel: Rituel;                      // UN rituel commun aux 4 menus (dans menu-A.json)
   fixes?: ArticleFixe[];               // ce qui revient chaque semaine
   remarques?: string[];                // signalements de Claude (« budget réaliste ≈ 100 € > plafond 80 € »), affichés dans l'aperçu
 }
@@ -129,7 +131,7 @@ interface MenuSemaine {
   lettre: 'A' | 'B' | 'C' | 'D';
   titre: string;
   jours: JourMenu[];                   // 7 entrées, une par Jour
-  rituel: Rituel;
+  rappelsRituel?: string[];            // petits ajouts du menu au rituel commun (« colin congélateur → frigo »), affichés en tête du mode guidé
   microBatch: MicroBatch[];
   reserve: Reserve[];
 }
@@ -205,6 +207,8 @@ Notes :
 ### 6.2 Validation (`src/lib/cycle/valider.ts`, pure, testée)
 
 Erreurs **bloquantes** (l'aperçu n'autorise pas « Démarrer ») :
+
+- `rituel` absent après fusion, ou présent dans plusieurs fichiers avec un contenu différent ;
 
 - JSON illisible, `format`/`version` absents ou inconnus, champ requis manquant, type invalide, unité ou rayon hors liste ;
 - menus manquants ou en double (il faut A, B, C, D) ; un menu sans ses 7 jours ;

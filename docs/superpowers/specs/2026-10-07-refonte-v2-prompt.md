@@ -59,9 +59,14 @@ Recettes du cycle précédent : {{RECETTES_PRECEDENTES}} (sauf si nous les redem
 6. Protéines : chaque repas d'un adulte suivi apporte au moins 1/3 de sa cible
    protéique journalière. Poisson gras 2 fois par semaine.
 7. Jours de sortie longue : déjeuner récup copieux (féculents + protéine) ; dîner léger.
-8. Le rituel du {{JOUR_RITUEL}} produit les boîtes et bases de la semaine : 4 à 6
-   étapes horodatées (« 0-5 min »…), lance d'abord ce qui cuit longtemps, indique
-   ce qui cuit « en parallèle ». Les micro-batchs du soir durent ≤ 15 min.
+8. UN SEUL rituel pour tout le cycle : le {{JOUR_RITUEL}}, les 4 semaines refont
+   EXACTEMENT le même batch (mêmes étapes, mêmes quantités, même production) — c'est
+   la routine qu'on apprend à maîtriser. 4 à 6 étapes horodatées (« 0-5 min »…),
+   d'abord ce qui cuit longtemps, en indiquant ce qui cuit « en parallèle ». Ce sont
+   les DÎNERS qui varient d'un menu à l'autre, conçus pour s'appuyer sur ce que le
+   batch produit. Un ajout propre à un menu (décongeler un poisson…) va dans
+   `rappelsRituel` du menu, jamais dans le rituel. Le rituel est écrit une fois, dans
+   menu-A.json. Les micro-batchs du soir durent ≤ 15 min.
 9. Ingrédients : quantités pour TOUT le foyer présent à ce repas, unités de la liste,
    prix estimés RÉALISTES au {{MAGASIN}} actuel — ne les baisse jamais pour tenir un
    budget. Vise ≤ {{BUDGET_MAX}} € par semaine (ingrédients + fixes hebdo) en privilégiant
@@ -98,6 +103,7 @@ Schéma (TypeScript pour la lisibilité ; le JSON doit s'y conformer) :
 - [ ] budget de chaque semaine ≤ {{BUDGET_MAX}} €, sinon écart expliqué dans `remarques`
 - [ ] semaine type respectée (box, maison, plus tard, rapide, léger, exceptions)
 - [ ] aucune recette du cycle précédent ; ≥ 5 dîners propres par menu
+- [ ] un seul `rituel` (menu-A.json), identique pour les 4 semaines
 - [ ] JSON valide (guillemets doubles, pas de virgule finale, pas de commentaire)
 ```
 
