@@ -62,12 +62,20 @@ Recettes du cycle précédent : {{RECETTES_PRECEDENTES}} (sauf si nous les redem
    étapes horodatées (« 0-5 min »…), lance d'abord ce qui cuit longtemps, indique
    ce qui cuit « en parallèle ». Les micro-batchs du soir durent ≤ 15 min.
 9. Ingrédients : quantités pour TOUT le foyer présent à ce repas, unités de la liste,
-   prix estimés réalistes au {{MAGASIN}} actuel. Somme d'une semaine (ingrédients +
-   articles fixes hebdo) ≤ {{BUDGET_MAX}} €.
+   prix estimés RÉALISTES au {{MAGASIN}} actuel — ne les baisse jamais pour tenir un
+   budget. Vise ≤ {{BUDGET_MAX}} € par semaine (ingrédients + fixes hebdo) en privilégiant
+   les protéines économiques ; si c'est impossible sans trahir les cibles, garde le
+   réalisme et écris-le dans `remarques` (estimé, écart, ce qui coûte). Ne t'arrête pas
+   pour poser la question : produis les 4 menus.
 10. Portions par membre en MESURES MAISON (paume, poignée, louche, c. à soupe,
     pièce) — grammes entre parenthèses seulement pour caler l'œil.
 11. Macros par portion, pour chaque membre suivi, estimations réalistes.
 12. Conservation : `frigoJours`, `congelable` et une phrase de réchauffage pour chaque recette.
+13. `variantes` = UNIQUEMENT ce qu'un membre mange à la place ; tout conseil va dans `notes`.
+14. Un repas conditionnel (exception récurrente) porte `exception` (ex. « 1er et 3e vendredis ») ;
+    ce n'est pas un repas de plus.
+15. `boite.produitePar` = l'`id` exact d'une étape du rituel, d'un micro-batch ou d'une recette
+    (jamais un nom de jour). Chaque micro-batch a un `id`.
 
 ## Format de sortie
 Produis 4 FICHIERS JSON téléchargeables : menu-A.json, menu-B.json, menu-C.json,
@@ -84,7 +92,7 @@ Schéma (TypeScript pour la lisibilité ; le JSON doit s'y conformer) :
 - [ ] chaque `boite.produitePar` existe (étape du rituel, micro-batch ou recette)
 - [ ] chaque dîner famille a une `variantes` pour chaque membre au régime spécifique
 - [ ] glucides keto par jour ≤ {{SEUIL_KETO}} g
-- [ ] budget de chaque semaine ≤ {{BUDGET_MAX}} €
+- [ ] budget de chaque semaine ≤ {{BUDGET_MAX}} €, sinon écart expliqué dans `remarques`
 - [ ] semaine type respectée (box, maison, plus tard, rapide, léger, exceptions)
 - [ ] aucune recette du cycle précédent
 - [ ] JSON valide (guillemets doubles, pas de virgule finale, pas de commentaire)

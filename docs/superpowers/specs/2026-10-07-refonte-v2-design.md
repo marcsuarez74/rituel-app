@@ -33,7 +33,7 @@ Inchangé : PWA offline-first, données d'abord sur le téléphone, sync VPS opt
 | Report | 3 niveaux : reporter un repas (demain / semaine prochaine / abandon), « reporté de la semaine dernière », pause du cycle. Déjeuners **et** dîners reportables. Ingrédients d'un plat reporté : **barrés « déjà au frigo ? »** dans la liste suivante, confirmés d'un tap. |
 | Foyer | Membres : Marc, Mélanie (adultes suivis) + Maëlle, Maxine (enfants, **sans âge**, pas de suivi, portions seulement). |
 | Semaine type | Réglage foyer : jour par jour, déjeuner box/maison par adulte, filles dehors/maison, type de dîner, qui dîne plus tard, journée sportive de Marc, note ; exceptions récurrentes (1er et 3e vendredis : resto). |
-| Budget | Plafond hebdo **pour tout le foyer** (extras keto et éléments fixes compris) — *hypothèse à confirmer*. Prix estimé par ingrédient dans le JSON ; carte Estimé / Payé / Max. |
+| Budget | Plafond hebdo **pour tout le foyer** (extras keto et éléments fixes compris). C'est une **cible, pas une contrainte dure** : les prix restent réalistes (essai réel : ~100-125 €/sem chez Lidl pour 4 personnes) et l'app **alerte** quand l'estimé dépasse le plafond (§6.2, §9). Prix estimé par ingrédient dans le JSON ; carte Estimé / Payé / Max. |
 | Suivi | Contenu actuel conservé (poids, séances, cibles, rappels) ; tour de taille, notes énergie/sommeil, tests : **reportés**. |
 | Données personnelles | Aucun document personnel (plans diet/keto, planning) dans le dépôt : tout passe par le profil stocké sur le téléphone et assemblé dans le prompt. |
 
@@ -122,6 +122,7 @@ interface CycleFichier {
   menus: MenuSemaine[];                // 1 à 4 (import multi-fichiers, §6)
   recettes: Recette[];                 // toutes celles référencées par les menus
   fixes?: ArticleFixe[];               // ce qui revient chaque semaine
+  remarques?: string[];                // signalements de Claude (« budget réaliste ≈ 100 € > plafond 80 € »), affichés dans l'aperçu
 }
 
 interface MenuSemaine {
@@ -143,7 +144,8 @@ interface Repas {
   pour: MembreId[] | 'famille';
   recette?: string;                    // id de Recette
   texte?: string;                      // si pas de recette (« Restes du dîner », « Resto à deux »)
-  boite?: { produitePar: string; frigoJours: number }; // id d'étape rituel / micro-batch / recette
+  boite?: { produitePar: string; frigoJours: number }; // id d'étape rituel, id de micro-batch ou id de recette
+  exception?: string;                  // repas conditionnel (« 1er et 3e vendredis ») : affiché en option, hors compteurs, non reportable
 }
 
 interface Recette {
@@ -158,6 +160,7 @@ interface Recette {
   macros: Record<MembreId, Macros>;    // membres suivis uniquement, par portion
   etapes: Etape[];
   conservation: { frigoJours: number; congelable: boolean; rechauffage: string };
+  notes?: string;                      // conseil libre (« la 2e portion fait la box de jeudi ») — jamais dans variantes
 }
 interface Ingredient {
   nom: string;                         // « Courgettes »
@@ -178,7 +181,7 @@ interface Rituel {
   etapes: { id: string; creneau: string; label: string; detail: string; recette?: string; sousEtapes?: string[]; enParallele?: string; minuteurMin?: number }[];
   termine: string;
 }
-interface MicroBatch { jour: Jour; quoi: string; dureeMin: number; quantite?: string; recette?: string; detail?: string }
+interface MicroBatch { id: string; jour: Jour; quoi: string; dureeMin: number; quantite?: string; recette?: string; detail?: string }
 interface Reserve { pour: Jour | MembreId; plat: string; conservation: string; produitPar?: string }
 interface ArticleFixe { nom: string; quantite: number; unite: Ingredient['unite']; rayon: Rayon; prixEstime: number; pour: MembreId[] | 'famille'; frequence: 'hebdo' | 'mensuel' }
 ```
@@ -187,6 +190,7 @@ Notes :
 
 - **Ids de coches stables** (contrat) : `repas:{lettre}:{repas.id}`, `courses:{lettre}:{rayon}:{slug(nom)}`, `rituel:{lettre}:{etape.id}`, `micro:{lettre}:{jour}`, `reserve:{lettre}:{slug(plat)}`, `etape:{recette.id}:{n}`, `mise:{recette.id}:{n}`. Les coches sont stockées **par semaine du cycle** (§7) : relancer le cycle repart de coches vides.
 - Liste de courses **calculée** (§9) — le JSON ne contient pas de liste, d'où la cohérence garantie avec le menu.
+- `variantes` = uniquement ce que le membre mange **à la place** ; les conseils vont dans `notes` (constat de l'essai réel : `variantes.marc` détourné en notes).
 - `fixes` couvre les éléments récurrents (skyr, whey mensuelle, extras keto de Mél…) : ils vont dans les courses et le budget sans être régénérés.
 
 ## 6. Génération (option A) et import
@@ -210,7 +214,8 @@ Erreurs **bloquantes** (l'aperçu n'autorise pas « Démarrer ») :
 
 Alertes **non bloquantes** (affichées dans l'aperçu, citron) :
 
-- budget estimé d'un menu (ingrédients + fixes hebdo) > `budgetMax` ;
+- budget estimé d'un menu (ingrédients + fixes hebdo) > `budgetMax` — l'alerte propose 3 actions : *Garder* · *Ajuster mon budget à {estimé arrondi}* (1 tap) · *Demander une version éco à Claude* (copie un prompt de correction) ;
+- `remarques` de Claude, affichées telles quelles ;
 - glucides estimés d'un jour > seuil du régime keto (somme des macros de Mél sur la journée) ;
 - recette reprise du cycle précédent ;
 - repas incohérent avec la semaine type (box prévue un jour « maison », dîner manquant un jour « famille »).
@@ -274,9 +279,10 @@ interface Report {
 
 ## 9. Courses et budget
 
-- **Calcul** (`src/lib/cycle/courses.ts`, pur) : somme des `ingredients` des recettes de la semaine (repas non abandonnés, reports entrants inclus en « déjà au frigo ? »), + `fixes` hebdo (+ mensuels la 1re semaine), agrégés par `(slug(nom), unité)`, conversions g↔kg / ml↔l, groupés par rayon (keto en dernier), arrondis lisibles.
+- **Calcul** (`src/lib/cycle/courses.ts`, pur) : somme des `ingredients` des recettes **distinctes** de la semaine — référencées par un repas (non abandonné, hors `exception`), une étape du rituel ou un micro-batch (ex. les egg muffins ne sont portés que par le rituel) ; une recette servie plusieurs fois (restes, box) n'est comptée qu'**une** fois ; reports entrants inclus en « déjà au frigo ? » — + `fixes` hebdo (+ mensuels la 1re semaine), agrégés par `(slug(nom), unité)`, conversions g↔kg / ml↔l, groupés par rayon (keto en dernier), arrondis lisibles.
 - **Estimé** = somme des `prixEstime` ; détail « dont extras keto (rayon keto + fixes de Mél) · fixes ».
-- **Payé** = dépenses réelles de la semaine (`sportapp:depenses`, inchangé) ; **Max** = `budgetMax` du foyer. Alerte si estimé ou payé > max.
+- **Payé** = dépenses réelles de la semaine (`sportapp:depenses`, inchangé) ; **Max** = `budgetMax` du foyer. Estimé ou payé > max → valeur en alerte (`--danger`) + phrase « ≈ X € au-dessus de ton plafond ». Les fixes **mensuels** sont lissés sur 4 semaines dans l'estimé (pas de pic en semaine 1).
+- Profil › Courses & budget : sous le champ plafond, rappel « Estimation réaliste de ton dernier cycle : ≈ X €/sem ».
 - Badge « rituel » sur les ingrédients des recettes liées au rituel.
 
 ## 10. Lazy loading et performance
@@ -312,6 +318,6 @@ Chaque PR : TDD, `npm test && npm run typecheck && npm run lint && npm run build
 
 ## 13. Points ouverts (ajustés au fil des PR)
 
-1. **Budget** : plafond foyer entier (hypothèse retenue) ou famille + extras keto séparés ?
-2. **Taille des fichiers générés** : à mesurer sur un premier essai réel ; si un menu par fichier reste trop long pour une réponse, découper recettes et menu en deux fichiers (la fusion §6.1 le permet déjà).
+1. ~~Budget~~ — tranché après l'essai réel : plafond foyer entier, cible souple + alertes (§2).
+2. **Taille des fichiers** : essai réel (menu A) ≈ 50 Ko de JSON indenté, une réponse suffit — à reconfirmer sur B-D.
 3. **Seuil keto** : 30 g de glucides nets/jour tiré du régime « keto » ; le rendre réglable dans Objectif & régime si besoin.
