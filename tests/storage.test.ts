@@ -1,42 +1,5 @@
-import type { DepenseEntry, UserProfile, WeeklyData } from '../src/lib/model';
-import { addWeight, deleteDepense, effacerSelection, getChecks, getDepenses, getWeights, lireSelection, loadProfile, loadProfilLegacy, loadWeek, loadWeeks, removeProfile, saveDepense, saveProfile, saveWeek, sauverSelection, setCheck, upsertWeek, type WeightEntry } from '../src/lib/storage';
-import { todayKey } from '../src/lib/dates';
-
-const week = (): WeeklyData => ({
-  meta: { semaine: '2026-S39', menu: 'A', du: '2026-09-21', au: '2026-09-27' },
-  courses: [{ id: 'c1', rayon: 'Fraîcheur', label: 'Poulet 600 g' }],
-  menu: [{ jour: 'lundi', dejeunerMarc: 'Poulet riz' }],
-  batch: [{ id: 'b1', label: 'Riz à l’avance' }],
-  profiles: {
-    marc: { cibles: [], seances: [], rappels: [] },
-    melanie: { cibles: [], seances: [], rappels: [] },
-  },
-});
-
-describe('storage: week', () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
-  it('loadWeek returns null when nothing saved', () => {
-    expect(loadWeek()).toBeNull();
-  });
-
-  it('saveWeek then loadWeek roundtrips the same data', () => {
-    const raw = '---\nsemaine: 2026-S39\n---\n';
-    const data = week();
-    saveWeek(raw, data);
-    const loaded = loadWeek();
-    expect(loaded).toEqual({ raw, data, importedAt: expect.any(String) });
-  });
-
-  it('importedAt is an ISO string', () => {
-    saveWeek('raw', week());
-    const loaded = loadWeek();
-    expect(loaded).not.toBeNull();
-    expect(new Date(loaded!.importedAt).toISOString()).toBe(loaded!.importedAt);
-  });
-});
+import type { DepenseEntry, UserProfile } from '../src/lib/model';
+import { addWeight, deleteDepense, getChecks, getDepenses, getWeights, loadProfile, loadProfilLegacy, removeProfile, saveDepense, saveProfile, setCheck, type WeightEntry } from '../src/lib/storage';
 
 describe('storage: checks', () => {
   beforeEach(() => {
@@ -117,20 +80,6 @@ describe('storage: corrupted keys', () => {
 
   afterEach(() => {
     warnSpy.mockRestore();
-  });
-
-  it('loadWeek returns null and removes a corrupted week key', () => {
-    localStorage.setItem('sportapp:week', '{invalid');
-    expect(loadWeek()).toBeNull();
-    expect(localStorage.getItem('sportapp:week')).toBeNull();
-    expect(warnSpy).toHaveBeenCalledWith('Clé corrompue ignorée : sportapp:week');
-  });
-
-  it('loadWeek returns null and removes a week with a valid JSON but malformed shape', () => {
-    localStorage.setItem('sportapp:week', '{"foo":1}');
-    expect(loadWeek()).toBeNull();
-    expect(localStorage.getItem('sportapp:week')).toBeNull();
-    expect(warnSpy).toHaveBeenCalledWith('Semaine corrompue ignorée : sportapp:week');
   });
 
   it('getChecks returns {} and removes a corrupted checks key', () => {
@@ -376,100 +325,6 @@ describe('storage: loadProfilLegacy (ancienne forme age)', () => {
   });
 });
 
-describe('dates: todayKey', () => {
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
-  it('returns mardi on Tuesday 2026-09-22', () => {
-    vi.useFakeTimers();
-    // Utiliser la forme `T10:00:00` (parse en heure locale), pas la forme date-only (parse en UTC).
-    vi.setSystemTime(new Date('2026-09-22T10:00:00'));
-    expect(todayKey()).toBe('mardi');
-  });
-
-  it('returns samedi on Saturday 2026-09-26', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-09-26T10:00:00'));
-    expect(todayKey()).toBe('samedi');
-  });
-
-  it('returns dimanche on Sunday 2026-09-27', () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-09-27T10:00:00'));
-    expect(todayKey()).toBe('dimanche');
-  });
-});
-
-describe('storage: multi-semaines', () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
-  it('loadWeeks retourne {} silencieusement sans aucune clé', () => {
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    expect(loadWeeks()).toEqual({});
-    expect(warnSpy).not.toHaveBeenCalled();
-    warnSpy.mockRestore();
-  });
-
-  it('upsertWeek puis loadWeeks font l’aller-retour', () => {
-    const raw = '---\nsemaine: 2026-S38\n---\n';
-    const data = { ...week(), meta: { ...week().meta, semaine: '2026-S38' } };
-    upsertWeek(raw, data);
-    expect(loadWeeks()).toEqual({
-      '2026-S38': { raw, data, importedAt: expect.any(String) },
-    });
-  });
-
-  it('upsertWeek remplace la même semaine et préserve les autres', () => {
-    const s38 = { ...week(), meta: { ...week().meta, semaine: '2026-S38' } };
-    const s39 = { ...week(), meta: { ...week().meta, semaine: '2026-S39' } };
-    upsertWeek('raw-a', s38);
-    upsertWeek('raw-b', s39);
-    upsertWeek('raw-a2', s38);
-    const semaines = loadWeeks();
-    expect(Object.keys(semaines).sort()).toEqual(['2026-S38', '2026-S39']);
-    expect(semaines['2026-S38'].raw).toBe('raw-a2');
-    expect(semaines['2026-S39'].raw).toBe('raw-b');
-  });
-
-  it('migration : sportapp:week présent → recopié dans sportapp:weeks, ancienne clé intacte', () => {
-    const raw = '---\nsemaine: 2026-S37\n---\n';
-    saveWeek(raw, { ...week(), meta: { ...week().meta, semaine: '2026-S37' } });
-    const semaines = loadWeeks();
-    expect(semaines['2026-S37']).toBeDefined();
-    expect(localStorage.getItem('sportapp:weeks')).not.toBeNull();
-    expect(localStorage.getItem('sportapp:week')).not.toBeNull();
-  });
-
-  it('JSON invalide → {} + clé retirée + warn', () => {
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    localStorage.setItem('sportapp:weeks', '{oops');
-    expect(loadWeeks()).toEqual({});
-    expect(localStorage.getItem('sportapp:weeks')).toBeNull();
-    expect(warnSpy).toHaveBeenCalledWith('Clé corrompue ignorée : sportapp:weeks');
-    warnSpy.mockRestore();
-  });
-
-  it('entrée corrompue retirée silencieusement, les autres gardées', () => {
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const bonne = {
-      raw: 'raw',
-      data: { meta: { semaine: '2026-S40', menu: 'D', du: '2026-09-28', au: '2026-10-04' } },
-      importedAt: '2026-09-09T10:00:00.000Z',
-    };
-    localStorage.setItem(
-      'sportapp:weeks',
-      JSON.stringify({ semaines: { '2026-S38': { raw: 'x' }, '2026-S40': bonne } }),
-    );
-    const semaines = loadWeeks();
-    expect(Object.keys(semaines)).toEqual(['2026-S40']);
-    expect(warnSpy).toHaveBeenCalledWith('Semaine corrompue ignorée : 2026-S38');
-    warnSpy.mockRestore();
-  });
-});
-
 describe('storage: dépenses', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -674,41 +529,5 @@ describe('Profil v2.2 — prenom et champs optionnels', () => {
     });
     expect(loadProfile()?.prenom).toBeUndefined();
     expect(loadProfile()?.id).toBe('marc');
-  });
-});
-
-describe('storage: sélection de semaine consultée', () => {
-  beforeEach(() => {
-    localStorage.clear();
-  });
-
-  it('sauvegarde et relit la semaine consultée', () => {
-    sauverSelection('2026-S39');
-    expect(lireSelection()).toBe('2026-S39');
-  });
-
-  it('clé absente : null, silencieux', () => {
-    expect(lireSelection()).toBeNull();
-  });
-
-  it('JSON corrompu : null, clé réparée (retirée)', () => {
-    localStorage.setItem('sportapp:selection', '{pas du json');
-    expect(lireSelection()).toBeNull();
-    expect(localStorage.getItem('sportapp:selection')).toBeNull();
-  });
-
-  it('valeur non-string ou vide : null, clé réparée', () => {
-    localStorage.setItem('sportapp:selection', '42');
-    expect(lireSelection()).toBeNull();
-    localStorage.setItem('sportapp:selection', '""');
-    expect(lireSelection()).toBeNull();
-    expect(localStorage.getItem('sportapp:selection')).toBeNull();
-  });
-
-  it('effacerSelection retire la clé', () => {
-    sauverSelection('2026-S39');
-    effacerSelection();
-    expect(lireSelection()).toBeNull();
-    expect(localStorage.getItem('sportapp:selection')).toBeNull();
   });
 });

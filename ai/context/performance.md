@@ -4,7 +4,7 @@
 
 - App PWA de la taille d'un paiement mobile : **le budget est petit, la marge est grande** — ne pas optimiser prématurément, mais ne rien régresser
 - Optimiser la performance **perçue** (interactions < 100 ms, transitions fluides)
-- Le contenu critique (semaine courante) est **local** : zéro réseau, zéro loading state
+- Le contenu critique (cycle en cours) est **local** : zéro réseau ; seul le cycle d'exemple et les écrans secondaires sont des chunks chargés à la demande
 - Chaque nouvelle dépendance = du JS à télécharger et analyser sur un vieux téléphone, en 4G de cuisine → poids fort dans la balance
 
 ---
@@ -28,7 +28,7 @@
 - Composants minces et présentatifs : un re-render est bon marché par construction
 - **Pas de `memo`/`useCallback`/`useMemo` spéculatif** — n'ajouter que sur mesure d'un vrai problème (profiler React DevTools)
 - Pas de calcul dans le rendu qui pourrait être dérivé une fois : `useMemo` autorisé uniquement pour des dérivations non triviales (ex. groupement des courses)
-- Listes : `key` **stable** = l'id du domaine (`item.id`), jamais l'index. C'est aussi la clé de persistance — les ids dupliqués produisent un warning au parse
+- Listes : `key` **stable** = l'id du domaine (`item.id`), jamais l'index. C'est aussi la clé de persistance
 
 ### État
 
@@ -41,7 +41,7 @@
 ## Vite & Bundle
 
 - **Zéro dépendance runtime** hors React + js-yaml — toute nouvelle lib doit se justifier face à ce budget
-- Pas de code-splitting par route : une seule vue active, 2 onglets (+ 3 sous-onglets Cuisine) — le bundle unique + précaché SW est la bonne trade-off ici
+- Code-splitting par écran (`React.lazy` + `Suspense`) : seul Aujourd'hui est dans le bundle initial ; Menu, Courses, Rituel, Suivi, Recette, mode guidé, Mon cycle, Semaine type, Profil, Onboarding et le cycle d'exemple sont des chunks précachés par le SW
 - Images : miniatures de rayons **160×120 JPEG optimisées** (~5-10 Ko chacune, ~55 Ko au total, `src/assets/rayons/`) — servies en **CacheFirst runtime caching**, jamais dans le précache. Optimiser toute nouvelle image (`sips -Z 160 -s format jpeg -s formatOptions 60`)
 - Pas de polyfill : cibles navigateurs modernes (Vite default), `esnext` OK
 
@@ -93,5 +93,5 @@ useEffect(() => { setChecks(getChecks(semaine)) }, [semaine]) // rendu + flash p
 npm i recharts   // WeightChart SVG maison = ~110 lignes, zéro dépendance
 
 // ❌ Fetch du contenu au démarrage
-fetch('/semaine.md') // le contenu vit en localStorage, pas sur le réseau
+fetch('/cycle.json') // le contenu vit en localStorage, pas sur le réseau
 ```

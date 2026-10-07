@@ -7,7 +7,6 @@ import {
   estFoyerValide,
   estPrecedentValide,
   estReportValide,
-  estV2,
   getReports,
   loadCycle,
   loadFoyer,
@@ -18,7 +17,7 @@ import {
   saveReports,
   semaineCoches,
 } from '../cycle/etat';
-import type { ImportedWeek, ProfileKey, UserProfile } from '../model';
+import type { ProfileKey, UserProfile } from '../model';
 import {
   addWeight,
   deleteDepense,
@@ -27,11 +26,9 @@ import {
   getDepenses,
   getWeights,
   loadProfile,
-  loadWeeks,
   saveDepense,
   saveProfile,
   setCheck,
-  upsertWeek,
 } from '../storage';
 import { creerClient, type RowSync, type SyncClient } from './client';
 import { syncActif } from './config';
@@ -146,9 +143,9 @@ export const flush = (): Promise<void> => {
           .filter((m) => m.op === 'upsert' && m.payload)
           .map<RowSync>((m) => ({
             ...m.key,
-            // weeks, profiles et etat : payload enveloppé (colonne JSON serveur) —
+            // profiles et etat : payload enveloppé (colonne JSON serveur) —
             // checks/weights/depenses : colonnes scalaires (spread).
-            ...(t === 'weeks' || t === 'profiles' || t === 'etat'
+            ...(t === 'profiles' || t === 'etat'
               ? { payload: m.payload }
               : { ...m.payload }),
             household_id: foyerId,
@@ -262,27 +259,13 @@ const appliquerEtat = (cle: string, v: unknown): boolean => {
 const appliquerRemoteSync = (rows: Record<TableSync, RowSync[]>): boolean => {
   const attente = clesOutbox();
   let change = false;
-  // Après la remise à zéro de la 2.0, les semaines .md (et leurs coches)
-  // qu'un téléphone resté en 1.x pousserait encore ne reviennent pas.
-  const v2 = estV2();
-
-  for (const r of v2 ? [] : rows.weeks) {
-    const key = { semaine: String(r.semaine) };
-    if (attente.has(signature('weeks', key))) continue;
-    if (!key.semaine) continue; // clé vide → ignorée
-    const payload = r.payload as ImportedWeek | undefined;
-    if (!payload?.data?.meta?.semaine) continue; // payload remote invalide → ignoré
-    const local = loadWeeks()[key.semaine];
-    if (local && local.raw === payload.raw) continue;
-    upsertWeek(payload.raw, payload.data);
-    change = true;
-  }
-
   for (const r of rows.checks) {
     const key = { semaine: String(r.semaine), check_id: String(r.check_id) };
     if (attente.has(signature('checks', key))) continue;
     if (!key.semaine || !key.check_id) continue; // clé vide → ignorée
-    if (v2 && !key.semaine.startsWith('cycle:')) continue;
+    // 2.0 : seules les coches du cycle (cycle:{id}:{n}) ; celles des semaines
+    // .md qu'un téléphone resté en 1.x pousserait encore ne reviennent pas.
+    if (!key.semaine.startsWith('cycle:')) continue;
     if (getChecks(key.semaine)[key.check_id] !== r.done) {
       setCheck(key.semaine, key.check_id, r.done === true);
       change = true;
@@ -379,11 +362,6 @@ const pousserEtat = (cle: string, valeur: unknown): void =>
   empiler({ op: 'upsert', table: 'etat', key: { cle }, payload: { valeur } });
 
 const pousserTout = (): void => {
-  const semaines = loadWeeks();
-  for (const [semaine, w] of Object.entries(semaines)) {
-    empiler({ op: 'upsert', table: 'weeks', key: { semaine }, payload: { ...w } });
-    pousserCoches(semaine);
-  }
   const foyer = loadFoyer();
   if (foyer) pousserEtat(CLE_FOYER, foyer);
   const precedent = loadPrecedent();

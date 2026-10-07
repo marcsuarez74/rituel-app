@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
-import type { ImportedWeek, UserProfile } from '../../src/lib/model';
-import { parseWeeklyFile } from '../../src/lib/parse';
+import type { UserProfile } from '../../src/lib/model';
+import { foyerParDefaut, saveFoyer } from '../../src/lib/cycle/etat';
 
 // Force l'activation : en vitest, VITE_SYNC_URL est undefined.
 vi.mock('../../src/lib/sync/config', () => ({
@@ -16,7 +16,6 @@ import {
   saveDepense,
   saveProfile,
   setCheck,
-  upsertWeek,
 } from '../../src/lib/storage';
 
 describe('sync: storage → outbox', () => {
@@ -91,20 +90,12 @@ describe('sync: storage → outbox', () => {
     expect(outbox[0].payload).toMatchObject({ id: 'marc' });
   });
 
-  it('upsertWeek empile une upsert weeks (payload = ImportedWeek)', () => {
+  it('saveFoyer empile une upsert etat (clé foyer, payload { valeur })', () => {
     connecte();
-    const raw = '---\nsemaine: 2026-S39\nmenu: A\ndu: 2026-09-21\nau: 2026-09-27\n---\n';
-    const { data } = parseWeeklyFile(raw);
-    // Horloge gelée : le importedAt attendu et celui du payload sont identiques.
-    vi.setSystemTime(new Date('2026-09-21T10:00:00'));
-    const imp: ImportedWeek = { raw, data, importedAt: new Date().toISOString() };
-    upsertWeek(raw, data);
-    vi.useRealTimers();
-    const outbox = lireOutbox();
-    expect(outbox).toHaveLength(1);
-    expect(outbox[0].table).toBe('weeks');
-    expect(outbox[0].key).toEqual({ semaine: '2026-S39' });
-    expect(outbox[0].payload).toEqual(imp);
+    saveFoyer(foyerParDefaut(null));
+    expect(lireOutbox()).toEqual([
+      { op: 'upsert', table: 'etat', key: { cle: 'foyer' }, payload: { valeur: foyerParDefaut(null) } },
+    ]);
   });
 
   it('sans connexion : aucune outbox (comportement actuel préservé)', () => {

@@ -1,8 +1,6 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import sampleRaw from '../src/assets/semaine-exemple.md?raw';
 import App from '../src/App';
-import { parseWeeklyFile } from '../src/lib/parse';
 import { addWeight, saveProfile } from '../src/lib/storage';
 import type { ProfileKey } from '../src/lib/model';
 
@@ -273,80 +271,5 @@ describe('Migration profil v1 → v2', () => {
     await user.click(screen.getByRole('button', { name: 'Passer' }));
     expect(screen.getByRole('navigation', { name: 'Navigation principale' })).toBeInTheDocument();
     expect(localStorage.getItem('sportapp:foyer')).not.toBeNull();
-  });
-});
-
-describe("Semaine d'exemple — contenu réel (Menu A, S37)", () => {
-  it('se parse sans warning avec meta, menu, courses, batch et profils complets', () => {
-    const { data, warnings } = parseWeeklyFile(sampleRaw);
-
-    expect(warnings).toEqual([]);
-    expect(data.meta).toEqual({
-      semaine: '2026-S37',
-      menu: 'A',
-      du: '2026-09-07',
-      au: '2026-09-13',
-      titre: 'Menu A — Base poulet & bolo',
-    });
-
-    expect(data.menu.map((d) => d.jour)).toEqual([
-      'Lundi',
-      'Mardi',
-      'Mercredi',
-      'Jeudi',
-      'Vendredi',
-      'Samedi',
-      'Dimanche',
-    ]);
-    for (const day of data.menu) {
-      expect(day.dejeunerMarc).toBeTruthy();
-      expect(day.dinerFamille).toBeTruthy();
-    }
-    // Le « : » interne doit rester dans la valeur, pas couper la clé
-    expect(data.menu.find((d) => d.jour === 'Vendredi')?.dinerFamille).toBe(
-      'Tacos maison : galettes + haché (reste bolo) + crudités + yaourt-citron',
-    );
-    expect(data.menu.find((d) => d.jour === 'Samedi')?.batch).toBe(
-      '6-8 œufs durs (boxes de la semaine)',
-    );
-
-    expect(data.courses.length).toBeGreaterThanOrEqual(30);
-    expect(new Set(data.courses.map((c) => c.rayon)).size).toBeGreaterThanOrEqual(5);
-    expect(data.courses.find((c) => c.label === 'Pâtes — 500 g')?.rayon).toBe('feculents');
-    expect(data.courses.find((c) => c.label === 'Amandes/noix')?.rayon).toBe('divers');
-
-    expect(data.batch).toHaveLength(5);
-    expect(data.batch[0].label).toBe('Egg muffins ×10');
-    expect(data.batch[0].ref).toBe('R7');
-    expect(data.rituel?.filter((e) => e.ref).length).toBeGreaterThanOrEqual(2);
-
-    expect(data.profiles.marc.cibles).toHaveLength(4);
-    expect(data.profiles.marc.seances).toHaveLength(6);
-    expect(data.profiles.marc.rappels).toHaveLength(2);
-    expect(data.profiles.melanie.cibles).toHaveLength(4);
-    expect(data.profiles.melanie.seances).toHaveLength(3);
-    expect(data.profiles.melanie.rappels).toHaveLength(2);
-  });
-
-  it('lie une recette à au moins un repas de chaque jour, avec données complètes', () => {
-    const { data, warnings } = parseWeeklyFile(sampleRaw);
-
-    expect(warnings).toEqual([]);
-    // R1-R7 : 7 recettes, chaque jour a son diner-famille lié + les déjeuners
-    // liés à leur recette source (mercredi : Marc + Mél sur les restes bolo).
-    expect(data.recettes).toHaveLength(7);
-    for (const day of data.menu) {
-      expect(Object.keys(day.recetteRefs ?? {})).toContain('dinerFamille');
-    }
-    expect(data.menu.find((d) => d.jour === 'Mercredi')?.recetteRefs).toEqual({
-      dejeunerMarc: expect.any(String),
-      dejeunerMelanie: expect.any(String),
-      dinerFamille: expect.any(String),
-    });
-    // toutes les recettes liées portent kcal + étapes (contrat e2e « fiche recette »)
-    for (const recette of data.recettes!) {
-      expect(recette.kcal).toBeTruthy();
-      expect(recette.etapes?.length).toBeGreaterThanOrEqual(1);
-    }
   });
 });

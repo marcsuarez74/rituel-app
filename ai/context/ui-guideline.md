@@ -11,11 +11,12 @@ Complète `design-system.md` (les tokens) avec les règles d'usage. Source de v�
 
 ## Structure d'écran
 
-- `App.tsx` choisit : `Onboarding` (pas de profil) → shell 2 onglets OU écran `ProfilScreen` poussé. **Pas d'écran intermédiaire** : sans semaine en storage, la semaine d'exemple se charge automatiquement (fallback en mémoire dans `App.tsx`)
-- Shell : `WeekBanner` (seul `h1`, + icône « Mon profil » à droite) → nav **segmented** sous la bannière (🛒 Cuisine / 🎯 Mon suivi) → vue active
-- **Mon suivi est personnalisé** : **bloc Objectif** (`.obj-bloc`) + carte Poids seule (`.stat-card-hero`) + `ProfileView` rendus avec le profil actif uniquement + accueil « Salut {prénom} 👋 » — jamais les données de l'autre
-- Sections = `h3` dans des cartes (`section` + classe sémantique). États vides systématiques (`.muted`)
-- Écran poussé (Profil) : bouton retour en haut, pas de nav segmented, sorties par retour ou action explicite
+- `App.tsx` choisit : `Onboarding` (pas de profil) → étape « Ta semaine » (foyer jamais enregistré) → shell, ou un écran poussé (Profil, Mon cycle, Ma semaine type, fiche recette, mode guidé). **Pas d'écran intermédiaire** : sans cycle importé, le cycle d'exemple se charge (chunk à la demande)
+- Shell : en-tête fin (`.en-tete` : seul `h1` = titre de l'écran, avatar 48 px + point de sync) → ligne semaine (`.ligne-semaine`, Menu/Courses/Rituel seulement) → contenu → barre du bas fixe (`.barre-onglets`, 5 onglets, icône + libellé toujours visibles, actif = `aria-current="page"` + pastille)
+- **Personnalisé** : repas, portions, macros et versions du membre actif ; les versions des autres membres en lignes secondaires
+- Sections = `h2` dans des cartes (`section.profile-section`). États vides systématiques (`.muted`)
+- Écran poussé : bouton retour en haut (`.profil-back`), pas de barre du bas ; actions principales dans un pied fixe (`.pied-recette`)
+- Feuilles (report) : `role="dialog"` en bas d'écran sur voile ; actions annulables par **toast** « Annuler » 5 s
 
 ## Onboarding (premier lancement)
 
@@ -31,27 +32,24 @@ Complète `design-system.md` (les tokens) avec les règles d'usage. Source de v�
 ## Écran Profil
 
 - 5 sections éditables séparément : **Mes infos** (date de naissance/taille, âge calculé), **Objectif** (cartes radio + échéance + poids objectif), **Compléments** (chips presets + libre), **Régime** (radios), **Maison & courses** (magasin datalist, budget max, foyer `.onb-row2`, préférences — mêmes champs que l'onboarding, un champ vidé retire la donnée) — enregistrement **par section**, feedback « enregistrées ✓ » en `role="status"` ; une erreur est rendue **dans sa section**
-- **Génération IA** : bouton `.profil-ghost` « Copier le prompt IA » (clipboard + fallback execCommand, confirmation « Prompt copié — colle-le dans le chat. ») — **toujours visible** : le prompt maître (`src/assets/prompt-cycle-template.md`) est assemblé depuis le profil par `src/lib/promptIa.ts` (contexte perso + contrat de format inline) ; toute édition maison efface la confirmation (prompt périmé)
+- **Génération IA** : dans Mon cycle (étape 1 « Copie le prompt ») — le prompt maître (`src/assets/prompt-cycle-template.md`) est assemblé par `src/lib/promptIa.ts` depuis le foyer, la semaine type et le profil, schéma recopié de `types.ts`
 - **changer de profil** (bordure `--danger`, `window.confirm` obligatoire — efface le choix, garde les données)
 - Après changement : retour à l'onboarding (le sous-arbre suivi est démonté, les données restent en storage)
 
-## Onglet Cuisine (Courses / Menu / Batch)
+## Écrans du cycle
 
-- **Pill cycle** : `.cycle-pill` dans la bannière, à côté du `h1` — la position dans la rotation de 4 semaines (menus A/B/C/D) reste visible sur les 3 sous-onglets (toujours un seul `h1`)
-- **Menu v2 (réserve de recettes)** : 1 ligne repas = 1 occurrence cochable (`.menu-card`, coche « c'est fait »), aucun jour imposé — le .md reste la source, l'ordre du fichier est conseillé (batch/frigo d'abord, frais en dernier)
-- **Fiches recettes dépliables** : état local par carte (plusieurs ouvertes possibles), `aria-expanded` sur le bouton ET sur les chips de bases
-- **Tags de profil** : chaque repas porte un tag coloré (Marc / Mé / Famille / Batch) — jamais la couleur seule comme information
-- **Courses** : compteurs d'items par rayon (`.rayon-cnt`) et encadré keto dédié en dernier — le rayon `Keto` n'est pas un rayon comme les autres
-- **Budget courses** (`.bud`) : carte au-dessus de la liste — estimé menu vs payé réel de la semaine (`sportapp:depenses`, dates dans [du..au]) vs budget max ; barre + alerte de dépassement ; visible seulement si une donnée budget existe ; « Total payé » ouvre le panneau avec focus total
-- **Panneau « Mes dépenses réelles »** : écran poussé de l'onglet Courses (pas de nav segmented) — saisie (upsert par (date, magasin), date non future, total > 0), résumé « Par magasin » (casse ignorée, première graphie conservée), historique trié date desc avec suppression directe ✕
-- **Batch** : rituel = timeline cochable (lignes ≥ 48px, coche barrée comme les checklists), micro-batch = carrousel horizontal (`overflow-x: auto` interne, scrollbar masquée — scroll natif du navigateur, jamais de carrousel JS)
+- **Aujourd'hui** : jauges semaine (`.jauge`), action du jour (`.action-du-jour`, bordure basilic), repas du jour (`.carte-repas` : moment, titre, méta, coche 48 px `.coche`)
+- **Menu** : bande des 7 jours (`.bande-jours`, `role="tablist"`, point = journée faite), repas du jour, « Pas ce soir : reporter », « Ce soir, j'anticipe » (`.anticipe`, pointillé)
+- **Courses** : carte budget (`.budget-chiffres`, `.alerte` en `--danger`), chariot, mode magasin, rayons, extras keto en encadré citron en dernier, placard replié (`details.placard`)
+- **Rituel** : segment 3 sections, déroulé en cartes dépliables ; mode guidé = une étape par écran, progression segmentée, minuteur (`.minuteur`)
+- **Mon cycle / Semaine type** : écrans poussés, choix en segments (`.segment` radio), listes de lignes `.hub-ligne` côté Profil
 
 ## Composants — conventions
 
 - **Présentatifs et minces** : props descendantes, la logique reste dans `src/lib/`
 - **Classes sémantiques** (`.menu-card`, `.checklist`, `.done`) — pas de classes utilitaires, pas de style inline (exception : `style` dimensionnel sur les barres des StatCards)
-- **Resynchronisation par prop** : pattern render-phase reset (`syncedSemaine`/`syncedProfile`) — voir `Checklist.tsx`. Interdit : `useEffect` de sync, `key` imposé au consommateur. **Une exception documentée** : keys dérivées de `weightsBump` (`key={`obj-${weightsBump}`}` sur `ObjectifBloc`, `key={weightsBump}` sur `StatCards`) dans `App.tsx` (relisent les pesées au remount après une pesée ajoutée)
-- **Rétrocompatibilité des props** : un composant existant ne change de signature qu'en ajoutant des props optionnelles (ex. `onChecksChange?` de Checklist)
+- **Resynchronisation par prop** : pattern render-phase reset — voir `useCoches`, `useReports`, `Pesees.tsx`. Interdit : `useEffect` de sync. **Une exception documentée** : `key` dérivée d'un compteur de pesées sur `SuiviHero` (`ecrans/Suivi.tsx`), qui relit les pesées au remount
+- **Rétrocompatibilité des props** : un composant existant ne change de signature qu'en ajoutant des props optionnelles
 
 ## Formulaires
 
@@ -75,7 +73,7 @@ Complète `design-system.md` (les tokens) avec les règles d'usage. Source de v�
 
 - ❌ Couleur hex en dur dans un composant (utiliser les tokens `var(--…)` ; sur basilic → texte blanc `#ffffff`, sur citron → texte encre `#26312b`)
 - ❌ Montrer les données de l'autre profil dans Mon suivi
-- ❌ Écran intermédiaire avant le contenu (pas de page « importer d'abord » — la semaine d'exemple suffit)
+- ❌ Écran intermédiaire avant le contenu (pas de page « importer d'abord » — le cycle d'exemple suffit)
 - ❌ Nouveau pattern de sync d'état (celui du repo suffit)
 - ❌ Modal custom / lib de composants — `window.confirm` et les cartes suffisent
 - ❌ Animations longues (> 0,25 s) ou décoratives

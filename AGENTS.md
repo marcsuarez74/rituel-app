@@ -6,10 +6,12 @@ Guide pour les agents IA travaillant sur ce repo. Règles courtes, KISS : si une
 
 **Rituel** — PWA React (thème clair « Herbes ») de suivi cuisine/diet/sport pour Marc & Mélanie. 100 % front + backend optionnel de sync (serveur VPS + SQLite — voir `docs/backend.md`) ; sans configuration, l'app reste strictement locale :
 
-- **UX personnalisée** : au premier lancement, un onboarding en **5 étapes** (profil, infos — date de naissance & taille optionnelles, objectif, compléments & régime, maison & courses) dont **seule l'étape 1 est obligatoire** : carte de profil + prénom « C'est ton prénom ? » (prérempli, modifiable), les suivantes portent un CTA discret « Passer » (le doublon d'objectif de l'étape 4 a disparu) ; le prénom se modifie ensuite dans Mes infos — salutations, titre du suivi et prompt IA l'utilisent — clé `sportapp:profile` ; une **migration préremplie** relance l'onboarding quand un profil de l'ancienne forme est détecté. L'app utilise un **accent unique** (basilic #3e7a46 + citron #f2dc7b, palette Herbes) — plus de teinte par profil — et n'affiche que « ce qui me concerne » + la cuisine
-- L'app affiche **2 onglets en nav segmented** sous la bannière : 🛒 Cuisine (Courses / Menu / Mon Rituel, partagé — carte budget courses, panneau dépenses réelles, fiches recettes dépliables, timeline rituel, encadré keto) · 🎯 Mon suivi (cibles/séances/rappels/pesées du profil actif) ; écran **Profil** (infos, maison & courses, changer de profil, « Copier le prompt IA ») via l'icône en haut à droite
-- Le contenu : une **semaine d'exemple auto-chargée** au premier lancement (fallback en mémoire, l'app est donc toujours utilisable). L'import .md reste branché dans le hub Profil (action « Importer un cycle (.md) ») — il sera redressé avec la future convention « template » ; le parser `parse.ts` reste la référence du format
-- Coches + pesées persistées en **localStorage** (aucune donnée ne quitte le téléphone)
+- **Le cycle** (v2.0) : 4 menus A-D d'une semaine chacun + **un seul rituel batch** commun aux 4 semaines, générés par Claude (abonnement, prompt copié depuis Profil › Mon cycle) en 4 fichiers JSON, importés et vérifiés par l'app. Un nouveau cycle se débloque quand les 4 semaines (+ pauses) sont passées ; sinon on relance le même. Sans cycle importé : **cycle d'exemple** chargé à la demande (`src/assets/cycle-exemple.json`, anonymisé — alex/sam/lou/noa sont rattachés au foyer au chargement)
+- **Navigation** : barre du bas à 5 onglets (Aujourd'hui · Menu · Courses · Rituel · Suivi), en-tête fin avec l'avatar (Profil) et le point de sync, ligne semaine ‹ Sem. N · Menu X › sur Menu/Courses/Rituel. Écrans poussés : fiche recette, mode guidé, Mon cycle, Ma semaine type, Profil
+- **Foyer** (`ReglagesFoyer`) : membres (adultes suivis, enfants sans âge), jour des courses (début de chaque semaine du cycle), jour du rituel, semaine type jour par jour, exceptions récurrentes, magasin, budget hebdo **souple** (alerte, jamais de prix baissés)
+- **UX personnalisée** : onboarding en **5 étapes** dont seule l'étape 1 est obligatoire, puis l'étape optionnelle « Ta semaine » (rythme + enfants) ; accent unique (basilic #3e7a46 + citron #f2dc7b) ; le prénom (profil) sert aux salutations et au prompt
+- **Suivi** : objectif + poids (séances, cibles, rappels : reportés)
+- Coches, reports, pesées persistés en **localStorage**
 - Déployée en PWA offline-first sur GitHub Pages : https://marcsuarez74.github.io/rituel-app/
 
 ## Commandes
@@ -43,22 +45,24 @@ Un changement d'UI responsive → `npm run e2e` doit passer aussi (zéro débord
 ## Structure
 
 ```
-src/lib/          # cœur logique, zéro React : model.ts (types), parse.ts (.md → WeeklyData),
-                  # storage.ts (localStorage), dates.ts (jours FR), rayons.ts (images de rayons),
-                  # text.ts (capitalize mutualisé)
+src/lib/          # cœur logique, zéro React : model.ts (profil), storage.ts (localStorage : profil, coches,
+                  # pesées, dépenses), dates.ts, prix.ts, stats.ts, resumes.ts, text.ts, promptIa.ts (prompt maître)
+src/lib/cycle/    # le cycle v2 : types.ts (contrat JSON), schema.ts (forme), valider.ts (import, règles, alertes),
+                  # calendrier.ts, courses.ts, budget.ts, menu.ts, rituel.ts, reports.ts, monCycle.ts,
+                  # etat.ts (foyer, cycle en cours, reports, remise à zéro 2.0), foyer.ts, courant.ts (cycle d'exemple)
 src/lib/sync/     # sync optionnelle (serveur VPS) : config/session/outbox/client/sse/engine/messages
-src/components/   # composants UI ; cuisine/ pour l'onglet Cuisine ; onboarding/ pour le premier lancement ; profil/ pour l'écran Profil (hub cards)
-src/assets/       # semaine-exemple.md (référence du format) + prompt-cycle-template.md (prompt maître IA, assemblé par src/lib/promptIa.ts) + rayons/ (miniatures jpg des rayons)
-tests/            # miroir de src/, vitest + Testing Library, environnement happy-dom
-                  # parse.test.ts, storage.test.ts, weeks.test.ts, lib/rayons.test.ts,
+src/components/   # shell/ (barre du bas, en-tête, ligne semaine), ecrans/ (un fichier par écran, chargés en React.lazy
+                  # sauf Aujourd'hui), menu/ (carte repas, repas du jour + report), onboarding/, profil/ (pages du hub)
+src/assets/       # cycle-exemple.json + prompt-cycle-template.md (structure du prompt, rempli par promptIa.ts)
+tests/            # miroir de src/, vitest + Testing Library, environnement happy-dom (tests/lib/cycle/fabrique.ts :
+                  # cycles minimaux valides) ; tests/ecrans.test.tsx pour les écrans v2
 tests/e2e/        # specs Playwright (navigateur réel, config playwright.config.ts, projets mobile 375 + 320)
 server/           # serveur de sync VPS (Hono + better-sqlite3), hors tsconfig app ; ses propres scripts `npm run check` (typecheck + lint + test)
 CHANGELOG.md      # historique des versions (Keep a Changelog) ; source de vérité = package.json `version`
 .github/workflows/deploy.yml   # déploie sur GitHub Pages à chaque push sur main
 .github/workflows/release.yml  # crée la GitHub Release à chaque push de tag v* (notes = section CHANGELOG)
-docs/templates/   # template-semaine.md (référence humaine du format .md) ; le prompt maître IA vit dans src/assets/
 docs/ameliorations.md # axes d'amélioration futurs (mémoire d'idées, pas une spec)
-docs/superpowers/ # spec design + plan d'implémentation (contexte historique)
+docs/superpowers/ # specs + plans (refonte v2 : specs/2026-10-07-refonte-v2-design.md)
 ai/               # configs d'agents IA (cf. section « Dossier ai/ »)
 ```
 
@@ -68,26 +72,26 @@ Règle de répartition : la logique va dans `src/lib/` (testable sans React), le
 
 - TypeScript strict. Fonctions nommées, exports nommés (pas de default export).
 - React 18 : composants fonctionnels, hooks uniquement. Pas de lib d'état ni de contexte — `useState` + props suffisent.
-- Si un composant doit re-synchroniser son état quand une prop change (semaine, profil), utiliser le pattern **render-phase reset** (`syncedSemaine`/`syncedProfile`) déjà en place dans `Checklist.tsx`, `ShoppingList.tsx`, `ProfileView.tsx` — ne pas inventer un 4e pattern.
+- Si un composant doit re-synchroniser son état quand une prop change (semaine, profil, version de sync), utiliser le pattern **render-phase reset** déjà en place (`useCoches`, `useReports`, `Pesees.tsx`) — ne pas inventer un autre pattern.
 - CSS : un seul fichier `src/index.css`, classes **sémantiques** (`.menu-card`, `.checklist`, `.done`…), variables du design system sur `:root` (tokens Herbes : `--accent` basilic #3e7a46, `--accent-2` citron #f2dc7b — jamais une couleur de texte, typo **Poppins** auto-hébergée). **Thème clair unique** — pas de dark mode, pas de `prefers-color-scheme`, pas de framework CSS. Icônes SVG via `src/components/Icon.tsx` (pas d'émoji dans l'UI, sauf onboarding/salutations). Typo, espacement (échelle 2 px) et interlignage sont tokenisés (`--fs-*`, `--sp-*`, `--lh-*`) — garde-fou : `tests/css-tokens.test.ts`.
 - Cibles tactiles ≥ 48 px, contraste ≥ 4.5:1, transitions sur les éléments interactifs seulement. « Ultra visible » est une exigence produit, pas une préférence.
-- Textes utilisateur en **français** (accents compris : `Mélanie` == `Melanie` pour le parser).
+- Textes utilisateur en **français**, accents compris.
 - YAGNI : pas de nouvelle dépendance sans discussion, pas d'abstraction avant le 2e cas d'usage réel.
 
-## Le contrat .md (ne pas casser)
+## Le contrat du cycle (JSON v2, ne pas casser)
 
-Le format des fichiers hebdo est un **contrat** : l'app s'en sert pour la semaine d'exemple auto-chargée (`src/assets/semaine-exemple.md` → `parseWeeklyFile` dans `App.tsx`) et il servira à la future convention d'import. Parser (`src/lib/parse.ts`), exemple et README doivent rester cohérents.
+Le JSON produit par Claude est un **contrat** : `src/lib/cycle/types.ts` (types, extrait verbatim dans le prompt entre `// <schema>` et `// </schema>`), `schema.ts` (forme), `valider.ts` (fusion multi-fichiers, erreurs, alertes), le template `src/assets/prompt-cycle-template.md` et `cycle-exemple.json` doivent rester cohérents.
 
-- Frontmatter requis : `semaine`, `menu`, `du`, `au` (dates ISO `AAAA-MM-JJ`), `titre` optionnel
-- Sections : `## Courses` (### rayons + items, un rayon `### Keto` = encadré dédié), `## Menu` (### jours + `- clé: texte` avec les 5 clés valides, refs `→ <slug recette>` autorisées), `## Batch` (`- [ ]` tâches, ref `→ <slug recette>` optionnelle + `### Rituel dimanche` (étapes `- <créneau> · <label> — <détail>`, ref optionnelle en fin de ligne, lignes-clés `- production:` / `- termine:`) + `### Micro-batch` (`- jour: quoi | durée | quantité → slug | détail` — ` | détail` seul reste accepté) + `### Réserve` (`- <jour|mel>: <plat> | <conservation>`)), `## Recettes` (optionnel : `temps:`, `kcal:`, `proteines:`, `glucides:`, `lipides:`, `score:` (entier 0-10), `image:` (URL https), `bases:`, `- pour 4:`, étapes numérotées, `- mel:`, `- batch:`), `## Bases` (optionnel), `## Marc`, `## Melanie`
-- Les ids de coches (`courses:…`, `batch:…`, `batch:rituel:…`, `reserve:{jour|mel}:{slug-plat}`, `menu:{jour}:{clé}`, `seances:marc:…`, `seances:melanie:…`) sont **stables** : ne jamais les modifier, sinon les états cochés se perdent. La ref `→ slug` des tâches/étapes/micro-batch n'entre jamais dans l'id.
-- Format v1 (sans Recettes/Bases/Rituel) toujours accepté — les champs optionnels n'apparaissent pas dans l'UI
-- Contenu non reconnu → warnings (affichés à l'import), jamais une exception silencieuse ni un crash
+- Fichier : `format: 'rituel-cycle'`, `version: 2`, `titre`, `menus` (1 à 4, un par fichier en pratique), `recettes`, `rituel` (dans menu-A uniquement), `fixes?`, `remarques?`
+- Erreurs **bloquantes** (pas de démarrage) : JSON illisible, forme, menus A-D manquants/en double, 7 jours, références cassées (recette, boîte, étape, micro-batch), membre inconnu, variante manquante pour un régime spécifique, macros manquantes d'un membre suivi
+- Alertes **non bloquantes** : `remarques`, budget > plafond, < 5 dîners propres par menu, glucides keto > seuil, recette du cycle précédent
+- Les ids de coches sont **stables** : `menu:{lettre}:{jour}:{repas.id}`, `courses:{lettre}:{rayon}:{clé}`, `rituel:{lettre}:{etape.id}`, `mise:{lettre}:{n}`, `micro:{lettre}:{microBatch.id}`, `reserve:{lettre}:{clé(plat)}`, `frigo:{lettre}:{clé}` — stockés par semaine du cycle (`cycle:{cycleId}:{n}`). Un report n'est qu'une redirection : il ne change jamais un id.
+- Champ inconnu → toléré ; contenu illégal → message clair (« menu-B.json · … »), jamais un crash
 
 ## Tests (TDD)
 
 - Nouvelle fonctionnalité ou bugfix = **test d'abord** (rouge), puis implémentation (vert). `npm run test:watch` pour boucler.
-- Tests dans `tests/`, nommés en miroir : `parse.test.ts`, `storage.test.ts`, `weeks.test.ts`, `lib/rayons.test.ts`, `lib/text.test.ts`, `components.test.tsx`, `app.test.tsx`.
+- Tests dans `tests/`, nommés en miroir : `storage.test.ts`, `lib/cycle/*.test.ts`, `lib/promptIa.test.ts`, `components.test.tsx`, `ecrans.test.tsx`, `app.test.tsx`.
 - `tests/sync/` — sync optionnelle : mock de `lib/sync/config` pour forcer l'activation (sans env, tout est no-op).
 - `server/test/` — vitest + SQLite en mémoire (serveur de sync, cf. `docs/backend.md`) ; exclu du vitest racine.
 - Tester le **comportement visible** (rôles, textes, storage) — pas les détails d'implémentation. Utiliser `userEvent` (pas `fireEvent` sauf cas documenté : `fireEvent.submit` pour les formulaires sous happy-dom, `fireEvent.change` pour l'upload de plusieurs fichiers — `user.upload` n'en livre qu'un).
@@ -98,18 +102,18 @@ Le format des fichiers hebdo est un **contrat** : l'app s'en sert pour la semain
 
 Clés existantes — ne pas renommer (données réelles des téléphones) :
 
-- `sportapp:week` — semaine courante (raw + parsée + date d'import)
-- `sportapp:weeks` — stock multi-semaines (`{ semaines: { [id]: { raw, data, importedAt } } }`) ; l'ancienne clé `sportapp:week` est migrée à la première lecture puis laissée en place
-- `sportapp:profile` — profil actif, **shape v2.2** : `{ id: 'marc'|'melanie', prenom?, dateNaissance?, taille?, poidsObjectif?, objectif: { type: 'perte'|'affiner'|'masse'|'maintien', echeance? }, complements: string[], regime, magasin?, budgetMax?, preferences?: string[], personnes?, repasJour? }` — v2.2 : `prenom` édité (défaut = `PROFILS_META[id].nom`, source unique des prénoms) ; `dateNaissance` et `taille` optionnelles (onboarding sautable — sections silencieuses quand absentes). L'ancienne forme `{ id, age, taille }` est lue par `loadProfilLegacy()` (read-only) pour préremplir l'onboarding de migration, puis écrasée au save
+- `sportapp:profile` — profil actif, **shape v2.2** : `{ id: 'marc'|'melanie', prenom?, dateNaissance?, taille?, poidsObjectif?, objectif: { type: 'perte'|'affiner'|'masse'|'maintien', echeance? }, complements: string[], regime, magasin?, budgetMax?, preferences?: string[], personnes?, repasJour? }` — l'ancienne forme `{ id, age, taille }` est lue par `loadProfilLegacy()` (read-only) pour préremplir l'onboarding de migration. Magasin et budget suivent dans le foyer une fois celui-ci enregistré
+- `sportapp:foyer` — `ReglagesFoyer` (version 3) ; absent → `foyerParDefaut(profil)`
+- `sportapp:cycle` — `CycleActif { id, numero, debut, pauses, cycle, relanceDe? }`
+- `sportapp:cycle:precedent` — ids des recettes du cycle précédent (à éviter dans le prompt)
+- `sportapp:reports:{cycleId}` — `Report[]` (un par repas)
+- `sportapp:checks:cycle:{cycleId}:{n}` — coches de la semaine n du cycle
+- `sportapp:v2` — drapeau de la remise à zéro 2.0 (`migrerV2()` au démarrage : efface `sportapp:week`, `sportapp:weeks`, les anciennes `sportapp:checks:*` et `sportapp:selection`, une fois)
 - `sportapp:depenses` — dépenses réelles de courses (`[{ date, magasin, total }]`, trié par date desc, upsert par (date, magasin))
-- `sportapp:checks:{semaine}` — coches par semaine
-- `sportapp:selection` — dernière semaine consultée (chevrons/commutateur), restaurée à la relance ; fallback = semaine du jour si absente ou inconnue (jamais sync)
 - `sportapp:weights:{marc|melanie}` — pesées par profil
-- `sportapp:sync:token` — JWT du foyer (sync optionnelle, serveur VPS — voir `docs/backend.md`)
-- `sportapp:sync:foyer` — id du foyer connecté
-- `sportapp:sync:outbox` — file d'attente des mutations à envoyer
+- `sportapp:sync:token`, `sportapp:sync:foyer`, `sportapp:sync:outbox` — sync optionnelle (voir `docs/backend.md`) ; tables : `checks`, `weights`, `depenses`, `profiles`, `etat` (foyer, cycle, cycle-precedent, reports:{id} — payload `{ valeur }`). La table serveur `weeks` n'est plus lue par l'app 2.0
 
-Toute mutation passe par storage.ts, qui empile dans l'outbox via `empilerMutation` (no-op sans env/token).
+Toute mutation passe par `storage.ts` ou `cycle/etat.ts`, qui empilent dans l'outbox via `empilerMutation` (no-op sans env/token).
 
 Toute lecture passe par `safeParse` + garde de forme : une donnée corrompue se répare silencieusement (warn + remove + fallback), elle ne fait **jamais** crasher l'app. Une clé absente est silencieuse (pas de warning).
 

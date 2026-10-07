@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Mock } from 'vitest';
 import App from '../../src/App';
-import { Checklist } from '../../src/components/Checklist';
+import { useCoches } from '../../src/components/useCoches';
 import { Onboarding } from '../../src/components/onboarding/Onboarding';
 import { ProfilScreen } from '../../src/components/ProfilScreen';
 import { EnTete } from '../../src/components/shell/EnTete';
@@ -252,28 +252,33 @@ describe('profil: création de foyer (VPS)', () => {
   });
 });
 
-describe('sync UI: Checklist re-read', () => {
+describe('sync UI: coches relues au pull', () => {
+  const Coche = ({ version }: { version: number }) => {
+    const { coches, basculer } = useCoches('cycle:c1:0', version);
+    return (
+      <button type="button" aria-pressed={!!coches.b1} onClick={() => basculer('b1')}>
+        b1
+      </button>
+    );
+  };
+
   beforeEach(() => {
     localStorage.clear();
   });
 
-  const items = [{ id: 'b1', label: 'Riz' }];
-
-  it('bump dataVersion → relit getChecks (changement remote visible)', () => {
-    const { rerender } = render(<Checklist items={items} semaine="2026-S39" dataVersion={0} />);
-    expect(screen.getByRole('checkbox')).not.toBeChecked();
-    // « Autre téléphone » : écrit direct storage (comme un pull remote).
-    setCheck('2026-S39', 'b1', true);
-    rerender(<Checklist items={items} semaine="2026-S39" dataVersion={1} />);
-    expect(screen.getByRole('checkbox')).toBeChecked();
+  it('bump syncVersion → relit getChecks (changement remote visible)', () => {
+    const { rerender } = render(<Coche version={0} />);
+    expect(screen.getByRole('button', { name: 'b1' })).toHaveAttribute('aria-pressed', 'false');
+    setCheck('cycle:c1:0', 'b1', true); // simule appliquerRemote
+    rerender(<Coche version={1} />);
+    expect(screen.getByRole('button', { name: 'b1' })).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('cocher localement reste instantané', async () => {
-    const u = userEvent.setup();
-    render(<Checklist items={items} semaine="2026-S39" dataVersion={0} />);
-    await u.click(screen.getByRole('checkbox'));
-    expect(screen.getByRole('checkbox')).toBeChecked();
-    expect(getChecks('2026-S39')['b1']).toBe(true);
+    render(<Coche version={0} />);
+    await userEvent.setup().click(screen.getByRole('button', { name: 'b1' }));
+    expect(screen.getByRole('button', { name: 'b1' })).toHaveAttribute('aria-pressed', 'true');
+    expect(getChecks('cycle:c1:0')).toEqual({ b1: true });
   });
 });
 

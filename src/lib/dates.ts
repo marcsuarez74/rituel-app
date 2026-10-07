@@ -1,6 +1,3 @@
-export const JOURS = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'] as const;
-
-export const todayKey = (): (typeof JOURS)[number] => JOURS[(new Date().getDay() + 6) % 7];
 
 // Date locale en `YYYY-MM-DD` (toISOString serait en UTC et décalerait d'un jour selon le fuseau).
 export const todayISO = (): string => {
@@ -52,39 +49,4 @@ export const periodeCourte = (du: string, au: string): string => {
   const fin = `${Number(jAu)} ${MOIS_ABBR[Number(mAu) - 1] ?? ''}`.trim();
   if (mDu === mAu) return `${Number(jDu)} → ${fin}`;
   return `${Number(jDu)} ${MOIS_ABBR[Number(mDu) - 1] ?? ''} → ${fin}`;
-};
-
-// '2026-S37' -> 'Semaine 37' (bannière compacte : l'année est superflue à l'écran).
-export const libelleSemaineCourt = (semaine: string): string => {
-  const m = semaine.match(/S(\d+)$/);
-  return m ? `Semaine ${m[1]}` : `Semaine ${semaine}`;
-};
-
-// Position dans la rotation de 4 semaines (pill « Cycle N » de la bannière).
-// Sémantique : les menus A/B/C/D tournent chaque semaine, S37 = menu A = cycle 1
-// → N = ((numéro de semaine - 1) % 4) + 1. Sans numéro parsable (id non
-// conforme), retourne null : la pill est masquée plutôt que faussée.
-export const numeroCycle = (semaine: string): number | null => {
-  const m = semaine.match(/S(\d+)$/);
-  return m ? ((Number(m[1]) - 1) % 4) + 1 : null;
-};
-
-const JOURS_ABBR: Record<string, string> = {
-  lundi: 'lun.',
-  mardi: 'mar.',
-  mercredi: 'mer.',
-  jeudi: 'jeu.',
-  vendredi: 'ven.',
-  samedi: 'sam.',
-  dimanche: 'dim.',
-};
-
-export const jourAbrege = (jour: string): string => JOURS_ABBR[jour.toLowerCase()] ?? jour.toLowerCase();
-
-const JOUR_PREFIXE_RE = /^(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)\s*[—–-]\s*(.+)$/i;
-
-// 'Lundi — Muscu libre' -> { jour: 'lundi', reste: 'Muscu libre' } ; sans jour -> jour null.
-export const extraireJourLabel = (label: string): { jour: string | null; reste: string } => {
-  const m = label.match(JOUR_PREFIXE_RE);
-  return m ? { jour: m[1].toLowerCase(), reste: m[2].trim() } : { jour: null, reste: label };
 };
