@@ -37,7 +37,7 @@ describe('App shell v2', () => {
 
   it('affiche l’onboarding quand aucun profil n’est choisi', async () => {
     render(<App />);
-    expect(await screen.findByRole('heading', { name: /Qui est derrière l'écran/ })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /Bienvenue sur Rituel/ })).toBeInTheDocument();
     expect(screen.queryByRole('navigation', { name: 'Navigation principale' })).not.toBeInTheDocument();
   });
 
@@ -238,7 +238,8 @@ describe('Onboarding — persistance via App', () => {
   it('parcours complet 5 étapes : objectif, compléments et régime persistés', async () => {
     render(<App />);
     const user = userEvent.setup();
-    await user.click(await screen.findByRole('button', { name: /Marc/ }));
+    await user.type(await screen.findByLabelText("Comment tu t'appelles ?"), 'Jean');
+    await user.click(screen.getByRole('radio', { name: /Suivre mon poids/ }));
     await user.click(screen.getByRole('button', { name: /Continuer/ }));
     await user.type(screen.getByLabelText('Poids (kg)'), '85');
     fireEvent.change(screen.getByLabelText('Date de naissance'), { target: { value: '1985-04-12' } });
@@ -253,12 +254,13 @@ describe('Onboarding — persistance via App', () => {
     fireEvent.submit(document.querySelector('.onboarding-form')!);
 
     expect(JSON.parse(localStorage.getItem('sportapp:profile')!)).toMatchObject({
-      id: 'marc',
+      id: expect.stringMatching(/^jean-[0-9a-f]{4}$/),
+      prenom: 'Jean',
       objectif: { type: 'affiner' },
       complements: ['Créatine'],
       regime: 'keto',
     });
-    // Étape optionnelle « Ta semaine » (foyer encore jamais enregistré).
+    // Étape optionnelle « Ta semaine » (foyer né de cette inscription).
     expect(await screen.findByRole('heading', { name: 'Ta semaine' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Passer' }));
     expect(screen.getByRole('navigation', { name: 'Navigation principale' })).toBeInTheDocument();
@@ -299,7 +301,7 @@ describe('Migration profil v1 → v2', () => {
       objectif: { type: 'perte' },
       regime: 'aucun',
     });
-    // Étape optionnelle « Ta semaine » (foyer encore jamais enregistré).
+    // Étape optionnelle « Ta semaine » (foyer né de cette inscription).
     expect(await screen.findByRole('heading', { name: 'Ta semaine' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Passer' }));
     expect(screen.getByRole('navigation', { name: 'Navigation principale' })).toBeInTheDocument();

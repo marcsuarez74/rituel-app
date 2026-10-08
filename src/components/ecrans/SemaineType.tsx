@@ -98,8 +98,10 @@ export function SemaineType({
         {f.membres.map((m) => (
           <p key={m.id} className="membre">
             <b>{m.prenom}</b>
-            <span className="muted">{m.type === 'adulte' ? 'adulte · suivi' : 'enfant · portion enfant'}</span>
-            {m.type === 'enfant' && (
+            <span className="muted">
+              {m.type === 'enfant' ? 'enfant · portion enfant' : `adulte${m.suivi ? ' · suivi' : ''}${m.telephone ? '' : ' · sans téléphone'}`}
+            </span>
+            {!m.telephone && (
               <button type="button" className="lien" onClick={() => setF(retirerMembre(f, m.id))}>
                 Retirer {m.prenom}
               </button>

@@ -353,6 +353,18 @@ describe('Mon cycle', () => {
 });
 
 describe('Semaine type', () => {
+  it('un adulte sans téléphone (doublon) se retire ; un membre avec téléphone jamais', async () => {
+    const user = userEvent.setup();
+    const onEnregistrer = vi.fn();
+    const f = foyerDuo();
+    f.membres[0] = { ...f.membres[0], telephone: true };
+    render(<SemaineType foyer={f} onEnregistrer={onEnregistrer} onRetour={() => {}} />);
+    expect(screen.queryByRole('button', { name: 'Retirer Marc' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Retirer Mélanie' }));
+    await user.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    expect((onEnregistrer.mock.calls[0][0] as ReglagesFoyer).membres.map((m) => m.id)).toEqual(['marc']);
+  });
+
   it('foyer, rythme, jour par jour, exceptions → enregistrés ensemble', async () => {
     const user = userEvent.setup();
     const onEnregistrer = vi.fn();

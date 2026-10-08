@@ -111,9 +111,13 @@ function App() {
     return (
       <Suspense fallback={<Chargement />}>
         <Onboarding
-          onDone={(p) => {
+          onDone={(p, foyerLocal) => {
             setProfile(p);
-            if (!loadFoyer()) setSemaineType('etape');
+            // Foyer rejoint : réglages et cycle viennent d'arriver du serveur.
+            setFoyerStocke(loadFoyer());
+            setCycleStocke(loadCycle());
+            setSyncVersion((v) => v + 1);
+            if (foyerLocal) setSemaineType('etape');
           }}
           prefill={loadProfilLegacy() ?? undefined}
         />
@@ -197,6 +201,7 @@ function App() {
             onMonCycle={() => setMonCycle(true)}
             resumeSemaine={`${foyer.membres.length} personnes · courses ${foyer.jourCourses.slice(0, 3)}. · rituel ${foyer.jourRituel.slice(0, 3)}.`}
             onSemaineType={() => setSemaineType('profil')}
+            onIdentite={setProfile}
             onBack={() => setProfilOuvert(false)}
             onChangeProfile={() => {
               removeProfile();

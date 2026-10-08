@@ -2,6 +2,7 @@ import { SYNC_URL } from './config';
 
 const TOKEN_KEY = 'sportapp:sync:token';
 const FOYER_KEY = 'sportapp:sync:foyer';
+const CODE_KEY = 'sportapp:sync:code'; // code du foyer, gardé sur ce téléphone pour le partager
 
 export interface SessionFoyer {
   token: string;
@@ -22,7 +23,11 @@ export const definirSession = (token: string, foyerId: string): void => {
 export const effacerSession = (): void => {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(FOYER_KEY);
+  localStorage.removeItem(CODE_KEY);
 };
+
+export const lireCode = (): string | null => localStorage.getItem(CODE_KEY);
+export const definirCode = (code: string): void => localStorage.setItem(CODE_KEY, code);
 
 const post = async (route: string, body: Record<string, string>): Promise<Response> =>
   fetch(`${SYNC_URL}${route}`, {

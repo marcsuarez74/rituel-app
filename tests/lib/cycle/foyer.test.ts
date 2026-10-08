@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { foyerDuo } from './fabrique';
-import { ajouterEnfant, changerJour, retirerMembre, resumeJour } from '../../../src/lib/cycle/foyer';
+import { ajouterAdulte, ajouterEnfant, changerJour, rattacher, retirerMembre, resumeJour } from '../../../src/lib/cycle/foyer';
+import { foyerParDefaut } from '../../../src/lib/cycle/etat';
+import type { UserProfile } from '../../../src/lib/model';
 
 describe('réglages du foyer', () => {
   it('ajouter un enfant : id slug, déjeuner « dehors » chaque jour ; doublon ignoré', () => {
@@ -23,5 +25,32 @@ describe('réglages du foyer', () => {
     const f = changerJour(foyerDuo(), 'lundi', { dejeuner: { marc: 'box', melanie: 'box' }, diner: 'rapide', plusTard: ['melanie'] });
     expect(resumeJour(f, 'lundi')).toBe('dîner rapide · 2 box · 1 plus tard');
     expect(resumeJour(f, 'mardi')).toBe('dîner famille');
+  });
+});
+
+const jean: UserProfile = { id: 'jean-01ab', prenom: 'Jean', objectif: { type: 'maintien' }, complements: [], regime: 'aucun' };
+const therese: UserProfile = { ...jean, id: 'therese-9c9c', prenom: 'Thérèse' };
+
+describe('foyer à plusieurs téléphones', () => {
+  it('ajouter un adulte (le/la partenaire) : sans téléphone, non suivi tant qu’il/elle n’a pas rejoint', () => {
+    const f = ajouterAdulte(foyerParDefaut(jean), ' Thérèse ', () => '3f9a');
+    expect(f.membres.at(-1)).toEqual({ id: 'therese-3f9a', prenom: 'Thérèse', type: 'adulte', suivi: false });
+    expect(f.semaine.lundi.dejeuner['therese-3f9a']).toBe('maison');
+    expect(ajouterAdulte(f, '  ')).toBe(f);
+  });
+
+  it('rattacher : même prénom (casse / accents ignorés) parmi les adultes sans téléphone → c’est moi', () => {
+    const f = ajouterAdulte(foyerParDefaut(jean), 'Thérèse', () => '3f9a');
+    expect(rattacher(f, { ...therese, prenom: 'therese' })).toEqual({ etat: 'auto', membre: f.membres[1] });
+  });
+
+  it('rattacher : prénom différent → question, avec les adultes sans téléphone', () => {
+    const f = ajouterAdulte(foyerParDefaut(jean), 'Thérèse', () => '3f9a');
+    expect(rattacher(f, { ...therese, prenom: 'Tess' })).toEqual({ etat: 'question', candidats: [f.membres[1]] });
+  });
+
+  it('rattacher : personne en attente → nouvel adulte ; déjà membre → rien à faire', () => {
+    expect(rattacher(foyerParDefaut(jean), therese)).toEqual({ etat: 'nouveau' });
+    expect(rattacher(foyerParDefaut(therese), therese)).toEqual({ etat: 'deja' });
   });
 });

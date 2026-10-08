@@ -1,5 +1,6 @@
 import { cleIngredient } from './courses';
-import type { JourType, ReglagesFoyer } from './etat';
+import { normaliseComplement, nouvelIdProfil, type UserProfile } from '../model';
+import type { JourType, Membre, ReglagesFoyer } from './etat';
 import type { Jour, MembreId } from './types';
 import { JOURS } from './types';
 
@@ -18,6 +19,34 @@ export const ajouterEnfant = (f: ReglagesFoyer, prenom: string): ReglagesFoyer =
     { ...f, membres: [...f.membres, { id, prenom: p, type: 'enfant', suivi: false }] },
     (j) => ({ ...j, dejeuner: { ...j.dejeuner, [id]: 'dehors' } }),
   );
+};
+
+// Partenaire saisi·e à l'inscription : adulte sans téléphone, non suivi·e
+// tant qu'il/elle n'a pas rejoint le foyer avec son propre profil.
+export const ajouterAdulte = (f: ReglagesFoyer, prenom: string, alea?: () => string): ReglagesFoyer => {
+  const p = prenom.trim();
+  if (!p) return f;
+  const id = nouvelIdProfil(p, alea);
+  return surChaqueJour(
+    { ...f, membres: [...f.membres, { id, prenom: p, type: 'adulte', suivi: false }] },
+    (j) => ({ ...j, dejeuner: { ...j.dejeuner, [id]: 'maison' } }),
+  );
+};
+
+// Un téléphone qui rejoint un foyer : qui est-il ? (spec 2026-10-07 §3)
+export type Rattachement =
+  | { etat: 'deja' } // mon profil est déjà membre
+  | { etat: 'auto'; membre: Membre } // un adulte sans téléphone porte mon prénom
+  | { etat: 'question'; candidats: Membre[] } // « Es-tu X ? »
+  | { etat: 'nouveau' }; // personne en attente : je m'ajoute
+
+export const rattacher = (f: ReglagesFoyer, profil: UserProfile): Rattachement => {
+  if (f.membres.some((m) => m.id === profil.id)) return { etat: 'deja' };
+  const libres = f.membres.filter((m) => m.type === 'adulte' && !m.telephone);
+  const moi = normaliseComplement(profil.prenom ?? '');
+  const membre = moi ? libres.find((m) => normaliseComplement(m.prenom) === moi) : undefined;
+  if (membre) return { etat: 'auto', membre };
+  return libres.length ? { etat: 'question', candidats: libres } : { etat: 'nouveau' };
 };
 
 export const retirerMembre = (f: ReglagesFoyer, id: MembreId): ReglagesFoyer =>

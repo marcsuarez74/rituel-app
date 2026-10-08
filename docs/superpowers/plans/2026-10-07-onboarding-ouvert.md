@@ -22,13 +22,17 @@ Chaque PR : tests d'abord, gate `npm test && npm run typecheck && npm run lint &
 
 L'interrupteur « Suivre mon poids » arrive avec le champ `suivi` (PR 3).
 
-## PR 3 — identité ouverte + suivi optionnel (§1, §1 bis)
+## PR 3 — identité ouverte + suivi optionnel (§1, §1 bis) · fusionnée (#45)
 
 `ProfileKey` chaîne (`prenom-xxxx`), garde d'id, `Membre.telephone`, `assurerMoi`,
 `UserProfile.suivi` (absent = true), `foyerParDefaut` = moi seul, cycle d'exemple mappé sur
 le foyer, sync des pesées par garde d'id, onglet Suivi conditionnel, interrupteur Objectif.
 
 ## PR 4 — onboarding étape 1 + créer / rejoindre (§2, §3)
+
+Fait : `ajouterAdulte`, `rattacher` (foyer.ts), `renommerPesees` (storage), `connecterFoyer(code,
+{ rejoindre })` sans `pousserTout`, code gardé (`sportapp:sync:code`), `EtapeBienvenue` +
+`PartageFoyer` (réutilisé par Profil › Foyer), retrait d'un adulte sans téléphone.
 
 Étape 1 (prénom, pour qui, suivi), fin d'onboarding créer / rejoindre, code gardé sur le
 téléphone créateur, rejoindre sans pousser le foyer provisoire, `rattacher()` + « Es-tu X ? »,
