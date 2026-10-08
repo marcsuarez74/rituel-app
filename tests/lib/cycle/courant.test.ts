@@ -25,11 +25,24 @@ describe('chargerCycleExemple', () => {
     expect(c.cycle.menus.map((m) => m.lettre)).toEqual(['A', 'B', 'C', 'D']);
   });
 
-  it('les membres anonymisés du fichier deviennent ceux du foyer', async () => {
-    const c = await chargerCycleExemple('2026-10-07', 'samedi');
+  it('les membres anonymisés du fichier deviennent ceux du foyer (adultes puis enfants)', async () => {
+    const c = await chargerCycleExemple('2026-10-07', 'samedi', [
+      { id: 'jean-01ab', prenom: 'Jean', type: 'adulte', suivi: true, telephone: true },
+      { id: 'leo', prenom: 'Léo', type: 'enfant', suivi: false },
+      { id: 'therese-3f9a', prenom: 'Thérèse', type: 'adulte', suivi: true },
+    ]);
     const r = c.cycle.recettes[0];
-    expect(Object.keys(r.macros).sort()).toEqual(['marc', 'melanie']);
-    expect(Object.keys(r.portions)).toEqual(expect.arrayContaining(['maelle', 'maxine']));
-    expect(JSON.stringify(c.cycle)).not.toMatch(/\b(Alex|Sam)\b|"(alex|sam|lou|noa)"/);
+    expect(Object.keys(r.macros).sort()).toEqual(['jean-01ab', 'therese-3f9a']);
+    expect(Object.keys(r.portions)).toEqual(expect.arrayContaining(['leo', 'noa'])); // 2e enfant absent : reste anonyme
+    const texte = JSON.stringify(c.cycle);
+    expect(texte).not.toMatch(/\b(Alex|Sam|Lou)\b|"(alex|sam|lou)"/);
+    expect(texte).not.toMatch(/Marc|Mélanie|Maëlle|Maxine/);
+  });
+
+  it('un prénom égal à un nom anonyme ne provoque pas de remplacement en chaîne', async () => {
+    const c = await chargerCycleExemple('2026-10-07', 'samedi', [
+      { id: 'sam-1234', prenom: 'Sam', type: 'adulte', suivi: true },
+    ]);
+    expect(Object.keys(c.cycle.recettes[0].macros).sort()).toEqual(['sam', 'sam-1234']); // alex → sam-1234, sam reste sam
   });
 });

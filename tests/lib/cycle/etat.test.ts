@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   type CycleActif,
   type Report,
+  assurerMoi,
   effacerCycle,
   foyerParDefaut,
   getReports,
@@ -48,18 +49,41 @@ describe('foyer', () => {
     expect(warn).not.toHaveBeenCalled();
   });
 
-  it('défaut : 2 adultes suivis, courses samedi, rituel dimanche, tout maison / famille, magasin et budget repris du profil', () => {
-    const f = foyerParDefaut(profilMel);
+  it('défaut : moi seul (adulte, sur ce téléphone), courses samedi, rituel dimanche, magasin et budget repris du profil', () => {
+    const f = foyerParDefaut({ ...profilMel, id: 'mel-3f9a' });
     expect(f.membres).toEqual([
-      { id: 'marc', prenom: 'Marc', type: 'adulte', suivi: true },
-      { id: 'melanie', prenom: 'Mél', type: 'adulte', suivi: true, regime: 'keto' },
+      { id: 'mel-3f9a', prenom: 'Mél', type: 'adulte', suivi: true, regime: 'keto', telephone: true },
     ]);
     expect(f.jourCourses).toBe('samedi');
     expect(f.jourRituel).toBe('dimanche');
-    expect(f.semaine.mercredi).toEqual({ dejeuner: { marc: 'maison', melanie: 'maison' }, diner: 'famille', plusTard: [] });
+    expect(f.semaine.mercredi).toEqual({ dejeuner: { 'mel-3f9a': 'maison' }, diner: 'famille', plusTard: [] });
     expect(f.exceptions).toEqual([]);
     expect(f).toMatchObject({ magasin: 'Lidl', budgetMax: 110 });
-    expect(foyerParDefaut(null).membres.map((m) => m.prenom)).toEqual(['Marc', 'Mélanie']);
+    expect(foyerParDefaut(null).membres).toEqual([]);
+    expect(foyerParDefaut({ ...profilMel, id: 'mel-3f9a', suivi: false }).membres[0].suivi).toBe(false);
+  });
+
+  it('défaut des profils historiques marc / melanie : les deux adultes (compatibilité)', () => {
+    const f = foyerParDefaut(profilMel);
+    expect(f.membres.map((m) => [m.id, m.prenom, !!m.telephone])).toEqual([
+      ['marc', 'Marc', false],
+      ['melanie', 'Mél', true],
+    ]);
+  });
+
+  it('assurerMoi : mon membre existe, marqué « sur un téléphone », aligné sur mon profil', () => {
+    const f = { ...foyerParDefaut(null), membres: [
+      { id: 'marc', prenom: 'Marc', type: 'adulte' as const, suivi: true },
+      { id: 'melanie', prenom: 'Mélanie', type: 'adulte' as const, suivi: true },
+    ] };
+    const g = assurerMoi(f, { ...profilMel, suivi: false });
+    expect(g.membres[1]).toEqual({ id: 'melanie', prenom: 'Mél', type: 'adulte', suivi: false, regime: 'keto', telephone: true });
+    expect(g.membres[0]).toEqual(f.membres[0]); // les autres ne bougent pas
+    expect(assurerMoi(g, { ...profilMel, suivi: false })).toBe(g); // rien à changer : même objet
+
+    const h = assurerMoi(foyerParDefaut(null), { ...profilMel, id: 'therese-3f9a', prenom: 'Thérèse', regime: 'aucun' });
+    expect(h.membres).toEqual([{ id: 'therese-3f9a', prenom: 'Thérèse', type: 'adulte', suivi: true, telephone: true }]);
+    expect(h.semaine.lundi.dejeuner['therese-3f9a']).toBe('maison');
   });
 
   it('se sauve et se relit', () => {

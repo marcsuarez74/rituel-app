@@ -1,3 +1,4 @@
+import { type Membre, type ReglagesFoyer, foyerParDefaut } from '../../../src/lib/cycle/etat';
 import type { CycleFichier, Jour, Lettre, MenuSemaine, Recette } from '../../../src/lib/cycle/types';
 import { JOURS, LETTRES } from '../../../src/lib/cycle/types';
 
@@ -76,3 +77,17 @@ export const FOYER = [
   { id: 'lou', suivi: false },
   { id: 'noa', suivi: false },
 ];
+
+// Foyer à deux adultes suivis (marc, melanie), tout « maison » — l'ancien
+// foyer par défaut, base de nombreux tests de réglages.
+export const foyerDuo = (): ReglagesFoyer => {
+  const f = foyerParDefaut(null);
+  const membres: Membre[] = [
+    { id: 'marc', prenom: 'Marc', type: 'adulte', suivi: true },
+    { id: 'melanie', prenom: 'Mélanie', type: 'adulte', suivi: true },
+  ];
+  const semaine = Object.fromEntries(
+    Object.entries(f.semaine).map(([j, t]) => [j, { ...t, dejeuner: { marc: 'maison', melanie: 'maison' } }]),
+  ) as unknown as ReglagesFoyer['semaine'];
+  return { ...f, membres, semaine };
+};
