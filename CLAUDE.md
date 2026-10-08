@@ -42,16 +42,16 @@ le coût réel des vérifications et les pièges déjà payés une fois.
 | `.superpowers/` | ledger **local, git-ignoré** : brainstorms, décisions, accès VPS, états en cours |
 | `CHANGELOG.md` + `package.json` | générés par release-please (+ `release-please-config.json`, `.release-please-manifest.json`) ; **ne pas les éditer à la main** |
 
-## Coût réel des vérifications (mesuré en local, 2026-10-07)
+## Coût réel des vérifications (mesuré en local, 2026-10-08)
 
 | Commande | Durée | Quand |
 |---|---|---|
-| `npm test` (422 tests, 34 fichiers) | ~4 s | boucle TDD et avant chaque commit |
+| `npm test` (479 tests) | ~4 s | boucle TDD et avant chaque commit |
 | `npm run typecheck` | ~3 s | avant chaque commit |
 | `npm run lint` | ~4 s | avant chaque commit |
 | `npm run build` | ~7 s | avant chaque commit |
-| `npm run e2e` (76 tests, 2 projets mobiles) | ~13 s | tout changement d'UI responsive |
-| `npm run check` dans `server/` (37 tests) | ~8 s | si tu touches à `server/` (après `npm ci` dans `server/`) |
+| `npm run e2e` (80 tests, 2 projets mobiles) | ~13 s | tout changement d'UI responsive |
+| `npm run check` dans `server/` (72 tests) | ~8 s | si tu touches à `server/` (après `npm ci` dans `server/`) |
 
 Le gate complet avant commit (`npm test && npm run typecheck && npm run lint && npm run build`)
 coûte **~18 s** : aucune raison de le sauter — et la suite E2E n'est pas un luxe ici.
@@ -91,6 +91,12 @@ manque aux deux, ce sont les flux :
   partagée) et tire (`pull`, règle « l'outbox locale prime ») ; temps réel = SSE
   `/evenements` → pull debouncé. Côté serveur, routes dans `server/src/routes.ts`, tables
   SQLite dans `server/src/db.ts`.
+- **Signaler un bug → issue GitHub** : Profil → `ecrans/SignalerBug.tsx` → `src/lib/bugs.ts`
+  (multipart, jeton du foyer) → `POST /bugs` derrière l'auth foyer → `server/src/bugs.ts` :
+  validation → quota (3 réussis/jour/foyer, table `bug_reports`) → jeton
+  (`GITHUB_BUG_TOKEN` absent = 503) → **seulement alors** écriture de la capture
+  (`data/bugs/<uuid>`, supprimée si GitHub échoue = 502) → API GitHub Issues. Dépôt
+  **public** : jamais d'id de foyer ni de donnée de santé dans l'issue.
 
 ## E2E : les pièges payés une fois
 
@@ -102,6 +108,10 @@ manque aux deux, ce sont les flux :
   le lance aussi (après installation de Chromium + WebKit) — passe-le **avant** la PR sur
   un changement d'UI plutôt que de le découvrir rouge en CI.
   Une spec verte en dev et rouge en preview (ou l'inverse) : soupçonner le build, pas le test.
+- **La sync diffère entre les deux modes** : `playwright.config.ts` injecte `VITE_SYNC_URL`
+  dans le serveur dev, pas dans le build preview. Une spec qui dépend de la sync (ex.
+  signaler un bug) teste le parcours complet en dev (`page.route` mocké) et l'écran
+  « sync indisponible » en preview.
 - Pas de login : l'état app (profil, semaine) est injecté via `storageState` localStorage —
   pas d'import de modules app dans les specs.
 - La règle « jamais de scroll horizontal » est testée **dans les specs** (`setViewportSize`
@@ -137,7 +147,7 @@ manque aux deux, ce sont les flux :
   le bundle change de hash à chaque déploiement —
   `curl -s https://rituel.marco-studio.fr/ | grep -o 'assets/index-[^"]*\.js'` ;
   la version affichée en bas de l'écran Profil vient de `package.json` au build.
-- **La sync est optionnelle** : en local sans `VITE_SYNC_URL`, tout est no-op — un « bug de
+- **La sync est optionnelle** : sans `VITE_SYNC_URL` (`npm run dev`, build local), tout est no-op — un « bug de
   sync » sans env n'en est pas un. En prod, l'image est construite avec
   `VITE_SYNC_URL=https://rituel.marco-studio.fr` (même origine que l'API). Voir `docs/backend.md`.
 - **Les accès au VPS (SSH, secrets) vivent dans le ledger local `.superpowers/`
