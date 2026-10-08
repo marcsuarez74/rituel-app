@@ -6,6 +6,13 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 Ce fichier est **généré par [release-please](https://github.com/googleapis/release-please)** à partir des conventional commits (`feat` → mineur, `fix`/`perf` → correctif, `!` ou `BREAKING CHANGE:` → majeur) : ne pas l'éditer à la main. L'historique ci-dessous (jusqu'à 2.1.0) est conservé tel quel.
 
+## [2.2.0](https://github.com/marcsuarez74/rituel-app/compare/v2.1.0...v2.2.0) (2026-10-08)
+
+
+### Ajouté
+
+* **deploiement:** /sante expose le commit déployé (GIT_SHA → APP_COMMIT) ([c212221](https://github.com/marcsuarez74/rituel-app/commit/c2122213b1fd523b0f6b488b2371ecd874f09902))
+
 ## [2.1.0] - 2026-10-08
 
 ### Changé
