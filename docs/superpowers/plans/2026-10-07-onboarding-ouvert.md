@@ -8,7 +8,7 @@ Chaque PR : tests d'abord, gate `npm test && npm run typecheck && npm run lint &
 
 ## PR 1 — correctifs (§0) · fusionnée (#43)
 
-## PR 2 — page Objectif (§4, écran F)
+## PR 2 — page Objectif (§4, écran F) · fusionnée (#44)
 
 1. `resumeObjectif(actuel, vise, echeance, aujourdhui)` dans `lib/stats.ts` : écart signé,
    kg/semaine jusqu'à l'échéance future, `ambitieux` > 1 kg/sem (tests `lib/stats.test.ts`).

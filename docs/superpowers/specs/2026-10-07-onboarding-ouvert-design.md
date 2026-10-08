@@ -32,7 +32,9 @@ défaut, cartes d'onboarding, cycle d'exemple).
 - `Membre` gagne `telephone?: true` : ce membre a un profil sur un téléphone.
   Au démarrage, l'app s'assure que **mon** membre existe dans le foyer et est
   marqué (`assurerMoi`) — couvre aussi Marc & Mélanie aujourd'hui.
-- `foyerParDefaut(profil)` : moi seul (plus de Marc + Mélanie codés en dur).
+- `foyerParDefaut(profil)` : moi seul (plus de Marc + Mélanie codés en dur) — sauf
+  compatibilité : un profil historique `marc`/`melanie` sans foyer enregistré garde ses
+  deux adultes (sinon le prompt oublierait l'autre).
 - Cycle d'exemple : `alex` → moi, `sam` → 1er autre adulte (sinon « Sam »),
   `lou`/`noa` → enfants du foyer (sinon « Lou »/« Noa »). Plus aucun prénom de
   la famille dans le code.

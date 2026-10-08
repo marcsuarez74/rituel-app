@@ -1,12 +1,20 @@
 import { Icon } from '../Icon';
 import { ONGLETS, type Onglet } from './onglets';
 
-// Barre du bas (spec v2 §3) : 5 onglets sous le pouce, icône + libellé
-// toujours visibles, l'actif porte une pastille.
-export function BarreOnglets({ actif, onSelect }: { actif: Onglet; onSelect: (o: Onglet) => void }) {
+// Barre du bas (spec v2 §3) : 5 onglets sous le pouce (4 sans le suivi),
+// icône + libellé toujours visibles, l'actif porte une pastille.
+export function BarreOnglets({
+  actif,
+  suivi,
+  onSelect,
+}: {
+  actif: Onglet;
+  suivi: boolean;
+  onSelect: (o: Onglet) => void;
+}) {
   return (
     <nav className="barre-onglets" aria-label="Navigation principale">
-      {ONGLETS.map(({ id, label, icone }) => (
+      {ONGLETS.filter((o) => suivi || o.id !== 'suivi').map(({ id, label, icone }) => (
         <button
           key={id}
           type="button"

@@ -6,6 +6,14 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 ## [Non publié]
 
+### Ajouté
+
+- **Suivi optionnel** : Profil › Objectif › « Suivre mon poids et un objectif ». Coupé = « juste la routine » : plus d'onglet Suivi (barre à 4 onglets), plus de macros exigées ni d'objectif dans le prompt pour ce membre (portions adulte standard) ; le régime et les compléments servent toujours aux menus.
+
+### Changé
+
+- **Identité ouverte** (préparation de l'inscription pour tous) : un profil a un identifiant interne libre, les pesées et la sync suivent n'importe quel profil ; le foyer par défaut ne contient plus que soi, et chaque téléphone y garde son membre à jour (prénom, suivi, régime). Le cycle d'exemple prend les prénoms du foyer.
+
 ### Changé
 
 - **Profil › Objectif** repensé : résumé « 82,4 kg → 75 kg · −7,4 kg d'ici le 31 déc. · ≈ 0,6 kg / semaine » (alerte douce « Rythme ambitieux » au-delà de 1 kg/semaine), cap en cartes avec description, régime et compléments en pastilles à cocher (suggestions + « Autre… »), **un seul bouton Enregistrer** collé en bas au lieu de trois. Pastilles à 48 px de haut partout.

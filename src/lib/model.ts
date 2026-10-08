@@ -1,7 +1,28 @@
-export type ProfileKey = 'marc' | 'melanie';
+// Identifiant interne d'un profil (jamais affiché) : `prénom-xxxx` pour les
+// nouveaux profils ; les anciens `marc` / `melanie` restent valides tels quels.
+export type ProfileKey = string;
+
+const ID_PROFIL = /^[a-z0-9][a-z0-9-]{0,40}$/;
+export const estIdProfil = (v: unknown): v is ProfileKey => typeof v === 'string' && ID_PROFIL.test(v);
+
+const hex4 = (): string =>
+  Array.from(crypto.getRandomValues(new Uint8Array(2)), (b) => b.toString(16).padStart(2, '0')).join('');
+
+export const nouvelIdProfil = (prenom: string, alea: () => string = hex4): ProfileKey => {
+  const slug = prenom
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 24)
+    .replace(/-+$/, '');
+  return `${slug || 'moi'}-${alea()}`;
+};
 
 export interface UserProfile {
   id: ProfileKey;
+  suivi?: boolean; // absent = suivi (profils existants) ; false = « juste la routine »
   prenom?: string; // v2.2 — prénom édité ; défaut = PROFILS_META[id].nom
   dateNaissance?: string; // v2.2 — optionnel (onboarding sautable) ; âge calculé si présent
   taille?: number; // v2.2 — optionnel (onboarding sautable)
@@ -46,16 +67,17 @@ export const PREFERENCES_PRESETS: readonly string[] = [
   'Batch-friendly',
 ];
 
-// Source unique des métadonnées d'affichage des profils (cartes d'onboarding,
-// titres, salutations) — fusion des anciennes constantes profils/titres/prénoms.
-export const PROFILS_META: Record<ProfileKey, { nom: string; emoji: string; tagline: string }> = {
+// Les deux profils historiques (cartes de l'onboarding actuel, migration v1).
+export const PROFILS_META: Record<'marc' | 'melanie', { nom: string; emoji: string; tagline: string }> = {
   marc: { nom: 'Marc', emoji: '💪', tagline: 'Diet & Sport' },
   melanie: { nom: 'Mélanie', emoji: '🌿', tagline: 'Keto & Sport' },
 };
 
-// Prénom affiché : le prénom édité (profil v2.2) sinon le nom par défaut.
+// Prénom affiché : le prénom saisi, sinon le nom historique, sinon l'id.
 export const prenomProfil = (id: ProfileKey, p?: UserProfile): string =>
-  p?.prenom?.trim() || PROFILS_META[id].nom;
+  p?.prenom?.trim() || PROFILS_META[id as 'marc' | 'melanie']?.nom || id;
+
+export const estSuivi = (p: Pick<UserProfile, 'suivi'>): boolean => p.suivi !== false;
 
 // ——— Profil v2 (objectif, compléments, régime) ———
 
@@ -69,7 +91,7 @@ export interface Objectif {
 
 // Ancienne forme stockée avant migration — lecture seule, préremplissage only.
 export interface ProfilLegacy {
-  id: ProfileKey;
+  id: 'marc' | 'melanie';
   age: number;
   taille: number;
   poidsObjectif?: number;

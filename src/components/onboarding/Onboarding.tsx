@@ -8,7 +8,10 @@ import {
   REGIMES,
   normaliseComplement,
 } from '../../lib/model';
-import type { ObjectifType, ProfilLegacy, ProfileKey, Regime, UserProfile } from '../../lib/model';
+import type { ObjectifType, ProfilLegacy, Regime, UserProfile } from '../../lib/model';
+
+// Cartes Marc / Mélanie : remplacées par l'étape 1 ouverte (spec 2026-10-07 §2, PR 4).
+type ProfilHistorique = keyof typeof PROFILS_META;
 import { ageDepuis, todayISO } from '../../lib/dates';
 import { parseEuro } from '../../lib/prix';
 import { addWeight, getWeights, saveProfile } from '../../lib/storage';
@@ -29,7 +32,7 @@ export function Onboarding({
   // Étape 6 (« Synchroniser les téléphones ») : optionnelle, atteinte seulement
   // si la sync est active et qu'aucune session foyer n'existe encore.
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(prefill ? 2 : 1);
-  const [id, setId] = useState<ProfileKey | null>(prefill?.id ?? null);
+  const [id, setId] = useState<ProfilHistorique | null>(prefill?.id ?? null);
   // Prénom édité à l'étape 1 ('' en migration — l'étape 1 n'existe pas) ;
   // vide ⇒ salutation et profil retombent sur le défaut PROFILS_META[id].nom.
   const [prenom, setPrenom] = useState('');
@@ -67,7 +70,7 @@ export function Onboarding({
     setStep(n);
   };
 
-  const choisir = (p: ProfileKey) => {
+  const choisir = (p: ProfilHistorique) => {
     setError(null);
     setId(p);
     setPrenom(PROFILS_META[p].nom);
@@ -302,7 +305,7 @@ export function Onboarding({
           <h1>Qui est derrière l'écran ?</h1>
           <p className="onboarding-sub">Choisis ton profil, on s'occupe du reste.</p>
           <div className="onboarding-cards">
-            {(Object.keys(PROFILS_META) as ProfileKey[]).map((pid) => {
+            {(Object.keys(PROFILS_META) as ProfilHistorique[]).map((pid) => {
               const meta = PROFILS_META[pid];
               return (
                 <button

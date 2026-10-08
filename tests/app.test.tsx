@@ -1,7 +1,8 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../src/App';
-import { addWeight, saveProfile } from '../src/lib/storage';
+import { addWeight, loadProfile, saveProfile } from '../src/lib/storage';
+import { foyerParDefaut, loadFoyer, saveFoyer } from '../src/lib/cycle/etat';
 import type { ProfileKey } from '../src/lib/model';
 
 // Toute vue shell suppose un profil choisi (onboarding passé).
@@ -15,6 +16,11 @@ const initProfile = (id: ProfileKey = 'marc', prenom?: string) =>
     complements: [],
     regime: id === 'melanie' ? 'keto' : 'aucun',
   });
+
+const loadProfileDe = (id: ProfileKey) => {
+  initProfile(id);
+  return loadProfile()!;
+};
 
 const nav = () => screen.getByRole('navigation', { name: 'Navigation principale' });
 const onglet = (nom: string) => within(nav()).getByRole('button', { name: nom });
@@ -62,6 +68,33 @@ describe('App shell v2', () => {
     expect(onglet('Courses')).toHaveAttribute('aria-current', 'page');
     expect(onglet("Aujourd'hui")).not.toHaveAttribute('aria-current');
     expect(screen.getByRole('heading', { level: 1, name: 'Courses' })).toBeInTheDocument();
+  });
+
+  it('juste la routine (suivi coupé) : 4 onglets, pas de Suivi', async () => {
+    saveProfile({ ...loadProfileDe('marc'), suivi: false });
+    render(<App />);
+    const noms = within(nav()).getAllByRole('button').map((b) => b.textContent);
+    expect(noms).toEqual(["Aujourd'hui", 'Menu', 'Courses', 'Rituel']);
+  });
+
+  it('au démarrage, mon membre du foyer est marqué « sur ce téléphone » et suit mon profil', async () => {
+    saveProfile({ ...loadProfileDe('therese-3f9a'), prenom: 'Thérèse', suivi: false });
+    saveFoyer({ ...foyerParDefaut(null), membres: [{ id: 'jean-01ab', prenom: 'Jean', type: 'adulte', suivi: true, telephone: true }] });
+    render(<App />);
+    expect(loadFoyer()?.membres).toEqual([
+      { id: 'jean-01ab', prenom: 'Jean', type: 'adulte', suivi: true, telephone: true },
+      { id: 'therese-3f9a', prenom: 'Thérèse', type: 'adulte', suivi: false, telephone: true },
+    ]);
+  });
+
+  it('cycle d’exemple aux prénoms du foyer, jamais ceux d’une autre famille', async () => {
+    saveProfile({ ...loadProfileDe('therese-3f9a'), prenom: 'Thérèse' });
+    const user = userEvent.setup();
+    render(<App />);
+    await screen.findByText(/Cycle d'exemple/);
+    await user.click(onglet('Menu'));
+    expect(await screen.findAllByText(/Thérèse/)).not.toHaveLength(0);
+    expect(document.body.textContent).not.toMatch(/Marc|Mélanie|Maëlle|Maxine|\bAlex\b/); // Alex = rôle anonyme non remplacé
   });
 
   it('ligne semaine sur Menu / Courses / Rituel seulement, navigation dans les 4 semaines', async () => {

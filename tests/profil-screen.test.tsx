@@ -527,6 +527,24 @@ describe('Page Objectif', () => {
     expect(loadProfile()).toBeNull();
   });
 
+  it('suivi coupé : plus de résumé ni de cap, régime et compléments restent ; enregistré', async () => {
+    const { pageObj, user, onProfileSaved } = await ouvrir({ poidsObjectif: 75 });
+    const inter = pageObj.getByRole('switch', { name: /Suivre mon poids et un objectif/ });
+    expect(inter).toBeChecked();
+    await user.click(inter);
+    expect(pageObj.queryByRole('radiogroup', { name: 'Ton cap' })).not.toBeInTheDocument();
+    expect(pageObj.queryByText(/Pèse-toi/)).not.toBeInTheDocument();
+    expect(pageObj.getByText(/Rituel reste une app de routine/)).toBeInTheDocument();
+    expect(pageObj.getByRole('radiogroup', { name: 'Régime' })).toBeInTheDocument();
+    await user.click(pageObj.getByRole('button', { name: 'Enregistrer' }));
+    expect(loadProfile()).toMatchObject({ suivi: false, poidsObjectif: 75 }); // l'objectif reste, prêt si on réactive
+    expect(onProfileSaved).toHaveBeenCalledWith(expect.objectContaining({ suivi: false }));
+
+    await user.click(inter);
+    await user.click(pageObj.getByRole('button', { name: 'Enregistrer' }));
+    expect(loadProfile()?.suivi).toBeUndefined(); // absent = suivi
+  });
+
   it('« Autre… » : ajoute un complément coché ; doublon refusé', async () => {
     const { pageObj, user } = await ouvrir({ complements: ['Whey'] });
     await user.click(pageObj.getByRole('button', { name: /Autre/ }));

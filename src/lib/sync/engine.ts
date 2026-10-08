@@ -17,7 +17,7 @@ import {
   saveReports,
   semaineCoches,
 } from '../cycle/etat';
-import type { ProfileKey, UserProfile } from '../model';
+import { estIdProfil, type UserProfile } from '../model';
 import {
   addWeight,
   deleteDepense,
@@ -26,6 +26,7 @@ import {
   getDepenses,
   getWeights,
   loadProfile,
+  profilsAvecPesees,
   saveDepense,
   saveProfile,
   setCheck,
@@ -282,14 +283,14 @@ const appliquerRemoteSync = (rows: Record<TableSync, RowSync[]>): boolean => {
   for (const r of rows.weights) {
     const key = { profil: String(r.profil), date_: String(r.date_) };
     if (attente.has(signature('weights', key))) continue;
-    if (key.profil !== 'marc' && key.profil !== 'melanie') continue; // profil inconnu → jamais de clé junk
+    if (!estIdProfil(key.profil)) continue; // id illégal → jamais de clé junk
     const kg = Number(r.kg);
     if (!Number.isFinite(kg) || kg <= 0) continue;
-    const connu = getWeights(key.profil as ProfileKey).some(
+    const connu = getWeights(key.profil).some(
       (w) => w.date === key.date_ && w.kg === kg,
     );
     if (!connu) {
-      addWeight(key.profil as ProfileKey, key.date_, kg);
+      addWeight(key.profil, key.date_, kg);
       change = true;
     }
   }
@@ -380,7 +381,7 @@ const pousserTout = (): void => {
     if (reports.length > 0) pousserEtat(cleReports(cycle.id), reports);
     for (let n = 0; n < 4; n++) pousserCoches(semaineCoches(cycle.id, n));
   }
-  for (const p of ['marc', 'melanie'] as const) {
+  for (const p of profilsAvecPesees()) {
     for (const w of getWeights(p)) {
       empiler({
         op: 'upsert',

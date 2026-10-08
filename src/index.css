@@ -1228,7 +1228,7 @@ textarea {
   flex-basis: 100%;
 }
 
-.ecran-allume .muted {
+.interrupteur .muted {
   display: block;
   font-size: var(--fs-meta);
 }
@@ -2395,6 +2395,16 @@ progress {
 .alerte-douce svg {
   flex: none;
   color: var(--accent);
+}
+
+.suivi-off {
+  margin: 0 0 var(--sp-12);
+  padding: var(--sp-16);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-size: var(--fs-sec);
+  color: color-mix(in srgb, var(--muted) 70%, var(--text));
 }
 
 .chip-autre {

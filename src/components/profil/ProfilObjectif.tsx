@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { formatJourMoisCourt, todayISO } from '../../lib/dates';
-import { COMPLEMENTS_PRESETS, OBJECTIF_TYPES, REGIMES, normaliseComplement } from '../../lib/model';
+import { COMPLEMENTS_PRESETS, OBJECTIF_TYPES, REGIMES, estSuivi, normaliseComplement } from '../../lib/model';
 import type { ObjectifType, Regime, UserProfile } from '../../lib/model';
 import { poidsActuel, resumeObjectif } from '../../lib/stats';
 import { getWeights, saveProfile } from '../../lib/storage';
@@ -21,6 +21,7 @@ export function ProfilObjectif({
   profile: UserProfile;
   onProfileSaved?: (p: UserProfile) => void;
 }) {
+  const [suivi, setSuivi] = useState(estSuivi(profile));
   const [objectifType, setObjectifType] = useState<ObjectifType>(profile.objectif.type);
   const [echeance, setEcheance] = useState(profile.objectif.echeance ?? '');
   const [poidsVise, setPoidsVise] = useState(profile.poidsObjectif != null ? String(profile.poidsObjectif) : '');
@@ -39,6 +40,7 @@ export function ProfilObjectif({
   const [synced, setSynced] = useState(profile.id);
   if (synced !== profile.id) {
     setSynced(profile.id);
+    setSuivi(estSuivi(profile));
     setObjectifType(profile.objectif.type);
     setEcheance(profile.objectif.echeance ?? '');
     setPoidsVise(profile.poidsObjectif != null ? String(profile.poidsObjectif) : '');
@@ -83,10 +85,12 @@ export function ProfilObjectif({
     }
     const updated: UserProfile = {
       ...profile,
+      ...(suivi ? {} : { suivi: false }),
       objectif: { type: objectifType, ...(echeance ? { echeance } : {}) },
       regime,
       complements: [...complements],
     };
+    if (suivi) delete updated.suivi; // absent = suivi
     delete updated.poidsObjectif;
     if (vise != null) updated.poidsObjectif = vise;
     saveProfile(updated);
@@ -99,91 +103,120 @@ export function ProfilObjectif({
     <section className="detail-page objectif-page">
       <h2>Objectif</h2>
 
-      <div className="obj-resume" aria-live="polite">
-        {actuel == null ? (
-          <p className="obj-ecart">Pèse-toi dans Suivi pour voir l’écart.</p>
-        ) : !resume ? (
-          <>
-            <p className="obj-poids">{kg(actuel)}</p>
-            <p className="obj-ecart">Fixe un poids visé pour voir l’écart.</p>
-          </>
-        ) : (
-          <>
-            <p className="obj-poids">
-              <span>{kg(resume.actuel)}</span>
-              <span className="obj-fleche" aria-hidden="true">→</span>
-              <span className="obj-vise">{kg(resume.vise)}</span>
-            </p>
-            <p className="obj-ecart">
-              {signe(resume.ecart)}
-              {echeance && rythme ? ` · d’ici le ${formatJourMoisCourt(echeance)}` : ''}
-            </p>
-            {rythme && <p className="obj-rythme">{rythme}</p>}
-          </>
-        )}
-      </div>
-
-      <section className="profile-section" aria-labelledby="obj-cap">
-        <h3 id="obj-cap">Ton cap</h3>
-        <div className="rcards" role="radiogroup" aria-labelledby="obj-cap">
-          {OBJECTIF_TYPES.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              role="radio"
-              aria-checked={objectifType === t.id}
-              className="rcard"
-              onClick={() => {
-                modifie();
-                setObjectifType(t.id);
-              }}
-            >
-              <span className="rcard-i" aria-hidden="true">
-                <Icon name={t.icone} size={18} />
-              </span>
-              <span className="rcard-t">{t.nom}</span>
-              <span className="rcard-d">{t.desc}</span>
-            </button>
-          ))}
-        </div>
-        <div className="onb-row2">
-          <div className="onboarding-field">
-            <label htmlFor="pf-obj-poids">Poids visé (kg)</label>
-            <input
-              id="pf-obj-poids"
-              type="number"
-              inputMode="decimal"
-              step="0.1"
-              value={poidsVise}
-              onChange={(e) => {
-                modifie();
-                setPoidsVise(e.target.value);
-              }}
-            />
-          </div>
-          <div className="onboarding-field">
-            <label htmlFor="pf-echeance">Échéance (optionnelle)</label>
-            <input
-              id="pf-echeance"
-              type="date"
-              value={echeance}
-              onChange={(e) => {
-                modifie();
-                setEcheance(e.target.value);
-              }}
-            />
-          </div>
-        </div>
-        {resume?.ambitieux && (
-          <p className="alerte-douce" role="note">
-            <Icon name="info" size={16} />
-            <span>
-              <b>Rythme ambitieux</b> — au-delà de 1 kg par semaine, c’est dur à tenir : tu peux reculer l’échéance.
-              Rien n’est bloqué.
-            </span>
-          </p>
-        )}
+      <section className="profile-section">
+        <label className="interrupteur">
+          <input
+            type="checkbox"
+            role="switch"
+            checked={suivi}
+            onChange={() => {
+              modifie();
+              setSuivi(!suivi);
+            }}
+          />
+          <span>
+            Suivre mon poids et un objectif
+            <span className="muted">Désactivé : plus d’onglet Suivi, portions adulte standard.</span>
+          </span>
+        </label>
       </section>
+
+      {!suivi && (
+        <p className="suivi-off">
+          Suivi coupé : Rituel reste une app de routine. Ton régime et tes compléments servent toujours aux menus.
+        </p>
+      )}
+
+      {suivi && (
+        <>
+          <div className="obj-resume" aria-live="polite">
+            {actuel == null ? (
+              <p className="obj-ecart">Pèse-toi dans Suivi pour voir l’écart.</p>
+            ) : !resume ? (
+              <>
+                <p className="obj-poids">{kg(actuel)}</p>
+                <p className="obj-ecart">Fixe un poids visé pour voir l’écart.</p>
+              </>
+            ) : (
+              <>
+                <p className="obj-poids">
+                  <span>{kg(resume.actuel)}</span>
+                  <span className="obj-fleche" aria-hidden="true">→</span>
+                  <span className="obj-vise">{kg(resume.vise)}</span>
+                </p>
+                <p className="obj-ecart">
+                  {signe(resume.ecart)}
+                  {echeance && rythme ? ` · d’ici le ${formatJourMoisCourt(echeance)}` : ''}
+                </p>
+                {rythme && <p className="obj-rythme">{rythme}</p>}
+              </>
+            )}
+          </div>
+
+          <section className="profile-section" aria-labelledby="obj-cap">
+            <h3 id="obj-cap">Ton cap</h3>
+            <div className="rcards" role="radiogroup" aria-labelledby="obj-cap">
+              {OBJECTIF_TYPES.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={objectifType === t.id}
+                  className="rcard"
+                  onClick={() => {
+                    modifie();
+                    setObjectifType(t.id);
+                  }}
+                >
+                  <span className="rcard-i" aria-hidden="true">
+                    <Icon name={t.icone} size={18} />
+                  </span>
+                  <span className="rcard-t">{t.nom}</span>
+                  <span className="rcard-d">{t.desc}</span>
+                </button>
+              ))}
+            </div>
+            <div className="onb-row2">
+              <div className="onboarding-field">
+                <label htmlFor="pf-obj-poids">Poids visé (kg)</label>
+                <input
+                  id="pf-obj-poids"
+                  type="number"
+                  inputMode="decimal"
+                  step="0.1"
+                  value={poidsVise}
+                  onChange={(e) => {
+                    modifie();
+                    setPoidsVise(e.target.value);
+                  }}
+                />
+              </div>
+              <div className="onboarding-field">
+                <label htmlFor="pf-echeance">Échéance (optionnelle)</label>
+                <input
+                  id="pf-echeance"
+                  type="date"
+                  value={echeance}
+                  onChange={(e) => {
+                    modifie();
+                    setEcheance(e.target.value);
+                  }}
+                />
+              </div>
+            </div>
+            {resume?.ambitieux && (
+              <p className="alerte-douce" role="note">
+                <Icon name="info" size={16} />
+                <span>
+                  <b>Rythme ambitieux</b> — au-delà de 1 kg par semaine, c’est dur à tenir : tu peux reculer l’échéance.
+                  Rien n’est bloqué.
+                </span>
+              </p>
+            )}
+          </section>
+
+        </>
+      )}
 
       <section className="profile-section" aria-labelledby="obj-regime">
         <h3 id="obj-regime">Régime</h3>

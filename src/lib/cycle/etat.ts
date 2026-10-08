@@ -1,4 +1,4 @@
-import { PROFILS_META, type ProfileKey, type Regime, type UserProfile } from '../model';
+import { PROFILS_META, estSuivi, prenomProfil, type Regime, type UserProfile } from '../model';
 import { empilerMutation } from '../sync/outbox';
 import { FICHIER, type Forme, liste, objet, opt, verifierForme } from './schema';
 import type { Cycle, Jour, MembreId } from './types';
@@ -13,8 +13,9 @@ export interface Membre {
   id: MembreId;
   prenom: string;
   type: 'adulte' | 'enfant';
-  suivi: boolean; // a un profil (poids, séances, macros)
+  suivi: boolean; // suit poids / objectif : Claude calcule ses macros
   regime?: Regime;
+  telephone?: boolean; // a son profil sur un téléphone (sinon : saisi par un autre)
 }
 
 export interface JourType {
@@ -83,6 +84,7 @@ const MEMBRE = objet({
   type: { parmi: ['adulte', 'enfant'] },
   suivi: 'booleen',
   regime: opt({ parmi: ['keto', 'vegetarien', 'vegan', 'sans-gluten', 'aucun'] }),
+  telephone: opt('booleen'),
 });
 
 const JOUR_TYPE = objet({
@@ -165,33 +167,60 @@ const ecrire = (cle: string, cleSync: string, valeur: unknown): void => {
 export const loadFoyer = (): ReglagesFoyer | null => lire(FOYER_KEY, estFoyerValide, 'Foyer');
 export const saveFoyer = (f: ReglagesFoyer): void => ecrire(FOYER_KEY, CLE_FOYER, f);
 
-// Foyer tant que rien n'est saisi : les 2 adultes suivis, tout « maison »,
-// dîner « famille ». Prénom, régime, magasin et budget viennent du profil actif.
+// Le membre du foyer qui correspond au profil de ce téléphone.
+const membreDe = (profil: UserProfile): Membre => ({
+  id: profil.id,
+  prenom: prenomProfil(profil.id, profil),
+  type: 'adulte',
+  suivi: estSuivi(profil),
+  ...(profil.regime !== 'aucun' ? { regime: profil.regime } : {}),
+  telephone: true,
+});
+
+const jourParDefaut = (membres: Membre[]): JourType => ({
+  dejeuner: Object.fromEntries(membres.map((m) => [m.id, m.type === 'adulte' ? 'maison' : 'dehors'] as const)),
+  diner: 'famille',
+  plusTard: [],
+});
+
+// Foyer tant que rien n'est saisi : moi seul, tout « maison », dîner
+// « famille ». Magasin et budget viennent du profil. Compatibilité : un profil
+// historique (marc / melanie) sans foyer enregistré garde ses deux adultes.
 export const foyerParDefaut = (profil: UserProfile | null): ReglagesFoyer => {
-  const membres: Membre[] = (['marc', 'melanie'] as ProfileKey[]).map((id) => {
-    const actif = profil?.id === id ? profil : null;
-    return {
-      id,
-      prenom: actif?.prenom?.trim() || PROFILS_META[id].nom,
-      type: 'adulte',
-      suivi: true,
-      ...(actif && actif.regime !== 'aucun' ? { regime: actif.regime } : {}),
-    };
-  });
-  const jour = (): JourType => ({
-    dejeuner: Object.fromEntries(membres.map((m) => [m.id, 'maison' as const])),
-    diner: 'famille',
-    plusTard: [],
-  });
+  const historique = profil?.id === 'marc' || profil?.id === 'melanie';
+  const membres: Membre[] = !profil
+    ? []
+    : historique
+      ? (['marc', 'melanie'] as const).map((id) =>
+          id === profil.id ? membreDe(profil) : { id, prenom: PROFILS_META[id].nom, type: 'adulte', suivi: true },
+        )
+      : [membreDe(profil)];
   return {
     version: 3,
     membres,
     jourCourses: 'samedi',
     jourRituel: 'dimanche',
-    semaine: Object.fromEntries(JOURS.map((j) => [j, jour()])) as Record<Jour, JourType>,
+    semaine: Object.fromEntries(JOURS.map((j) => [j, jourParDefaut(membres)])) as Record<Jour, JourType>,
     exceptions: [],
     ...(profil?.magasin ? { magasin: profil.magasin } : {}),
     ...(profil?.budgetMax ? { budgetMax: profil.budgetMax } : {}),
+  };
+};
+
+// Mon membre existe, est marqué « sur un téléphone » et suit mon profil
+// (prénom, suivi, régime). Rien à changer → le même objet (pas d'écriture).
+export const assurerMoi = (f: ReglagesFoyer, profil: UserProfile): ReglagesFoyer => {
+  const moi = membreDe(profil);
+  const actuel = f.membres.find((m) => m.id === profil.id);
+  if (actuel && JSON.stringify({ ...actuel, ...moi }) === JSON.stringify(actuel) && !!actuel.regime === !!moi.regime)
+    return f;
+  if (actuel) return { ...f, membres: f.membres.map((m) => (m.id === profil.id ? moi : m)) };
+  return {
+    ...f,
+    membres: [...f.membres, moi],
+    semaine: Object.fromEntries(
+      JOURS.map((j) => [j, { ...f.semaine[j], dejeuner: { ...f.semaine[j].dejeuner, [moi.id]: 'maison' } }]),
+    ) as Record<Jour, JourType>,
   };
 };
 

@@ -448,13 +448,14 @@ describe('sync: pull / merge (outbox prime)', () => {
     expect(loadProfile()?.taille).toBe(180); // local intact, payload pourri non persisté
   });
 
-  it('profil remote inconnu (pas marc/melanie) → ignoré', async () => {
+  it('pesées remote : tout id de profil valide est gardé, un id illégal est ignoré', async () => {
     client.lues.weights = [
-      { household_id: 'f', profil: 'x', date_: '2026-09-21', kg: 82.4 },
+      { household_id: 'f', profil: 'therese-3f9a', date_: '2026-09-21', kg: 61.2 },
+      { household_id: 'f', profil: '../X Y', date_: '2026-09-21', kg: 82.4 },
     ];
     await pull();
-    expect(getWeights('marc')).toEqual([]);
-    expect(getWeights('x' as 'marc')).toEqual([]); // aucune clé junk
+    expect(getWeights('therese-3f9a')).toEqual([{ date: '2026-09-21', kg: 61.2 }]);
+    expect(localStorage.getItem('sportapp:weights:../X Y')).toBeNull(); // aucune clé junk
   });
 
   it('pull en échec réseau → etat erreur', async () => {
@@ -503,6 +504,7 @@ describe('sync: connexion foyer', () => {
 
   it('foyer vide → push complet de l\'état local', async () => {
     addWeight('marc', '2026-09-21', 82.4);
+    addWeight('therese-3f9a', '2026-09-21', 61.2); // tout profil du téléphone, plus seulement marc / melanie
     vi.stubGlobal(
       'fetch',
       vi.fn(async () => new Response(JSON.stringify({ token: 'tok', foyerId: 'foyer-1' }), { status: 200 })),
@@ -511,7 +513,12 @@ describe('sync: connexion foyer', () => {
     expect(lireSession()).toEqual({ token: 'tok', foyerId: 'foyer-1' });
     // push : la pesée locale est partie vers le serveur
     const weights = client.upserts.find((u) => u.table === 'weights');
-    expect(weights?.rows[0]).toMatchObject({ profil: 'marc', date_: '2026-09-21', kg: 82.4 });
+    expect(weights?.rows).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ profil: 'marc', date_: '2026-09-21', kg: 82.4 }),
+        expect.objectContaining({ profil: 'therese-3f9a', date_: '2026-09-21', kg: 61.2 }),
+      ]),
+    );
     expect(etatSync()).toBe('sync');
     // fusion union : le merge (lectures de toutes les tables) a bien eu lieu
     expect(client.lectures).toContain('etat');

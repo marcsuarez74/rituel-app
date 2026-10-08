@@ -82,7 +82,8 @@ test.describe('Shell v2 — barre du bas', () => {
         page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       expect(await debord()).toBeLessThanOrEqual(OVERFLOW_TOLERANCE);
 
-      await page.locator('.carte-repas-corps').first().click();
+      // Premier repas AVEC fiche recette (un déjeuner « box » n'en a pas — dépend du jour).
+      await page.locator('button.carte-repas-corps').first().click();
       await expect(page.getByRole('heading', { name: 'Préparation' })).toBeVisible();
       expect(await debord()).toBeLessThanOrEqual(OVERFLOW_TOLERANCE);
       await page.getByRole('button', { name: /Retour/ }).click();
@@ -200,6 +201,47 @@ test.describe('Shell v2 — barre du bas', () => {
       expect(debord).toBeLessThanOrEqual(OVERFLOW_TOLERANCE);
       await page.getByRole('button', { name: 'Enregistrer' }).click();
       await expect(page.getByRole('button', { name: /Ma semaine type/ })).toBeVisible();
+    });
+  }
+});
+
+test.describe('Shell v2 — juste la routine (suivi coupé)', () => {
+  test.use({
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: ORIGIN,
+          localStorage: [
+            {
+              name: 'sportapp:profile',
+              value: JSON.stringify({
+                id: 'jean-01ab',
+                prenom: 'Jean',
+                suivi: false,
+                objectif: { type: 'maintien' },
+                complements: [],
+                regime: 'aucun',
+              }),
+            },
+          ],
+        },
+      ],
+    },
+  });
+
+  for (const largeur of [320, 375]) {
+    test(`4 onglets sans Suivi, aucun débordement à ${largeur}px`, async ({ page }) => {
+      await page.setViewportSize({ width: largeur, height: 667 });
+      await page.goto('/');
+      await page.evaluate(() => document.fonts.ready);
+      const nav = page.getByRole('navigation', { name: 'Navigation principale' });
+      await expect(page.getByText(/Cycle d'exemple/)).toBeVisible();
+      await expect(nav.getByRole('button')).toHaveText(["Aujourd'hui", 'Menu', 'Courses', 'Rituel']);
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      expect(overflow).toBeLessThanOrEqual(OVERFLOW_TOLERANCE);
     });
   }
 });
