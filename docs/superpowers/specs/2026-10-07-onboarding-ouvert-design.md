@@ -1,6 +1,6 @@
 # Onboarding ouvert, foyer à rejoindre, page Objectif — spec
 
-Date : 2026-10-07 · statut : validé (§0 en PR 1 ; maquettes §2-4 à valider)
+Date : 2026-10-07 · statut : validé, livré en 5 PR (#43, #44, #45, #46, PR 5)
 
 ## 0. Petits correctifs (inclus dans le lot)
 

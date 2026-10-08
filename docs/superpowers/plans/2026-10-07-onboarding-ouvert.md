@@ -28,7 +28,7 @@ L'interrupteur « Suivre mon poids » arrive avec le champ `suivi` (PR 3).
 `UserProfile.suivi` (absent = true), `foyerParDefaut` = moi seul, cycle d'exemple mappé sur
 le foyer, sync des pesées par garde d'id, onglet Suivi conditionnel, interrupteur Objectif.
 
-## PR 4 — onboarding étape 1 + créer / rejoindre (§2, §3)
+## PR 4 — onboarding étape 1 + créer / rejoindre (§2, §3) · #46
 
 Fait : `ajouterAdulte`, `rattacher` (foyer.ts), `renommerPesees` (storage), `connecterFoyer(code,
 { rejoindre })` sans `pousserTout`, code gardé (`sportapp:sync:code`), `EtapeBienvenue` +
@@ -39,6 +39,10 @@ téléphone créateur, rejoindre sans pousser le foyer provisoire, `rattacher()`
 retrait d'un adulte sans téléphone.
 
 ## PR 5 — prompt IA de tout le foyer (§1 ter)
+
+Fait : `loadProfilsFoyer` / `garderProfilFoyer` (storage) alimentés par le pull, `autres` dans
+`assemblePromptIa`, câblé dans Mon cycle ; `personnes` / `repasJour` retirés des écrans ;
+test garde-fou « chaque réponse d'inscription utile apparaît dans le prompt ».
 
 Profils des autres membres gardés en lecture seule (`sportapp:profils:foyer`), prompt
 détaillant chaque membre suivi, `personnes`/`repasJour` retirés de l'onboarding, test

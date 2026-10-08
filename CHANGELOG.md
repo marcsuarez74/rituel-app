@@ -6,6 +6,11 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 ## [Non publié]
 
+### Changé
+
+- **Prompt du cycle : tout le foyer**. Chaque membre suivi est détaillé avec son propre profil (objectif, âge, dernière pesée, taille, compléments), reçu par la sync — avant, seul le téléphone qui copiait le prompt l'était et Claude devinait les cibles de l'autre.
+- **Questions en double retirées** : « Personnes à table » et « Repas par jour » (inscription et Profil › Courses & budget) — le foyer dit déjà qui est à table, la semaine type quels repas.
+
 ### Ajouté
 
 - **Inscription ouverte à tous** : plus de cartes Marc / Mélanie — étape 1 « Bienvenue sur Rituel » : prénom, « Tu cuisines pour… » (juste moi, à deux avec le prénom du/de la partenaire, en famille avec les enfants), « Juste la routine » ou « Suivre mon poids et un objectif » (sans suivi, les étapes mesures et objectif sont sautées). Le foyer naît de ces réponses.

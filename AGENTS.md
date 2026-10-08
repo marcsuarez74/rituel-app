@@ -103,7 +103,7 @@ Le JSON produit par Claude est un **contrat** : `src/lib/cycle/types.ts` (types,
 
 Clés existantes — ne pas renommer (données réelles des téléphones) :
 
-- `sportapp:profile` — profil actif, **shape v2.2** : `{ id, suivi?, prenom?, dateNaissance?, taille?, poidsObjectif?, objectif: { type: 'perte'|'affiner'|'masse'|'maintien', echeance? }, complements: string[], regime, magasin?, budgetMax?, preferences?: string[], personnes?, repasJour? }` — `id` = identifiant interne jamais affiché (`prénom-xxxx` pour un nouveau profil, `marc`/`melanie` pour les historiques ; garde `estIdProfil`) ; `suivi: false` = « juste la routine » (absent = suivi : pas d'onglet Suivi ni de macros sinon) ; l'ancienne forme `{ id, age, taille }` est lue par `loadProfilLegacy()` (read-only) pour préremplir l'onboarding de migration. Magasin et budget suivent dans le foyer une fois celui-ci enregistré
+- `sportapp:profile` — profil actif, **shape v2.2** : `{ id, suivi?, prenom?, dateNaissance?, taille?, poidsObjectif?, objectif: { type: 'perte'|'affiner'|'masse'|'maintien', echeance? }, complements: string[], regime, magasin?, budgetMax?, preferences?: string[], personnes?, repasJour? }` (`personnes`/`repasJour` : anciens champs, ignorés, nettoyés à l'enregistrement de Courses & budget) — `id` = identifiant interne jamais affiché (`prénom-xxxx` pour un nouveau profil, `marc`/`melanie` pour les historiques ; garde `estIdProfil`) ; `suivi: false` = « juste la routine » (absent = suivi : pas d'onglet Suivi ni de macros sinon) ; l'ancienne forme `{ id, age, taille }` est lue par `loadProfilLegacy()` (read-only) pour préremplir l'onboarding de migration. Magasin et budget suivent dans le foyer une fois celui-ci enregistré
 - `sportapp:foyer` — `ReglagesFoyer` (version 3) ; absent → `foyerParDefaut(profil)` (moi seul) ; au démarrage `assurerMoi` y garde mon membre (`telephone: true`, prénom/suivi/régime du profil)
 - `sportapp:cycle` — `CycleActif { id, numero, debut, pauses, cycle, relanceDe? }`
 - `sportapp:cycle:precedent` — ids des recettes du cycle précédent (à éviter dans le prompt)
@@ -111,6 +111,7 @@ Clés existantes — ne pas renommer (données réelles des téléphones) :
 - `sportapp:checks:cycle:{cycleId}:{n}` — coches de la semaine n du cycle
 - `sportapp:v2` — drapeau de la remise à zéro 2.0 (`migrerV2()` au démarrage : efface `sportapp:week`, `sportapp:weeks`, les anciennes `sportapp:checks:*` et `sportapp:selection`, une fois)
 - `sportapp:depenses` — dépenses réelles de courses (`[{ date, magasin, total }]`, trié par date desc, upsert par (date, magasin))
+- `sportapp:profils:foyer` — profils des AUTRES membres reçus par la sync (`{ [id]: UserProfile }`, lecture seule, jamais poussés) : le prompt détaille chaque membre suivi
 - `sportapp:weights:{id du profil}` — pesées par profil (`profilsAvecPesees()` les liste)
 - `sportapp:sync:token`, `sportapp:sync:foyer`, `sportapp:sync:outbox`, `sportapp:sync:code` (code du foyer gardé sur le téléphone pour le partager, effacé à la déconnexion) — sync optionnelle (voir `docs/backend.md`) ; tables : `checks`, `weights`, `depenses`, `profiles`, `etat` (foyer, cycle, cycle-precedent, reports:{id} — payload `{ valeur }`). La table serveur `weeks` n'est plus lue par l'app 2.0
 
