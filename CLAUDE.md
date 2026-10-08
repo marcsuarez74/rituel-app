@@ -121,7 +121,9 @@ manque aux deux, ce sont les flux :
 
 ## Prod et débogage
 
-- Vérifier la prod : `curl -fsS https://rituel.marco-studio.fr/sante` → `{"ok":true}` ;
+- Vérifier la prod : `curl -fsS https://rituel.marco-studio.fr/sante` → `{"ok":true,"commit":"<sha>"}` (le commit déployé) ;
+  chaque déploiement est visible sur GitHub (onglet Deployments, environnement `production`) :
+  `.github/workflows/deploiement.yml` sonde `/sante` jusqu'à y voir le commit de `main` ;
   le bundle change de hash à chaque déploiement —
   `curl -s https://rituel.marco-studio.fr/ | grep -o 'assets/index-[^"]*\.js'` ;
   la version affichée en bas de l'écran Profil vient de `package.json` au build.

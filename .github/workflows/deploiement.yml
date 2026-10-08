@@ -1,0 +1,69 @@
+name: Déploiement
+
+# Le VPS déploie en pull (deploy/deploy.sh, timer 2 min) : GitHub ne déclenche rien.
+# Ce workflow ne fait que RENDRE VISIBLE le déploiement (onglet Deployments, environnement
+# « production ») : il crée un Deployment, puis attend que /sante serve le commit.
+# Pas de `concurrency` qui annule : un run annulé laisserait un déploiement in_progress.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  deployments: write
+  contents: read
+
+jobs:
+  suivre:
+    name: Suivre le déploiement en production
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      SHA: ${{ github.sha }}
+      URL: https://rituel.marco-studio.fr
+    steps:
+      - name: Créer le déploiement
+        run: |
+          id=$(jq -n --arg ref "$SHA" '{ref:$ref, environment:"production", auto_merge:false,
+            required_contexts:[], production_environment:true, description:"Déploiement pull du VPS"}' \
+            | gh api "repos/$REPO/deployments" --input - --jq .id)
+          echo "DEPLOY_ID=$id" >> "$GITHUB_ENV"
+          gh api "repos/$REPO/deployments/$id/statuses" -f state=in_progress \
+            -f description="En attente du VPS" >/dev/null
+
+      - name: Attendre que /sante serve ce commit
+        run: |
+          debut=$SECONDS
+          servi=""
+          etat=failure
+          msg=""
+          while [ $((SECONDS - debut)) -lt 720 ]; do
+            servi=$(curl -fsS --max-time 10 "$URL/sante" 2>/dev/null | jq -r '.commit // empty' 2>/dev/null || true)
+            if [ "$servi" = "$SHA" ]; then
+              etat=success; msg="Commit ${SHA:0:7} en production"; break
+            fi
+            if [ -n "$servi" ] && [ "$servi" != "inconnu" ]; then
+              # Un merge plus récent est déjà en prod : le commit attendu y est inclus.
+              statut=$(gh api "repos/$REPO/compare/$SHA...$servi" --jq .status 2>/dev/null || true)
+              if [ "$statut" = "ahead" ]; then
+                etat=success; msg="Remplacé en prod par un commit plus récent (${servi:0:7})"; break
+              fi
+            fi
+            sleep 15
+          done
+          duree=$((SECONDS - debut))
+          [ "$etat" = success ] || msg="Timeout : /sante ne sert pas ${SHA:0:7} après ${duree} s"
+          {
+            echo "### Déploiement production : $etat"
+            echo "- Commit attendu : \`$SHA\`"
+            echo "- Commit servi par /sante : \`${servi:-aucun (injoignable ou ancien format)}\`"
+            echo "- Durée : ${duree} s"
+            echo "- $msg"
+          } >> "$GITHUB_STEP_SUMMARY"
+          args=(-f state="$etat" -f description="$msg")
+          [ "$etat" = success ] && args+=(-f environment_url="$URL")
+          gh api "repos/$REPO/deployments/$DEPLOY_ID/statuses" "${args[@]}" >/dev/null
+          [ "$etat" = success ]
