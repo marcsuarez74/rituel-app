@@ -31,6 +31,9 @@ ENV NODE_ENV=production \
     PORT=8787 \
     DB_PATH=/app/data/rituel.db \
     STATIC_DIR=/app/public
+# Commit déployé, exposé par /sante (passé par deploy.sh ; « inconnu » sinon).
+ARG GIT_SHA=inconnu
+ENV APP_COMMIT=$GIT_SHA
 COPY --from=serveur /app/package.json ./
 COPY --from=serveur /app/node_modules ./node_modules
 COPY --from=serveur /app/dist ./dist

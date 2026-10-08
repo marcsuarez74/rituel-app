@@ -34,6 +34,8 @@ export interface OptionsApp {
   heartbeatMs?: number;
   /** Dossier de la PWA buildée (dist/) : servie sur la même origine que l'API. */
   statique?: string;
+  /** SHA git déployé (build arg GIT_SHA → APP_COMMIT), exposé par /sante. */
+  commit?: string;
 }
 
 type EnvApp = { Variables: { foyerId: string } };
@@ -78,7 +80,7 @@ const normaliser = (r: Record<string, unknown>): Record<string, unknown> => {
 const IMMUABLE = 'public, max-age=31536000, immutable';
 const cacheDe = (chemin: string): string => (chemin.startsWith('/assets/') ? IMMUABLE : 'no-cache');
 
-export const creerApp = ({ db, secret, origines, heartbeatMs, statique }: OptionsApp): Hono<EnvApp> => {
+export const creerApp = ({ db, secret, origines, heartbeatMs, statique, commit }: OptionsApp): Hono<EnvApp> => {
   const app = new Hono<EnvApp>();
   const limiter = creerLimiteur({ max: 10, fenetreMs: 60_000 });
   const registre: RegistreSse = creerRegistreSse({ heartbeatMs });
@@ -113,7 +115,7 @@ export const creerApp = ({ db, secret, origines, heartbeatMs, statique }: Option
   app.use('/evenements', auth);
 
   // Sonde de santé (Docker HEALTHCHECK, vérification après déploiement).
-  app.get('/sante', (c) => c.json({ ok: true }));
+  app.get('/sante', (c) => c.json({ ok: true, commit: commit || 'inconnu' }));
 
   // ---- Foyers (sans auth, rate-limitées) ----
 

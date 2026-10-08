@@ -14,6 +14,6 @@ const port = Number(process.env.PORT ?? 8787);
 // STATIC_DIR : dossier de la PWA buildée (image Docker) — absent = API seule.
 const statique = process.env.STATIC_DIR || undefined;
 
-serve({ fetch: creerApp({ db, secret, origines, statique }).fetch, port });
+serve({ fetch: creerApp({ db, secret, origines, statique, commit: process.env.APP_COMMIT }).fetch, port });
 console.log(`Rituel API sur :${port}`);
 
