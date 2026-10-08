@@ -1,39 +1,22 @@
-# Après une fusion sur main : tag v<version de package.json> (s'il manque) puis
-# Release GitHub. Le déploiement lui-même est fait par le VPS, qui suit main
-# (deploy/deploy.sh, timer systemd toutes les 2 min) — aucun secret ici.
+# Après une fusion sur main : release-please ouvre/maintient la PR « chore(main): release x.y.z »
+# (version déduite des conventional commits, CHANGELOG généré). Fusionner cette PR pose le
+# tag v<version> et crée la GitHub Release. Le déploiement est fait par le VPS, qui suit main
+# (deploy/deploy.sh) — aucun secret ici : GITHUB_TOKEN suffit.
+# Prérequis réglage dépôt : Settings › Actions › General › « Allow GitHub Actions to create
+# and approve pull requests ».
 name: Publier
 on:
   push:
     branches: [main]
 permissions:
   contents: write
+  pull-requests: write
 jobs:
-  tag:
-    name: Tag de version
+  release-please:
+    name: release-please
     runs-on: ubuntu-latest
-    outputs:
-      tag: ${{ steps.tag.outputs.tag }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: googleapis/release-please-action@v4
         with:
-          fetch-depth: 0
-      - name: Poser le tag v<version> s'il manque
-        id: tag
-        run: |
-          TAG="v$(node -p "require('./package.json').version")"
-          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
-            echo "::notice::$TAG existe déjà (version non incrémentée) — rien à publier."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "$TAG" -m "$TAG"
-          git push origin "$TAG"
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-  release:
-    name: Release GitHub
-    needs: tag
-    if: needs.tag.outputs.tag != ''
-    uses: ./.github/workflows/release.yml
-    with:
-      tag: ${{ needs.tag.outputs.tag }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

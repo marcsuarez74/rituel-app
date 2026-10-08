@@ -58,9 +58,9 @@ tests/            # miroir de src/, vitest + Testing Library, environnement happ
                   # cycles minimaux valides) ; tests/ecrans.test.tsx pour les écrans v2
 tests/e2e/        # specs Playwright (navigateur réel, config playwright.config.ts, projets mobile 375 + 320)
 server/           # serveur de sync VPS (Hono + better-sqlite3), hors tsconfig app ; ses propres scripts `npm run check` (typecheck + lint + test)
-CHANGELOG.md      # historique des versions (Keep a Changelog) ; source de vérité = package.json `version`
-.github/workflows/publier.yml  # sur main : tag v<version> s'il manque + GitHub Release (via release.yml)
-.github/workflows/release.yml  # crée la GitHub Release d'un tag v* (notes = section CHANGELOG)
+CHANGELOG.md      # historique des versions, généré par release-please (ne pas éditer) ; `package.json` `version` + `.release-please-manifest.json` aussi
+.github/workflows/publier.yml  # sur main : release-please (PR de release, puis tag v<version> + Release à la fusion)
+release-please-config.json · .release-please-manifest.json  # config release-please (sections du CHANGELOG en français)
 Dockerfile, docker-compose.yml # image unique PWA + API (prod), deploy/ = scripts VPS (déploiement auto, backup, installation)
 docs/ameliorations.md # axes d'amélioration futurs (mémoire d'idées, pas une spec)
 docs/superpowers/ # specs + plans (refonte v2 : specs/2026-10-07-refonte-v2-design.md)
@@ -124,7 +124,7 @@ Toute lecture passe par `safeParse` + garde de forme : une donnée corrompue se 
 - `base: '/'` dans `vite.config.ts` : la PWA est servie à la racine de rituel.marco-studio.fr par le serveur (`server/`, option `statique`), sur la même origine que l'API.
 - **CI sur les PR** (`.github/workflows/ci.yml`) : Prepare → Lint → Typecheck → Test → Build — elle doit être verte avant tout merge ; ne pas y ajouter de step lent sans discussion.
 - **Déploiement** : le VPS suit `main` (`deploy/deploy.sh`, timer systemd toutes les 2 min) → `docker compose build` + `up -d` + vérification `/sante`. Aucun secret sur GitHub. `/sante` expose le commit déployé (`GIT_SHA` → `APP_COMMIT`) et `.github/workflows/deploiement.yml` crée le Deployment GitHub `production` puis le passe en succès/échec d'après `/sante`. Une PR fusionnée = en prod sous ~2 min ; ne jamais fusionner un état dont l'image ne build pas (la CI PR construit l'image).
-- **Release** : `publier.yml` pose le tag `v<version de package.json>` s'il manque et crée la Release — le bump de version dans la PR suffit, jamais de tag à la main.
+- **Release** : `publier.yml` lance release-please, qui ouvre/maintient la PR « chore(main): release x.y.z » ; la fusionner pose le tag `v<version>` et la Release. Jamais de bump, d'entrée CHANGELOG ni de tag à la main.
 - Changement d'infra VPS (Dockerfile, compose, `deploy/`) : documenter dans `server/README.md` ; aucune IP, clé ni secret dans le dépôt.
 - Après un changement PWA (manifest, service worker, icônes) : vérifier avec `npm run build && npm run preview` que `dist/` contient `sw.js` + `manifest.webmanifest`.
 
@@ -134,7 +134,7 @@ Toute lecture passe par `safeParse` + garde de forme : une donnée corrompue se 
 - **Tout changement passe par une Pull Request**, même petit : branche dédiée → push → `gh pr create` → CI PR (`.github/workflows/ci.yml`) verte → merge. Ne jamais pousser directement sur `main`.
 - Un commit = un changement cohérent. Le merge sur `main` déclenche le déploiement — ne jamais merger un état qui ne build pas.
 - Pas de rebase/force-push sur `main`.
-- Release : bump **volontaire** via `npm version` (section CHANGELOG renommée avant le bump), tag `v*` poussé après merge — pas de tag sans entrée CHANGELOG (`release.yml` échoue sinon).
+- Release : **conventional commits obligatoires** (`type(scope): sujet`) — `feat` → mineur, `fix`/`perf` → correctif, `!` ou `BREAKING CHANGE:` → majeur ; `docs`/`chore`/`ci`/`test`/`refactor` seuls ne déclenchent pas de release. Ne jamais modifier à la main la `version` de `package.json`, `.release-please-manifest.json` ni `CHANGELOG.md` : release-please le fait dans sa PR.
 
 ## Dossier ai/
 
