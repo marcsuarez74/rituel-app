@@ -123,7 +123,7 @@ Toute lecture passe par `safeParse` + garde de forme : une donnée corrompue se 
 
 - `base: '/'` dans `vite.config.ts` : la PWA est servie à la racine de rituel.marco-studio.fr par le serveur (`server/`, option `statique`), sur la même origine que l'API.
 - **CI sur les PR** (`.github/workflows/ci.yml`) : Prepare → Lint → Typecheck → Test → Build — elle doit être verte avant tout merge ; ne pas y ajouter de step lent sans discussion.
-- **Déploiement** : le VPS suit `main` (`deploy/deploy.sh`, timer systemd toutes les 2 min) → `docker compose build` + `up -d` + vérification `/sante`. Aucun secret sur GitHub. Une PR fusionnée = en prod sous ~2 min ; ne jamais fusionner un état dont l'image ne build pas (la CI PR construit l'image).
+- **Déploiement** : le VPS suit `main` (`deploy/deploy.sh`, timer systemd toutes les 2 min) → `docker compose build` + `up -d` + vérification `/sante`. Aucun secret sur GitHub. `/sante` expose le commit déployé (`GIT_SHA` → `APP_COMMIT`) et `.github/workflows/deploiement.yml` crée le Deployment GitHub `production` puis le passe en succès/échec d'après `/sante`. Une PR fusionnée = en prod sous ~2 min ; ne jamais fusionner un état dont l'image ne build pas (la CI PR construit l'image).
 - **Release** : `publier.yml` lance release-please, qui ouvre/maintient la PR « chore(main): release x.y.z » ; la fusionner pose le tag `v<version>` et la Release. Jamais de bump, d'entrée CHANGELOG ni de tag à la main.
 - Changement d'infra VPS (Dockerfile, compose, `deploy/`) : documenter dans `server/README.md` ; aucune IP, clé ni secret dans le dépôt.
 - Après un changement PWA (manifest, service worker, icônes) : vérifier avec `npm run build && npm run preview` que `dist/` contient `sw.js` + `manifest.webmanifest`.

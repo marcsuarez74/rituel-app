@@ -54,6 +54,11 @@ describe('server: PWA statique', () => {
     expect((await a.request('/sync/checks')).status).toBe(401);
     const sante = await a.request('/sante');
     expect(sante.status).toBe(200);
-    expect(await sante.json()).toEqual({ ok: true });
+    expect(await sante.json()).toEqual({ ok: true, commit: 'inconnu' });
+  });
+
+  it('/sante expose le commit déployé (lisible par GitHub)', async () => {
+    const a = creerApp({ db: ouvrirDb(':memory:'), secret: 'secret-de-test-0123456789abcdef', commit: 'abc123' });
+    expect(await (await a.request('/sante')).json()).toEqual({ ok: true, commit: 'abc123' });
   });
 });

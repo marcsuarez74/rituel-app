@@ -12,7 +12,7 @@ if [ "$(git_ rev-parse HEAD)" = "$(git_ rev-parse origin/main)" ] && [ "${1:-}" 
 fi
 echo "Déploiement de $(git_ rev-parse --short origin/main)…"
 git_ merge -q --ff-only origin/main
-docker compose build -q
+GIT_SHA=$(git_ rev-parse HEAD) docker compose build -q
 # l'app tourne en utilisateur node (uid 1000) : data/ doit lui appartenir
 chown -R 1000:1000 data
 docker compose up -d

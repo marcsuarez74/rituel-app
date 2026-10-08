@@ -1,6 +1,9 @@
 services:
   app:
-    build: .
+    build:
+      context: .
+      args:
+        GIT_SHA: ${GIT_SHA:-inconnu}
     # Joignable seulement via Caddy sur l'hôte (Docker passe outre le pare-feu)
     ports: ["127.0.0.1:8787:8787"]
     # .env (non commité) : JWT_SECRET, CORS_ORIGINS — voir docs/backend.md
