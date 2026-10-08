@@ -1,4 +1,4 @@
-import type { DepenseEntry, ProfileKey, ProfilLegacy, UserProfile } from './model';
+import { estIdProfil, type DepenseEntry, type ProfileKey, type ProfilLegacy, type UserProfile } from './model';
 import { normaliseComplement } from './model';
 import { empilerMutation } from './sync/outbox';
 
@@ -67,6 +67,16 @@ export const getWeights = (p: ProfileKey): WeightEntry[] => {
   return parsed as WeightEntry[];
 };
 
+// Profils dont ce téléphone garde des pesées (le sien, un ancien profil…).
+export const profilsAvecPesees = (): ProfileKey[] => {
+  const ids: ProfileKey[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const id = localStorage.key(i)?.match(/^sportapp:weights:(.+)$/)?.[1];
+    if (id && estIdProfil(id)) ids.push(id);
+  }
+  return ids;
+};
+
 // Remplace l'entrée existante pour `date` (upsert) puis persiste.
 export const addWeight = (p: ProfileKey, date: string, kg: number): WeightEntry[] => {
   const list = getWeights(p)
@@ -129,7 +139,8 @@ export const estProfilValide = (v: unknown): v is UserProfile => {
   const complements = isPlainObject(v) ? v.complements : undefined;
   return (
     isPlainObject(v) &&
-    (v.id === 'marc' || v.id === 'melanie') &&
+    estIdProfil(v.id) &&
+    (v.suivi === undefined || typeof v.suivi === 'boolean') &&
     optionalStr(v.dateNaissance) &&
     optionalNum(v.taille) &&
     isPlainObject(obj) &&
@@ -161,6 +172,7 @@ export const loadProfile = (): UserProfile | null => {
   // (retirés), le profil reste valide — et les clés inconnues sont lâchées.
   return {
     id: p.id,
+    ...(p.suivi === false ? { suivi: false } : {}),
     ...(isStr(p.prenom) && p.prenom.trim() ? { prenom: p.prenom.trim() } : {}),
     ...(isStr(p.dateNaissance) && p.dateNaissance ? { dateNaissance: p.dateNaissance } : {}),
     ...(isNum(p.taille) && p.taille > 0 ? { taille: p.taille } : {}),

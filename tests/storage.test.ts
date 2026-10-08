@@ -1,5 +1,5 @@
 import type { DepenseEntry, UserProfile } from '../src/lib/model';
-import { addWeight, deleteDepense, getChecks, getDepenses, getWeights, loadProfile, loadProfilLegacy, removeProfile, saveDepense, saveProfile, setCheck, type WeightEntry } from '../src/lib/storage';
+import { addWeight, deleteDepense, getChecks, getDepenses, getWeights, loadProfile, loadProfilLegacy, profilsAvecPesees, removeProfile, saveDepense, saveProfile, setCheck, type WeightEntry } from '../src/lib/storage';
 
 describe('storage: checks', () => {
   beforeEach(() => {
@@ -157,6 +157,21 @@ describe('storage: profil v2', () => {
     warnSpy.mockRestore();
   });
 
+  it('identité ouverte : id libre et suivi relus ; id illégal → profil réparé', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    saveProfile({ ...profilV2Complet, id: 'therese-3f9a', prenom: 'Thérèse', suivi: false });
+    expect(loadProfile()).toMatchObject({ id: 'therese-3f9a', prenom: 'Thérèse', suivi: false });
+    localStorage.setItem('sportapp:profile', JSON.stringify({ ...profilV2Complet, id: 'Thérèse !' }));
+    expect(loadProfile()).toBeNull();
+    warnSpy.mockRestore();
+  });
+
+  it('pesées : listées pour tous les profils du téléphone', () => {
+    addWeight('therese-3f9a', '2026-10-05', 61);
+    addWeight('marc', '2026-10-05', 82);
+    expect(profilsAvecPesees().sort()).toEqual(['marc', 'therese-3f9a']);
+  });
+
   it('saveProfile then loadProfile roundtrips the profile v2', () => {
     saveProfile(profilV2Complet);
     expect(loadProfile()).toEqual(profilV2Complet);
@@ -228,8 +243,8 @@ describe('storage: profil v2 corrompu', () => {
     expect(warnSpy).toHaveBeenCalledWith('Profil corrompu ignoré : sportapp:profile');
   });
 
-  it('refuse un id inconnu', () => {
-    poser({ ...base, id: 'jean' });
+  it('refuse un id illégal (identité ouverte : seul le format compte)', () => {
+    poser({ ...base, id: 'Jean / admin' });
     expect(loadProfile()).toBeNull();
     expect(warnSpy).toHaveBeenCalledWith('Profil corrompu ignoré : sportapp:profile');
   });
