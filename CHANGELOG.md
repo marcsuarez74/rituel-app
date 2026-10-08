@@ -6,6 +6,15 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 Ce fichier est **généré par [release-please](https://github.com/googleapis/release-please)** à partir des conventional commits (`feat` → mineur, `fix`/`perf` → correctif, `!` ou `BREAKING CHANGE:` → majeur) : ne pas l'éditer à la main. L'historique ci-dessous (jusqu'à 2.1.0) est conservé tel quel.
 
+## [2.3.0](https://github.com/marcsuarez74/rituel-app/compare/v2.2.0...v2.3.0) (2026-10-08)
+
+
+### Ajouté
+
+* **bugs:** API POST /bugs (issue GitHub) et GET /bugs/capture/:name ([fb23114](https://github.com/marcsuarez74/rituel-app/commit/fb23114433f1b7c35dd51e1b7854fe0955a45a93))
+* **bugs:** écran Signaler un bug dans le profil ([5aecd6d](https://github.com/marcsuarez74/rituel-app/commit/5aecd6d613b98c0d953ae4967d4bebc95916f115))
+* signaler un bug depuis le profil (issue GitHub) ([2815c06](https://github.com/marcsuarez74/rituel-app/commit/2815c06460976968150889a7fd23d0fa06e8b3f9))
+
 ## [2.2.0](https://github.com/marcsuarez74/rituel-app/compare/v2.1.0...v2.2.0) (2026-10-08)
 
 
