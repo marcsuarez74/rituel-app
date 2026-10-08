@@ -21,7 +21,7 @@ npm install          # après un pull ou un changement de deps
 npm run dev          # serveur de dev (hot reload)
 npm test             # vitest, une passe
 npm run test:watch   # vitest en watch (loop TDD)
-npm run e2e          # Playwright (navigateur réel) — projet mobile 375/320 + soumission ; serveur dev auto
+npm run e2e          # Playwright (navigateur réel) — projets `mobile-se` (WebKit) et `mobile-375` (Chromium), 320 bouclé dans les specs, + soumission ; serveur dev auto
 npm run e2e:preview  # idem contre le BUILD DE PROD (dist/ via vite preview) — utilisé par le workflow Deploy
 npm run e2e:ui       # Playwright en mode UI (debug visuel)
 npm run typecheck    # tsc -b (couvre src/ ET tests/)

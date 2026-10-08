@@ -1,4 +1,8 @@
-# CLAUDE.md — Rituel
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Rituel
 
 PWA React de routine cuisine et de suivi diet/sport, ouverte à tout foyer (née pour Marc & Mélanie) —
 https://rituel.marco-studio.fr
@@ -52,6 +56,41 @@ le coût réel des vérifications et les pièges déjà payés une fois.
 Le gate complet avant commit (`npm test && npm run typecheck && npm run lint && npm run build`)
 coûte **~18 s** : aucune raison de le sauter — et la suite E2E n'est pas un luxe ici.
 Côté CI PR, s'ajoute le build de l'image Docker : plus long, mais c'est la CI qui l'arbitre.
+
+Cibler un seul test (la config vitest racine est le bloc `test` de `vite.config.ts`, pas de
+`vitest.config.*` ; celle du serveur est `server/vitest.config.ts`) :
+
+```sh
+npx vitest run tests/storage.test.ts -t "nom du test"
+(cd server && npx vitest run test/routes-sync.test.ts -t "nom")
+npx playwright test tests/e2e/shell.spec.ts --project=mobile-375 -g "nom"
+```
+
+Projets Playwright : `mobile-se` (iPhone SE → WebKit) et `mobile-375` (Chromium). Il n'y a
+**pas** de projet 320 : cette largeur est bouclée dans les specs.
+
+## Architecture : les chaînes qui traversent plusieurs fichiers
+
+AGENTS.md §Structure donne l'arbre ; `ai/context/project-architecture.md` la stack. Ce qui
+manque aux deux, ce sont les flux :
+
+- **Pas de routeur, pas de lib d'état.** `src/App.tsx` tient l'onglet courant et les écrans
+  « poussés » (guide, mon cycle, semaine type, profil, recette) en `useState` ; les écrans
+  sont en `React.lazy` sauf Aujourd'hui. La source de vérité est localStorage.
+  `src/main.tsx` enregistre le service worker (`src/sw.ts`, injectManifest) et appelle
+  `migrerV2()` **avant** le premier rendu.
+- **Cycle (JSON produit par une IA externe)** : `promptIa.ts` assemble le prompt en extrayant
+  le bloc `// <schema>…// </schema>` de `cycle/types.ts` dans `prompt-cycle-template.md` →
+  l'utilisateur importe les fichiers dans `MonCycle.tsx` → `importerCycle`
+  (`cycle/valider.ts` : fusion des menus A–D, forme via `cycle/schema.ts`, puis règles →
+  erreurs bloquantes vs alertes) → `lancer` : `monCycle.ts` (`demarrer`,
+  `enregistrerAvecDebut`) → `saveCycle` (`cycle/etat.ts`). L'affichage lit via `menu.ts`,
+  `calendrier.ts`, `courses.ts`, `budget.ts`, `rituel.ts`, `reports.ts`.
+- **Sync** : chaque écriture de `storage.ts` / `cycle/etat.ts` empile une mutation
+  (`sync/outbox.ts`, clé `sync:outbox`) → `sync/engine.ts` la pousse (`flush` à promesse
+  partagée) et tire (`pull`, règle « l'outbox locale prime ») ; temps réel = SSE
+  `/evenements` → pull debouncé. Côté serveur, routes dans `server/src/routes.ts`, tables
+  SQLite dans `server/src/db.ts`.
 
 ## E2E : les pièges payés une fois
 
