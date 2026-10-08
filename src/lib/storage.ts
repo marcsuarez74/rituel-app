@@ -77,6 +77,14 @@ export const profilsAvecPesees = (): ProfileKey[] => {
   return ids;
 };
 
+// Rattachement à un membre existant : les pesées passent sous le nouvel id
+// (fusion par date, chaque entrée repart vers la sync), l'ancienne clé disparaît.
+export const renommerPesees = (de: ProfileKey, vers: ProfileKey): void => {
+  if (de === vers) return;
+  for (const w of getWeights(de)) addWeight(vers, w.date, w.kg);
+  localStorage.removeItem(weightsKey(de));
+};
+
 // Remplace l'entrée existante pour `date` (upsert) puis persiste.
 export const addWeight = (p: ProfileKey, date: string, kg: number): WeightEntry[] => {
   const list = getWeights(p)

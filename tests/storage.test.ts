@@ -1,5 +1,5 @@
 import type { DepenseEntry, UserProfile } from '../src/lib/model';
-import { addWeight, deleteDepense, getChecks, getDepenses, getWeights, loadProfile, loadProfilLegacy, profilsAvecPesees, removeProfile, saveDepense, saveProfile, setCheck, type WeightEntry } from '../src/lib/storage';
+import { addWeight, deleteDepense, getChecks, getDepenses, getWeights, loadProfile, loadProfilLegacy, profilsAvecPesees, removeProfile, renommerPesees, saveDepense, saveProfile, setCheck, type WeightEntry } from '../src/lib/storage';
 
 describe('storage: checks', () => {
   beforeEach(() => {
@@ -164,6 +164,17 @@ describe('storage: profil v2', () => {
     localStorage.setItem('sportapp:profile', JSON.stringify({ ...profilV2Complet, id: 'Thérèse !' }));
     expect(loadProfile()).toBeNull();
     warnSpy.mockRestore();
+  });
+
+  it('renommerPesees : les pesées suivent le profil qui change d’id (rattachement), fusion par date', () => {
+    addWeight('tess-1111', '2026-10-05', 61);
+    addWeight('therese-3f9a', '2026-10-01', 62);
+    renommerPesees('tess-1111', 'therese-3f9a');
+    expect(getWeights('therese-3f9a')).toEqual([
+      { date: '2026-10-01', kg: 62 },
+      { date: '2026-10-05', kg: 61 },
+    ]);
+    expect(localStorage.getItem('sportapp:weights:tess-1111')).toBeNull();
   });
 
   it('pesées : listées pour tous les profils du téléphone', () => {
