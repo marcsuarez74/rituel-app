@@ -51,6 +51,63 @@ describe('assemblePromptIa (cycle v2)', () => {
     expect(t).toContain('- maelle (Maëlle) · enfant · mange normalement, portion enfant');
   });
 
+  it('chaque membre suivi est détaillé avec SON profil synchronisé (pas seulement le téléphone qui copie)', () => {
+    const f = foyer();
+    f.membres[1].suivi = true;
+    const mel: UserProfile = {
+      id: 'melanie',
+      prenom: 'Mélanie',
+      dateNaissance: '1987-03-02',
+      taille: 165,
+      poidsObjectif: 58,
+      objectif: { type: 'affiner' },
+      complements: ['Collagène'],
+      regime: 'keto',
+    };
+    const t = assemblePromptIa({
+      foyer: f,
+      profil,
+      dernierPoids: null,
+      autres: [{ profil: mel, dernierPoids: { date: '2026-10-04', kg: 61.5 } }],
+      precedentes: [],
+    });
+    expect(t).toContain(
+      '- melanie (Mélanie) · adulte · suivi · régime keto · objectif : affiner la silhouette vers 58 kg · 39 ans, 61,5 kg, 165 cm · compléments : Collagène',
+    );
+  });
+
+  it('garde-fou : chaque réponse d’inscription utile aux menus apparaît dans le prompt', () => {
+    const p: UserProfile = {
+      ...profil,
+      prenom: 'Jean',
+      objectif: { type: 'masse', echeance: '2026-12-31' },
+      complements: ['Oméga-3'],
+      regime: 'vegetarien',
+      preferences: ['Rapide', 'Petit budget'],
+    };
+    const f: ReglagesFoyer = {
+      ...foyer(),
+      membres: [{ id: 'marc', prenom: 'Jean', type: 'adulte', suivi: true, regime: 'vegetarien' }, ...foyer().membres.slice(1)],
+      magasin: 'Aldi',
+      budgetMax: 95,
+    };
+    const t = assemblePromptIa({ foyer: f, profil: p, dernierPoids: { date: '2026-10-05', kg: 80 }, precedentes: [] });
+    for (const attendu of [
+      'marc (Jean)', // prénom
+      'prendre de la masse vers 75 kg', // objectif + poids visé
+      '41 ans', // date de naissance
+      '80 kg', // pesée
+      '178 cm', // taille
+      'compléments : Oméga-3',
+      'régime vegetarien',
+      'maelle (Maëlle) · enfant', // enfants
+      'Préférences : rapide, petit budget.',
+      'Magasin : Aldi',
+      '95 € par semaine',
+    ])
+      expect(t, attendu).toContain(attendu);
+  });
+
   it('juste la routine : ni objectif ni mesures pour ce membre, portions adulte standard', () => {
     const f = foyer();
     f.membres[0].suivi = false;

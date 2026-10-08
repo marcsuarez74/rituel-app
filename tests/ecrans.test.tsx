@@ -8,7 +8,7 @@ import { Rituel, type VueRituel } from '../src/components/ecrans/Rituel';
 import { Courses } from '../src/components/ecrans/Courses';
 import { Recette } from '../src/components/ecrans/Recette';
 import { type CycleActif, type Membre, type ReglagesFoyer, foyerParDefaut, loadCycle, loadFoyer } from '../src/lib/cycle/etat';
-import { getChecks, getDepenses } from '../src/lib/storage';
+import { garderProfilFoyer, getChecks, getDepenses } from '../src/lib/storage';
 import { importerCycle } from '../src/lib/cycle/valider';
 import { enFichiers, foyerDuo, quatreFichiers } from './lib/cycle/fabrique';
 
@@ -312,6 +312,18 @@ describe('Mon cycle', () => {
     expect(loadCycle()).toMatchObject({ id: 'c1', debut: '2026-09-23' });
     expect(loadFoyer()?.jourCourses).toBe('mercredi');
     expect(screen.getByRole('heading', { name: 'Semaine 3 sur 4' })).toBeInTheDocument();
+  });
+
+  it('le prompt copié détaille aussi les autres membres suivis (profil reçu par la sync)', async () => {
+    const user = userEvent.setup();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    garderProfilFoyer({ id: 'sam', prenom: 'Sam', objectif: { type: 'masse' }, complements: [], regime: 'keto', taille: 170 });
+    render(<Ecran />);
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    await user.click(screen.getByRole('button', { name: 'Créer mon premier cycle' }));
+    await user.click(screen.getByRole('button', { name: /Copier le prompt/ }));
+    expect(writeText.mock.calls[0][0]).toContain('- sam (Sam) · adulte · suivi · régime keto · objectif : prendre de la masse · 170 cm');
+    Reflect.deleteProperty(navigator, 'clipboard');
   });
 
   it('fichiers incomplets : erreurs bloquantes, message à recoller pour Claude', async () => {
