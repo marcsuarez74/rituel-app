@@ -7,17 +7,18 @@ import {
   PROFILS_META,
   REGIMES,
   normaliseComplement,
+  nouvelIdProfil,
 } from '../../lib/model';
 import type { ObjectifType, ProfilLegacy, Regime, UserProfile } from '../../lib/model';
-
-// Cartes Marc / Mélanie : remplacées par l'étape 1 ouverte (spec 2026-10-07 §2, PR 4).
-type ProfilHistorique = keyof typeof PROFILS_META;
+import { foyerParDefaut, loadFoyer, saveFoyer } from '../../lib/cycle/etat';
+import { ajouterAdulte, ajouterEnfant } from '../../lib/cycle/foyer';
+import { EtapeBienvenue } from './EtapeBienvenue';
+import { SAISIE_VIDE, type SaisieFoyer } from './saisie';
+import { PartageFoyer } from './PartageFoyer';
 import { ageDepuis, todayISO } from '../../lib/dates';
 import { parseEuro } from '../../lib/prix';
 import { addWeight, getWeights, saveProfile } from '../../lib/storage';
 import { syncActif } from '../../lib/sync/config';
-import { connecterFoyer } from '../../lib/sync/engine';
-import { messageConnexion } from '../../lib/sync/messages';
 import { lireSession } from '../../lib/sync/session';
 import { Icon } from '../Icon';
 
@@ -25,17 +26,19 @@ export function Onboarding({
   onDone,
   prefill,
 }: {
-  onDone: (profile: UserProfile) => void;
+  // foyerLocal : le foyer du téléphone vient de cette inscription (créé ici ou
+  // « plus tard ») → l'app enchaîne sur « Ta semaine » ; false = foyer rejoint.
+  onDone: (profile: UserProfile, foyerLocal: boolean) => void;
   prefill?: ProfilLegacy;
 }) {
   // Migration : démarrer directement à l'étape 2, profil verrouillé (pas d'étape 1).
   // Étape 6 (« Synchroniser les téléphones ») : optionnelle, atteinte seulement
   // si la sync est active et qu'aucune session foyer n'existe encore.
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(prefill ? 2 : 1);
-  const [id, setId] = useState<ProfilHistorique | null>(prefill?.id ?? null);
-  // Prénom édité à l'étape 1 ('' en migration — l'étape 1 n'existe pas) ;
-  // vide ⇒ salutation et profil retombent sur le défaut PROFILS_META[id].nom.
-  const [prenom, setPrenom] = useState('');
+  // id : celui du profil historique en migration, sinon créé en quittant l'étape 1.
+  const [id, setId] = useState<string | null>(prefill?.id ?? null);
+  const [saisie, setSaisie] = useState<SaisieFoyer>(prefill ? { ...SAISIE_VIDE, suivi: true } : SAISIE_VIDE);
+  const prenom = saisie.prenom.trim() || (prefill ? PROFILS_META[prefill.id].nom : '');
   const [poids, setPoids] = useState(() => {
     if (!prefill) return '';
     const list = getWeights(prefill.id);
@@ -60,8 +63,6 @@ export function Onboarding({
   const [nouvellePreference, setNouvellePreference] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [profileFinal, setProfileFinal] = useState<UserProfile | null>(null);
-  const [codeFoyer, setCodeFoyer] = useState('');
-  const [syncOccupe, setSyncOccupe] = useState(false);
 
   const migration = prefill != null;
 
@@ -70,13 +71,17 @@ export function Onboarding({
     setStep(n);
   };
 
-  const choisir = (p: ProfilHistorique) => {
-    setError(null);
-    setId(p);
-    setPrenom(PROFILS_META[p].nom);
+  const continuerBienvenue = () => {
+    if (!saisie.prenom.trim()) {
+      setError('Ton prénom, pour commencer.');
+      return;
+    }
+    if (!id) setId(nouvelIdProfil(saisie.prenom));
+    aller(saisie.suivi ? 2 : 4);
   };
 
-  const retour = () => aller(Math.max(1, step - 1) as 1 | 2 | 3 | 4 | 5 | 6);
+  // Sans suivi, les étapes corps / objectif n'existent pas : retour de 4 → 1.
+  const retour = () => aller((step === 4 && !saisie.suivi ? 1 : Math.max(1, step - 1)) as 1 | 2 | 3 | 4 | 5 | 6);
 
   // Valide l'étape 2 et retourne le poids/taille parsés, ou null avec un message.
   // En migration, le poids est optionnel (champ vide si aucune pesée enregistrée —
@@ -236,9 +241,10 @@ export function Onboarding({
     const repas = repasJour ? Number.parseInt(repasJour, 10) : undefined;
     const profile: UserProfile = {
       id,
+      ...(saisie.suivi ? {} : { suivi: false }),
       ...(dateNaissance ? { dateNaissance } : {}),
       ...(cm != null ? { taille: cm } : {}),
-      ...(prenom.trim() ? { prenom: prenom.trim() } : {}),
+      ...(saisie.prenom.trim() ? { prenom: saisie.prenom.trim() } : {}),
       ...(obj != null ? { poidsObjectif: obj } : {}),
       objectif: { type: objectifType, ...(echeance ? { echeance } : {}) },
       complements: [...complements],
@@ -251,33 +257,23 @@ export function Onboarding({
     };
     saveProfile(profile);
     if (!Number.isNaN(kg)) addWeight(id, todayISO(), kg);
-    // Sync active sans session foyer (première installation) : étape 6
-    // optionnelle avant de terminer — sinon on termine comme avant.
+    // Inscription : le foyer naît de l'étape 1 (sauf foyer déjà présent sur ce
+    // téléphone — changement de profil : assurerMoi m'y ajoutera).
+    const foyerLocal = !loadFoyer();
+    if (!migration && foyerLocal) {
+      let f = foyerParDefaut(profile);
+      if (saisie.pourQui !== 'moi') f = ajouterAdulte(f, saisie.partenaire);
+      if (saisie.pourQui === 'famille') for (const e of saisie.enfants) f = ajouterEnfant(f, e);
+      saveFoyer(f);
+    }
+    // Sync active sans session foyer (première installation) : créer /
+    // rejoindre un foyer, optionnel — sinon on termine comme avant.
     if (syncActif() && !lireSession()) {
       setProfileFinal(profile);
       aller(6);
       return;
     }
-    onDone(profile);
-  };
-
-  // Étape 6 : appairage du foyer. Profil déjà enregistré — en cas de refus,
-  // l'utilisateur peut réessayer ou passer (Plus tard) sans rien perdre.
-  // Garde syncOccupe : le bouton disabled ne couvre pas le Enter (form submit).
-  const connecterSync = async () => {
-    if (syncOccupe) return;
-    const code = codeFoyer.trim();
-    if (!profileFinal || !code) return;
-    setSyncOccupe(true);
-    setError(null);
-    try {
-      await connecterFoyer(code);
-      onDone(profileFinal);
-    } catch (e) {
-      setError(messageConnexion(e));
-    } finally {
-      setSyncOccupe(false);
-    }
+    onDone(profile, foyerLocal);
   };
 
   return (
@@ -301,56 +297,26 @@ export function Onboarding({
       )}
 
       {step === 1 && (
-        <>
-          <h1>Qui est derrière l'écran ?</h1>
-          <p className="onboarding-sub">Choisis ton profil, on s'occupe du reste.</p>
-          <div className="onboarding-cards">
-            {(Object.keys(PROFILS_META) as ProfilHistorique[]).map((pid) => {
-              const meta = PROFILS_META[pid];
-              return (
-                <button
-                  key={pid}
-                  type="button"
-                  aria-pressed={id === pid}
-                  className={`onboarding-card onboarding-card-${pid}${id === pid ? ' sel' : ''}`}
-                  onClick={() => choisir(pid)}
-                >
-                  <span className="onboarding-card-emoji" aria-hidden="true">
-                    {meta.emoji}
-                  </span>
-                  <span className="onboarding-card-prenom">{meta.nom}</span>
-                  <span className="onboarding-card-tagline">{meta.tagline}</span>
-                </button>
-              );
-            })}
-          </div>
-          {id && (
-            <>
-              <div className="onboarding-field">
-                <label htmlFor="ob-prenom">C'est ton prénom ?</label>
-                <input
-                  id="ob-prenom"
-                  type="text"
-                  maxLength={20}
-                  value={prenom}
-                  onChange={(e) => {
-                    setError(null);
-                    setPrenom(e.target.value);
-                  }}
-                />
-                <p className="onb-hint">Utilisé pour te saluer — modifiable plus tard dans le profil.</p>
-              </div>
-              <div className="onb-btnrow">
-                <button type="button" className="onb-next" onClick={() => aller(2)}>
-                  Continuer <Icon name="chev-right" size={14} />
-                </button>
-              </div>
-            </>
-          )}
-        </>
+        <EtapeBienvenue
+          saisie={saisie}
+          onChange={(v) => {
+            setError(null);
+            setSaisie(v);
+          }}
+          onContinuer={continuerBienvenue}
+        />
+      )}
+      {step === 1 && error && (
+        <p className="error" role="alert">
+          {error}
+        </p>
       )}
 
-      {step >= 2 && id && (
+      {step === 6 && profileFinal && (
+        <PartageFoyer profil={profileFinal} onTermine={onDone} onPlusTard={() => onDone(profileFinal, !lireSession())} />
+      )}
+
+      {step >= 2 && step <= 5 && id && (
         <form
           className="onboarding-form"
           onSubmit={(e) => {
@@ -358,20 +324,19 @@ export function Onboarding({
             if (step === 2) continuerInfos();
             else if (step === 3) continuerObjectif();
             else if (step === 4) aller(5);
-            else if (step === 6) void connecterSync();
             else valider();
           }}
         >
           {step === 2 && (
             <>
-              <h1>Salut {prenom.trim() || PROFILS_META[id].nom} 👋</h1>
+              <h1>Salut {prenom} 👋</h1>
               <p className="onboarding-sub">
                 {migration ? 'On met ton profil à niveau.' : 'Tes bases, pour tes suivis.'}
               </p>
               {migration && (
                 <p className="mig-prof">
                   <span>
-                    Profil : {prenom.trim() || PROFILS_META[id].nom} {PROFILS_META[id].emoji}
+                    Profil : {prenom}
                   </span>
                   <span>non modifiable ici</span>
                 </p>
@@ -750,47 +715,6 @@ export function Onboarding({
               <div className="onb-btnrow">
                 <button type="button" className="onb-back" onClick={retour}>
                   Retour
-                </button>
-              </div>
-            </>
-          )}
-
-          {step === 6 && profileFinal && (
-            <>
-              <h1>Synchroniser les téléphones</h1>
-              <p className="onboarding-sub">
-                Optionnel — retrouve semaines, courses et pesées sur les deux téléphones.
-              </p>
-              <div className="onboarding-field">
-                <label htmlFor="ob-sync-code">Code de foyer</label>
-                <input
-                  id="ob-sync-code"
-                  type="password"
-                  value={codeFoyer}
-                  onChange={(e) => {
-                    setError(null);
-                    setCodeFoyer(e.target.value);
-                  }}
-                />
-              </div>
-              <button
-                type="button"
-                className="onboarding-cta onb-full"
-                onClick={connecterSync}
-                disabled={syncOccupe}
-              >
-                {syncOccupe ? 'Connexion…' : 'Connecter le foyer'}
-              </button>
-              <div className="onb-btnrow">
-                <button type="button" className="onb-back" onClick={retour}>
-                  Retour
-                </button>
-                <button
-                  type="button"
-                  className="onb-next"
-                  onClick={() => onDone(profileFinal)}
-                >
-                  Plus tard
                 </button>
               </div>
             </>

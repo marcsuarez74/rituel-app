@@ -35,7 +35,8 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     await page.goto('/');
     // document.fonts.ready fixe le layout avant les mesures (pattern dock.spec).
     await page.evaluate(() => document.fonts.ready);
-    await page.getByRole('button', { name: /Mélanie/ }).click();
+    await page.getByLabel("Comment tu t'appelles ?").fill('Mélanie');
+    await page.getByRole('radio', { name: /Suivre mon poids/ }).click();
     await page.getByRole('button', { name: /Continuer/ }).click();
 
     await expect(page.getByLabel('Date de naissance')).toBeVisible();
@@ -56,7 +57,8 @@ test.describe('Onboarding 5 étapes — mobile', () => {
   test('étape 5 : les champs maison & courses suivent le style guideline', async ({ page }) => {
     await page.goto('/');
     await page.evaluate(() => document.fonts.ready);
-    await page.getByRole('button', { name: /Mélanie/ }).click();
+    await page.getByLabel("Comment tu t'appelles ?").fill('Mélanie');
+    await page.getByRole('radio', { name: /Suivre mon poids/ }).click();
     await page.getByRole('button', { name: /Continuer/ }).click();
 
     await page.getByLabel('Poids (kg)').fill('62.4');
@@ -83,7 +85,8 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     await page.goto('/');
     // document.fonts.ready fixe le layout avant les mesures (pattern dock.spec).
     await page.evaluate(() => document.fonts.ready);
-    await page.getByRole('button', { name: /Mélanie/ }).click();
+    await page.getByLabel("Comment tu t'appelles ?").fill('Mélanie');
+    await page.getByRole('radio', { name: /Suivre mon poids/ }).click();
     await page.getByRole('button', { name: /Continuer/ }).click();
 
     await page.getByLabel('Poids (kg)').fill('62.4');
@@ -121,7 +124,7 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     await expect(shell).toBeVisible();
     const profil = await page.evaluate(() => JSON.parse(localStorage.getItem('sportapp:profile')!));
     expect(profil).toEqual({
-      id: 'melanie',
+      id: expect.stringMatching(/^melanie-[0-9a-f]{4}$/),
       dateNaissance: '1987-03-02',
       taille: 165,
       prenom: 'Mélanie',
@@ -136,7 +139,8 @@ test.describe('Onboarding 5 étapes — mobile', () => {
   test('parcours tout sauté : étape 1 seule obligatoire → shell sans crash', async ({ page }) => {
     await page.goto('/');
     await page.evaluate(() => document.fonts.ready);
-    await page.getByRole('button', { name: /Mélanie/ }).click();
+    await page.getByLabel("Comment tu t'appelles ?").fill('Mélanie');
+    await page.getByRole('radio', { name: /Suivre mon poids/ }).click();
     await page.getByRole('button', { name: /Continuer/ }).click();
 
     // « Passer » sur les étapes infos / objectif / compléments & régime.
@@ -164,12 +168,40 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     // Profil partiel enregistré : aucun champ sauté n'apparaît dans le storage.
     const profil = await page.evaluate(() => JSON.parse(localStorage.getItem('sportapp:profile')!));
     expect(profil).toEqual({
-      id: 'melanie',
+      id: expect.stringMatching(/^melanie-[0-9a-f]{4}$/),
       prenom: 'Mélanie',
       objectif: { type: 'perte' },
       complements: [],
       regime: 'aucun',
     });
+  });
+
+  test('étape 1 : en famille, juste la routine — aucun débordement, 4 onglets à l’arrivée', async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.getByText(/Marc|Mélanie/)).toHaveCount(0); // aucun profil imposé
+    await page.getByLabel("Comment tu t'appelles ?").fill('Jean');
+    await page.getByRole('radio', { name: 'En famille' }).click();
+    await page.getByLabel(/partenaire/).fill('Thérèse');
+    await page.getByLabel("Prénom d'un enfant").fill('Léo');
+    await page.getByRole('button', { name: /Ajouter/ }).click();
+    await assertPasDeDebordement(page);
+    await page.getByRole('button', { name: /Continuer/ }).click();
+    await expect(page.getByRole('heading', { name: /Personnalisation/ })).toBeVisible(); // sans suivi : étape 4
+    await page.getByRole('button', { name: /Continuer/ }).click();
+    await page.getByRole('button', { name: /C'est parti/ }).click();
+    const plusTard = page.getByRole('button', { name: 'Plus tard' });
+    const taSemaine = page.getByRole('heading', { name: 'Ta semaine' });
+    await plusTard.or(taSemaine).first().waitFor();
+    if (await plusTard.isVisible()) {
+      await assertPasDeDebordement(page);
+      await plusTard.click();
+    }
+    await page.getByRole('button', { name: 'Passer' }).click();
+    const nav = page.getByRole('navigation', { name: 'Navigation principale' });
+    await expect(nav.getByRole('button')).toHaveText(["Aujourd'hui", 'Menu', 'Courses', 'Rituel']);
+    await expect(page.getByText('Salut Jean 👋')).toBeVisible();
+    await assertPasDeDebordement(page);
   });
 
   test('migration : profil ancien → onboarding prérempli à l étape 2', async ({ page }) => {
@@ -205,7 +237,7 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     await expect(shell).toBeVisible();
     const profil = await page.evaluate(() => JSON.parse(localStorage.getItem('sportapp:profile')!));
     expect(profil).toEqual({
-      id: 'melanie',
+      id: 'melanie', // migration : l'id historique est gardé
       dateNaissance: '1987-03-02',
       taille: 165,
       objectif: { type: 'perte' },

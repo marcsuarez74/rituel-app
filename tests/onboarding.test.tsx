@@ -6,6 +6,13 @@ import { REGIMES } from '../src/lib/model';
 import type { ProfilLegacy, Regime, UserProfile } from '../src/lib/model';
 import { addWeight, getWeights, loadProfile } from '../src/lib/storage';
 import { todayISO } from '../src/lib/dates';
+import { loadFoyer } from '../src/lib/cycle/etat';
+
+// Ids de profil déterministes : « Mélanie » → melanie (sans suffixe aléatoire).
+vi.mock('../src/lib/model', async (importOriginal) => {
+  const reel = await importOriginal<typeof import('../src/lib/model')>();
+  return { ...reel, nouvelIdProfil: (p: string) => reel.nouvelIdProfil(p, () => 'x').replace(/-x$/, '') };
+});
 
 // happy-dom ne déclenche pas la soumission implicite des formulaires :
 // convention repo = fireEvent.submit.
@@ -27,11 +34,17 @@ const remplirEtape2 = async (
   await user.type(screen.getByLabelText('Taille (cm)'), overrides.taille ?? '165');
 };
 
+// Étape 1 : prénom + « Suivre mon poids » (les étapes 2-3 n'existent qu'avec le suivi).
+const etape1 = async (user: ReturnType<typeof userEvent.setup>, prenom = 'Mélanie', suivi = true) => {
+  await user.type(screen.getByLabelText("Comment tu t'appelles ?"), prenom);
+  if (suivi) await user.click(screen.getByRole('radio', { name: /Suivre mon poids/ }));
+  await user.click(screen.getByRole('button', { name: /Continuer/ }));
+};
+
 const allerEtape2 = async () => {
   const user = userEvent.setup();
-  render(<Onboarding onDone={onDone} />);
-  await user.click(screen.getByRole('button', { name: /Mélanie/ }));
-  await user.click(screen.getByRole('button', { name: /Continuer/ }));
+  render(<Onboarding onDone={(p) => onDone(p)} />);
+  await etape1(user);
   return user;
 };
 
@@ -72,76 +85,75 @@ beforeEach(() => {
   onDone = vi.fn();
 });
 
-describe('Onboarding — étape 1 (choix du profil)', () => {
-  it('affiche la question, les deux cartes et 5 points de progression', () => {
+describe('Onboarding — étape 1 (prénom, pour qui, routine ou suivi)', () => {
+  it('aucun prénom imposé : question ouverte, 5 points de progression, « Juste la routine » par défaut', () => {
     render(<Onboarding onDone={() => {}} />);
-
-    expect(screen.getByRole('heading', { name: /Qui est derrière l'écran/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Marc/ })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Mélanie/ })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Bienvenue sur Rituel/ })).toBeInTheDocument();
+    expect(screen.queryByText(/Marc|Mélanie/)).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Comment tu t'appelles ?")).toHaveAttribute('maxLength', '20');
+    expect(screen.getByRole('radio', { name: 'Juste moi' })).toBeChecked();
+    expect(screen.getByRole('radio', { name: /Juste la routine/ })).toBeChecked();
     const dots = screen.getByRole('group', { name: /Progression/ });
     expect(dots.querySelectorAll('span')).toHaveLength(5);
-    expect(dots.querySelectorAll('span')[0]).toHaveClass('onboarding-dot-active');
-    expect(screen.queryByLabelText('Poids (kg)')).not.toBeInTheDocument();
   });
 
-  it('choisir une carte la sélectionne, préremplit le prénom et affiche Continuer', async () => {
+  it('prénom obligatoire', async () => {
     const user = userEvent.setup();
     render(<Onboarding onDone={() => {}} />);
-
-    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
-    const carte = screen.getByRole('button', { name: /Mélanie/ });
-    expect(carte).toHaveClass('sel');
-    expect(carte).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByLabelText("C'est ton prénom ?")).toHaveValue('Mélanie');
-    expect(screen.getByLabelText("C'est ton prénom ?")).toHaveAttribute('maxLength', '20');
-
     await user.click(screen.getByRole('button', { name: /Continuer/ }));
-    expect(screen.getByRole('heading', { name: /Salut Mélanie/ })).toBeInTheDocument();
-
-    await user.click(screen.getByRole('button', { name: /Retour/ }));
-    expect(screen.getByRole('button', { name: /Mélanie/ })).toHaveClass('sel');
+    expect(screen.getByRole('alert')).toHaveTextContent('Ton prénom, pour commencer.');
   });
 
-  it('le prénom édité est utilisé dans la salutation puis enregistré', async () => {
+  it('« À deux » demande le/la partenaire, « En famille » aussi les enfants (ajout / retrait)', async () => {
     const user = userEvent.setup();
-    render(<Onboarding onDone={onDone} />);
-    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
-    await user.clear(screen.getByLabelText("C'est ton prénom ?"));
-    await user.type(screen.getByLabelText("C'est ton prénom ?"), 'Mel');
-    await user.click(screen.getByRole('button', { name: /Continuer/ }));
-    expect(screen.getByRole('heading', { name: /Salut Mel/ })).toBeInTheDocument();
+    render(<Onboarding onDone={() => {}} />);
+    expect(screen.queryByLabelText(/partenaire/)).not.toBeInTheDocument();
+    await user.click(screen.getByRole('radio', { name: 'À deux' }));
+    expect(screen.getByLabelText(/partenaire/)).toBeInTheDocument();
+    expect(screen.queryByLabelText("Prénom d'un enfant")).not.toBeInTheDocument();
+    await user.click(screen.getByRole('radio', { name: 'En famille' }));
+    await user.type(screen.getByLabelText("Prénom d'un enfant"), 'Léo');
+    await user.click(screen.getByRole('button', { name: /Ajouter/ }));
+    await user.type(screen.getByLabelText("Prénom d'un enfant"), 'Zoé{Enter}');
+    await user.click(screen.getByRole('button', { name: 'Retirer Léo' }));
+    expect(screen.getByRole('button', { name: 'Retirer Zoé' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Retirer Léo' })).not.toBeInTheDocument();
+  });
 
-    // Mêmes actions qu'allerEtape5, en poursuivant l'état courant (prénom édité).
-    await remplirEtape2(user);
+  it('avec suivi : salutation au prénom saisi, puis mesures ; le retour garde la saisie', async () => {
+    const user = userEvent.setup();
+    render(<Onboarding onDone={() => {}} />);
+    await etape1(user, 'Thérèse');
+    expect(screen.getByRole('heading', { name: /Salut Thérèse/ })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Retour/ }));
+    expect(screen.getByLabelText("Comment tu t'appelles ?")).toHaveValue('Thérèse');
+  });
+
+  it('juste la routine : saute mesures et objectif, profil sans suivi, foyer créé (moi, partenaire, enfants)', async () => {
+    const user = userEvent.setup();
+    const fin = vi.fn();
+    render(<Onboarding onDone={fin} />);
+    await user.type(screen.getByLabelText("Comment tu t'appelles ?"), 'Jean');
+    await user.click(screen.getByRole('radio', { name: 'En famille' }));
+    await user.type(screen.getByLabelText(/partenaire/), 'Thérèse');
+    await user.type(screen.getByLabelText("Prénom d'un enfant"), 'Léo{Enter}');
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    expect(screen.getByRole('heading', { name: 'Personnalisation' })).toBeInTheDocument(); // étape 4
+    await user.click(screen.getByRole('button', { name: /Retour/ }));
+    expect(screen.getByRole('heading', { name: /Bienvenue/ })).toBeInTheDocument(); // retour direct à l'étape 1
     await user.click(screen.getByRole('button', { name: /Continuer/ }));
     await user.click(screen.getByRole('button', { name: /Continuer/ }));
-    await user.click(screen.getByRole('button', { name: /Continuer/ }));
-    expect(screen.getByRole('heading', { name: /Maison & courses/ })).toBeInTheDocument();
     soumettre();
 
-    await waitFor(() =>
-      expect(onDone).toHaveBeenCalledWith(expect.objectContaining({ prenom: 'Mel' })),
-    );
-  });
-
-  it('prénom vidé : salutation et profil retombent sur le défaut', async () => {
-    const user = userEvent.setup();
-    render(<Onboarding onDone={onDone} />);
-    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
-    await user.clear(screen.getByLabelText("C'est ton prénom ?"));
-    await user.click(screen.getByRole('button', { name: /Continuer/ }));
-    expect(screen.getByRole('heading', { name: /Salut Mélanie/ })).toBeInTheDocument();
-  });
-
-  it('changer de carte réinitialise le prénom au défaut de la nouvelle carte', async () => {
-    const user = userEvent.setup();
-    render(<Onboarding onDone={() => {}} />);
-    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
-    await user.clear(screen.getByLabelText("C'est ton prénom ?"));
-    await user.type(screen.getByLabelText("C'est ton prénom ?"), 'X');
-    await user.click(screen.getByRole('button', { name: /Marc/ }));
-    expect(screen.getByLabelText("C'est ton prénom ?")).toHaveValue('Marc');
+    await waitFor(() => expect(fin).toHaveBeenCalled());
+    const [profil, foyerLocal] = fin.mock.calls[0];
+    expect(profil).toMatchObject({ id: 'jean', prenom: 'Jean', suivi: false });
+    expect(foyerLocal).toBe(true);
+    expect(loadFoyer()?.membres).toEqual([
+      { id: 'jean', prenom: 'Jean', type: 'adulte', suivi: false, telephone: true },
+      { id: 'therese', prenom: 'Thérèse', type: 'adulte', suivi: false },
+      { id: 'leo', prenom: 'Léo', type: 'enfant', suivi: false },
+    ]);
   });
 });
 
@@ -434,7 +446,7 @@ describe('Onboarding — migration (prefill ancienne forme)', () => {
   it('enregistre le profil v2 (migration à sens unique) et appelle onDone', async () => {
     addWeight('marc', '2026-09-09', 78.4);
     const user = userEvent.setup();
-    render(<Onboarding onDone={onDone} prefill={legacy} />);
+    render(<Onboarding onDone={(p) => onDone(p)} prefill={legacy} />);
     saisirDate('Date de naissance', '1985-04-12');
     await user.click(screen.getByRole('button', { name: /Continuer/ }));
     await user.click(screen.getByRole('button', { name: /Continuer/ }));
@@ -456,7 +468,7 @@ describe('Onboarding — migration (prefill ancienne forme)', () => {
 
   it('migration sans pesée : aucune pesée n est créée à l enregistrement', async () => {
     const user = userEvent.setup();
-    render(<Onboarding onDone={onDone} prefill={legacy} />);
+    render(<Onboarding onDone={(p) => onDone(p)} prefill={legacy} />);
     saisirDate('Date de naissance', '1985-04-12');
     await user.click(screen.getByRole('button', { name: /Continuer/ }));
     await user.click(screen.getByRole('button', { name: /Continuer/ }));
@@ -472,8 +484,7 @@ describe('Onboarding — CTA « Passer » (tout sautable sauf l étape 1)', () =
   it('l étape 2 peut être passée : on arrive à l objectif sans rien remplir', async () => {
     const user = userEvent.setup();
     render(<Onboarding onDone={() => {}} />);
-    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
-    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    await etape1(user);
     await user.click(screen.getByRole('button', { name: 'Passer' }));
 
     expect(screen.getByRole('heading', { name: /Ton objectif/ })).toBeInTheDocument();
@@ -481,9 +492,8 @@ describe('Onboarding — CTA « Passer » (tout sautable sauf l étape 1)', () =
 
   it('les étapes 3 et 4 peuvent être passées', async () => {
     const user = userEvent.setup();
-    render(<Onboarding onDone={onDone} />);
-    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
-    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    render(<Onboarding onDone={(p) => onDone(p)} />);
+    await etape1(user);
     await user.click(screen.getByRole('button', { name: 'Passer' }));
     await user.click(screen.getByRole('button', { name: 'Passer' }));
     await user.click(screen.getByRole('button', { name: 'Passer' }));
@@ -493,9 +503,8 @@ describe('Onboarding — CTA « Passer » (tout sautable sauf l étape 1)', () =
 
   it('parcours tout sauté : profil minimal sans date ni taille ni poids', async () => {
     const user = userEvent.setup();
-    render(<Onboarding onDone={onDone} />);
-    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
-    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    render(<Onboarding onDone={(p) => onDone(p)} />);
+    await etape1(user);
     await user.click(screen.getByRole('button', { name: 'Passer' }));
     await user.click(screen.getByRole('button', { name: 'Passer' }));
     await user.click(screen.getByRole('button', { name: 'Passer' }));
@@ -516,8 +525,7 @@ describe('Onboarding — CTA « Passer » (tout sautable sauf l étape 1)', () =
   it('champs présents = validés même en parcours sauté (poids saisi puis Passer)', async () => {
     const user = userEvent.setup();
     render(<Onboarding onDone={() => {}} />);
-    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
-    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    await etape1(user);
     await user.type(screen.getByLabelText('Poids (kg)'), '500');
     await user.click(screen.getByRole('button', { name: 'Passer' }));
     await user.click(screen.getByRole('button', { name: 'Passer' }));
@@ -530,9 +538,8 @@ describe('Onboarding — CTA « Passer » (tout sautable sauf l étape 1)', () =
 
   it('date seule : profil avec date, sans taille, sans pesée', async () => {
     const user = userEvent.setup();
-    render(<Onboarding onDone={onDone} />);
-    await user.click(screen.getByRole('button', { name: /Mélanie/ }));
-    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    render(<Onboarding onDone={(p) => onDone(p)} />);
+    await etape1(user);
     saisirDate('Date de naissance', '1987-03-02');
     await user.click(screen.getByRole('button', { name: 'Passer' }));
     await user.click(screen.getByRole('button', { name: 'Passer' }));
@@ -553,7 +560,7 @@ describe('Onboarding — CTA « Passer » (tout sautable sauf l étape 1)', () =
     addWeight('marc', '2026-09-01', 79.1);
     addWeight('marc', '2026-09-09', 78.4);
     const user = userEvent.setup();
-    render(<Onboarding onDone={onDone} prefill={legacy} />);
+    render(<Onboarding onDone={(p) => onDone(p)} prefill={legacy} />);
     await user.click(screen.getByRole('button', { name: 'Passer' }));
     await user.click(screen.getByRole('button', { name: 'Passer' }));
     await user.click(screen.getByRole('button', { name: 'Passer' }));
