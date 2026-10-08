@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { extname, join } from 'node:path';
 import { serveStatic } from '@hono/node-server/serve-static';
 import type { Database } from 'better-sqlite3';
@@ -7,6 +7,16 @@ import { Hono } from 'hono';
 import type { Context } from 'hono';
 import { cors } from 'hono/cors';
 import { hashCode, signerToken, verifierCode, verifierToken } from './auth.js';
+import {
+  CAPTURE_MAX,
+  NOM_CAPTURE,
+  QUOTA_JOUR,
+  TYPES_MIME,
+  construireCorps,
+  extensionImage,
+  lireAppareil,
+  validerChamps,
+} from './bugs.js';
 import { creerLimiteur } from './rate-limit.js';
 import { creerRegistreSse, type RegistreSse } from './sse.js';
 
@@ -36,6 +46,17 @@ export interface OptionsApp {
   statique?: string;
   /** SHA git déployé (build arg GIT_SHA → APP_COMMIT), exposé par /sante. */
   commit?: string;
+  /** Dossier de données (captures de bugs dans `<dataDir>/bugs`). Défaut : ./data. */
+  dataDir?: string;
+  /** "Signaler un bug" → issue GitHub. `fetch` injectable pour les tests. */
+  bugs?: {
+    token?: string | undefined;
+    repo?: string | undefined;
+    api?: string | undefined;
+    /** Origine publique servant les captures (liens de l'issue). */
+    urlPublique?: string | undefined;
+    fetch?: typeof fetch | undefined;
+  };
 }
 
 type EnvApp = { Variables: { foyerId: string } };
@@ -80,7 +101,7 @@ const normaliser = (r: Record<string, unknown>): Record<string, unknown> => {
 const IMMUABLE = 'public, max-age=31536000, immutable';
 const cacheDe = (chemin: string): string => (chemin.startsWith('/assets/') ? IMMUABLE : 'no-cache');
 
-export const creerApp = ({ db, secret, origines, heartbeatMs, statique, commit }: OptionsApp): Hono<EnvApp> => {
+export const creerApp = ({ db, secret, origines, heartbeatMs, statique, commit, dataDir, bugs }: OptionsApp): Hono<EnvApp> => {
   const app = new Hono<EnvApp>();
   const limiter = creerLimiteur({ max: 10, fenetreMs: 60_000 });
   const registre: RegistreSse = creerRegistreSse({ heartbeatMs });
@@ -113,6 +134,7 @@ export const creerApp = ({ db, secret, origines, heartbeatMs, statique, commit }
   };
   app.use('/sync/*', auth);
   app.use('/evenements', auth);
+  app.post('/bugs', auth); // POST seulement : le GET des captures reste public
 
   // Sonde de santé (Docker HEALTHCHECK, vérification après déploiement).
   app.get('/sante', (c) => c.json({ ok: true, commit: commit || 'inconnu' }));
@@ -269,6 +291,116 @@ export const creerApp = ({ db, secret, origines, heartbeatMs, statique, commit }
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         Connection: 'keep-alive',
+      },
+    });
+  });
+
+  // ---- Signaler un bug (issue GitHub) ----
+
+  const dossierBugs = join(dataDir ?? 'data', 'bugs');
+
+  app.post('/bugs', async (c) => {
+    const foyerId = c.get('foyerId');
+    if (Number(c.req.header('content-length') ?? 0) > CAPTURE_MAX + 200_000) {
+      return c.json({ erreur: 'trop-volumineux' }, 413);
+    }
+    let form: FormData;
+    try {
+      form = await c.req.formData();
+    } catch {
+      return c.json({ erreur: 'formulaire-invalide' }, 400);
+    }
+    const champs = validerChamps(form);
+    if (!champs) return c.json({ erreur: 'champs-invalides' }, 400);
+
+    const fichier = form.get('capture');
+    let octets: Buffer | null = null;
+    let extension: 'png' | 'jpg' | 'webp' | null = null;
+    if (fichier && typeof fichier !== 'string' && fichier.size > 0) {
+      if (fichier.size > CAPTURE_MAX) return c.json({ erreur: 'capture-trop-grosse' }, 400);
+      octets = Buffer.from(await fichier.arrayBuffer());
+      extension = extensionImage(octets);
+      if (!extension) return c.json({ erreur: 'capture-invalide' }, 400);
+    }
+
+    const { n } = db
+      .prepare(
+        "select count(*) as n from bug_reports where foyer_id = ? and date(created_at,'localtime') = date('now','localtime')",
+      )
+      .get(foyerId) as { n: number };
+    if (n >= QUOTA_JOUR) return c.json({ erreur: 'quota-atteint' }, 429);
+
+    if (!bugs?.token) return c.json({ erreur: 'signalement-indisponible' }, 503);
+
+    // Le fichier n'est écrit qu'une fois tout le reste validé (pas d'orphelin).
+    let nomCapture: string | null = null;
+    if (octets && extension) {
+      nomCapture = `${randomUUID()}.${extension}`;
+      mkdirSync(dossierBugs, { recursive: true });
+      writeFileSync(join(dossierBugs, nomCapture), octets);
+    }
+    const supprimerCapture = (): void => {
+      if (!nomCapture) return;
+      try {
+        unlinkSync(join(dossierBugs, nomCapture));
+      } catch {
+        /* déjà absent */
+      }
+    };
+
+    const urlPublique = bugs.urlPublique ?? 'https://rituel.marco-studio.fr';
+    const corps = construireCorps(
+      champs,
+      lireAppareil(form.get('device')),
+      c.req.header('user-agent') ?? '',
+      nomCapture ? `${urlPublique}/bugs/capture/${nomCapture}` : null,
+      new Date(),
+    );
+    const prefixe = champs.type === 'bug' ? '[Bug]' : '[Amélioration]';
+    try {
+      const res = await (bugs.fetch ?? fetch)(
+        `${bugs.api ?? 'https://api.github.com'}/repos/${bugs.repo ?? 'marcsuarez74/rituel-app'}/issues`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${bugs.token}`,
+            Accept: 'application/vnd.github+json',
+            'X-GitHub-Api-Version': '2022-11-28',
+            'Content-Type': 'application/json',
+            'User-Agent': 'rituel-app',
+          },
+          body: JSON.stringify({ title: `${prefixe} ${champs.titre}`, body: corps, labels: [champs.type] }),
+          signal: AbortSignal.timeout(10_000),
+        },
+      );
+      if (!res.ok) {
+        // Ni jeton ni corps de réponse dans les logs : le statut seul.
+        console.error(`GitHub issues: statut ${res.status}`);
+        supprimerCapture();
+        return c.json({ erreur: 'github-indisponible' }, 502);
+      }
+      const issue = (await res.json()) as { number?: number; html_url?: string };
+      db.prepare(
+        'insert into bug_reports (foyer_id, type, titre, issue_url, capture_name, created_at) values (?, ?, ?, ?, ?, ?)',
+      ).run(foyerId, champs.type, champs.titre, issue.html_url ?? '', nomCapture, new Date().toISOString());
+      return c.json({ ok: true, issueUrl: issue.html_url ?? '', issueNumber: issue.number ?? 0 });
+    } catch {
+      console.error('GitHub issues: appel impossible');
+      supprimerCapture();
+      return c.json({ erreur: 'github-indisponible' }, 502);
+    }
+  });
+
+  // Captures : publiques (GitHub les affiche), nom = UUID strict (pas de traversée).
+  app.get('/bugs/capture/:name', (c) => {
+    const nom = c.req.param('name');
+    const chemin = join(dossierBugs, nom);
+    if (!NOM_CAPTURE.test(nom) || !existsSync(chemin)) return c.json({ erreur: 'introuvable' }, 404);
+    return new Response(readFileSync(chemin), {
+      headers: {
+        'Content-Type': TYPES_MIME[extname(nom).slice(1)] ?? 'application/octet-stream',
+        'Cache-Control': 'public, max-age=31536000, immutable',
+        'X-Content-Type-Options': 'nosniff',
       },
     });
   });

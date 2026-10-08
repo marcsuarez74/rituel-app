@@ -54,6 +54,14 @@ Les téléphones se connectent ensuite **depuis l'app** :
 5. Indisponibilité du VPS → point en erreur ; un appui dessus (ou le retour du
    réseau) reconnecte en ~5 s sans recharger la page.
 
+## Signaler un bug
+
+Profil › « Signaler un bug » (foyer connecté) envoie titre, type, description, capture
+facultative et quelques infos d'appareil à `POST /bugs`, qui crée une issue GitHub
+(`GITHUB_BUG_TOKEN`, Issues : Read and write, limité au dépôt). Jamais l'id du foyer ni
+de donnée de santé : le dépôt est public. Quota 3/jour/foyer (table `bug_reports`).
+Mise en place du jeton : `server/README.md` § Signaler un bug.
+
 ## Comment ça marche (résumé)
 
 - **Outbox locale** (`sportapp:sync:outbox`) : toute mutation passe par

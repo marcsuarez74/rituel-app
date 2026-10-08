@@ -29,6 +29,9 @@ export default defineConfig({
     : {
         command: 'npm run dev -- --port 5173 --strictPort',
         url: BASE_URL,
+        // Sync activée (même origine) pour le parcours « Signaler un bug » ; les appels
+        // réseau qui échouent sont sans effet (la sync est tolérante aux erreurs).
+        env: { VITE_SYNC_URL: BASE_URL.replace(/\/$/, '') },
         reuseExistingServer: !process.env.CI,
         timeout: 30_000,
       },

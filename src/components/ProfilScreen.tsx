@@ -45,6 +45,7 @@ export function ProfilScreen({
   resumeSemaine,
   onSemaineType,
   onIdentite,
+  onSignalerBug,
 }: {
   profile: UserProfile;
   onBack: () => void;
@@ -57,6 +58,7 @@ export function ProfilScreen({
   resumeSemaine?: string;
   onSemaineType?: () => void;
   onIdentite?: (p: UserProfile) => void;
+  onSignalerBug?: () => void;
 }) {
   const [vue, setVue] = useState<Vue>('hub');
 
@@ -116,6 +118,11 @@ export function ProfilScreen({
               {duo && (
                 <button type="button" className="hub-action" onClick={() => setVue('foyer')}>
                   <span aria-hidden="true" className="hub-pt" /> {duo.label} — voir le foyer <span aria-hidden="true" className="fleche">›</span>
+                </button>
+              )}
+              {onSignalerBug && (
+                <button type="button" className="hub-action" onClick={onSignalerBug}>
+                  <Icon name="info" size={16} /> Signaler un bug <span aria-hidden="true" className="fleche">›</span>
                 </button>
               )}
               {syncEtat !== 'off' && (

@@ -410,6 +410,17 @@ describe('ProfilScreen (intégration via App)', () => {
     expect(screen.getByRole('navigation', { name: 'Navigation principale' })).toBeInTheDocument();
   });
 
+  it('« Signaler un bug » ouvre l’écran poussé, le retour revient au profil', async () => {
+    const user = monterApp();
+
+    await user.click(await screen.findByRole('button', { name: 'Mon profil' }));
+    await user.click(await screen.findByRole('button', { name: /Signaler un bug/ }));
+    expect(await screen.findByRole('heading', { name: 'Signaler un bug' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Profil/ }));
+    expect(await screen.findByRole('button', { name: /Mes infos/ })).toBeInTheDocument();
+  });
+
   it('la réouverture de l’écran montre les infos enregistrées (pas d’état périmé)', async () => {
     const user = monterApp();
 
