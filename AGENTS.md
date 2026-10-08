@@ -22,7 +22,7 @@ npm run dev          # serveur de dev (hot reload)
 npm test             # vitest, une passe
 npm run test:watch   # vitest en watch (loop TDD)
 npm run e2e          # Playwright (navigateur réel) — projets `mobile-se` (WebKit) et `mobile-375` (Chromium), 320 bouclé dans les specs, + soumission ; serveur dev auto
-npm run e2e:preview  # idem contre le BUILD DE PROD (dist/ via vite preview) — utilisé par le workflow Deploy
+npm run e2e:preview  # idem contre le BUILD DE PROD (dist/ via vite preview, sans rebuild) — utilisé par le job e2e du Pipeline
 npm run e2e:ui       # Playwright en mode UI (debug visuel)
 npm run typecheck    # tsc -b (couvre src/ ET tests/)
 npm run lint         # eslint
@@ -59,7 +59,7 @@ tests/            # miroir de src/, vitest + Testing Library, environnement happ
 tests/e2e/        # specs Playwright (navigateur réel, config playwright.config.ts, projets mobile 375 + 320)
 server/           # serveur de sync VPS (Hono + better-sqlite3), hors tsconfig app ; ses propres scripts `npm run check` (typecheck + lint + test)
 CHANGELOG.md      # historique des versions, généré par release-please (ne pas éditer) ; `package.json` `version` + `.release-please-manifest.json` aussi
-.github/workflows/publier.yml  # sur main : release-please (PR de release, puis tag v<version> + Release à la fusion)
+.github/workflows/pipeline.yml  # build → test → release / deploy ; job release : release-please (PR de release, puis tag v<version> + Release à la fusion)
 release-please-config.json · .release-please-manifest.json  # config release-please (sections du CHANGELOG en français)
 Dockerfile, docker-compose.yml # image unique PWA + API (prod), deploy/ = scripts VPS (déploiement auto, backup, installation)
 docs/ameliorations.md # axes d'amélioration futurs (mémoire d'idées, pas une spec)
@@ -122,16 +122,16 @@ Toute lecture passe par `safeParse` + garde de forme : une donnée corrompue se 
 ## PWA & déploiement
 
 - `base: '/'` dans `vite.config.ts` : la PWA est servie à la racine de rituel.marco-studio.fr par le serveur (`server/`, option `statique`), sur la même origine que l'API.
-- **CI sur les PR** (`.github/workflows/ci.yml`) : Prepare → Lint → Typecheck → Test → Build — elle doit être verte avant tout merge ; ne pas y ajouter de step lent sans discussion.
-- **Déploiement** : le VPS suit `main` (`deploy/deploy.sh`, timer systemd toutes les 2 min) → `docker compose build` + `up -d` + vérification `/sante`. Aucun secret sur GitHub. `/sante` expose le commit déployé (`GIT_SHA` → `APP_COMMIT`) et `.github/workflows/deploiement.yml` crée le Deployment GitHub `production` puis le passe en succès/échec d'après `/sante`. Une PR fusionnée = en prod sous ~2 min ; ne jamais fusionner un état dont l'image ne build pas (la CI PR construit l'image).
-- **Release** : `publier.yml` lance release-please, qui ouvre/maintient la PR « chore(main): release x.y.z » ; la fusionner pose le tag `v<version>` et la Release. Jamais de bump, d'entrée CHANGELOG ni de tag à la main.
+- **CI sur les PR** (`.github/workflows/pipeline.yml`, jobs build, image, unitaires, serveur, e2e) — elle doit être verte avant tout merge ; ne pas y ajouter de step lent sans discussion.
+- **Déploiement** : le VPS suit `main` (`deploy/deploy.sh`, timer systemd toutes les 2 min) → `docker compose build` + `up -d` + vérification `/sante`. Aucun secret sur GitHub. **Déploiement conditionnel** : le VPS ne déploie un commit que si un Deployment `production` existe pour son sha (créé par le job `deploy` du Pipeline après CI verte) ; `deploy.sh --force` contourne. `git merge` remplace `deploy.sh` : une modif n'agit qu'au déploiement suivant. `/sante` expose le commit déployé (`GIT_SHA` → `APP_COMMIT`) et le job `deploy` du Pipeline crée le Deployment GitHub `production` puis le passe en succès/échec d'après `/sante`. Une PR fusionnée = en prod sous ~2 min ; ne jamais fusionner un état dont l'image ne build pas (la CI PR construit l'image).
+- **Release** : le job `release` du Pipeline lance release-please, qui ouvre/maintient la PR « chore(main): release x.y.z » ; la fusionner pose le tag `v<version>` et la Release. Jamais de bump, d'entrée CHANGELOG ni de tag à la main.
 - Changement d'infra VPS (Dockerfile, compose, `deploy/`) : documenter dans `server/README.md` ; aucune IP, clé ni secret dans le dépôt.
 - Après un changement PWA (manifest, service worker, icônes) : vérifier avec `npm run build && npm run preview` que `dist/` contient `sw.js` + `manifest.webmanifest`.
 
 ## Git
 
 - Commits courts en français, préfixe conventionnel : `feat:`, `fix:`, `chore:`, `test:`, `docs:`, `ci:`
-- **Tout changement passe par une Pull Request**, même petit : branche dédiée → push → `gh pr create` → CI PR (`.github/workflows/ci.yml`) verte → merge. Ne jamais pousser directement sur `main`.
+- **Tout changement passe par une Pull Request**, même petit : branche dédiée → push → `gh pr create` → Pipeline (`.github/workflows/pipeline.yml`) vert → merge. Ne jamais pousser directement sur `main`.
 - Un commit = un changement cohérent. Le merge sur `main` déclenche le déploiement — ne jamais merger un état qui ne build pas.
 - Pas de rebase/force-push sur `main`.
 - Release : **conventional commits obligatoires** (`type(scope): sujet`) — `feat` → mineur, `fix`/`perf` → correctif, `!` ou `BREAKING CHANGE:` → majeur ; `docs`/`chore`/`ci`/`test`/`refactor` seuls ne déclenchent pas de release. Ne jamais modifier à la main la `version` de `package.json`, `.release-please-manifest.json` ni `CHANGELOG.md` : release-please le fait dans sa PR.

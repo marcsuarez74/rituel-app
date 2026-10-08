@@ -28,8 +28,12 @@ npm run build && JWT_SECRET=dev DB_PATH=/tmp/rituel.db npm start   # API seule, 
 - **Caddy** : `rituel.marco-studio.fr { reverse_proxy 127.0.0.1:8787 }` (SSE géré
   par défaut).
 - **Déploiement automatique** : `rituel-deploy.timer` lance `deploy/deploy.sh`
-  toutes les 2 min ; si `main` a avancé : `git pull`, `docker compose build`,
-  `up -d`, vérification de `/sante`. Forcer : `sudo /opt/rituel/deploy/deploy.sh --force`.
+  toutes les 2 min ; si `main` a avancé **et** qu'un Deployment GitHub `production` existe
+  pour ce commit (créé par le job `deploy` du Pipeline après CI verte ; API publique sans
+  auth, 30 req/h max sur les 60 permises, erreur réseau = pas de déploiement) : `git pull`,
+  `docker compose build`, `up -d`, vérification de `/sante`. Forcer, sans contrôle :
+  `sudo /opt/rituel/deploy/deploy.sh --force`. `git merge` remplace `deploy.sh` (nouvel
+  inode) : bash finit l'ancienne version, une modif du script n'agit qu'au déploiement suivant.
   Journal : `journalctl -u rituel-deploy -n 50`.
 - **Backup** : cron root `15 4 * * * /opt/rituel/deploy/backup.sh` (online-backup
   SQLite depuis le conteneur, `data/backups/`, rétention 14 jours).

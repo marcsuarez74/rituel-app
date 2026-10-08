@@ -38,7 +38,7 @@ le coût réel des vérifications et les pièges déjà payés une fois.
 | `docs/ameliorations.md` | mémoire d'idées, **pas une spec** |
 | `docs/backend.md` + `server/` | API de sync (Hono + SQLite) ; `server/` est un sous-projet : node_modules et scripts à part, `npm run check` |
 | `Dockerfile` · `docker-compose.yml` · `deploy/` | image unique PWA + API (prod) ; scripts VPS : déploiement auto, backup, installation — détails dans `server/README.md` |
-| `.github/workflows/` | `ci.yml` (PR), `publier.yml` (release-please sur main) |
+| `.github/workflows/` | `pipeline.yml` seul : build → test → release / deploy (PR + push main) |
 | `.superpowers/` | ledger **local, git-ignoré** : brainstorms, décisions, accès VPS, états en cours |
 | `CHANGELOG.md` + `package.json` | générés par release-please (+ `release-please-config.json`, `.release-please-manifest.json`) ; **ne pas les éditer à la main** |
 
@@ -110,18 +110,22 @@ manque aux deux, ce sont les flux :
 
 ## Release : tout est automatique via release-please
 
-1. branche → PR → CI verte (elle construit l'image) → fusion ;
-2. le VPS suit `main` (`deploy/deploy.sh`, timer systemd toutes les 2 min) : pull,
+1. branche → PR → Pipeline vert (jobs build, image, unitaires, serveur, e2e) → fusion ;
+2. le VPS suit `main` (`deploy/deploy.sh`, timer systemd toutes les 2 min) **mais ne
+   déploie un commit que si un Deployment `production` existe pour son sha** (créé par le job
+   `deploy` du Pipeline, donc après CI verte ; API publique, sans secret). Puis pull,
    `docker compose build` + `up -d` + vérification `/sante` — **une PR fusionnée est en
-   prod sous ~2 min** ; ne jamais fusionner un état dont l'image ne build pas ;
+   prod ~2 min après la fin du Pipeline** ; `deploy.sh --force` contourne le contrôle ;
+   `git merge` remplace `deploy.sh` (nouvel inode) : bash finit l'ancienne version, une
+   modif du script n'agit qu'au déploiement suivant ;
 3. **conventional commits obligatoires** (`type(scope): sujet`) : `feat` → mineur, `fix`/`perf`
    → correctif, `!` ou `BREAKING CHANGE:` → majeur ; `docs`/`chore`/`ci`/`test`/`refactor`
    seuls ne déclenchent aucune release. Le type du commit *est* le semver ;
-4. `publier.yml` (release-please) ouvre et tient à jour une PR « chore(main): release x.y.z »
+4. le job `release` du Pipeline (release-please) ouvre et tient à jour une PR « chore(main): release x.y.z »
    (bump `package.json` + manifest + CHANGELOG généré). **La fusionner pose le tag
    `v<version>` et crée la GitHub Release** (fusionner = déployer, comme toute PR).
    **Plus jamais de bump, d'entrée CHANGELOG ni de tag à la main** ;
-5. limite connue : une PR ouverte par `GITHUB_TOKEN` ne déclenche pas `ci.yml` — la PR de
+5. limite connue : une PR ouverte par `GITHUB_TOKEN` ne déclenche pas le Pipeline — la PR de
    release ne touche que `package.json`/`CHANGELOG.md`/manifest, donc rien à casser.
    Prérequis réglage dépôt : Actions › « Allow GitHub Actions to create and approve pull requests ».
 
@@ -129,7 +133,7 @@ manque aux deux, ce sont les flux :
 
 - Vérifier la prod : `curl -fsS https://rituel.marco-studio.fr/sante` → `{"ok":true,"commit":"<sha>"}` (le commit déployé) ;
   chaque déploiement est visible sur GitHub (onglet Deployments, environnement `production`) :
-  `.github/workflows/deploiement.yml` sonde `/sante` jusqu'à y voir le commit de `main` ;
+  le job `deploy` du Pipeline sonde `/sante` jusqu'à y voir le commit de `main` ;
   le bundle change de hash à chaque déploiement —
   `curl -s https://rituel.marco-studio.fr/ | grep -o 'assets/index-[^"]*\.js'` ;
   la version affichée en bas de l'écran Profil vient de `package.json` au build.

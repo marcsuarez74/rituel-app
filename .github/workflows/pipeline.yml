@@ -1,0 +1,204 @@
+# Pipeline unique : build → test → release / deploy.
+# - PR vers main : build + image + tests (rien n'est publié ni déployé).
+# - push sur main : idem, puis release-please (PR de release, tag + Release à sa fusion)
+#   et création du Deployment GitHub « production » — uniquement si tout est vert.
+# Le VPS déploie en pull (deploy/deploy.sh, timer 2 min) et ne déploie un commit que si un
+# Deployment « production » existe pour son sha : donc seulement après une CI verte.
+# Aucun secret : GITHUB_TOKEN suffit.
+# Prérequis réglage dépôt : Settings › Actions › General › « Allow GitHub Actions to create
+# and approve pull requests » (release-please).
+name: Pipeline
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+# Jamais d'annulation sur main : un run annulé en plein deploy laisserait un Deployment in_progress.
+concurrency:
+  group: pipeline-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build (lint, typecheck, build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+          cache: npm
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Build
+        run: npm run build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 1
+          if-no-files-found: error
+
+  image:
+    name: Image Docker (PWA + API)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      # better-sqlite3 natif : l'image doit se construire avant toute fusion.
+      - run: docker build -t rituel:ci .
+
+  unitaires:
+    name: Test — unitaires
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  serveur:
+    name: Test — serveur
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - name: Serveur — install
+        run: npm ci
+        working-directory: server
+      - name: Serveur — check (typecheck + lint + test)
+        run: npm run check
+        working-directory: server
+
+  e2e:
+    name: Test — e2e (build de prod, mobile 320/375)
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - name: Cache des navigateurs Playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - name: Navigateurs e2e (Playwright)
+        run: |
+          # Le miroir apt google-chrome du runner peut être incohérent (hash sum
+          # mismatch) ; Playwright télécharge ses propres navigateurs.
+          sudo rm -f /etc/apt/sources.list.d/google-chrome.*
+          # Un miroir apt du runner peut se figer (vu : 32 min sans réponse) :
+          # 5 min max par essai, 3 essais.
+          for essai in 1 2 3; do
+            timeout -k 10 300 npx playwright install --with-deps chromium webkit && exit 0
+            echo "Essai $essai bloqué ou en échec, on recommence"
+          done
+          exit 1
+      # e2e:preview sert dist/ via `vite preview` : il ne reconstruit pas, d'où l'artifact.
+      - name: Test e2e
+        run: npm run e2e:preview
+
+  release:
+    name: Release (release-please)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [build, image, unitaires, serveur, e2e]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  deploy:
+    name: Deploy (production)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [build, image, unitaires, serveur, e2e]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: https://rituel.marco-studio.fr
+    permissions:
+      deployments: write
+      contents: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      SHA: ${{ github.sha }}
+      URL: https://rituel.marco-studio.fr
+    steps:
+      # La création du Deployment AUTORISE le VPS à déployer ce commit (deploy.sh le vérifie).
+      - name: Créer le déploiement
+        run: |
+          id=$(jq -n --arg ref "$SHA" '{ref:$ref, environment:"production", auto_merge:false,
+            required_contexts:[], production_environment:true, description:"Déploiement pull du VPS"}' \
+            | gh api "repos/$REPO/deployments" --input - --jq .id)
+          echo "DEPLOY_ID=$id" >> "$GITHUB_ENV"
+          gh api "repos/$REPO/deployments/$id/statuses" -f state=in_progress \
+            -f description="En attente du VPS" >/dev/null
+
+      - name: Attendre que /sante serve ce commit
+        run: |
+          debut=$SECONDS
+          servi=""
+          etat=failure
+          msg=""
+          while [ $((SECONDS - debut)) -lt 720 ]; do
+            servi=$(curl -fsS --max-time 10 "$URL/sante" 2>/dev/null | jq -r '.commit // empty' 2>/dev/null || true)
+            if [ "$servi" = "$SHA" ]; then
+              etat=success; msg="Commit ${SHA:0:7} en production"; break
+            fi
+            if [ -n "$servi" ] && [ "$servi" != "inconnu" ]; then
+              # Un merge plus récent est déjà en prod : le commit attendu y est inclus.
+              statut=$(gh api "repos/$REPO/compare/$SHA...$servi" --jq .status 2>/dev/null || true)
+              if [ "$statut" = "ahead" ]; then
+                etat=success; msg="Remplacé en prod par un commit plus récent (${servi:0:7})"; break
+              fi
+            fi
+            sleep 15
+          done
+          duree=$((SECONDS - debut))
+          [ "$etat" = success ] || msg="Timeout : /sante ne sert pas ${SHA:0:7} après ${duree} s"
+          {
+            echo "### Déploiement production : $etat"
+            echo "- Commit attendu : \`$SHA\`"
+            echo "- Commit servi par /sante : \`${servi:-aucun (injoignable ou ancien format)}\`"
+            echo "- Durée : ${duree} s"
+            echo "- $msg"
+          } >> "$GITHUB_STEP_SUMMARY"
+          args=(-f state="$etat" -f description="$msg")
+          [ "$etat" = success ] && args+=(-f environment_url="$URL")
+          gh api "repos/$REPO/deployments/$DEPLOY_ID/statuses" "${args[@]}" >/dev/null
+          [ "$etat" = success ]

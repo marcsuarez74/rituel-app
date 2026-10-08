@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 // E2E mobile — le bug ciblé se manifeste sur les petits écrans : projets 375 + 320.
 // Mode par défaut : serveur dev (loop local). E2E_PREVIEW=1 : test du build de prod
-// via `vite preview` (utilisé par le workflow Deploy pour valider dist/ avant déploiement).
+// via `vite preview` (utilisé par le job e2e du Pipeline pour valider dist/).
 const PREVIEW = !!process.env.E2E_PREVIEW;
 const BASE_URL = PREVIEW ? 'http://localhost:4173/' : 'http://localhost:5173/';
 
