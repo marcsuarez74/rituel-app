@@ -325,8 +325,9 @@ describe('Onboarding — étape 5 (maison & courses)', () => {
     );
     expect(valeurs).toContain('Intermarché');
     expect(screen.getByLabelText('Budget max courses / semaine (€, optionnel)')).toBeInTheDocument();
-    expect(screen.getByLabelText('Personnes à table')).toBeInTheDocument();
-    expect(screen.getByLabelText('Repas par jour')).toBeInTheDocument();
+    // Qui est à table : le foyer ; quels repas : la semaine type — plus de questions en double.
+    expect(screen.queryByLabelText('Personnes à table')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Repas par jour')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Healthy' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Batch-friendly' })).toBeInTheDocument();
   });
@@ -345,16 +346,11 @@ describe('Onboarding — étape 5 (maison & courses)', () => {
     expect(screen.getByRole('button', { name: /Végé/ })).toBeInTheDocument();
   });
 
-  it('refuse un budget max invalide ou des personnes hors bornes', async () => {
+  it('refuse un budget max invalide', async () => {
     const user = await allerEtape5();
     await user.type(screen.getByLabelText('Budget max courses / semaine (€, optionnel)'), '0');
     await user.click(screen.getByRole('button', { name: /C'est parti/ }));
     expect(screen.getByRole('alert')).toHaveTextContent(/Budget max invalide/i);
-
-    await user.clear(screen.getByLabelText('Budget max courses / semaine (€, optionnel)'));
-    await user.type(screen.getByLabelText('Personnes à table'), '0');
-    await user.click(screen.getByRole('button', { name: /C'est parti/ }));
-    expect(screen.getByRole('alert')).toHaveTextContent(/Personnes à table/i);
     expect(loadProfile()).toBeNull();
   });
 
@@ -362,8 +358,6 @@ describe('Onboarding — étape 5 (maison & courses)', () => {
     const user = await allerEtape5({ regime: 'keto', complements: ['Créatine'] });
     await user.type(screen.getByLabelText('Magasin habituel'), 'Lidl');
     await user.type(screen.getByLabelText('Budget max courses / semaine (€, optionnel)'), '40');
-    await user.type(screen.getByLabelText('Personnes à table'), '4');
-    await user.type(screen.getByLabelText('Repas par jour'), '3');
     soumettre();
 
     await waitFor(() =>
@@ -377,8 +371,6 @@ describe('Onboarding — étape 5 (maison & courses)', () => {
         regime: 'keto',
         magasin: 'Lidl',
         budgetMax: 40,
-        personnes: 4,
-        repasJour: 3,
       } satisfies UserProfile),
     );
     expect(getWeights('melanie')).toEqual([{ date: todayISO(), kg: 62.4 }]);

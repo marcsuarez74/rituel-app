@@ -54,6 +54,7 @@ import {
   getDepenses,
   getWeights,
   loadProfile,
+  loadProfilsFoyer,
   saveDepense,
   saveProfile,
   setCheck,
@@ -391,13 +392,18 @@ describe('sync: pull / merge (outbox prime)', () => {
     expect(cles).toContain('2026-09-21|carrefour');
   });
 
-  it('le profil de l\'autre téléphone est ignoré localement', async () => {
+  it('le profil de l\'autre téléphone est gardé à part (lecture seule), jamais comme le mien', async () => {
     saveProfile(profilMarc());
     viderOutbox();
-    const mel = { ...profilMarc(), id: 'melanie' as const };
-    client.lues.profiles = [{ household_id: 'f', profil: 'melanie', payload: mel }];
+    const mel = { ...profilMarc(), id: 'melanie' as const, regime: 'keto' as const };
+    client.lues.profiles = [
+      { household_id: 'f', profil: 'melanie', payload: mel },
+      { household_id: 'f', profil: 'x', payload: { id: 'x' } }, // invalide → ignoré
+    ];
     await pull();
     expect(loadProfile()?.id).toBe('marc');
+    expect(loadProfilsFoyer()).toEqual({ melanie: mel });
+    expect(lireOutbox()).toEqual([]); // rien ne repart : c'est son profil, pas le mien
   });
 
   it('le profil actif remote modifié s\'applique', async () => {

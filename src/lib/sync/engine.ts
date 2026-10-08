@@ -22,6 +22,7 @@ import {
   addWeight,
   deleteDepense,
   estProfilValide,
+  garderProfilFoyer,
   getChecks,
   getDepenses,
   getWeights,
@@ -302,8 +303,11 @@ const appliquerRemoteSync = (rows: Record<TableSync, RowSync[]>): boolean => {
     if (attente.has(signature('profiles', key))) continue;
     const payload = r.payload as UserProfile | undefined;
     const local = loadProfile();
-    if (!payload || payload.id !== local?.id) continue; // l'autre profil : pas de slot local
-    if (!estProfilValide(payload)) continue; // payload distant invalide → jamais persisté
+    if (!estProfilValide(payload) || payload.id !== key.profil) continue; // invalide → jamais persisté
+    if (payload.id !== local?.id) {
+      if (garderProfilFoyer(payload)) change = true; // un autre membre : lecture seule
+      continue;
+    }
     if (JSON.stringify(local) !== JSON.stringify(payload)) {
       saveProfile(payload);
       change = true;

@@ -160,6 +160,33 @@ export const estProfilValide = (v: unknown): v is UserProfile => {
   );
 };
 
+// Profils des autres membres du foyer, reçus par la sync — lecture seule (le
+// prompt détaille chaque membre suivi). Jamais poussés : chacun pousse le sien.
+const PROFILS_FOYER_KEY = 'sportapp:profils:foyer';
+
+export const loadProfilsFoyer = (): Record<ProfileKey, UserProfile> => {
+  const raw = localStorage.getItem(PROFILS_FOYER_KEY);
+  if (raw === null) return {};
+  const parsed = safeParse<unknown>(PROFILS_FOYER_KEY, raw, null);
+  if (!isPlainObject(parsed)) {
+    console.warn(`Profils du foyer corrompus ignorés : ${PROFILS_FOYER_KEY}`);
+    localStorage.removeItem(PROFILS_FOYER_KEY);
+    return {};
+  }
+  return Object.fromEntries(Object.entries(parsed).filter(([id, p]) => estProfilValide(p) && p.id === id)) as Record<
+    ProfileKey,
+    UserProfile
+  >;
+};
+
+// Retourne true si la copie locale a changé.
+export const garderProfilFoyer = (p: UserProfile): boolean => {
+  const tous = loadProfilsFoyer();
+  if (JSON.stringify(tous[p.id]) === JSON.stringify(p)) return false;
+  localStorage.setItem(PROFILS_FOYER_KEY, JSON.stringify({ ...tous, [p.id]: p }));
+  return true;
+};
+
 export const loadProfile = (): UserProfile | null => {
   const raw = localStorage.getItem(PROFILE_KEY);
   if (raw === null) return null;

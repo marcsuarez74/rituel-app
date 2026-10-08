@@ -323,8 +323,7 @@ describe('ProfilScreen — Courses & budget', () => {
     expect(screen.getByLabelText('Magasin habituel')).toHaveAttribute('list', 'pf-magasins');
     // inputs texte (+ inputMode) : jest-dom renvoie la valeur sous forme de chaîne.
     expect(screen.getByLabelText('Budget max courses / semaine (€)')).toHaveValue('40');
-    expect(screen.getByLabelText('Personnes à table')).toHaveValue('4');
-    expect(screen.getByLabelText('Repas par jour')).toHaveValue('3');
+    expect(screen.queryByLabelText('Personnes à table')).not.toBeInTheDocument(); // le foyer le dit
     expect(within(maison).getByRole('button', { name: /Retirer Healthy/ })).toBeInTheDocument();
     expect(within(maison).getByRole('button', { name: /Retirer Rapide/ })).toBeInTheDocument();
     // Mêmes champs que l'onboarding : le bloc de chips porte le même libellé.
@@ -366,7 +365,7 @@ describe('ProfilScreen — Courses & budget', () => {
     expect(loadProfile()).toBeNull();
   });
 
-  it('vider les champs et enregistrer retire les données maison du profil', async () => {
+  it('vider les champs et enregistrer retire les données maison du profil (et les anciens personnes / repas)', async () => {
     const user = userEvent.setup();
     render(
       <ProfilScreen
@@ -387,8 +386,6 @@ describe('ProfilScreen — Courses & budget', () => {
 
     await user.clear(screen.getByLabelText('Magasin habituel'));
     await user.clear(screen.getByLabelText('Budget max courses / semaine (€)'));
-    await user.clear(screen.getByLabelText('Personnes à table'));
-    await user.clear(screen.getByLabelText('Repas par jour'));
     await user.click(screen.getByRole('button', { name: /Retirer Healthy/ }));
     await user.click(screen.getByRole('button', { name: 'Enregistrer maison & courses' }));
 

@@ -57,8 +57,6 @@ export function Onboarding({
   const [regime, setRegime] = useState<Regime>('aucun');
   const [magasin, setMagasin] = useState('');
   const [budgetMax, setBudgetMax] = useState('');
-  const [personnes, setPersonnes] = useState('');
-  const [repasJour, setRepasJour] = useState('');
   const [preferences, setPreferences] = useState<string[]>([]);
   const [nouvellePreference, setNouvellePreference] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -192,16 +190,6 @@ export function Onboarding({
         return false;
       }
     }
-    const pers = personnes ? Number.parseInt(personnes, 10) : undefined;
-    if (personnes && (pers === undefined || pers < 1 || pers > 12)) {
-      setError('Personnes à table : entre 1 et 12.');
-      return false;
-    }
-    const repas = repasJour ? Number.parseInt(repasJour, 10) : undefined;
-    if (repasJour && (repas === undefined || repas < 1 || repas > 12)) {
-      setError('Repas par jour : entre 1 et 12.');
-      return false;
-    }
     return true;
   };
 
@@ -237,8 +225,6 @@ export function Onboarding({
     }
     if (!validerMaison()) return;
     if (!id) return;
-    const pers = personnes ? Number.parseInt(personnes, 10) : undefined;
-    const repas = repasJour ? Number.parseInt(repasJour, 10) : undefined;
     const profile: UserProfile = {
       id,
       ...(saisie.suivi ? {} : { suivi: false }),
@@ -252,8 +238,6 @@ export function Onboarding({
       ...(magasin.trim() ? { magasin: magasin.trim() } : {}),
       ...(budgetMax ? { budgetMax: parseEuro(budgetMax)! } : {}),
       ...(preferences.length > 0 ? { preferences: [...preferences] } : {}),
-      ...(pers != null ? { personnes: pers } : {}),
-      ...(repas != null ? { repasJour: repas } : {}),
     };
     saveProfile(profile);
     if (!Number.isNaN(kg)) addWeight(id, todayISO(), kg);
@@ -633,34 +617,6 @@ export function Onboarding({
                 <p className="onb-hint">
                   Le plafond à ne pas dépasser — l'app compare l'estimé du menu et ce que tu paies vraiment.
                 </p>
-              </div>
-              <div className="onb-row2">
-                <div className="onboarding-field">
-                  <label htmlFor="ob-personnes">Personnes à table</label>
-                  <input
-                    id="ob-personnes"
-                    type="text"
-                    inputMode="numeric"
-                    value={personnes}
-                    onChange={(e) => {
-                      setError(null);
-                      setPersonnes(e.target.value);
-                    }}
-                  />
-                </div>
-                <div className="onboarding-field">
-                  <label htmlFor="ob-repas">Repas par jour</label>
-                  <input
-                    id="ob-repas"
-                    type="text"
-                    inputMode="numeric"
-                    value={repasJour}
-                    onChange={(e) => {
-                      setError(null);
-                      setRepasJour(e.target.value);
-                    }}
-                  />
-                </div>
               </div>
               <p className="onb-label">Préférences pour les prochains cycles</p>
               <div className="chips">

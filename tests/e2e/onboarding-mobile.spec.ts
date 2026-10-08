@@ -74,8 +74,6 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     for (const label of [
       'Magasin habituel',
       'Budget max courses / semaine',
-      'Personnes à table',
-      'Repas par jour',
     ]) {
       await assertStyleGuideline(page, label);
     }
@@ -311,8 +309,6 @@ test.describe('Écran Profil — mobile', () => {
     for (const label of [
       'Magasin habituel',
       'Budget max courses / semaine',
-      'Personnes à table',
-      'Repas par jour',
     ]) {
       await assertStyleGuideline(page, label);
     }

@@ -102,7 +102,7 @@ describe('resumes — resumeInfos', () => {
 describe('resumes — resumeMaison', () => {
   it('seuls les champs remplis, pill format', () => {
     expect(resumeMaison({ ...profileBase, magasin: 'Carrefour City', budgetMax: 80, personnes: 2 })).toBe(
-      'Carrefour City · 80 € · 2 pers.',
+      'Carrefour City · 80 €', // personnes : ignoré (le foyer dit qui est à table)
     );
   });
   it('budget décimal : à la française', () => {

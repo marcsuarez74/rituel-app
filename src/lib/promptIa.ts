@@ -31,29 +31,33 @@ export const schemaContrat = (): string => {
 
 export interface ContextePrompt {
   foyer: ReglagesFoyer;
-  profil: UserProfile;
+  profil: UserProfile; // le téléphone qui copie le prompt
   dernierPoids: WeightEntry | null;
+  // Les autres membres, profils reçus par la sync (lecture seule).
+  autres?: Array<{ profil: UserProfile; dernierPoids: WeightEntry | null }>;
   precedentes: string[];
 }
 
-const membres = ({ foyer, profil, dernierPoids }: ContextePrompt): string =>
+const membres = ({ foyer, profil, dernierPoids, autres = [] }: ContextePrompt): string =>
   foyer.membres
     .map((m) => {
+      const source = m.id === profil.id ? { profil, dernierPoids } : autres.find((a) => a.profil.id === m.id);
       const parties = [`- ${m.id} (${m.prenom}) · ${m.type}`];
       if (m.suivi) parties.push('suivi');
       if (m.regime && m.regime !== 'aucun') parties.push(`régime ${m.regime}`);
       if (m.type === 'enfant') parties.push('mange normalement, portion enfant');
       else if (!m.suivi) parties.push('portion adulte standard');
-      if (m.id === profil.id && m.suivi) {
-        const cible = profil.poidsObjectif != null ? ` vers ${kg(profil.poidsObjectif)} kg` : '';
-        parties.push(`objectif : ${OBJECTIFS_PROMPT[profil.objectif.type]}${cible}`);
+      if (source && m.suivi) {
+        const { profil: p, dernierPoids: pesee } = source;
+        const cible = p.poidsObjectif != null ? ` vers ${kg(p.poidsObjectif)} kg` : '';
+        parties.push(`objectif : ${OBJECTIFS_PROMPT[p.objectif.type]}${cible}`);
         const corps = [
-          profil.dateNaissance ? `${ageDepuis(profil.dateNaissance)} ans` : '',
-          dernierPoids ? `${kg(dernierPoids.kg)} kg` : '',
-          profil.taille != null ? `${profil.taille} cm` : '',
+          p.dateNaissance ? `${ageDepuis(p.dateNaissance)} ans` : '',
+          pesee ? `${kg(pesee.kg)} kg` : '',
+          p.taille != null ? `${p.taille} cm` : '',
         ].filter(Boolean);
         if (corps.length) parties.push(corps.join(', '));
-        if (profil.complements.length) parties.push(`compléments : ${profil.complements.join(', ')}`);
+        if (p.complements.length) parties.push(`compléments : ${p.complements.join(', ')}`);
       }
       return parties.join(' · ');
     })

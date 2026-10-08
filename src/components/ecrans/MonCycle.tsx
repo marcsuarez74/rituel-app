@@ -10,7 +10,7 @@ import { importerCycle, type ResultatImport } from '../../lib/cycle/valider';
 import { formatJourMoisCourt, periodeCourte } from '../../lib/dates';
 import type { UserProfile } from '../../lib/model';
 import { assemblePromptIa } from '../../lib/promptIa';
-import { getWeights } from '../../lib/storage';
+import { getWeights, loadProfilsFoyer } from '../../lib/storage';
 import { Icon } from '../Icon';
 
 type Vue = 'etat' | 'generer' | 'apercu' | 'pret';
@@ -266,7 +266,17 @@ export function MonCycle({
               className="bouton-plein"
               onClick={() =>
                 void copierEt(
-                  assemblePromptIa({ foyer, profil, dernierPoids: getWeights(profil.id).at(-1) ?? null, precedentes: loadPrecedent() }),
+                  assemblePromptIa({
+                    foyer,
+                    profil,
+                    dernierPoids: getWeights(profil.id).at(-1) ?? null,
+                    // Les autres membres suivis : leur profil et leur pesée, reçus par la sync.
+                    autres: Object.values(loadProfilsFoyer()).map((p) => ({
+                      profil: p,
+                      dernierPoids: getWeights(p.id).at(-1) ?? null,
+                    })),
+                    precedentes: loadPrecedent(),
+                  }),
                   'prompt',
                 )
               }

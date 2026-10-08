@@ -6,8 +6,8 @@ import { saveProfile } from '../../lib/storage';
 import { Icon } from '../Icon';
 import { Alerte, Fil } from './presente';
 
-// Page détail « Courses & budget » — magasin, budget, personnes à table,
-// repas/jour, préférences des prochains cycles.
+// Page détail « Courses & budget » — magasin, budget, préférences des
+// prochains cycles (qui est à table : le foyer ; quels repas : la semaine type).
 export function ProfilMaison({
   profile,
   onProfileSaved,
@@ -17,8 +17,6 @@ export function ProfilMaison({
 }) {
   const [magasin, setMagasin] = useState(profile.magasin ?? '');
   const [budgetMax, setBudgetMax] = useState(profile.budgetMax != null ? String(profile.budgetMax) : '');
-  const [personnes, setPersonnes] = useState(profile.personnes != null ? String(profile.personnes) : '');
-  const [repasJour, setRepasJour] = useState(profile.repasJour != null ? String(profile.repasJour) : '');
   const [preferences, setPreferences] = useState<string[]>([...(profile.preferences ?? [])]);
   const [nouvellePreference, setNouvellePreference] = useState('');
   const [saved, setSaved] = useState(false);
@@ -30,8 +28,6 @@ export function ProfilMaison({
     setSynced(profile.id);
     setMagasin(profile.magasin ?? '');
     setBudgetMax(profile.budgetMax != null ? String(profile.budgetMax) : '');
-    setPersonnes(profile.personnes != null ? String(profile.personnes) : '');
-    setRepasJour(profile.repasJour != null ? String(profile.repasJour) : '');
     setPreferences([...(profile.preferences ?? [])]);
     setNouvellePreference('');
     setSaved(false);
@@ -50,16 +46,6 @@ export function ProfilMaison({
       setErreur('Budget max invalide : entre un montant en euros (ex. 40).');
       return;
     }
-    const pers = personnes ? Number.parseInt(personnes, 10) : undefined;
-    if (personnes && (pers === undefined || pers < 1 || pers > 12)) {
-      setErreur('Personnes à table : entre 1 et 12.');
-      return;
-    }
-    const repas = repasJour ? Number.parseInt(repasJour, 10) : undefined;
-    if (repasJour && (repas === undefined || repas < 1 || repas > 12)) {
-      setErreur('Repas par jour : entre 1 et 12.');
-      return;
-    }
     setErreur(null);
     // Clés maison reconstruites : un champ vidé retire la donnée (pattern
     // delete + set de enregistrerObjectif) — jamais de valeur vide écrite.
@@ -67,13 +53,12 @@ export function ProfilMaison({
     delete updated.magasin;
     delete updated.budgetMax;
     delete updated.preferences;
+    // Champs retirés (spec 2026-10-07 §1 ter) : nettoyés au passage.
     delete updated.personnes;
     delete updated.repasJour;
     if (magasin.trim()) updated.magasin = magasin.trim();
     if (bud != null) updated.budgetMax = bud;
     if (preferences.length > 0) updated.preferences = [...preferences];
-    if (pers != null) updated.personnes = pers;
-    if (repas != null) updated.repasJour = repas;
     maj(updated);
   };
 
@@ -125,36 +110,6 @@ export function ProfilMaison({
             setBudgetMax(e.target.value);
           }}
         />
-      </div>
-      <div className="onb-row2">
-        <div className="onboarding-field">
-          <label htmlFor="pf-personnes">Personnes à table</label>
-          <input
-            id="pf-personnes"
-            type="text"
-            inputMode="numeric"
-            value={personnes}
-            onChange={(e) => {
-              setSaved(false);
-              setErreur(null);
-              setPersonnes(e.target.value);
-            }}
-          />
-        </div>
-        <div className="onboarding-field">
-          <label htmlFor="pf-repas">Repas par jour</label>
-          <input
-            id="pf-repas"
-            type="text"
-            inputMode="numeric"
-            value={repasJour}
-            onChange={(e) => {
-              setSaved(false);
-              setErreur(null);
-              setRepasJour(e.target.value);
-            }}
-          />
-        </div>
       </div>
       <p className="onb-label">Préférences pour les prochains cycles</p>
       <div className="chips">
