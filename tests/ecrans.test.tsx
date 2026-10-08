@@ -10,7 +10,7 @@ import { Recette } from '../src/components/ecrans/Recette';
 import { type CycleActif, type Membre, type ReglagesFoyer, foyerParDefaut, loadCycle, loadFoyer } from '../src/lib/cycle/etat';
 import { getChecks, getDepenses } from '../src/lib/storage';
 import { importerCycle } from '../src/lib/cycle/valider';
-import { enFichiers, quatreFichiers } from './lib/cycle/fabrique';
+import { enFichiers, foyerDuo, quatreFichiers } from './lib/cycle/fabrique';
 
 const MEMBRES: Membre[] = [
   { id: 'alex', prenom: 'Alex', type: 'adulte', suivi: true },
@@ -356,7 +356,7 @@ describe('Semaine type', () => {
   it('foyer, rythme, jour par jour, exceptions → enregistrés ensemble', async () => {
     const user = userEvent.setup();
     const onEnregistrer = vi.fn();
-    render(<SemaineType foyer={foyerParDefaut(null)} onEnregistrer={onEnregistrer} onRetour={() => {}} />);
+    render(<SemaineType foyer={foyerDuo()} onEnregistrer={onEnregistrer} onRetour={() => {}} />);
 
     await user.selectOptions(screen.getByLabelText(/Jour des courses/), 'vendredi');
     await user.type(screen.getByLabelText("Prénom d'un enfant"), 'Maëlle');

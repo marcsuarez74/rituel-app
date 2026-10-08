@@ -1,6 +1,6 @@
 import { ageDepuis } from './dates';
 import { fmtKg } from './text';
-import { OBJECTIF_TYPES } from './model';
+import { OBJECTIF_TYPES, REGIMES, estSuivi } from './model';
 import type { UserProfile } from './model';
 import type { WeightEntry } from './storage';
 import type { SyncEtat } from './sync/engine';
@@ -27,6 +27,10 @@ export const resumeObjectif = (
   profile: UserProfile,
   pesee: WeightEntry | null,
 ): string => {
+  if (!estSuivi(profile)) {
+    const regime = profile.regime !== 'aucun' ? REGIMES.find((r) => r.id === profile.regime)?.nom : undefined;
+    return regime ? `Juste la routine · ${regime}` : 'Juste la routine';
+  }
   const nom = OBJECTIF_TYPES.find((t) => t.id === profile.objectif.type)?.nom ?? profile.objectif.type;
   const cible = profile.poidsObjectif;
   if (cible == null || !pesee) return nom;

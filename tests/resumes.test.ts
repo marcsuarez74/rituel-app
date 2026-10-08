@@ -37,6 +37,11 @@ describe('resumes — resumeDuo (sous-ligne en-tête)', () => {
 });
 
 describe('resumes — resumeObjectif', () => {
+  it('juste la routine : la tuile le dit, avec le régime s’il y en a un', () => {
+    expect(resumeObjectif({ ...profileBase, suivi: false }, null)).toBe('Juste la routine');
+    expect(resumeObjectif({ ...profileBase, suivi: false, regime: 'keto' }, null)).toBe('Juste la routine · Keto');
+  });
+
   it('cible + pesée : type · restants (perte)', () => {
     const pesee: WeightEntry = { date: '2026-09-14', kg: 84 };
     expect(resumeObjectif({ ...profileBase, poidsObjectif: 79.8 }, pesee)).toBe(

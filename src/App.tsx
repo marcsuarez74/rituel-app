@@ -9,9 +9,9 @@ import { semaineCoches } from './lib/cycle/etat';
 import type { Jour } from './lib/cycle/types';
 import type { VueRituel } from './components/ecrans/Rituel';
 import { chargerCycleExemple, semaineParDefaut } from './lib/cycle/courant';
-import { type CycleActif, type ReglagesFoyer, foyerParDefaut, loadCycle, loadFoyer, saveFoyer } from './lib/cycle/etat';
+import { type CycleActif, type ReglagesFoyer, assurerMoi, foyerParDefaut, loadCycle, loadFoyer, saveFoyer } from './lib/cycle/etat';
 import { todayISO } from './lib/dates';
-import { prenomProfil } from './lib/model';
+import { estSuivi, prenomProfil } from './lib/model';
 import type { UserProfile } from './lib/model';
 import { loadProfile, loadProfilLegacy, removeProfile } from './lib/storage';
 import { initSync, type SyncEtat } from './lib/sync/engine';
@@ -46,7 +46,8 @@ function App() {
   );
   const [cycleStocke, setCycleStocke] = useState<CycleActif | null>(loadCycle);
   const [foyerStocke, setFoyerStocke] = useState(loadFoyer);
-  const [exemple, setExemple] = useState<CycleActif | null>(null);
+  // Cycle d'exemple aux prénoms du foyer : rechargé si les membres changent.
+  const [exemple, setExemple] = useState<{ cle: string; actif: CycleActif } | null>(null);
   const [onglet, setOnglet] = useState<Onglet>('aujourdhui');
   // Semaine consultée dans Menu / Courses / Rituel (null = celle du jour).
   const [semaineVue, setSemaineVue] = useState<number | null>(null);
@@ -79,16 +80,32 @@ function App() {
     });
   }, []);
 
+  // Mon membre du foyer existe et suit mon profil (prénom, suivi, régime) —
+  // y compris dans un foyer reçu par la sync.
+  useEffect(() => {
+    if (!profile || !foyerStocke) return;
+    const f = assurerMoi(foyerStocke, profile);
+    if (f === foyerStocke) return;
+    saveFoyer(f);
+    setFoyerStocke(f);
+  }, [profile, foyerStocke]);
+
   // Sans cycle importé : le cycle d'exemple (chunk séparé), en mémoire.
-  const besoinExemple = !cycleStocke && !exemple;
+  const cleExemple = JSON.stringify(foyer.membres.map((m) => [m.id, m.prenom, m.type]));
+  const besoinExemple = !!profile && !cycleStocke && exemple?.cle !== cleExemple;
+  const membres = foyer.membres;
   useEffect(() => {
     if (!besoinExemple) return;
     let actif = true;
-    void chargerCycleExemple(aujourdhui, foyer.jourCourses).then((c) => actif && setExemple(c));
+    void chargerCycleExemple(aujourdhui, foyer.jourCourses, membres).then(
+      (c) => actif && setExemple({ cle: cleExemple, actif: c }),
+    );
     return () => {
       actif = false;
     };
-  }, [besoinExemple, aujourdhui, foyer.jourCourses]);
+    // membres : couvert par cleExemple (même contenu, nouvelle référence à chaque rendu).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [besoinExemple, aujourdhui, foyer.jourCourses, cleExemple]);
 
   if (!profile) {
     return (
@@ -105,7 +122,8 @@ function App() {
   }
 
   const prenom = prenomProfil(profile.id, profile);
-  const actif = cycleStocke ?? exemple;
+  const actif = cycleStocke ?? exemple?.actif ?? null;
+  const suivi = estSuivi(profile);
 
   const position = actif ? positionCycle(actif, aujourdhui) : null;
 
@@ -200,7 +218,8 @@ function App() {
   }
 
   const semaine = semaineVue ?? (position ? semaineParDefaut(position) : 0);
-  const titre = ONGLETS.find((o) => o.id === onglet)!.label;
+  const ecran: Onglet = onglet === 'suivi' && !suivi ? 'aujourdhui' : onglet; // suivi coupé depuis Profil
+  const titre = ONGLETS.find((o) => o.id === ecran)!.label;
   const ouvrirRecette = (n: number) => (id: string, coche: string) =>
     actif && setRecette({ id, coche: { semaine: semaineCoches(actif.id, n), id: coche } });
 
@@ -250,7 +269,7 @@ function App() {
     <div className="shell">
       <div className="main-content">
         <EnTete titre={titre} prenom={prenom} syncEtat={syncEtat} onProfil={() => setProfilOuvert(true)} />
-        {actif && AVEC_SEMAINE.includes(onglet) && (
+        {actif && AVEC_SEMAINE.includes(ecran) && (
           <LigneSemaine
             cal={actif}
             index={semaine}
@@ -265,7 +284,7 @@ function App() {
             <Chargement />
           ) : (
             <Suspense fallback={<Chargement />}>
-              {onglet === 'aujourdhui' && (
+              {ecran === 'aujourdhui' && (
                 <Aujourdhui
                   actif={actif}
                   foyer={foyer}
@@ -279,7 +298,7 @@ function App() {
                   onAller={setOnglet}
                 />
               )}
-              {onglet === 'menu' && (
+              {ecran === 'menu' && (
                 <Menu
                   actif={actif}
                   foyer={foyer}
@@ -292,10 +311,10 @@ function App() {
                   onOuvrirRecette={ouvrirRecette(semaine)}
                 />
               )}
-              {onglet === 'courses' && (
+              {ecran === 'courses' && (
                 <Courses actif={actif} foyer={foyer} semaine={semaine} aujourdhui={aujourdhui} syncVersion={syncVersion} />
               )}
-              {onglet === 'rituel' && (
+              {ecran === 'rituel' && (
                 <Rituel
                   actif={actif}
                   foyer={foyer}
@@ -307,12 +326,12 @@ function App() {
                   onOuvrirRecette={(id) => setRecette({ id })}
                 />
               )}
-              {onglet === 'suivi' && <Suivi profile={profile} syncVersion={syncVersion} />}
+              {ecran === 'suivi' && <Suivi profile={profile} syncVersion={syncVersion} />}
             </Suspense>
           )}
         </main>
       </div>
-      <BarreOnglets actif={onglet} onSelect={setOnglet} />
+      <BarreOnglets actif={ecran} suivi={suivi} onSelect={setOnglet} />
     </div>
   );
 }

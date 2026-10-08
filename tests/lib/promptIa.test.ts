@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { foyerParDefaut } from '../../src/lib/cycle/etat';
 import type { ReglagesFoyer } from '../../src/lib/cycle/etat';
 import type { UserProfile } from '../../src/lib/model';
 import { assemblePromptIa, schemaContrat } from '../../src/lib/promptIa';
+import { foyerDuo } from './cycle/fabrique';
 
 const profil: UserProfile = {
   id: 'marc',
@@ -16,7 +16,7 @@ const profil: UserProfile = {
 };
 
 const foyer = (): ReglagesFoyer => {
-  const f = foyerParDefaut({ ...profil, magasin: 'Lidl', budgetMax: 110 });
+  const f: ReglagesFoyer = { ...foyerDuo(), magasin: 'Lidl', budgetMax: 110 };
   f.membres[1].regime = 'keto';
   f.membres.push({ id: 'maelle', prenom: 'Maëlle', type: 'enfant', suivi: false });
   f.semaine.lundi = { dejeuner: { marc: 'box', melanie: 'maison', maelle: 'dehors' }, diner: 'rapide', plusTard: ['melanie'], journee: { marc: 'sortie' }, note: 'Piscine' };
@@ -49,6 +49,14 @@ describe('assemblePromptIa (cycle v2)', () => {
     );
     expect(t).toContain('- melanie (Mélanie) · adulte · suivi · régime keto');
     expect(t).toContain('- maelle (Maëlle) · enfant · mange normalement, portion enfant');
+  });
+
+  it('juste la routine : ni objectif ni mesures pour ce membre, portions adulte standard', () => {
+    const f = foyer();
+    f.membres[0].suivi = false;
+    const t = assemblePromptIa({ foyer: f, profil: { ...profil, suivi: false }, dernierPoids: { date: '2026-10-05', kg: 82.4 }, precedentes: [] });
+    expect(t).toContain('- marc (Marc) · adulte · portion adulte standard\n');
+    expect(t).not.toContain('82,4 kg');
   });
 
   it('la semaine type à partir du jour des courses, exceptions actives seulement', () => {

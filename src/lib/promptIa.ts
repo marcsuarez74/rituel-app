@@ -43,7 +43,8 @@ const membres = ({ foyer, profil, dernierPoids }: ContextePrompt): string =>
       if (m.suivi) parties.push('suivi');
       if (m.regime && m.regime !== 'aucun') parties.push(`régime ${m.regime}`);
       if (m.type === 'enfant') parties.push('mange normalement, portion enfant');
-      if (m.id === profil.id) {
+      else if (!m.suivi) parties.push('portion adulte standard');
+      if (m.id === profil.id && m.suivi) {
         const cible = profil.poidsObjectif != null ? ` vers ${kg(profil.poidsObjectif)} kg` : '';
         parties.push(`objectif : ${OBJECTIFS_PROMPT[profil.objectif.type]}${cible}`);
         const corps = [
