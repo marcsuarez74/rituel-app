@@ -6,6 +6,8 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 ## [Non publié]
 
+## [2.1.0] - 2026-10-08
+
 ### Changé
 
 - **Prompt du cycle : tout le foyer**. Chaque membre suivi est détaillé avec son propre profil (objectif, âge, dernière pesée, taille, compléments), reçu par la sync — avant, seul le téléphone qui copiait le prompt l'était et Claude devinait les cibles de l'autre.
