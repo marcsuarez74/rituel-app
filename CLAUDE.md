@@ -50,7 +50,7 @@ le coût réel des vérifications et les pièges déjà payés une fois.
 | `npm run typecheck` | ~3 s | avant chaque commit |
 | `npm run lint` | ~4 s | avant chaque commit |
 | `npm run build` | ~7 s | avant chaque commit |
-| `npm run e2e` (48 tests, 2 projets mobiles) | ~15 s | tout changement d'UI responsive |
+| `npm run e2e` (76 tests, 2 projets mobiles) | ~13 s | tout changement d'UI responsive |
 | `npm run check` dans `server/` (37 tests) | ~8 s | si tu touches à `server/` (après `npm ci` dans `server/`) |
 
 Le gate complet avant commit (`npm test && npm run typecheck && npm run lint && npm run build`)
