@@ -2547,3 +2547,69 @@ progress {
 .chargement {
   padding: var(--sp-16);
 }
+
+/* ---------- Signaler un bug ---------- */
+
+.signaler-bug {
+  display: grid;
+  gap: var(--sp-12);
+  min-width: 0;
+}
+
+.signaler-champ {
+  display: grid;
+  gap: var(--sp-6);
+  min-width: 0;
+  font-size: var(--fs-sec);
+}
+
+.signaler-champ input[type='text'],
+.signaler-champ textarea {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.signaler-champ textarea {
+  padding: var(--sp-10) var(--sp-12);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-body);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  resize: vertical;
+}
+
+.signaler-champ input[type='file'] {
+  max-width: 100%;
+  font-size: var(--fs-sec);
+}
+
+.signaler-apercu {
+  display: grid;
+  gap: var(--sp-8);
+  justify-items: start;
+  min-width: 0;
+}
+
+.signaler-apercu img {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.signaler-infos {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--sp-12) var(--sp-16);
+  font-size: var(--fs-sec);
+  overflow-wrap: anywhere;
+}
+
+.signaler-infos summary {
+  cursor: pointer;
+  font-weight: 600;
+}

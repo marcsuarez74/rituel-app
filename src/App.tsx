@@ -25,6 +25,7 @@ const Courses = lazy(() => import('./components/ecrans/Courses').then((m) => ({ 
 const Rituel = lazy(() => import('./components/ecrans/Rituel').then((m) => ({ default: m.Rituel })));
 const Guide = lazy(() => import('./components/ecrans/Guide').then((m) => ({ default: m.Guide })));
 const SemaineType = lazy(() => import('./components/ecrans/SemaineType').then((m) => ({ default: m.SemaineType })));
+const SignalerBug = lazy(() => import('./components/ecrans/SignalerBug').then((m) => ({ default: m.SignalerBug })));
 const MonCycle = lazy(() => import('./components/ecrans/MonCycle').then((m) => ({ default: m.MonCycle })));
 const Recette = lazy(() => import('./components/ecrans/Recette').then((m) => ({ default: m.Recette })));
 
@@ -58,6 +59,7 @@ function App() {
   // Semaine type : 'etape' = étape « Ta semaine » juste après l'onboarding.
   const [semaineType, setSemaineType] = useState<'etape' | 'profil' | null>(null);
   const [profilOuvert, setProfilOuvert] = useState(false);
+  const [signalerBug, setSignalerBug] = useState(false);
   // Fiche recette poussée ; `coche` = le repas d'où on vient (« C'est fait »).
   const [recette, setRecette] = useState<{ id: string; coche?: { semaine: string; id: string } } | null>(null);
   // Sync optionnelle : état (point sur l'avatar) et version de re-rendu —
@@ -181,6 +183,16 @@ function App() {
     );
   }
 
+  if (signalerBug) {
+    return (
+      <div className="main-content">
+        <Suspense fallback={<Chargement />}>
+          <SignalerBug page="profil" onRetour={() => setSignalerBug(false)} />
+        </Suspense>
+      </div>
+    );
+  }
+
   if (profilOuvert) {
     return (
       <div className="main-content">
@@ -199,6 +211,7 @@ function App() {
                     : `Cycle ${cycleStocke.numero}`
             }
             onMonCycle={() => setMonCycle(true)}
+            onSignalerBug={() => setSignalerBug(true)}
             resumeSemaine={`${foyer.membres.length} personnes · courses ${foyer.jourCourses.slice(0, 3)}. · rituel ${foyer.jourRituel.slice(0, 3)}.`}
             onSemaineType={() => setSemaineType('profil')}
             onIdentite={setProfile}
