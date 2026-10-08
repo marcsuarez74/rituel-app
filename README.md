@@ -51,14 +51,14 @@ npm run icons      # régénérer les icônes après modification de public/icon
 La version affichée dans l'app (`Profil` → « Rituel vX.Y.Z ») vient de `package.json` — le bump est **volontaire**, tout le reste est automatique :
 
 1. Dans la PR : renommer la section `[Non publié]` du `CHANGELOG.md` en `[x.y.z] - AAAA-MM-JJ`, puis `npm version minor --no-git-tag-version` (ou `patch` / `major`).
-2. Fusionner : le VPS se met à jour (≤ 2 min) et `publier.yml` pose le tag `vx.y.z` puis crée la GitHub Release avec les notes du CHANGELOG. Sans bump de version : déploiement, pas de release.
+2. Fusionner : le VPS se met à jour (≤ 2 min) et le job `release` du Pipeline pose le tag `vx.y.z` puis crée la GitHub Release avec les notes du CHANGELOG. Sans bump de version : déploiement, pas de release.
 
 ## Déploiement
 
 L'app et la sync tournent sur le **VPS**, à **https://rituel.marco-studio.fr** : un conteneur Docker (`Dockerfile`, `docker-compose.yml`) sert la PWA et l'API derrière Caddy.
 
 - **Automatique** : le VPS vérifie `main` toutes les 2 min (`deploy/deploy.sh`, timer systemd) et reconstruit l'image quand une PR est fusionnée. Aucun secret sur GitHub.
-- **CI des PR** (`.github/workflows/ci.yml`) : lint, types, tests, build, serveur, e2e 320/375 sur le build de prod, build de l'image Docker — verte avant toute fusion.
+- **CI des PR** (`.github/workflows/pipeline.yml`) : lint, types, tests, build, serveur, e2e 320/375 sur le build de prod, build de l'image Docker — verte avant toute fusion.
 - Installation, backup, retour arrière : [`server/README.md`](server/README.md).
 
 > Octobre 2026 — l'app quitte GitHub Pages (`marcsuarez74.github.io/rituel-app`) pour https://rituel.marco-studio.fr. Le localStorage ne suit pas un changement d'adresse : sur chaque téléphone, installer la PWA depuis la nouvelle adresse puis Profil › Foyer › « Se connecter au foyer » avec le code — les données reviennent du serveur.
