@@ -46,7 +46,7 @@ import {
   reinitialiser,
   ressynchroniser,
 } from '../../src/lib/sync/engine';
-import { definirSession, effacerSession, lireSession } from '../../src/lib/sync/session';
+import { definirSession, effacerSession, lireCode, lireSession } from '../../src/lib/sync/session';
 import { lireOutbox, viderOutbox } from '../../src/lib/sync/outbox';
 import {
   addWeight,
@@ -522,6 +522,23 @@ describe('sync: connexion foyer', () => {
     expect(etatSync()).toBe('sync');
     // fusion union : le merge (lectures de toutes les tables) a bien eu lieu
     expect(client.lectures).toContain('etat');
+  });
+
+  it('rejoindre : le foyer du serveur gagne, le foyer provisoire du téléphone ne part pas', async () => {
+    const provisoire = { ...foyerParDefaut(null), jourCourses: 'mardi' as const };
+    saveFoyer(provisoire); // sans session : pas d'outbox
+    const distant = { ...foyerParDefaut(null), jourCourses: 'vendredi' as const };
+    client.lues.etat = [{ cle: 'foyer', payload: { valeur: distant } }];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ token: 'tok', foyerId: 'foyer-1' }), { status: 200 })),
+    );
+    await connecterFoyer('basilic-citron-3f9a', { rejoindre: true });
+    expect(loadFoyer()?.jourCourses).toBe('vendredi');
+    expect(client.upserts.find((u) => u.table === 'etat')).toBeUndefined();
+    expect(lireCode()).toBe('basilic-citron-3f9a'); // gardé sur ce téléphone
+    deconnecterFoyer();
+    expect(lireCode()).toBeNull();
   });
 
   it('foyer alimenté → fusion : l\'état local part, le remote s\'applique', async () => {

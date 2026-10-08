@@ -45,7 +45,7 @@ import {
   type MutationSync,
   type TableSync,
 } from './outbox';
-import { demanderSession, definirSession, effacerSession, lireSession } from './session';
+import { definirCode, demanderSession, definirSession, effacerSession, lireSession } from './session';
 
 export type SyncEtat = 'off' | 'hors-foyer' | 'attente' | 'sync' | 'erreur';
 
@@ -408,11 +408,14 @@ const pousserTout = (): void => {
 // Fusion union à la connexion : l'état local part d'abord (pousserTout →
 // outbox), puis le remote est fusionné avec la règle outbox-prime (les clés
 // locales gagnent), puis flush envoie l'union. Pas de branche vide/non-vide.
-const postConnexion = async (): Promise<void> => {
+// `pousser: false` (rejoindre un foyer existant) : rien du téléphone ne part
+// avant la lecture — le foyer du serveur gagne ; le profil et les pesées
+// partent ensuite par l'outbox, une fois le rattachement fait.
+const postConnexion = async (pousser = true): Promise<void> => {
   const c = client;
   if (!c || !lireSession()) return;
   definirEtat('attente');
-  pousserTout();
+  if (pousser) pousserTout();
   const listes = await Promise.all(TABLES.map((t) => c.toutLire(t)));
   if (!client || !lireSession()) return; // déconnexion pendant les lectures → n'écrit rien
   const rows = {} as Record<TableSync, RowSync[]>;
@@ -471,20 +474,21 @@ const installerRealtime = (): void => {
 // Installe le client + le realtime (idempotent) puis déclenche la
 // post-connexion. Si un client est déjà posé (tests, reconnexion), on ne
 // recrée rien — mais la post-connexion doit avoir lieu.
-const connecter = async (): Promise<void> => {
+const connecter = async (pousser = true): Promise<void> => {
   if (!client) {
     client = await creerClient();
   }
   installerRealtime();
-  await postConnexion();
+  await postConnexion(pousser);
 };
 
-export const connecterFoyer = async (code: string): Promise<void> => {
+export const connecterFoyer = async (code: string, opts: { rejoindre?: boolean } = {}): Promise<void> => {
   if (!syncActif()) throw new Error('sync-inactive');
   const session = await demanderSession(code.trim());
   definirSession(session.token, session.foyerId);
+  definirCode(code.trim());
   try {
-    await connecter();
+    await connecter(!opts.rejoindre);
   } catch (e) {
     // Session posée mais connexion échouée : l'état doit refléter l'erreur
     // (point rouge + tap réparateur), pas rester hors-foyer avec une session.
