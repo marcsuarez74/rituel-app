@@ -39,6 +39,25 @@ npm run build && JWT_SECRET=dev DB_PATH=/tmp/rituel.db npm start   # API seule, 
   SQLite depuis le conteneur, `data/backups/`, rétention 14 jours).
 - **Santé** : `curl -s http://127.0.0.1:8787/sante` → `{"ok":true}`.
 
+### Signaler un bug (issues GitHub)
+
+`POST /bugs` (foyer connecté, 3 signalements réussis par jour et par foyer) crée une
+issue sur le dépôt public `marcsuarez74/rituel-app`. Le jeton GitHub ne quitte jamais
+le serveur et n'est jamais loggé. Sans jeton, la route répond 503.
+
+1. Créer un **fine-grained personal access token** limité au seul dépôt
+   `rituel-app`, permission **Issues : Read and write** (rien d'autre).
+2. Le placer dans le `.env` à côté du `docker-compose.yml` sur le VPS (jamais dans le
+   dépôt) : `GITHUB_BUG_TOKEN=<jeton>` ; `GITHUB_REPO` est facultatif (défaut
+   `marcsuarez74/rituel-app`). Puis `docker compose up -d`.
+3. Les labels `bug` / `amélioration` sont passés à la création de l'issue ; s'ils
+   n'existent pas, les créer une fois dans le dépôt (GitHub > Issues > Labels).
+
+Les captures facultatives (PNG/JPEG/WebP, 5 Mo max) sont écrites dans `data/bugs/` (volume
+`./data`) et servies par `GET /bugs/capture/<uuid>.<ext>` pour être liées dans l'issue.
+Elles ne sont écrites qu'une fois la validation, le quota et le jeton vérifiés, et
+supprimées si GitHub refuse.
+
 ### Mise en place (une fois)
 
 Depuis l'ancien service systemd `rituel` (API seule) :
