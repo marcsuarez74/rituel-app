@@ -38,9 +38,9 @@ le coût réel des vérifications et les pièges déjà payés une fois.
 | `docs/ameliorations.md` | mémoire d'idées, **pas une spec** |
 | `docs/backend.md` + `server/` | API de sync (Hono + SQLite) ; `server/` est un sous-projet : node_modules et scripts à part, `npm run check` |
 | `Dockerfile` · `docker-compose.yml` · `deploy/` | image unique PWA + API (prod) ; scripts VPS : déploiement auto, backup, installation — détails dans `server/README.md` |
-| `.github/workflows/` | `ci.yml` (PR), `publier.yml` (tag + Release auto sur main), `release.yml` |
+| `.github/workflows/` | `ci.yml` (PR), `publier.yml` (release-please sur main) |
 | `.superpowers/` | ledger **local, git-ignoré** : brainstorms, décisions, accès VPS, états en cours |
-| `CHANGELOG.md` + `package.json` | une entrée par version (Keep a Changelog) ; **la version de `package.json` déclenche tag et Release** |
+| `CHANGELOG.md` + `package.json` | générés par release-please (+ `release-please-config.json`, `.release-please-manifest.json`) ; **ne pas les éditer à la main** |
 
 ## Coût réel des vérifications (mesuré en local, 2026-10-07)
 
@@ -108,16 +108,22 @@ manque aux deux, ce sont les flux :
   sur 320 et 375), pas seulement par les projets Playwright.
 - Traces des échecs : `test-results/<test>/trace.zip` → `npx playwright show-trace <fichier>`.
 
-## Release : tout est automatique après le bump
+## Release : tout est automatique via release-please
 
 1. branche → PR → CI verte (elle construit l'image) → fusion ;
 2. le VPS suit `main` (`deploy/deploy.sh`, timer systemd toutes les 2 min) : pull,
    `docker compose build` + `up -d` + vérification `/sante` — **une PR fusionnée est en
    prod sous ~2 min** ; ne jamais fusionner un état dont l'image ne build pas ;
-3. la Release est automatique : `publier.yml` pose le tag `v<version de package.json>`
-   s'il manque et crée la GitHub Release depuis le CHANGELOG. **Le bump de version dans la
-   PR suffit — jamais de tag à la main** (version non incrémentée = « rien à publier »,
-   pas d'erreur).
+3. **conventional commits obligatoires** (`type(scope): sujet`) : `feat` → mineur, `fix`/`perf`
+   → correctif, `!` ou `BREAKING CHANGE:` → majeur ; `docs`/`chore`/`ci`/`test`/`refactor`
+   seuls ne déclenchent aucune release. Le type du commit *est* le semver ;
+4. `publier.yml` (release-please) ouvre et tient à jour une PR « chore(main): release x.y.z »
+   (bump `package.json` + manifest + CHANGELOG généré). **La fusionner pose le tag
+   `v<version>` et crée la GitHub Release** (fusionner = déployer, comme toute PR).
+   **Plus jamais de bump, d'entrée CHANGELOG ni de tag à la main** ;
+5. limite connue : une PR ouverte par `GITHUB_TOKEN` ne déclenche pas `ci.yml` — la PR de
+   release ne touche que `package.json`/`CHANGELOG.md`/manifest, donc rien à casser.
+   Prérequis réglage dépôt : Actions › « Allow GitHub Actions to create and approve pull requests ».
 
 ## Prod et débogage
 
