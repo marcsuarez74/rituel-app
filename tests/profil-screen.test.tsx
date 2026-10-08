@@ -439,7 +439,7 @@ describe('ProfilScreen (intégration via App)', () => {
     await user.click(await screen.findByRole('button', { name: /Changer de profil/ }));
 
     expect(loadProfile()).toBeNull();
-    expect(await screen.findByRole('heading', { name: /Qui est derrière l'écran/ })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /Bienvenue sur Rituel/ })).toBeInTheDocument();
     expect(getWeights('marc')).toEqual([{ date: '2026-09-22', kg: 84.2 }]);
   });
 });

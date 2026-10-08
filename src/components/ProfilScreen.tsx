@@ -44,6 +44,7 @@ export function ProfilScreen({
   onMonCycle,
   resumeSemaine,
   onSemaineType,
+  onIdentite,
 }: {
   profile: UserProfile;
   onBack: () => void;
@@ -55,6 +56,7 @@ export function ProfilScreen({
   onMonCycle?: () => void;
   resumeSemaine?: string;
   onSemaineType?: () => void;
+  onIdentite?: (p: UserProfile) => void;
 }) {
   const [vue, setVue] = useState<Vue>('hub');
 
@@ -136,7 +138,7 @@ export function ProfilScreen({
           {vue === 'infos' && <ProfilInfos profile={profile} onProfileSaved={onProfileSaved} />}
           {vue === 'objectif' && <ProfilObjectif profile={profile} onProfileSaved={onProfileSaved} />}
           {vue === 'maison' && <ProfilMaison profile={profile} onProfileSaved={onProfileSaved} />}
-          {vue === 'foyer' && <ProfilFoyer syncEtat={syncEtat} />}
+          {vue === 'foyer' && <ProfilFoyer syncEtat={syncEtat} profile={profile} onIdentite={onIdentite} />}
         </>
       )}
     </div>

@@ -2397,6 +2397,25 @@ progress {
   color: var(--accent);
 }
 
+.rcards-ligne {
+  grid-template-columns: 1fr;
+}
+
+/* Créer / rejoindre un foyer (fin d'onboarding, Profil › Foyer) */
+.partage-foyer .onb-row2 {
+  flex-wrap: wrap;
+  margin-top: var(--sp-12);
+}
+
+.partage-foyer .onb-row2 > button {
+  flex: 1 1 120px;
+  min-width: 0;
+}
+
+.partage-foyer .onb-hint {
+  margin-top: var(--sp-6);
+}
+
 .suivi-off {
   margin: 0 0 var(--sp-12);
   padding: var(--sp-16);
