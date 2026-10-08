@@ -46,11 +46,10 @@ export const resumeInfos = (profile: UserProfile): string => {
   return champs.length > 0 ? champs.join(' · ') : '—';
 };
 
-// Tuile Maison & courses : magasin, budget, personnes — pill compacte.
+// Tuile Maison & courses : magasin et budget — pill compacte (qui est à table : le foyer).
 export const resumeMaison = (profile: UserProfile): string => {
   const champs: string[] = [];
   if (profile.magasin) champs.push(profile.magasin);
   if (profile.budgetMax != null) champs.push(`${profile.budgetMax}`.replace('.', ',') + ' €');
-  if (profile.personnes != null) champs.push(`${profile.personnes} pers.`);
   return champs.length > 0 ? champs.join(' · ') : '—';
 };
