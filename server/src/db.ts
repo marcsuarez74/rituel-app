@@ -42,6 +42,13 @@ create table if not exists etat (
   cle text not null, payload text not null, updated_at text not null,
   primary key (foyer_id, cle)
 );
+-- Signalements "Signaler un bug" : sert au quota quotidien (3 par foyer et par jour).
+create table if not exists bug_reports (
+  foyer_id text not null references foyers on delete cascade,
+  type text not null, titre text not null, issue_url text not null,
+  capture_name text, created_at text not null
+);
+create index if not exists bug_reports_foyer on bug_reports (foyer_id, created_at);
 `;
 
 export const ouvrirDb = (chemin: string): Database.Database => {
