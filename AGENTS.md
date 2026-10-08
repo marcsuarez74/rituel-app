@@ -4,12 +4,12 @@ Guide pour les agents IA travaillant sur ce repo. Règles courtes, KISS : si une
 
 ## Le projet
 
-**Rituel** — PWA React (thème clair « Herbes ») de suivi cuisine/diet/sport pour Marc & Mélanie. 100 % front + backend optionnel de sync (serveur VPS + SQLite — voir `docs/backend.md`) ; sans configuration, l'app reste strictement locale :
+**Rituel** — PWA React (thème clair « Herbes ») de routine cuisine (menus, courses, rituel batch) et de suivi diet/sport, pour n'importe quel foyer (né pour Marc & Mélanie). 100 % front + backend optionnel de sync (serveur VPS + SQLite — voir `docs/backend.md`) ; sans configuration, l'app reste strictement locale :
 
 - **Le cycle** (v2.0) : 4 menus A-D d'une semaine chacun + **un seul rituel batch** commun aux 4 semaines, générés par Claude (abonnement, prompt copié depuis Profil › Mon cycle) en 4 fichiers JSON, importés et vérifiés par l'app. Un nouveau cycle se débloque quand les 4 semaines (+ pauses) sont passées ; sinon on relance le même. Sans cycle importé : **cycle d'exemple** chargé à la demande (`src/assets/cycle-exemple.json`, anonymisé — alex/sam/lou/noa sont rattachés au foyer au chargement)
 - **Navigation** : barre du bas à 5 onglets (Aujourd'hui · Menu · Courses · Rituel · Suivi), en-tête fin avec l'avatar (Profil) et le point de sync, ligne semaine ‹ Sem. N · Menu X › sur Menu/Courses/Rituel. Écrans poussés : fiche recette, mode guidé, Mon cycle, Ma semaine type, Profil
 - **Foyer** (`ReglagesFoyer`) : membres (adultes suivis, enfants sans âge), jour des courses (début de chaque semaine du cycle), jour du rituel, semaine type jour par jour, exceptions récurrentes, magasin, budget hebdo **souple** (alerte, jamais de prix baissés)
-- **UX personnalisée** : onboarding en **5 étapes** dont seule l'étape 1 est obligatoire, puis l'étape optionnelle « Ta semaine » (rythme + enfants) ; accent unique (basilic #3e7a46 + citron #f2dc7b) ; le prénom (profil) sert aux salutations et au prompt
+- **UX personnalisée** : onboarding en **5 étapes** dont seule l'étape 1 est obligatoire (prénom libre, pour qui on cuisine — partenaire, enfants —, « juste la routine » ou suivi), puis « Partager avec ton foyer » (créer → code ; rejoindre → rattachement « Es-tu X ? », le foyer du serveur gagne ; plus tard) et l'étape optionnelle « Ta semaine » (rythme) ; accent unique (basilic #3e7a46 + citron #f2dc7b) ; le prénom (profil) sert aux salutations et au prompt
 - **Suivi** : objectif + poids (séances, cibles, rappels : reportés)
 - Coches, reports, pesées persistés en **localStorage**
 - Déployée en PWA offline-first sur le VPS : https://rituel.marco-studio.fr (un conteneur Docker sert la PWA et l'API de sync)
@@ -112,7 +112,7 @@ Clés existantes — ne pas renommer (données réelles des téléphones) :
 - `sportapp:v2` — drapeau de la remise à zéro 2.0 (`migrerV2()` au démarrage : efface `sportapp:week`, `sportapp:weeks`, les anciennes `sportapp:checks:*` et `sportapp:selection`, une fois)
 - `sportapp:depenses` — dépenses réelles de courses (`[{ date, magasin, total }]`, trié par date desc, upsert par (date, magasin))
 - `sportapp:weights:{id du profil}` — pesées par profil (`profilsAvecPesees()` les liste)
-- `sportapp:sync:token`, `sportapp:sync:foyer`, `sportapp:sync:outbox` — sync optionnelle (voir `docs/backend.md`) ; tables : `checks`, `weights`, `depenses`, `profiles`, `etat` (foyer, cycle, cycle-precedent, reports:{id} — payload `{ valeur }`). La table serveur `weeks` n'est plus lue par l'app 2.0
+- `sportapp:sync:token`, `sportapp:sync:foyer`, `sportapp:sync:outbox`, `sportapp:sync:code` (code du foyer gardé sur le téléphone pour le partager, effacé à la déconnexion) — sync optionnelle (voir `docs/backend.md`) ; tables : `checks`, `weights`, `depenses`, `profiles`, `etat` (foyer, cycle, cycle-precedent, reports:{id} — payload `{ valeur }`). La table serveur `weeks` n'est plus lue par l'app 2.0
 
 Toute mutation passe par `storage.ts` ou `cycle/etat.ts`, qui empilent dans l'outbox via `empilerMutation` (no-op sans env/token).
 

@@ -1,6 +1,7 @@
 # CLAUDE.md — Rituel
 
-PWA React de suivi cuisine/diet/sport pour Marc & Mélanie — https://rituel.marco-studio.fr
+PWA React de routine cuisine et de suivi diet/sport, ouverte à tout foyer (née pour Marc & Mélanie) —
+https://rituel.marco-studio.fr
 (un conteneur Docker sur le VPS sert la PWA et l'API de sync, même origine).
 
 Ce fichier a un seul but : **te faire gagner du temps de travail**. Les règles obligatoires
@@ -91,7 +92,7 @@ Côté CI PR, s'ajoute le build de l'image Docker : plus long, mais c'est la CI 
 - **Les accès au VPS (SSH, secrets) vivent dans le ledger local `.superpowers/`
   (git-ignoré)** — jamais d'IP, de clé ou de secret dans un fichier committé.
 - **Les clés localStorage sont les données réelles des téléphones** (AGENTS.md §Storage) :
-  les renommer détruit silencieusement le suivi de Marc & Mélanie. Mutations via
+  les renommer détruit silencieusement le suivi des foyers déjà installés (dont Marc & Mélanie). Mutations via
   `storage.ts`/`cycle/etat.ts`, lectures via `safeParse` — une donnée corrompue se répare,
   elle ne crash jamais.
 - **Le contrat cycle v2 est extrait verbatim dans le prompt** (`prompt-cycle-template.md`) :

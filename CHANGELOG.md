@@ -8,6 +8,13 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 ### Ajouté
 
+- **Inscription ouverte à tous** : plus de cartes Marc / Mélanie — étape 1 « Bienvenue sur Rituel » : prénom, « Tu cuisines pour… » (juste moi, à deux avec le prénom du/de la partenaire, en famille avec les enfants), « Juste la routine » ou « Suivre mon poids et un objectif » (sans suivi, les étapes mesures et objectif sont sautées). Le foyer naît de ces réponses.
+- **Partager avec ton foyer** (fin d'inscription et Profil › Foyer) : « Créer mon foyer » affiche le code à donner (Copier / Partager) ; « Rejoindre un foyer » prend le foyer du serveur sans l'écraser et rattache le téléphone au bon membre — automatiquement si le prénom correspond, sinon « Es-tu Thérèse ? ».
+- **Profil › Foyer** : la liste des membres (toi, téléphone connecté, pas encore de téléphone) et le code du foyer, masqué, à afficher ou copier — fini le code perdu.
+- **Ma semaine type** : un adulte sans téléphone (doublon) peut être retiré.
+
+### Ajouté
+
 - **Suivi optionnel** : Profil › Objectif › « Suivre mon poids et un objectif ». Coupé = « juste la routine » : plus d'onglet Suivi (barre à 4 onglets), plus de macros exigées ni d'objectif dans le prompt pour ce membre (portions adulte standard) ; le régime et les compléments servent toujours aux menus.
 
 ### Changé
