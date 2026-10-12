@@ -59,7 +59,7 @@
 ## CSS
 
 - Un seul fichier `src/index.css` (~1 200 lignes) : pas de CSS-in-JS, pas de lib utilitaire (Tailwind), pas de `<style>` dans les composants
-- Variables CSS sur `:root` = tokens ; les composants ne codent **jamais** une couleur/rayon en dur (seules tolérances : texte blanc `#ffffff` sur fonds basilic, texte encre `#26312b` sur fonds citron — valeurs figées par le design system)
+- Variables CSS sur `:root` = tokens ; les composants ne codent **jamais** une couleur/rayon en dur (seules tolérances : texte blanc `#ffffff` sur fonds basilic, texte encre `--encre` sur fonds jaune fruit — valeurs figées par le design system)
 - Transitions limitées aux propriétés bon marché (`background-color`, `color`, `transform`) + kill-switch `prefers-reduced-motion`
 - Carrousel micro-batch : `overflow-x: auto` natif (scrollbar masquée), zéro JS — ne pas le remplacer par un carrousel JS
 

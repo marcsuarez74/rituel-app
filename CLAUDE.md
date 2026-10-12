@@ -9,7 +9,7 @@ https://rituel.marco-studio.fr
 (un conteneur Docker sur le VPS sert la PWA et l'API de sync, même origine).
 
 Ce fichier a un seul but : **te faire gagner du temps de travail**. Les règles obligatoires
-(TDD, PR obligatoire, clés localStorage immuables, contrat cycle v2, tokens Herbes) vivent
+(TDD, PR obligatoire, clés localStorage immuables, contrat cycle v2, tokens « Marché coloré ») vivent
 dans **AGENTS.md** — lis-le d'abord, ne les duplique pas ici. Ci-dessous : la carte du dépôt,
 le coût réel des vérifications et les pièges déjà payés une fois.
 
@@ -33,7 +33,7 @@ le coût réel des vérifications et les pièges déjà payés une fois.
 | Chemin | Rôle |
 |---|---|
 | `docs/superpowers/specs/` · `plans/` | un fichier daté par chantier ; le plan s'exécute, la spec fait foi |
-| `docs/superpowers/mockups/` | maquettes HTML versionnées (thème Herbes) |
+| `docs/superpowers/mockups/` | maquettes HTML versionnées (dont la maquette du thème « Marché coloré ») |
 | `ai/agent/` · `ai/context/` | configs d'agents IA — à lire **avant** tout travail dans leur domaine (design-agent pour l'UI) |
 | `docs/ameliorations.md` | mémoire d'idées, **pas une spec** |
 | `docs/backend.md` + `server/` | API de sync (Hono + SQLite) ; `server/` est un sous-projet : node_modules et scripts à part, `npm run check` |
