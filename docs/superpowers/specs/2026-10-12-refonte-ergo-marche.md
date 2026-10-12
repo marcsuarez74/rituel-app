@@ -378,8 +378,9 @@ Résultats, intégrés dans la spec ci-dessus :
    reserve}`, `JourMenu = {jour, repas: Repas[]}`, `Repas.moment = 'dejeuner' | 'diner' |
    'collation'`. Dans toute la spec, **« midi » = `dejeuner`, « soir » = `diner`** ; les
    collations n'entrent pas dans la grille ni dans le rangement. `foyer.semaine` =
-   `Record<Jour, JourType>`. Il n'existe pas de fonction `enregistrerAvecDebut` : le lancement
-   passe par `demarrer` (`monCycle.ts:12`) puis `saveCycle` côté UI (`MonCycle.tsx`).
+   `Record<Jour, JourType>`. Le lancement passe par `demarrer` (`monCycle.ts:12`) puis
+   `enregistrerAvecDebut`, fonction locale du composant (`MonCycle.tsx:85`, appelée l.116 et
+   l.169), qui fait le `saveCycle`.
 3. **Courses** : déjà groupées par `rayon` (champ du JSON, 8 valeurs, `RAYONS` types.ts:12-21,
    libellés courses.ts:9-18). Pas de nouvelle classification : on **associe chaque rayon à une
    famille de couleur** de la maquette (§4.4).

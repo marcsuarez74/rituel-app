@@ -9,7 +9,7 @@ https://rituel.marco-studio.fr
 (un conteneur Docker sur le VPS sert la PWA et l'API de sync, même origine).
 
 Ce fichier a un seul but : **te faire gagner du temps de travail**. Les règles obligatoires
-(TDD, PR obligatoire, clés localStorage immuables, contrat cycle v2, tokens Herbes) vivent
+(TDD, PR obligatoire, clés localStorage immuables, contrat cycle v2, tokens du thème) vivent
 dans **AGENTS.md** — lis-le d'abord, ne les duplique pas ici. Ci-dessous : la carte du dépôt,
 le coût réel des vérifications et les pièges déjà payés une fois.
 
@@ -26,14 +26,29 @@ le coût réel des vérifications et les pièges déjà payés une fois.
   typecheck → test → build **+ check du `server/`** **+ e2e sur le build de prod**
   **+ build de l'image Docker** (`rituel:ci`).
 - Un chantier = brainstorming → spec datée dans `docs/superpowers/specs/` → plan dans
-  `docs/superpowers/plans/` → TDD.
+  `docs/superpowers/plans/` → TDD. **Tout changement d'UI passe d'abord par une maquette HTML
+  dans `docs/superpowers/mockups/`, validée explicitement par Marc** — pas de code d'UI avant.
+
+## Refonte en cours : « Marché coloré » (2026-10)
+
+Validée par Marc, en cours d'intégration en 4 PR (thème → navigation 4 onglets → rituel →
+courses / semaine type / assistant). Avant de toucher à l'UI, lire
+`docs/superpowers/specs/2026-10-12-refonte-ergo-marche.md` (spec + plan + annexe A des valeurs
+exactes) et le brief `docs/superpowers/plans/2026-10-12-refonte-ergo-marche-passation.md`.
+Tant que la PR 1 n'est pas fusionnée, le code est encore au thème Herbes.
+
+- **Vocabulaire** : le mot « cycle » n'apparaît **jamais** dans un texte visible. Le programme
+  de 4 semaines = « menus » ; « Rituel » = uniquement la session de cuisine du dimanche. Les
+  identifiants de code (`cycle/`, `CycleActif`, clés localStorage) ne changent pas.
+- **Semaine type (« option B »)** : elle ne modifie jamais les menus en cours, elle nourrit
+  seulement le prompt des **prochains** menus — ce n'est pas un bug, l'UI doit le rendre visible.
 
 ## Carte du dépôt
 
 | Chemin | Rôle |
 |---|---|
 | `docs/superpowers/specs/` · `plans/` | un fichier daté par chantier ; le plan s'exécute, la spec fait foi |
-| `docs/superpowers/mockups/` | maquettes HTML versionnées (thème Herbes) |
+| `docs/superpowers/mockups/` | maquettes HTML versionnées ; la référence visuelle courante est `2026-10-12-refonte-ergo-marche.html` |
 | `ai/agent/` · `ai/context/` | configs d'agents IA — à lire **avant** tout travail dans leur domaine (design-agent pour l'UI) |
 | `docs/ameliorations.md` | mémoire d'idées, **pas une spec** |
 | `docs/backend.md` + `server/` | API de sync (Hono + SQLite) ; `server/` est un sous-projet : node_modules et scripts à part, `npm run check` |
@@ -83,13 +98,22 @@ manque aux deux, ce sont les flux :
   le bloc `// <schema>…// </schema>` de `cycle/types.ts` dans `prompt-cycle-template.md` →
   l'utilisateur importe les fichiers dans `MonCycle.tsx` → `importerCycle`
   (`cycle/valider.ts` : fusion des menus A–D, forme via `cycle/schema.ts`, puis règles →
-  erreurs bloquantes vs alertes) → `lancer` : `monCycle.ts` (`demarrer`,
-  `enregistrerAvecDebut`) → `saveCycle` (`cycle/etat.ts`). L'affichage lit via `menu.ts`,
-  `calendrier.ts`, `courses.ts`, `budget.ts`, `rituel.ts`, `reports.ts`.
+  erreurs bloquantes vs alertes) → `demarrer` (`monCycle.ts`) → `enregistrerAvecDebut`
+  (fonction locale de `MonCycle.tsx`) → `saveCycle` (`cycle/etat.ts`). `sportapp:cycle` stocke
+  l'enveloppe `CycleActif { id, numero, debut, pauses, cycle, relanceDe? }`, pas le JSON brut ;
+  dans le JSON, les jours sont un tableau `JourMenu[]` et `Repas.moment` vaut
+  `'dejeuner' | 'diner' | 'collation'`. Les courses sont groupées par le champ `rayon` fourni
+  par l'IA. L'affichage lit via `menu.ts`, `calendrier.ts`, `courses.ts`, `budget.ts`,
+  `rituel.ts`, `reports.ts`.
 - **Sync** : chaque écriture de `storage.ts` / `cycle/etat.ts` empile une mutation
-  (`sync/outbox.ts`, clé `sync:outbox`) → `sync/engine.ts` la pousse (`flush` à promesse
-  partagée) et tire (`pull`, règle « l'outbox locale prime ») ; temps réel = SSE
-  `/evenements` → pull debouncé. Côté serveur, routes dans `server/src/routes.ts`, tables
+  (`sync/outbox.ts`, clé `sportapp:sync:outbox`) → `sync/engine.ts` la pousse (`flush` à
+  promesse partagée) et tire (`pull`, règle « l'outbox locale prime ») ; temps réel = SSE
+  `/evenements` → pull debouncé. **Rien n'est synchronisé par défaut** : liste blanche de tables
+  (`TABLES` dans `outbox.ts` : checks, weights, depenses, profiles, etat). Une nouvelle clé
+  localStorage reste locale sauf à appeler `empilerMutation` **et** à ajouter une branche dans
+  `appliquerEtat` (pull) et `pousserTout` (connexion) d'`engine.ts`. Côté coches, seules les
+  semaines `cycle:*` sont tirées — une coche rangée dans les coches de semaine du cycle
+  (`sportapp:checks:cycle:{id}:{n}`) se synchronise sans rien ajouter. Côté serveur, routes dans `server/src/routes.ts`, tables
   SQLite dans `server/src/db.ts`.
 - **Signaler un bug → issue GitHub** : Profil → `ecrans/SignalerBug.tsx` → `src/lib/bugs.ts`
   (multipart, jeton du foyer) → `POST /bugs` derrière l'auth foyer → `server/src/bugs.ts` :
