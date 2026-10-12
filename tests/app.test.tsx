@@ -263,6 +263,14 @@ describe('Onboarding — persistance via App', () => {
     // Étape optionnelle « Ta semaine » (foyer né de cette inscription).
     expect(await screen.findByRole('heading', { name: 'Ta semaine' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Passer' }));
+    // Fin de l'onboarding : directement « Mon cycle », étape de génération, prompt à copier.
+    expect(await screen.findByRole('heading', { name: 'Mon cycle' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '1 · Copie le prompt' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Copier le prompt' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '2 · Colle-le dans ton IA' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '3 · Importe les 4 fichiers' })).toBeInTheDocument();
+    // « Plus tard » : retour à l'app (cycle d'exemple).
+    await user.click(screen.getByRole('button', { name: /Plus tard/ }));
     expect(screen.getByRole('navigation', { name: 'Navigation principale' })).toBeInTheDocument();
     expect(localStorage.getItem('sportapp:foyer')).not.toBeNull();
   });
@@ -304,6 +312,9 @@ describe('Migration profil v1 → v2', () => {
     // Étape optionnelle « Ta semaine » (foyer né de cette inscription).
     expect(await screen.findByRole('heading', { name: 'Ta semaine' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Passer' }));
+    // Pas encore de cycle à soi : même arrivée directe sur « Mon cycle ».
+    expect(await screen.findByRole('button', { name: 'Copier le prompt' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Plus tard/ }));
     expect(screen.getByRole('navigation', { name: 'Navigation principale' })).toBeInTheDocument();
     expect(localStorage.getItem('sportapp:foyer')).not.toBeNull();
   });

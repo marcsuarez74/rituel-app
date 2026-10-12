@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { champsMagasins, magasinsDe, normaliseComplement } from '../../lib/model';
+import { avecMagasin, champsMagasins, magasinsDe, normaliseComplement } from '../../lib/model';
 import type { UserProfile } from '../../lib/model';
 import { parseEuro } from '../../lib/prix';
 import { saveProfile } from '../../lib/storage';
 import { Icon } from '../Icon';
-import { ChampMagasins, avecMagasin } from '../ChampMagasins';
+import { ChampMagasins } from '../ChampMagasins';
 import { Alerte, Fil } from './presente';
 
 // Page détail « Courses & budget » — magasin, budget, préférences des

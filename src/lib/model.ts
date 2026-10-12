@@ -140,6 +140,9 @@ export const magasinsDe = (x: { magasin?: string; magasins?: string[] }): string
   return out;
 };
 
+// Ajoute `nom` à la liste (trim, 40 car., sans doublon casse/accents).
+export const avecMagasin = (liste: string[], nom: string): string[] => magasinsDe({ magasins: [...liste, nom] });
+
 // Champs à écrire pour une liste de magasins ({} si vide → clés absentes).
 export const champsMagasins = (liste: string[]): { magasin?: string; magasins?: string[] } => {
   const l = magasinsDe({ magasins: liste });

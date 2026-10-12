@@ -4,6 +4,7 @@ import {
   OBJECTIF_TYPES,
   PREFERENCES_PRESETS,
   PROFILS_META,
+  avecMagasin,
   champsMagasins,
   REGIMES,
   normaliseComplement,
@@ -21,7 +22,7 @@ import { addWeight, getWeights, saveProfile } from '../../lib/storage';
 import { syncActif } from '../../lib/sync/config';
 import { lireSession } from '../../lib/sync/session';
 import { Icon } from '../Icon';
-import { ChampMagasins, avecMagasin } from '../ChampMagasins';
+import { ChampMagasins } from '../ChampMagasins';
 
 export function Onboarding({
   onDone,

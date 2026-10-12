@@ -1,12 +1,8 @@
 import { useState } from 'react';
-import { MAGASINS_PRESETS, magasinsDe, normaliseComplement } from '../lib/model';
+import { MAGASINS_PRESETS, avecMagasin, normaliseComplement } from '../lib/model';
 import { Icon } from './Icon';
 
 const meme = (a: string, b: string) => normaliseComplement(a) === normaliseComplement(b);
-
-// Ajoute `nom` à la liste (trim, 40 car., sans doublon casse/accents).
-export const avecMagasin = (liste: string[], nom: string): string[] =>
-  magasinsDe({ magasins: [...liste, nom] });
 
 // Choix de PLUSIEURS magasins : puces (présets + ajouts libres) et saisie libre.
 // Le premier de la liste est le magasin principal (prix estimés chez lui).

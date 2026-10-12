@@ -56,6 +56,8 @@ function App() {
   const [vueRituel, setVueRituel] = useState<VueRituel>('jour');
   const [guide, setGuide] = useState<number | null>(null); // étape du mode guidé ouvert
   const [monCycle, setMonCycle] = useState(false);
+  // Fin d'onboarding : Mon cycle s'ouvre directement sur « générer » (prompt à copier).
+  const [cycleDirect, setCycleDirect] = useState(false);
   // Semaine type : 'etape' = étape « Ta semaine » juste après l'onboarding.
   const [semaineType, setSemaineType] = useState<'etape' | 'profil' | null>(null);
   const [profilOuvert, setProfilOuvert] = useState(false);
@@ -138,6 +140,16 @@ function App() {
     setFoyerStocke(f);
   };
 
+  // Fin de l'étape « Ta semaine » de l'onboarding : sans cycle à soi, on
+  // enchaîne sur Mon cycle (génération) plutôt que sur le cycle d'exemple.
+  const finSemaineType = () => {
+    if (semaineType === 'etape' && !cycleStocke) {
+      setCycleDirect(true);
+      setMonCycle(true);
+    }
+    setSemaineType(null);
+  };
+
   if (semaineType) {
     return (
       <div className="main-content">
@@ -145,10 +157,10 @@ function App() {
           <SemaineType
             foyer={foyer}
             compact={semaineType === 'etape'}
-            onRetour={() => setSemaineType(null)}
+            onRetour={() => finSemaineType()}
             onEnregistrer={(f) => {
               enregistrerFoyer(f);
-              setSemaineType(null);
+              finSemaineType();
             }}
           />
         </Suspense>
@@ -165,7 +177,11 @@ function App() {
             foyer={foyer}
             profil={profile}
             aujourdhui={aujourdhui}
-            onRetour={() => setMonCycle(false)}
+            vueInitiale={cycleDirect ? 'generer' : undefined}
+            onRetour={() => {
+              setMonCycle(false);
+              setCycleDirect(false);
+            }}
             onCycle={(c) => {
               setCycleStocke(c);
               setSemaineVue(null);
