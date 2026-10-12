@@ -52,8 +52,10 @@ test.describe('Supprimer mon profil', () => {
       storageState: stateAvec({ 'sportapp:sync:token': 'jeton-e2e', 'sportapp:sync:foyer': 'foyer-e2e' }),
     });
 
+    const corps: Array<string | null> = [];
     const mockerApi = async (page: Page, supprimer: (n: number) => { status: number } | 'abort') => {
       let appels = 0;
+      corps.length = 0;
       await page.route((u) => u.pathname.startsWith('/sync/'), (r) =>
         r.fulfill({ status: 200, contentType: 'application/json', body: '{"rows":[]}' }),
       );
@@ -62,6 +64,7 @@ test.describe('Supprimer mon profil', () => {
         expect(route.request().method()).toBe('DELETE');
         expect(route.request().headers().authorization).toMatch(/^Bearer .*jeton-e2e/); // la fixture JSON-encode la valeur
         appels += 1;
+        corps.push(route.request().postData());
         const issue = supprimer(appels);
         if (issue === 'abort') return route.abort('connectionfailed');
         return route.fulfill({
@@ -81,6 +84,38 @@ test.describe('Supprimer mon profil', () => {
       await confirmer(page);
       await expect(page.getByLabel("Comment tu t'appelles ?")).toBeVisible();
       expect(appels()).toBe(1);
+      expect(await cles(page)).toEqual([]);
+    });
+
+    test('case « dernier appareil » : visible, décochée par défaut, sans débordement 320/375', async ({ page }) => {
+      test.skip(!SYNC, 'nécessite la sync');
+      await mockerApi(page, () => ({ status: 200 }));
+      await ouvrirDialogue(page);
+      const caseTout = page.getByRole('checkbox', { name: /dernier appareil de ce foyer/ });
+      await expect(caseTout).toBeVisible();
+      await expect(caseTout).not.toBeChecked();
+      await expect(page.getByRole('alertdialog')).toContainText(/autres membres perdront l’accès/);
+      await caseTout.check();
+      await verifierPasDeDebordement(page, 'Supprimer mon profil (case dernier appareil)');
+    });
+
+    test('case décochée : DELETE sans corps', async ({ page }) => {
+      test.skip(!SYNC, 'nécessite la sync');
+      await mockerApi(page, () => ({ status: 200 }));
+      await ouvrirDialogue(page);
+      await confirmer(page);
+      await expect(page.getByLabel("Comment tu t'appelles ?")).toBeVisible();
+      expect(corps).toEqual([null]);
+    });
+
+    test('case cochée : DELETE porte { toutSupprimer: true }', async ({ page }) => {
+      test.skip(!SYNC, 'nécessite la sync');
+      await mockerApi(page, () => ({ status: 200 }));
+      await ouvrirDialogue(page);
+      await page.getByRole('checkbox', { name: /dernier appareil de ce foyer/ }).check();
+      await confirmer(page);
+      await expect(page.getByLabel("Comment tu t'appelles ?")).toBeVisible();
+      expect(corps.map((c) => (c ? JSON.parse(c) : c))).toEqual([{ toutSupprimer: true }]);
       expect(await cles(page)).toEqual([]);
     });
 

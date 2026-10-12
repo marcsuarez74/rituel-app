@@ -10,7 +10,7 @@ export interface SyncClient {
   supprimer: (table: TableSync, clefs: Record<string, string>[]) => Promise<void>;
   toutLire: (table: TableSync) => Promise<RowSync[]>;
   purger: () => Promise<void>;
-  abonner: (onEvenement: () => void, onStatut?: (ouvert: boolean) => void) => () => void;
+  abonner: (onEvenement: () => void, onStatut?: (ouvert: boolean, refuse?: boolean) => void) => () => void;
 }
 
 // Port étroit sur l'API du VPS — fetch natif, zéro dépendance. L'app sans
@@ -54,8 +54,8 @@ export const creerClient = async (): Promise<SyncClient> => {
       await verifier(res);
     },
     abonner: (onEvenement, onStatut) =>
-      abonnerSse(`${SYNC_URL}/evenements`, session.token, onEvenement, (ouvert) =>
-        onStatut?.(ouvert),
+      abonnerSse(`${SYNC_URL}/evenements`, session.token, onEvenement, (ouvert, refuse) =>
+        onStatut?.(ouvert, refuse),
       ),
   };
 };

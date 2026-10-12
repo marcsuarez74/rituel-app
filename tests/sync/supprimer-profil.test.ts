@@ -81,6 +81,27 @@ describe('supprimerProfil', () => {
     expect(etatSync()).toBe('hors-foyer');
   });
 
+  it('toutSupprimer : le corps JSON { toutSupprimer: true } part avec le DELETE', async () => {
+    peuplerApp();
+    definirSession('jeton-abc', 'foyer-1');
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ ok: true, foyerSupprime: true }), { status: 200 }));
+    await supprimerProfil({ toutSupprimer: true });
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(init.method).toBe('DELETE');
+    expect(JSON.parse(init.body as string)).toEqual({ toutSupprimer: true });
+    expect((init.headers as Record<string, string>)['Content-Type']).toBe('application/json');
+    expect(clesApp()).toEqual([]);
+  });
+
+  it('sans toutSupprimer : aucun corps (comportement inchangé)', async () => {
+    peuplerApp();
+    definirSession('jeton-abc', 'foyer-1');
+    fetchMock.mockResolvedValue(new Response('{}', { status: 200 }));
+    await supprimerProfil();
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(init.body).toBeUndefined();
+  });
+
   it('401 du serveur (foyer ou jeton déjà supprimé) : on efface quand même le local', async () => {
     peuplerApp();
     definirSession('jeton', 'foyer-1');

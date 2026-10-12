@@ -479,6 +479,21 @@ describe('sync: pull / merge (outbox prime)', () => {
     expect(etatSync()).toBe('hors-foyer');
   });
 
+  it('flux realtime refusé (401, foyer supprimé ailleurs) → hors foyer, aucune reconnexion', async () => {
+    const statuts: Array<((ouvert: boolean, refuse?: boolean) => void) | null> = [];
+    client.abonner = vi.fn((_ev: () => void, st?: (ouvert: boolean, refuse?: boolean) => void) => {
+      statuts.push(st ?? null);
+      return () => {};
+    }) as unknown as SyncClient['abonner'];
+    definirSession('token-test', 'foyer-1');
+    initSync({ onEtat: () => {}, onRemote: () => {} });
+    await vi.waitFor(() => expect(statuts.length).toBe(1));
+    statuts[0]?.(false, true);
+    expect(lireSession()).toBeNull();
+    expect(etatSync()).toBe('hors-foyer');
+    expect(client.abonner).toHaveBeenCalledTimes(1);
+  });
+
   it('jeton refusé à la flush → session effacée, hors foyer', async () => {
     client.upsert = async () => {
       throw new Error('sync-401');

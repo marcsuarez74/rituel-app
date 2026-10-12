@@ -201,7 +201,11 @@ export const creerApp = ({ db, secret, origines, heartbeatMs, statique, commit, 
   // révoqué ; s'il en était le dernier appareil connu (et que tous les jetons du foyer
   // sont suivis), le foyer et toutes ses données partent avec lui. Sinon les données
   // partagées restent intactes pour les autres. Une seule transaction SQLite.
-  app.delete('/foyers/moi', (c) => {
+  // Corps optionnel `{ "toutSupprimer": true }` : l'appelant affirme être le dernier
+  // appareil (foyers hérités, sans sessions suivies) → le foyer est supprimé quoi qu'il
+  // en soit, par le même chemin que la cascade du dernier appareil.
+  app.delete('/foyers/moi', async (c) => {
+    const toutSupprimer = (await lireCorps(c))?.toutSupprimer === true;
     const foyerId = c.get('foyerId');
     const empreinte = empreinteToken(c.get('jeton'));
     const maintenant = new Date().toISOString();
@@ -219,7 +223,7 @@ export const creerApp = ({ db, secret, origines, heartbeatMs, statique, commit, 
       const { autres } = db
         .prepare('select count(*) as autres from sessions where foyer_id = ?')
         .get(foyerId) as { autres: number };
-      if (suivi !== 1 || autres > 0) return { foyerSupprime: false, captures: [] };
+      if (!toutSupprimer && (suivi !== 1 || autres > 0)) return { foyerSupprime: false, captures: [] };
       const captures = (
         db.prepare('select capture_name from bug_reports where foyer_id = ? and capture_name is not null').all(foyerId) as {
           capture_name: string;

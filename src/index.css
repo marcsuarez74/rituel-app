@@ -2288,6 +2288,19 @@ progress {
   overflow-wrap: anywhere;
 }
 
+.sp-tout {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-10);
+  font-size: var(--fs-sec);
+  min-width: 0;
+}
+
+.sp-tout span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .sp-alerte {
   margin: 0;
   padding: var(--sp-10) var(--sp-12);
