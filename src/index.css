@@ -39,6 +39,24 @@
   src: url('./assets/fonts/poppins-700.woff2') format('woff2');
 }
 
+/* Bricolage Grotesque (thème « Marché coloré ») : titres et boutons pleins,
+   700 et 800 seulement (la 500 de la maquette ne sert pas au texte courant). */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./assets/fonts/bricolage-grotesque-700.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('./assets/fonts/bricolage-grotesque-800.woff2') format('woff2');
+}
+
 :root {
   --bg: #f0f2eb;
   --creme: #f5f1e6; /* canvas du hub Profil (maquette v5) */

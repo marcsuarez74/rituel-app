@@ -52,6 +52,39 @@ describe('contrat CSS — tokens de typographie', () => {
   });
 });
 
+describe('contrat CSS — polices auto-hébergées', () => {
+  // La maquette charge Google Fonts ; l'app, jamais (offline-first) : chaque police
+  // déclarée vit dans src/assets/fonts/ (précachée par le glob woff2 du service worker).
+  it('le CSS ne charge aucune police externe (http)', () => {
+    const externes = [...css.matchAll(/url\((https?:\/\/[^)]+)\)/g)].map(([, u]) => u);
+    expect(externes, `urls externes : ${externes.join(' | ')}`).toEqual([]);
+  });
+
+  it('chaque @font-face pointe vers un fichier du disque', () => {
+    const urls = [...css.matchAll(/url\((['"]?)(\.\/assets\/fonts\/[^)'"]+)\1\)/g)].map(([, , u]) => u);
+    expect(urls.length).toBeGreaterThan(0);
+    for (const u of urls) {
+      expect(() => readFileSync(join(process.cwd(), 'src', u)), `${u} absent`).not.toThrow();
+    }
+  });
+
+  it('Bricolage Grotesque (titres « Marché ») est déclarée en 700 et 800, avec sa licence OFL', () => {
+    const faces = [...css.matchAll(/@font-face\s*{[^}]*}/g)].map((m) => m[0]);
+    const bricolage = faces.filter((f) => f.includes("'Bricolage Grotesque'"));
+    expect(bricolage.length, 'Bricolage Grotesque non déclarée').toBeGreaterThanOrEqual(2);
+    for (const graisse of ['700', '800']) {
+      expect(
+        bricolage.some((f) => f.includes(`font-weight: ${graisse}`)),
+        `graisse ${graisse} manquante`,
+      ).toBe(true);
+    }
+    expect(
+      () => readFileSync(join(process.cwd(), 'src', 'assets', 'fonts', 'OFL.txt')),
+      'licence OFL absente',
+    ).not.toThrow();
+  });
+});
+
 describe('contrat CSS — tokens d\'espacement', () => {
   // Garde anti-régression silencieuse : si le CSS est réorganisé et que le
   // sélecteur ci-dessous ne matche plus rien, ce test le signale.
