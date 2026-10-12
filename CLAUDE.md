@@ -143,7 +143,8 @@ manque aux deux, ce sont les flux :
 
 - Vérifier la prod : `curl -fsS https://rituel.marco-studio.fr/sante` → `{"ok":true,"commit":"<sha>"}` (le commit déployé) ;
   chaque déploiement est visible sur GitHub (onglet Deployments, environnement `production`) :
-  le job `deploy` du Pipeline sonde `/sante` jusqu'à y voir le commit de `main` ;
+  le job `deploy` du Pipeline sonde `/sante` jusqu'à y voir le commit de `main` ; s'il est
+  supplanté (nouveau merge sur `main` avant sa mise en prod), il s'arrête en `inactive`, pas en échec ;
   le bundle change de hash à chaque déploiement —
   `curl -s https://rituel.marco-studio.fr/ | grep -o 'assets/index-[^"]*\.js'` ;
   la version affichée en bas de l'écran Profil vient de `package.json` au build.
