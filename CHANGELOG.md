@@ -6,6 +6,24 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 Ce fichier est **généré par [release-please](https://github.com/googleapis/release-please)** à partir des conventional commits (`feat` → mineur, `fix`/`perf` → correctif, `!` ou `BREAKING CHANGE:` → majeur) : ne pas l'éditer à la main. L'historique ci-dessous (jusqu'à 2.1.0) est conservé tel quel.
 
+## [2.4.0](https://github.com/marcsuarez74/rituel-app/compare/v2.3.0...v2.4.0) (2026-10-12)
+
+
+### Ajouté
+
+* **onboarding:** fin d'onboarding directement sur Mon cycle avec le prompt à copier ([3c4e7ca](https://github.com/marcsuarez74/rituel-app/commit/3c4e7ca10789341fa456b076c97546c2c9c73171))
+* **onboarding:** plusieurs magasins (liste rétrocompatible) du foyer au prompt IA ([4000d75](https://github.com/marcsuarez74/rituel-app/commit/4000d75add86b8004c42eb247811dcb5b8ec8f25))
+* **onboarding:** stepper corrigé, plusieurs magasins, arrivée sur Mon cycle ([843f386](https://github.com/marcsuarez74/rituel-app/commit/843f3865c87156704e2b93d74c5d1635aa18507e))
+* **profil:** supprimer son profil (local + DELETE /foyers/moi) ([3f4e647](https://github.com/marcsuarez74/rituel-app/commit/3f4e64734f4ca351c80bd35876b818eaae53a37d))
+* **profil:** supprimer son profil (local + serveur) ([4154505](https://github.com/marcsuarez74/rituel-app/commit/41545057ac9ddc056692e1981dbdccb875d8a711))
+
+
+### Corrigé
+
+* **cycle:** valeurs autorisées dans le prompt + alias de rayons/unités à l'import ([c1132a1](https://github.com/marcsuarez74/rituel-app/commit/c1132a1c3e92305aebbba5a4ded11b0d9459ec0b))
+* **cycle:** valeurs autorisées dans le prompt + alias de rayons/unités tolérés à l'import ([a24103d](https://github.com/marcsuarez74/rituel-app/commit/a24103d43ad92ee33b408fb658031c0c3e50ddb4))
+* **onboarding:** indicateur d'étapes aligné sur les écrans réellement traversés ([3dfe7f6](https://github.com/marcsuarez74/rituel-app/commit/3dfe7f66b5b03479037c5ee6b57ec192d10d58ef))
+
 ## [2.3.0](https://github.com/marcsuarez74/rituel-app/compare/v2.2.0...v2.3.0) (2026-10-08)
 
 
