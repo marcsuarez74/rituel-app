@@ -187,10 +187,16 @@ jobs:
                 etat=success; msg="Remplacé en prod par un commit plus récent (${servi:0:7})"; break
               fi
             fi
+            # main a avancé : le VPS ne déploie que sa tête (deploy.sh), ce commit n'y
+            # sera jamais servi seul — le pipeline du nouveau commit suit le déploiement.
+            tete=$(gh api "repos/$REPO/commits/main" --jq .sha 2>/dev/null || true)
+            if [ -n "$tete" ] && [ "$tete" != "$SHA" ]; then
+              etat=inactive; msg="Supplanté par ${tete:0:7} sur main, suivi par son propre pipeline"; break
+            fi
             sleep 15
           done
           duree=$((SECONDS - debut))
-          [ "$etat" = success ] || msg="Timeout : /sante ne sert pas ${SHA:0:7} après ${duree} s"
+          [ "$etat" = failure ] && msg="Timeout : /sante ne sert pas ${SHA:0:7} après ${duree} s"
           {
             echo "### Déploiement production : $etat"
             echo "- Commit attendu : \`$SHA\`"
@@ -201,4 +207,4 @@ jobs:
           args=(-f state="$etat" -f description="$msg")
           [ "$etat" = success ] && args+=(-f environment_url="$URL")
           gh api "repos/$REPO/deployments/$DEPLOY_ID/statuses" "${args[@]}" >/dev/null
-          [ "$etat" = success ]
+          [ "$etat" != failure ]
