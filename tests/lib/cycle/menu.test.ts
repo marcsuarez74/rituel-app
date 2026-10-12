@@ -4,9 +4,11 @@ import {
   concerne,
   idCocheRepas,
   jourDeDate,
+  prochainRepasDuJour,
   repasDuJour,
   titreRepas,
 } from '../../../src/lib/cycle/menu';
+import { repasAvecReports } from '../../../src/lib/cycle/reports';
 import type { Cycle } from '../../../src/lib/cycle/types';
 import { importerCycle } from '../../../src/lib/cycle/valider';
 import { enFichiers, quatreFichiers } from './fabrique';
@@ -26,6 +28,37 @@ const avecDejeuners = () => {
   );
   return cycleDe(fs);
 };
+
+describe('prochainRepasDuJour (ardoise d’Aujourd’hui)', () => {
+  it('10 h : le midi qui vient, le soir ensuite', () => {
+    const duJour = repasAvecReports(avecDejeuners(), 0, 'lundi', 'alex', []);
+    const dix = new Date('2026-10-05T10:00:00');
+    expect(prochainRepasDuJour(duJour, {}, dix)?.repas.id).toBe('lundi-dejeuner-alex');
+    const midi = duJour.find((x) => x.repas.id === 'lundi-dejeuner-alex')!;
+    expect(prochainRepasDuJour(duJour, { [midi.id]: true }, dix)?.repas.id).toBe('lundi-diner-famille');
+  });
+
+  it('19 h : directement le soir, jamais une collation', () => {
+    const fs = quatreFichiers();
+    fs[0].menus[0].jours[0].repas.push({
+      id: 'lundi-collation',
+      moment: 'collation',
+      pour: 'famille',
+      texte: 'Compote',
+    });
+    const dixNeuf = new Date('2026-10-05T19:00:00');
+    expect(prochainRepasDuJour(repasAvecReports(cycleDe(fs), 0, 'lundi', 'alex', []), {}, dixNeuf)?.repas.id).toBe(
+      'lundi-diner-famille',
+    );
+  });
+
+  it('tous les repas du moment sont faits : null (journée bouclée)', () => {
+    const duJour = repasAvecReports(cycleDe(), 0, 'lundi', 'alex', []);
+    const dix = new Date('2026-10-05T10:00:00');
+    const coches = Object.fromEntries(duJour.map((x) => [x.id, true]));
+    expect(prochainRepasDuJour(duJour, coches, dix)).toBeNull();
+  });
+});
 
 describe('repas du jour', () => {
   it('ceux du membre (famille compris), déjeuner avant dîner', () => {

@@ -1,17 +1,16 @@
 import type { PositionCycle } from '../../lib/cycle/calendrier';
 import { ajouterJours } from '../../lib/cycle/calendrier';
-import { estimerSemaine } from '../../lib/cycle/budget';
-import { listeCourses } from '../../lib/cycle/courses';
+import { couleurPlat, platsDuRituel } from '../../lib/cycle/couleurs';
 import type { CycleActif, ReglagesFoyer } from '../../lib/cycle/etat';
 import { semaineCoches } from '../../lib/cycle/etat';
-import { compteRepasSemaine, jourDeDate } from '../../lib/cycle/menu';
+import { jourDeDate, prochainRepasDuJour, titreRepas, trouverRecette } from '../../lib/cycle/menu';
 import { repasAvecReports } from '../../lib/cycle/reports';
-import type { Lettre, MembreId } from '../../lib/cycle/types';
+import type { MembreId, Repas } from '../../lib/cycle/types';
 import { formatJourMoisCourt } from '../../lib/dates';
-import { formatEuro } from '../../lib/prix';
-import { fmtKg } from '../../lib/text';
 import { getWeights } from '../../lib/storage';
+import { capitalize, fmtKg } from '../../lib/text';
 import { Icon } from '../Icon';
+import { IlluBox, IlluCasserole } from '../illustrations/Illustrations';
 import { RepasDuJour } from '../menu/RepasDuJour';
 import type { Onglet } from '../shell/onglets';
 import { useCoches } from '../useCoches';
@@ -24,20 +23,50 @@ const etatHorsSemaine = (numero: number, p: Exclude<PositionCycle, { etat: 'sema
       ? `Cycle ${numero} · démarre le ${formatJourMoisCourt(p.debut)}`
       : `Cycle ${numero} terminé`;
 
-function Jauge({ label, faits, total, onClick }: { label: string; faits: number; total: number; onClick: () => void }) {
+const formatDuree = (min: number): string =>
+  min < 60 ? `${min} min` : `${Math.floor(min / 60)} h${min % 60 ? ` ${min % 60}` : ''}`;
+
+// L'ardoise du repas qui vient (§4.2.1) : quoi, où il est, un seul bouton.
+function ArdoiseRepas({
+  cycle,
+  repas,
+  jourRituel,
+  onBasculer,
+}: {
+  cycle: CycleActif['cycle'];
+  repas: Repas;
+  jourRituel: string;
+  onBasculer: () => void;
+}) {
+  const recette = repas.recette ? trouverRecette(cycle, repas.recette) : undefined;
+  const titre = titreRepas(cycle, repas);
+  const couleur = couleurPlat(repas.recette, cycle.rituel);
   return (
-    <button type="button" className="jauge" onClick={onClick}>
-      <span>{label}</span>
-      <b>
-        {faits}/{total}
-      </b>
-      <progress max={total || 1} value={faits} aria-label={`${label} : ${faits} sur ${total}`} />
-    </button>
+    <section className="ardoise" aria-label="Maintenant">
+      <p className="quand">{repas.moment === 'dejeuner' ? 'Ce midi' : 'Ce soir'}</p>
+      <h2>{repas.boite ? 'Ta box, au frigo' : `À cuisiner : ${titre}`}</h2>
+      <div className="ardoise-scene">
+        {repas.boite && couleur.vive && couleur.claire ? (
+          <IlluBox vive={couleur.vive} claire={couleur.claire} jour={capitalize(jourRituel)} />
+        ) : (
+          <IlluCasserole />
+        )}
+        <p>
+          {repas.boite
+            ? `${titre}. ${recette?.conservation.rechauffage ?? 'Elle attend au frigo.'}`
+            : `${titre}. Prévois ${recette?.tempsMin ?? 20} min en cuisine.`}
+        </p>
+      </div>
+      <button type="button" className="bouton-plein large" onClick={onBasculer}>
+        {repas.boite ? "J'ai pris ma box" : "C'est mangé"}
+      </button>
+    </section>
   );
 }
 
-// Écran « maintenant » (spec refonte §4.2) : les repas du jour cochables,
-// la carte Suivi (si suivi actif), les jauges vers la semaine et les courses.
+// Écran « maintenant » (spec refonte §4.2) : l'ardoise dit quoi faire et
+// d'où sortir le plat (le jour du rituel, elle appelle à commencer), les
+// repas du jour cochables, la carte Suivi si suivi actif.
 export function Aujourdhui({
   actif,
   foyer,
@@ -74,56 +103,46 @@ export function Aujourdhui({
     );
   }
 
-  const lettre: Lettre = position.lettre;
   const jour = jourDeDate(aujourdhui);
-  const repas = compteRepasSemaine(actif.cycle, lettre, moi, coches);
-  const courses = listeCourses(actif.cycle, lettre, index).lignes;
-  const achetes = courses.filter((l) => coches[l.id]).length;
   const duJour = repasAvecReports(actif.cycle, index, jour, moi, reports);
+  const quiVient = prochainRepasDuJour(duJour, coches, new Date());
   const rituel = actif.cycle.rituel;
   const derniere = suivi ? getWeights(moi).at(-1) : null;
+  const jourRituel = jour === foyer.jourRituel;
 
   return (
     <>
-      <section className="profile-section semaine-carte" aria-label="Ma semaine">
-        <p className="semaine-carte-titre">
-          Cycle {actif.numero} · semaine {index + 1} sur 4 · Menu {lettre}
-        </p>
-        {exemple && <p className="muted">Menus d'exemple : ils te montrent l'app en attendant tes menus.</p>}
-        <div className="jauges">
-          <Jauge label="Repas" faits={repas.faits} total={repas.total} onClick={() => onAller('semaine')} />
-          <Jauge label="Courses" faits={achetes} total={courses.length} onClick={() => onAller('courses')} />
-        </div>
-      </section>
+      {jourRituel ? (
+        <section className="ardoise" aria-label="Maintenant">
+          <p className="quand">Aujourd'hui</p>
+          <h2>C'est {capitalize(foyer.jourRituel)}, jour de rituel</h2>
+          <div className="ardoise-scene">
+            <IlluCasserole />
+            <p>
+              {platsDuRituel(rituel).length} plats en {formatDuree(rituel.dureeMin)} environ. Ensuite, tout est prêt
+              pour la semaine.
+            </p>
+          </div>
+          <button type="button" className="bouton-plein large" onClick={() => onAller('rituel')}>
+            Commencer le rituel
+          </button>
+        </section>
+      ) : quiVient ? (
+        <ArdoiseRepas
+          cycle={actif.cycle}
+          repas={quiVient.repas}
+          jourRituel={foyer.jourRituel}
+          onBasculer={() => basculer(quiVient.id)}
+        />
+      ) : (
+        <section className="ardoise" aria-label="Maintenant">
+          <p className="quand">Aujourd'hui</p>
+          <h2>C'est mangé pour aujourd'hui</h2>
+          <p>Belle journée !</p>
+        </section>
+      )}
 
-      {jour === foyer.jourRituel && (
-        <section className="action-du-jour" aria-label="À faire aujourd'hui">
-          <p className="anticipe-titre">
-            <Icon name="pot" size={16} /> À faire aujourd'hui
-          </p>
-          <h2>Rituel du {foyer.jourRituel}</h2>
-          <p>
-            {rituel.dureeMin} min · {rituel.etapes.length} étapes · {rituel.production.length} préparations
-          </p>
-          <button type="button" className="bouton-plein" onClick={() => onAller('rituel')}>
-            Voir le rituel
-          </button>
-        </section>
-      )}
-      {jour === foyer.jourCourses && (
-        <section className="action-du-jour" aria-label="À faire aujourd'hui">
-          <p className="anticipe-titre">
-            <Icon name="cart" size={16} /> À faire aujourd'hui
-          </p>
-          <h2>Jour des courses</h2>
-          <p>
-            {courses.length} articles · ≈ {formatEuro(estimerSemaine(actif.cycle, lettre).total)}
-          </p>
-          <button type="button" className="bouton-plein" onClick={() => onAller('courses')}>
-            Voir la liste
-          </button>
-        </section>
-      )}
+      {exemple && <p className="muted exemple-note">Menus d'exemple : ils te montrent l'app en attendant tes menus.</p>}
 
       <div className="menu-jour-tete">
         <h2>Au menu aujourd'hui</h2>

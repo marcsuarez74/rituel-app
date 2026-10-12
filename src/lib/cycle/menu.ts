@@ -1,6 +1,7 @@
 import { capitalize } from '../text';
 import { jourDe } from './calendrier';
 import type { Membre } from './etat';
+import type { RepasAffiche } from './reports';
 import type { Cycle, Jour, Lettre, MembreId, MicroBatch, Moment, Recette, Repas } from './types';
 
 // Menu de la semaine vu par un membre (spec 2026-10-07 §3, écrans 1-2).
@@ -45,6 +46,24 @@ export const compteRepasSemaine = (
 
 export const microBatchDuJour = (cycle: Cycle, lettre: Lettre, jour: Jour): MicroBatch[] =>
   menuDe(cycle, lettre)?.microBatch.filter((m) => m.jour === jour) ?? [];
+
+// L'ardoise d'Aujourd'hui (spec refonte §4.2) : le repas qui vient — le midi
+// avant 15 h, le soir ensuite ; on saute les repas déjà cochés et les
+// collations (hors grille). Null = journée bouclée.
+export const SEUIL_SOIR = 15;
+
+export function prochainRepasDuJour(
+  duJour: RepasAffiche[],
+  coches: Record<string, boolean>,
+  heure: Date,
+): RepasAffiche | null {
+  const moments: Moment[] = heure.getHours() < SEUIL_SOIR ? ['dejeuner', 'diner'] : ['diner'];
+  for (const moment of moments) {
+    const r = duJour.find((x) => x.repas.moment === moment && !coches[x.id]);
+    if (r) return r;
+  }
+  return null;
+}
 
 // Recettes préparées au rituel (carte « lié au rituel » de la fiche).
 export const etapesRituelDe = (cycle: Cycle, recetteId: string) =>

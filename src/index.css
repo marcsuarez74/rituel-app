@@ -370,6 +370,61 @@ button:active:not(:disabled) {
 
 /* ---------- Écrans v2 : Aujourd'hui, Menu, Recette ---------- */
 
+/* Ardoise du marchand : la carte « Maintenant » (§4.2.1, maquette). */
+.ardoise {
+  position: relative;
+  margin-top: var(--sp-4);
+  padding: var(--sp-20);
+  border: 6px solid var(--kraft-fonce);
+  border-radius: 14px;
+  background: var(--ardoise);
+  color: var(--craie);
+  box-shadow: 4px 5px 0 var(--encre);
+}
+
+.ardoise .quand {
+  margin: 0 0 var(--sp-4);
+  color: var(--craie-jaune);
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: var(--fs-h3);
+  font-weight: 700;
+}
+
+.ardoise h2 {
+  margin: 0 0 var(--sp-10);
+  color: var(--craie);
+  font-size: var(--fs-h2);
+}
+
+.ardoise p {
+  color: var(--craie);
+}
+
+/* Le bouton posé sur l'ardoise : ombre franche et bordure craie. */
+.ardoise .bouton-plein {
+  margin-top: var(--sp-10);
+  box-shadow: 3px 4px 0 var(--encre);
+  border-color: var(--craie);
+}
+
+.ardoise-scene {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-14);
+  margin: var(--sp-4) 0 var(--sp-10);
+}
+
+.ardoise-scene p {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+.exemple-note {
+  margin-top: var(--sp-10);
+  font-size: var(--fs-meta);
+}
+
 .bouton-plein,
 .bouton-contour {
   display: inline-flex;

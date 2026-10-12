@@ -54,6 +54,42 @@ describe('App shell v2', () => {
     expect(screen.getAllByRole('button', { name: /marquer comme fait/ }).length).toBeGreaterThan(0);
   });
 
+  it('ardoise « Maintenant » : Ce midi à 10 h, le bouton coche le repas (même coche qu’aujourd’hui)', async () => {
+    initProfile('marc', 'Jean'); // l'exemple : mercredi midi = une box pour Jean
+    const user = userEvent.setup();
+    render(<App />);
+
+    const ardoise = await screen.findByRole('region', { name: 'Maintenant' });
+    expect(within(ardoise).getByText('Ce midi')).toBeInTheDocument();
+    expect(within(ardoise).getByText(/Box poulet effiloché/)).toBeInTheDocument();
+    await user.click(within(ardoise).getByRole('button', { name: "J'ai pris ma box" }));
+    expect(await screen.findByRole('button', { name: /: fait, annuler/ })).toBeInTheDocument();
+    // La box prise, l'ardoise passe au repas suivant.
+    expect(within(ardoise).getByText('Ce soir')).toBeInTheDocument();
+  });
+
+  it('ardoise « Maintenant » : Ce soir à 19 h', async () => {
+    initProfile('marc', 'Jean');
+    vi.setSystemTime(new Date('2026-10-07T19:00:00'));
+    render(<App />);
+
+    const ardoise = await screen.findByRole('region', { name: 'Maintenant' });
+    expect(within(ardoise).getByText('Ce soir')).toBeInTheDocument();
+    expect(within(ardoise).getByRole('button', { name: "C'est mangé" })).toBeInTheDocument();
+  });
+
+  it('dimanche, jour de rituel : l’ardoise appelle à commencer le rituel', async () => {
+    initProfile('marc', 'Jean');
+    vi.setSystemTime(new Date('2026-10-11T10:00:00')); // dimanche
+    const user = userEvent.setup();
+    render(<App />);
+
+    const ardoise = await screen.findByRole('region', { name: 'Maintenant' });
+    expect(within(ardoise).getByRole('heading', { name: /jour de rituel/ })).toBeInTheDocument();
+    await user.click(within(ardoise).getByRole('button', { name: 'Commencer le rituel' }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Rituel' })).toBeInTheDocument();
+  });
+
   it('barre du bas : 4 onglets libellés, l’actif en aria-current, avatar « Moi »', async () => {
     initProfile();
     const user = userEvent.setup();
@@ -203,9 +239,7 @@ describe('App shell v2', () => {
     render(<App />);
 
     const repas = await screen.findByRole('button', { name: 'Recette diner-a-mercredi : marquer comme fait' });
-    expect(screen.getByRole('button', { name: /Repas/ })).toHaveTextContent('0/7');
     await user.click(repas);
-    expect(screen.getByRole('button', { name: /Repas/ })).toHaveTextContent('1/7');
     expect(getChecks('cycle:c7:0')).toEqual({ 'menu:A:mercredi:mercredi-diner-famille': true });
 
     await user.click(onglet('Semaine'));
