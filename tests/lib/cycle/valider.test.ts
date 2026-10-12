@@ -63,7 +63,7 @@ describe('importerCycle — erreurs bloquantes', () => {
     const fs = quatreFichiers();
     (fs[1].recettes[0].ingredients[0] as unknown as { unite: string }).unite = 'kilo';
     expect(importer(fs).erreurs).toContainEqual(
-      expect.stringMatching(/menu-B\.json · recettes\[0\]\.ingredients\[0\]\.unite/),
+      expect.stringMatching(/menu-B\.json · unité « kilo » inconnue \(1 ingrédient\)/),
     );
   });
 

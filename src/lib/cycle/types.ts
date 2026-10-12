@@ -4,21 +4,8 @@
 
 export type MembreId = string;
 
-export type Jour = 'lundi' | 'mardi' | 'mercredi' | 'jeudi' | 'vendredi' | 'samedi' | 'dimanche';
 export const JOURS: readonly Jour[] = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
-
-export type Lettre = 'A' | 'B' | 'C' | 'D';
 export const LETTRES: readonly Lettre[] = ['A', 'B', 'C', 'D'];
-
-export type Rayon =
-  | 'proteines'
-  | 'laitiers'
-  | 'feculents'
-  | 'legumes'
-  | 'fruits'
-  | 'epicerie'
-  | 'surgeles'
-  | 'keto';
 export const RAYONS: readonly Rayon[] = [
   'proteines',
   'laitiers',
@@ -29,18 +16,35 @@ export const RAYONS: readonly Rayon[] = [
   'surgeles',
   'keto',
 ];
-
-export type Unite = 'g' | 'kg' | 'ml' | 'l' | 'piece' | 'cs' | 'cc' | 'boite' | 'sachet' | 'botte';
 export const UNITES: readonly Unite[] = ['g', 'kg', 'ml', 'l', 'piece', 'cs', 'cc', 'boite', 'sachet', 'botte'];
-
-export type Moment = 'dejeuner' | 'diner' | 'collation';
 export const MOMENTS: readonly Moment[] = ['dejeuner', 'diner', 'collation'];
-
-export type Difficulte = 'facile' | 'moyen' | 'exigeant';
 export const DIFFICULTES: readonly Difficulte[] = ['facile', 'moyen', 'exigeant'];
 
 // <schema> — extrait verbatim dans le prompt maître (src/lib/promptIa.ts) : une
 // seule source pour le contrat lu par Claude et vérifié par valider.ts.
+
+export type Jour = 'lundi' | 'mardi' | 'mercredi' | 'jeudi' | 'vendredi' | 'samedi' | 'dimanche';
+
+export type Lettre = 'A' | 'B' | 'C' | 'D';
+
+// Rayon : valeurs EXACTES (ni « fruits-legumes », ni « cremerie », ni « boucherie »…).
+export type Rayon =
+  | 'proteines'
+  | 'laitiers'
+  | 'feculents'
+  | 'legumes'
+  | 'fruits'
+  | 'epicerie'
+  | 'surgeles'
+  | 'keto';
+
+// Unite : valeurs EXACTES (« cl » et « dl » n'existent pas : convertir en ml).
+export type Unite = 'g' | 'kg' | 'ml' | 'l' | 'piece' | 'cs' | 'cc' | 'boite' | 'sachet' | 'botte';
+
+export type Moment = 'dejeuner' | 'diner' | 'collation';
+
+export type Difficulte = 'facile' | 'moyen' | 'exigeant';
+
 export interface Macros {
   kcal: number;
   proteines: number;
