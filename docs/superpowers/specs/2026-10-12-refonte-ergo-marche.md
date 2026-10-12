@@ -141,7 +141,10 @@ Ordre fixe, une seule action pleine :
 
 ### 4.4 Courses
 
-- Liste groupée par **famille** (couleur de famille sur l'en-tête de groupe), cases ≥ 48 px.
+- Liste groupée par **rayon** (existant), chaque rayon coloré par sa famille de la maquette :
+  `legumes` → `--leg`, `fruits` → `--fru`, `laitiers` et `surgeles` → `--fra`,
+  `proteines` → `--via`, `feculents`, `epicerie` et `keto` → `--epi` (libellé du rayon toujours
+  écrit : la couleur n'est jamais seule). Cases ≥ 48 px. Section « Au placard » inchangée.
 - « Mode magasin » conservé.
 - Quand tout est coché : confettis + bouton plein « J'ai payé » (saisie du montant, logique
   `budget.ts`/`sportapp:depenses` inchangée). Avant : pas de bouton plein.
@@ -171,7 +174,7 @@ vocabulaire (« menus »). L'étape 5 « Ta semaine » garde son rôle.
    bouton « Compris ». Vue une fois par appareil (clé §8), relisible via un lien « C'est quoi ? ».
 2. **« Ce dimanche, tu prépares »** : « {n} plats en {durée} environ, pour {m} repas de la
    semaine. »
-3. **Grille de la semaine** : 7 colonnes (L→D) × 2 lignes (Midi, Soir). Chaque case :
+3. **Grille de la semaine** : 7 colonnes (L→D) × 2 lignes (Midi = `dejeuner`, Soir = `diner`). Chaque case :
    - **pleine**, couleur du plat → repas préparé dimanche ;
    - **pointillés**, couleur du plat → repas fait le jour même ;
    - vide → pas de repas prévu (exception, restaurant…).
@@ -203,8 +206,8 @@ cette page unique.
 - Pied : « ‹ Précédente » (lien) + bouton plein « Étape suivante » (une ligne).
 - Les minuteurs **continuent** quand on change d'étape, de l'écran ou que l'app passe en
   arrière-plan (calcul sur l'heure de fin, pas sur un décompte). Wake Lock conservé.
-- Notification sonore/vibration à l'échéance : `navigator.vibrate` si dispo + son court
-  (comportement actuel de `Minuteur.tsx` à reprendre).
+- À l'échéance : `navigator.vibrate?.([300, 150, 300])` (comportement actuel de
+  `Minuteur.tsx`), pas de son.
 
 ### 5.3 Étape finale « On range »
 
@@ -281,14 +284,18 @@ minuteurs?: { nom: string; minutes: number; recette?: string }[]
 - En haut : **bandeau** « {k} changement(s) pour tes prochains menus » + lien
   « Prépare tes prochains menus » (assistant §7).
 - Le même bandeau (sans détail) apparaît dans l'onglet Semaine quand k > 0.
-- **Référence pour le diff** : instantané `foyer.semaine` pris au lancement des menus
-  (`lancer` dans `monCycle.ts`). Stocké dans une **nouvelle clé** `sportapp:foyer:auLancement`
-  (ajout, aucune clé existante renommée), écrite par `cycle/etat.ts`, synchronisée par l'outbox
-  comme `sportapp:foyer` si le serveur accepte les clés génériques — **à vérifier en tâche 0** ;
-  sinon locale seulement (le badge apparaît alors seulement sur l'appareil qui a lancé les
-  menus, acceptable). Absente (menus lancés avant cette version) → pas de badge, pas de bandeau.
-- **Correctif `jourCourses`** : changer le jour des courses alors que des menus sont en cours
-  recale le début via `changerDebut` (`monCycle.ts:30-34`) ; message de confirmation
+- **Référence pour le diff** : instantané de `foyer.semaine` pris au lancement des menus, rangé
+  dans un **champ optionnel `semaineAuLancement?: Record<Jour, JourType>` de l'enveloppe
+  `CycleActif`** (`etat.ts`, `{id, numero, debut, pauses, cycle, relanceDe?}`), renseigné par
+  `demarrer` (`monCycle.ts:12`, nouveau paramètre optionnel). **Aucune nouvelle clé
+  localStorage, aucun changement de sync** : `CycleActif` est déjà poussé/tiré via la table
+  `etat` (clé `cycle`). Décidé après la tâche 0 (une clé à part aurait exigé des branches dans
+  `appliquerEtat` et `pousserTout` d'`engine.ts`). Test obligatoire : `estCycleActifValide`
+  accepte une enveloppe avec et sans ce champ, et un champ corrompu est ignoré (pas de crash).
+  Absent (menus lancés avant cette version) → pas de badge, pas de bandeau.
+- **Correctif `jourCourses`** : changer le jour des courses dans les réglages du foyer alors
+  que des menus sont en cours recale le début via `changerDebut(a, f, debut)` (`monCycle.ts:28`,
+  qui renvoie `{actif, foyer}` — aujourd'hui il n'est appelé que dans le sens « début → jour ») ; message de confirmation
   « Tes menus démarreront désormais le {jour} ».
 
 ## 7. Assistant « Prépare tes prochains menus » (ex-Mon cycle)
@@ -305,11 +312,11 @@ minuteurs?: { nom: string; minutes: number; recette?: string }[]
 ## 8. Stockage
 
 Clés existantes : **aucune renommée, aucune supprimée** (AGENTS.md §Storage).
-Nouvelles clés (ajouts) :
+Nouvelles clés (ajouts, toutes **locales à l'appareil**, non synchronisées — la sync passe par
+une liste blanche de tables, `outbox.ts:18`, et n'empile que ce qu'on lui donne) :
 
 | Clé | Contenu | Écrite par | Sync |
 |---|---|---|---|
-| `sportapp:foyer:auLancement` | `foyer.semaine` au lancement des menus | `cycle/etat.ts` | à vérifier (tâche 0) |
 | `sportapp:rituel:explique` | `true` quand les 3 vignettes ont été vues | `storage.ts` | non (par appareil) |
 | `sportapp:rituel:minuteurs` | `{ id, nom, recette?, fin: number }[]` | `storage.ts` | non (par appareil) |
 
@@ -350,25 +357,36 @@ Lectures via `safeParse` ; une valeur corrompue = valeur par défaut.
   rouge → code → vert) → gate `npm test && npm run typecheck && npm run lint && npm run build`
   avant chaque commit → `npm run e2e` puis `npm run e2e:preview` avant la PR →
   `git merge origin/main` (jamais de rebase ni de force-push) → PR.
-- **Release** : `main` utilise désormais **release-please** (`release-please-config.json`,
-  `.release-please-manifest.json`, workflow `pipeline.yml`, release 2.5.0 via PR #65). Donc
-  **pas de bump manuel** de `package.json` ni d'entrée CHANGELOG à la main : des commits
-  conventionnels (`feat:`, `fix:`) suffisent. CLAUDE.md décrit encore l'ancien mécanisme
-  (`publier.yml`) : à corriger dans la PR 1.
-- Les maquettes HTML (non suivies par git) sont committées dans la PR 1 avec ce document.
+- **Release** : release-please (`pipeline.yml`). **Jamais** de bump de `package.json`, d'entrée
+  CHANGELOG ni de tag à la main : le type du commit conventionnel fait le semver (`feat` →
+  mineur, `fix` → correctif ; `docs/test/chore/refactor` seuls ne publient rien).
+- Les maquettes et ce document sont déjà dans `main` (PR #68, #69).
 - Commits courts en français, préfixes `feat/fix/test/docs/chore`.
 
-## Tâche 0 — Vérifications préalables (avant la PR 1, 30 min)
+## Tâche 0 — Vérifications préalables (FAITE le 2026-10-12)
 
-1. Lire `server/src/routes.ts` + `src/lib/sync/outbox.ts` : la sync accepte-t-elle une clé
-   nouvelle (`sportapp:foyer:auLancement`) sans changement serveur ? Consigner la réponse dans
-   ce document (§6) ; si non → clé locale seulement (pas de changement serveur dans ce chantier).
-2. Lire la forme stockée de `sportapp:cycle` (`etat.ts`) et la structure `MenuSemaine` /
-   `Repas` (jour, moment) pour confirmer les signatures de §5.4.
-3. Lire `src/lib/courses.ts` : existe-t-il un regroupement par rayon/famille réutilisable pour
-   §4.4 ? Sinon, ajouter `familleIngredient` en PR 4.
-4. Vérifier les poids de Bricolage Grotesque disponibles en woff2 sous licence OFL
-   (Google Fonts) et leur taille (< 40 Ko par poids visé).
+Résultats, intégrés dans la spec ci-dessus :
+
+1. **Sync** : liste blanche de tables (`outbox.ts:18` : checks, weights, depenses, profiles,
+   etat ; serveur `routes.ts:28-34`). Rien n'est synchronisé automatiquement : chaque écriture
+   appelle `empilerMutation`. Les coches `sportapp:checks:cycle:{id}:{n}` **sont** synchronisées
+   (table `checks`, seules les semaines `cycle:*` sont tirées) → les coches `geste:` et `range:`
+   du §8 se synchronisent sans rien ajouter. L'instantané de semaine type va dans `CycleActif`
+   (§6), donc aucun changement de sync.
+2. **Forme** : `sportapp:cycle` = `CycleActif {id, numero, debut:'AAAA-MM-JJ', pauses, cycle,
+   relanceDe?}`. `MenuSemaine = {lettre, titre, jours: JourMenu[], rappelsRituel?, microBatch,
+   reserve}`, `JourMenu = {jour, repas: Repas[]}`, `Repas.moment = 'dejeuner' | 'diner' |
+   'collation'`. Dans toute la spec, **« midi » = `dejeuner`, « soir » = `diner`** ; les
+   collations n'entrent pas dans la grille ni dans le rangement. `foyer.semaine` =
+   `Record<Jour, JourType>`. Il n'existe pas de fonction `enregistrerAvecDebut` : le lancement
+   passe par `demarrer` (`monCycle.ts:12`) puis `saveCycle` côté UI (`MonCycle.tsx`).
+3. **Courses** : déjà groupées par `rayon` (champ du JSON, 8 valeurs, `RAYONS` types.ts:12-21,
+   libellés courses.ts:9-18). Pas de nouvelle classification : on **associe chaque rayon à une
+   famille de couleur** de la maquette (§4.4).
+4. **Minuteur** : `Minuteur.tsx` vibre (`navigator.vibrate([300,150,300])`), **aucun son**. On
+   garde la vibration seule (pas de son ajouté).
+5. **Police** : à télécharger en PR 1 (Bricolage Grotesque, OFL, woff2, graisses 700 et 800 —
+   la 500 de la maquette n'est pas utilisée pour du texte courant, ne pas l'embarquer).
 
 ## PR 1 — Thème « Marché coloré » sur les écrans actuels
 
@@ -390,8 +408,7 @@ Branche `feat/theme-marche`. Aucun changement de navigation ni de logique.
    (initiale centrée : `display: inline-grid; place-items: center; line-height: 1`), champs.
 4. **Méta PWA** : `index.html:6`, `vite.config.ts:45-46` → `#fbf1dc`. Vérifier que `dist/`
    contient `sw.js` + `manifest.webmanifest` après build.
-5. **Docs de design** (§3.5) + correction release-please dans CLAUDE.md + ce document + les 2
-   maquettes.
+5. **Docs de design** (§3.5).
 6. Vérification : `npm run e2e` (débordements 320/375), captures avant/après des 5 onglets
    jointes à la PR.
 
@@ -483,11 +500,14 @@ Commits types : `feat(cycle): étapes de rituel avec plats et minuteurs multiple
 
 Branche `feat/menus-assistant`.
 
-1. **Courses** : regroupement par famille (selon tâche 0.3), couleurs de famille, bouton plein
+1. **Courses** : `couleurRayon(rayon)` dans `src/lib/cycle/courses.ts` (test : les 8 rayons ont
+   une famille), couleurs de famille sur les groupes existants, bouton plein
    « J'ai payé » visible seulement quand tout est coché, confettis. Tests `ecrans.test.tsx`.
-2. **Instantané au lancement** : `cycle/etat.ts` `saveFoyerAuLancement`/`loadFoyerAuLancement`
-   appelés par `lancer` (`monCycle.ts`). Test `monCycle.test.ts` : lancer des menus enregistre
-   l'instantané ; `etat.test.ts` : lecture corrompue → `null`.
+2. **Instantané au lancement** : paramètre optionnel `semaine` de `demarrer` →
+   `CycleActif.semaineAuLancement` ; l'UI de lancement passe `foyer.semaine`. Tests
+   `monCycle.test.ts` (l'instantané est posé par `demarrer` ; `relancer` reçoit aussi la
+   semaine courante et pose un instantané neuf) et `etat.test.ts` (`estCycleActifValide` avec/sans le
+   champ ; champ corrompu → ignoré).
 3. **Diff semaine type** : `src/lib/cycle/semaineType.ts` `changementsEnAttente(foyer,
    instantane)` → liste des créneaux modifiés (vide si instantané absent). Test unitaire.
 4. **`SemaineType.tsx`** : badges « dès les prochains menus », bandeau « {k} changement(s) »,
