@@ -647,6 +647,8 @@ button:active:not(:disabled) {
   margin-bottom: var(--sp-12);
   padding: var(--sp-12);
   border: 2px solid var(--encre);
+  /* Liseré de la couleur du plat (§4.2.2) ; encre sans couleur (repas sans recette). */
+  border-left: 6px solid var(--plat-vive, var(--encre));
   border-radius: var(--r-orga-2);
   background: var(--surface);
 }

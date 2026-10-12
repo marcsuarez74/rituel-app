@@ -7,6 +7,10 @@ import { WeightChart } from '../src/components/WeightChart';
 import { ProgressRing } from '../src/components/ProgressRing';
 import { Pesees } from '../src/components/Pesees';
 import { Icon } from '../src/components/Icon';
+import { CarteRepas } from '../src/components/menu/CarteRepas';
+import { importerCycle } from '../src/lib/cycle/valider';
+import { enFichiers, quatreFichiers } from './lib/cycle/fabrique';
+import type { Repas } from '../src/lib/cycle/types';
 
 const profileV2 = (
   id: 'marc' | 'melanie' = 'marc',
@@ -19,6 +23,46 @@ const profileV2 = (
   complements: [],
   regime: id === 'melanie' ? 'keto' : 'aucun',
   ...extra,
+});
+
+describe('CarteRepas — couleur du plat et provenance (§4.2.2, §5.4)', () => {
+  const cycle = importerCycle(enFichiers(quatreFichiers())).cycle!;
+  const repasLundi: Repas = cycle.menus[0].jours[0].repas[0]; // diner-a-lundi, hors rituel
+
+  const monter = (repas: Repas) =>
+    render(
+      <CarteRepas cycle={cycle} repas={repas} membres={[]} moi="alex" fait={false} onBasculer={() => {}} onOuvrir={() => {}} />,
+    );
+  const carte = () => screen.getByText('Dîner famille').closest('article')!;
+
+  it('étiquette kraft de provenance : « À cuisiner, {temps} min » sans boîte', () => {
+    monter(repasLundi);
+    expect(screen.getByText('À cuisiner, 20 min')).toBeInTheDocument();
+  });
+
+  it('étiquette kraft de provenance : « Box, au frigo » quand le repas sort d’une boîte', () => {
+    monter({ ...repasLundi, boite: { produitePar: 'rituel-muffins', frigoJours: 4 } });
+    expect(screen.getByText('Box, au frigo')).toBeInTheDocument();
+    expect(screen.queryByText('À cuisiner, 20 min')).not.toBeInTheDocument();
+  });
+
+  it('liseré : un plat du rituel reçoit la 1re couleur de la palette, stable au re-rendu', () => {
+    const { unmount } = monter({ ...repasLundi, recette: 'muffins' });
+    expect(carte().style.getPropertyValue('--plat-vive')).toBe('#e3b505');
+    expect(carte().style.getPropertyValue('--plat-claire')).toBe('#fbeeb0');
+    unmount();
+    monter({ ...repasLundi, recette: 'muffins' });
+    expect(carte().style.getPropertyValue('--plat-vive')).toBe('#e3b505');
+  });
+
+  it('liseré : une recette hors rituel garde une couleur stable, déterminée par l’id', () => {
+    const { unmount } = monter(repasLundi);
+    const premiere = carte().style.getPropertyValue('--plat-vive');
+    expect(premiere).toMatch(/^#[0-9a-f]{6}$/);
+    unmount();
+    monter(repasLundi);
+    expect(carte().style.getPropertyValue('--plat-vive')).toBe(premiere);
+  });
 });
 
 describe('WeightChart', () => {
