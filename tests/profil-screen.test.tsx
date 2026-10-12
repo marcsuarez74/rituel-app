@@ -335,7 +335,7 @@ describe('ProfilScreen — Magasin et budget', () => {
     expect(within(maison).getByRole('button', { name: /Retirer Healthy/ })).toBeInTheDocument();
     expect(within(maison).getByRole('button', { name: /Retirer Rapide/ })).toBeInTheDocument();
     // Mêmes champs que l'onboarding : le bloc de chips porte le même libellé.
-    expect(within(maison).getByText('Préférences pour les prochains cycles')).toBeInTheDocument();
+    expect(within(maison).getByText('Préférences pour tes prochains menus')).toBeInTheDocument();
   });
 
   it('enregistre la section (validation incluse)', async () => {

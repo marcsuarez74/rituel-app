@@ -46,7 +46,7 @@ test.describe('Mon suivi — bloc objectif et carte Poids', () => {
 
   test('bloc objectif et carte Poids (séances reportées)', async ({ page }) => {
     await page.goto(ORIGIN);
-    await page.getByRole('button', { name: 'Suivi', exact: true }).click();
+    await page.getByRole('button', { name: 'Ajouter une pesée' }).click();
 
     const obj = page.locator('.suivi-hero');
     await expect(obj).toBeVisible();
@@ -67,7 +67,7 @@ test.describe('Mon suivi — bloc objectif et carte Poids', () => {
       await page.goto(ORIGIN);
       // document.fonts.ready fixe le layout avant la mesure.
       await page.evaluate(() => document.fonts.ready);
-      await page.getByRole('button', { name: 'Suivi', exact: true }).click();
+      await page.getByRole('button', { name: 'Ajouter une pesée' }).click();
 
       // le contenu dense est rendu avant l'assert : carte héro + pesées
       await expect(page.locator('.suivi-hero')).toBeVisible();

@@ -109,7 +109,7 @@ export function ProfilMaison({
           }}
         />
       </div>
-      <p className="onb-label">Préférences pour les prochains cycles</p>
+      <p className="onb-label">Préférences pour tes prochains menus</p>
       <div className="chips">
         {preferences.map((p) => (
           <button

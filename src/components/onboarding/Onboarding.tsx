@@ -622,7 +622,7 @@ export function Onboarding({
                   Le plafond à ne pas dépasser — l'app compare l'estimé du menu et ce que tu paies vraiment.
                 </p>
               </div>
-              <p className="onb-label">Préférences pour les prochains cycles</p>
+              <p className="onb-label">Préférences pour tes prochains menus</p>
               <div className="chips">
                 {PREFERENCES_PRESETS.map((preset) => {
                   const on = preferences.some(

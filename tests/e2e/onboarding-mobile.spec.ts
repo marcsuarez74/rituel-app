@@ -36,7 +36,7 @@ async function assertStyleGuideline(page: import('@playwright/test').Page, label
 // « Plus tard » en sort vers l'app (cycle d'exemple).
 async function passerTaSemaineEtMonCycle(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: 'Passer' }).click();
-  await expect(page.getByRole('heading', { name: 'Mon cycle', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Mes menus', level: 1 })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Copier le prompt' })).toBeVisible();
   await page.getByRole('button', { name: 'Plus tard' }).click();
 }
@@ -187,8 +187,8 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     // L'app s'affiche sans crash : salutation (Aujourd'hui) avec le prénom
     // prérempli + cycle d'exemple.
     await expect(shell).toBeVisible();
-    await expect(page.getByText('Salut Mélanie 👋')).toBeVisible();
-    await expect(page.getByText(/Cycle d'exemple/)).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Bonjour Mélanie' })).toBeVisible();
+    await expect(page.getByText(/Menus d'exemple/)).toBeVisible();
     await assertPasDeDebordement(page);
 
     // Profil partiel enregistré : aucun champ sauté n'apparaît dans le storage.
@@ -225,8 +225,8 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     }
     await passerTaSemaineEtMonCycle(page);
     const nav = page.getByRole('navigation', { name: 'Navigation principale' });
-    await expect(nav.getByRole('button')).toHaveText(["Aujourd'hui", 'Menu', 'Courses', 'Rituel']);
-    await expect(page.getByText('Salut Jean 👋')).toBeVisible();
+    await expect(nav.getByRole('button')).toHaveText(["Aujourd'hui", 'Semaine', 'Courses', 'Rituel']);
+    await expect(page.getByRole('heading', { name: 'Bonjour Jean' })).toBeVisible();
     await assertPasDeDebordement(page);
   });
 
@@ -302,7 +302,7 @@ test.describe('Écran Profil — mobile', () => {
     await page.goto('/');
     // document.fonts.ready fixe le layout avant la mesure (pattern dock.spec).
     await page.evaluate(() => document.fonts.ready);
-    await page.getByRole('button', { name: 'Mon profil' }).click();
+    await page.getByRole('button', { name: /Moi : / }).click();
 
     // Hub : lignes du compte visibles.
     const tuileInfos = page.getByRole('button', { name: /Mes infos/ });
@@ -316,7 +316,7 @@ test.describe('Écran Profil — mobile', () => {
     await assertPasDeDebordement(page);
 
     // Tuile « Objectif » → page détail : cap, régime, compléments.
-    await page.getByRole('button', { name: 'Profil', exact: true }).click();
+    await page.getByRole('button', { name: 'Moi', exact: true }).click();
     await page.getByRole('button', { name: /Objectif/ }).click();
     await expect(page.getByRole('heading', { name: 'Objectif', level: 2 })).toBeVisible();
     await expect(page.getByRole('radiogroup', { name: 'Ton cap' })).toBeVisible();
@@ -329,10 +329,10 @@ test.describe('Écran Profil — mobile', () => {
   test('profil : les champs courses & budget suivent le style guideline', async ({ page }) => {
     await page.goto('/');
     await page.evaluate(() => document.fonts.ready);
-    await page.getByRole('button', { name: 'Mon profil' }).click();
-    await page.getByRole('button', { name: /Courses & budget/ }).click(); // ligne → page détail
+    await page.getByRole('button', { name: /Moi : / }).click();
+    await page.getByRole('button', { name: /Magasin et budget/ }).click(); // ligne → page détail
 
-    await expect(page.getByRole('heading', { name: 'Courses & budget', level: 2 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Magasin et budget', level: 2 })).toBeVisible();
     await assertPasDeDebordement(page);
     for (const label of [
       'Budget max courses / semaine',
@@ -375,7 +375,7 @@ for (const largeur of [320, 375]) {
     await page.getByRole('button', { name: 'Passer' }).click();
 
     // Mon cycle : bouton copier visible d'emblée, 3 étapes claires, rien ne déborde.
-    await expect(page.getByRole('heading', { name: 'Mon cycle', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Mes menus', level: 1 })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Copier le prompt' })).toBeVisible();
     await expect(page.getByRole('heading', { name: '1 · Copie le prompt' })).toBeVisible();
     await expect(page.getByRole('heading', { name: '2 · Colle-le dans ton IA' })).toBeVisible();

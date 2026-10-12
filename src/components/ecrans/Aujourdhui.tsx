@@ -20,8 +20,8 @@ const etatHorsSemaine = (numero: number, p: Exclude<PositionCycle, { etat: 'sema
   p.etat === 'pause'
     ? `Semaine de pause · reprise le ${formatJourMoisCourt(ajouterJours(p.au, 1))}`
     : p.etat === 'avant'
-      ? `Cycle ${numero} · démarre le ${formatJourMoisCourt(p.debut)}`
-      : `Cycle ${numero} terminé`;
+      ? `Menus n° ${numero} · démarre le ${formatJourMoisCourt(p.debut)}`
+      : `Menus n° ${numero} terminés`;
 
 const formatDuree = (min: number): string =>
   min < 60 ? `${min} min` : `${Math.floor(min / 60)} h${min % 60 ? ` ${min % 60}` : ''}`;

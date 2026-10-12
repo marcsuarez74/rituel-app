@@ -49,9 +49,24 @@ export const lirePrefixe = (page: Page, prefixe: string): Promise<Record<string,
 
 export const nav = (page: Page) => page.getByRole('navigation', { name: 'Navigation principale' });
 
+// Libellé d'onglet → titre h1 de l'écran (Aujourd'hui salue, Semaine dit « Menus »).
+const TITRES: Record<string, string | RegExp> = {
+  "Aujourd'hui": /Bonjour/,
+  Semaine: 'Menus',
+  Courses: 'Courses',
+  Rituel: 'Rituel',
+};
+
 export const allerA = async (page: Page, onglet: string) => {
   await nav(page).getByRole('button', { name: onglet, exact: true }).click();
-  await expect(page.getByRole('heading', { level: 1, name: onglet })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: TITRES[onglet] ?? onglet })).toBeVisible();
+};
+
+// L'écran Suivi poids, poussé depuis la carte Suivi d'Aujourd'hui (§4.6).
+export const ouvrirSuivi = async (page: Page) => {
+  await nav(page).getByRole('button', { name: "Aujourd'hui", exact: true }).click();
+  await page.getByRole('button', { name: 'Ajouter une pesée' }).click();
+  await expect(page.getByRole('heading', { name: 'Suivi poids' })).toBeVisible();
 };
 
 export const attendrePolices = (page: Page) => page.evaluate(() => document.fonts.ready);

@@ -264,8 +264,8 @@ function App() {
                 : position?.etat === 'semaine'
                   ? `Menu ${position.lettre} · semaine ${position.index + 1} sur 4`
                   : position?.etat === 'termine'
-                    ? `Cycle ${cycleStocke.numero} terminé`
-                    : `Cycle ${cycleStocke.numero}`
+                    ? `Menus n° ${cycleStocke.numero} terminés`
+                    : `Menus n° ${cycleStocke.numero}`
             }
             onMonCycle={() => setMonCycle(true)}
             onSuivi={ouvrirSuivi}

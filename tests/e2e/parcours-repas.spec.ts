@@ -10,7 +10,7 @@ test.describe('Parcours repas', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await attendrePolices(page);
-    await expect(page.getByText(/Cycle d'exemple/)).toBeVisible();
+    await expect(page.getByText(/Menus d'exemple/)).toBeVisible();
   });
 
   test("Aujourd'hui : cocher un repas le montre coché dans Menu et le persiste", async ({ page }) => {
@@ -25,18 +25,18 @@ test.describe('Parcours repas', () => {
     const valeurs = Object.values(checks) as Record<string, boolean>[];
     expect(valeurs.some((v) => Object.values(v).some(Boolean)), 'une coche est persistée').toBe(true);
 
-    await allerA(page, 'Menu');
+    await allerA(page, 'Semaine');
     await expect(page.getByRole('button', { name: `${titre} : fait, annuler` }).first()).toBeVisible();
-    await verifierPasDeDebordement(page, 'Menu');
+    await verifierPasDeDebordement(page, 'Semaine');
 
     // Survit à un rechargement.
     await page.reload();
-    await allerA(page, 'Menu');
+    await allerA(page, 'Semaine');
     await expect(page.getByRole('button', { name: `${titre} : fait, annuler` }).first()).toBeVisible();
   });
 
   test('Fiche recette : « C’est fait » coche le repas dans le Menu', async ({ page }) => {
-    await allerA(page, 'Menu');
+    await allerA(page, 'Semaine');
     const carte = page.locator('button.carte-repas-corps').first();
     await carte.click();
     await expect(page.getByRole('heading', { name: 'Préparation' })).toBeVisible();
@@ -53,7 +53,7 @@ test.describe('Parcours repas', () => {
   });
 
   test('Menu : « Pas ce soir » reporte le repas à la semaine prochaine', async ({ page }) => {
-    await allerA(page, 'Menu');
+    await allerA(page, 'Semaine');
     const reporter = page.getByRole('button', { name: /Pas ce soir/ }).first();
     await reporter.click();
     const feuille = page.getByRole('dialog');
