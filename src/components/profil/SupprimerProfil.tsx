@@ -12,6 +12,7 @@ export function SupprimerProfil({ onSupprime }: { onSupprime: () => void }) {
   const [ouvert, setOuvert] = useState(false);
   const [etape, setEtape] = useState<Etape>('saisie');
   const [saisie, setSaisie] = useState('');
+  const [tout, setTout] = useState(false);
   const dialogue = useRef<HTMLElement>(null);
   const champ = useRef<HTMLInputElement>(null);
   const declencheur = useRef<HTMLButtonElement>(null);
@@ -25,13 +26,14 @@ export function SupprimerProfil({ onSupprime }: { onSupprime: () => void }) {
     setOuvert(false);
     setEtape('saisie');
     setSaisie('');
+    setTout(false);
     declencheur.current?.focus();
   };
 
   const supprimer = async (localSeulement: boolean) => {
     setEtape('envoi');
     try {
-      await supprimerProfil({ localSeulement });
+      await supprimerProfil({ localSeulement, toutSupprimer: foyer && tout && !localSeulement });
       onSupprime();
     } catch {
       setEtape('reseau');
@@ -100,6 +102,20 @@ export function SupprimerProfil({ onSupprime }: { onSupprime: () => void }) {
             )}
             {etape !== 'reseau' ? (
               <>
+                {foyer && (
+                  <label className="sp-tout">
+                    <input
+                      type="checkbox"
+                      checked={tout}
+                      disabled={etape === 'envoi'}
+                      onChange={(e) => setTout(e.target.checked)}
+                    />
+                    <span>
+                      Je suis le dernier appareil de ce foyer — supprimer aussi toutes les données du foyer sur le
+                      serveur. Les autres membres perdront l’accès et leurs données.
+                    </span>
+                  </label>
+                )}
                 <label className="signaler-champ">
                   <span>Tape SUPPRIMER pour confirmer</span>
                   <input

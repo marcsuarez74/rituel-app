@@ -460,10 +460,16 @@ const installerRealtime = (): void => {
         void pull();
       }, 150);
     },
-    (ouvert) => {
+    (ouvert, refuse) => {
       // Statut d'une installation supplantée ou app sans session : ignorer —
       // seul le canal courant pilote l'état.
       if (gen !== generationRealtime || !client || !lireSession()) return;
+      if (refuse) {
+        // 401 sur le flux (foyer supprimé depuis un autre appareil) : on sort du
+        // foyer, données locales conservées — pas de reconnexion en boucle.
+        deconnecterFoyer();
+        return;
+      }
       if (ouvert) {
         if (etat !== 'sync') definirEtat('sync');
         if (pullTimer) clearTimeout(pullTimer);
@@ -543,9 +549,9 @@ export const purgerFoyer = async (): Promise<void> => {
 // moteur est coupé et l'outbox vidée AVANT d'effacer les clés — une flush en vol ou un
 // pull tardif voit « plus de session » et n'écrit ni ne pousse plus rien. Seules les
 // clés `sportapp:*` de cette origine partent.
-export const supprimerProfil = async (opts: { localSeulement?: boolean } = {}): Promise<void> => {
+export const supprimerProfil = async (opts: { localSeulement?: boolean; toutSupprimer?: boolean } = {}): Promise<void> => {
   const session = lireSession();
-  if (session && syncActif() && !opts.localSeulement) await quitterFoyerServeur(session.token);
+  if (session && syncActif() && !opts.localSeulement) await quitterFoyerServeur(session.token, opts.toutSupprimer === true);
   deconnecterFoyer(); // coupe SSE + timers, vide l'outbox, efface session et code
   const cles: string[] = [];
   for (let i = 0; i < localStorage.length; i++) {

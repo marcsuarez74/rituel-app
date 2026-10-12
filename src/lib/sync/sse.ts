@@ -7,7 +7,7 @@ export const abonnerSse = (
   url: string,
   token: string,
   onChangement: () => void,
-  onStatut: (ouvert: boolean) => void,
+  onStatut: (ouvert: boolean, refuse?: boolean) => void,
 ): (() => void) => {
   const ctrl = new AbortController();
   void (async () => {
@@ -16,6 +16,11 @@ export const abonnerSse = (
         headers: { Authorization: `Bearer ${token}` },
         signal: ctrl.signal,
       });
+      if (res.status === 401) {
+        // Jeton révoqué / foyer supprimé : inutile de se reconnecter (l'engine se déconnecte).
+        onStatut(false, true);
+        return;
+      }
       if (!res.ok || !res.body) throw new Error(`sse-${res.status}`);
       onStatut(true);
       const lecteur = res.body.getReader();

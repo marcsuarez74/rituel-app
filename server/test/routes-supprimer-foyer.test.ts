@@ -137,6 +137,45 @@ describe('server: DELETE /foyers/moi', () => {
     expect((await app.request('/sync/etat', { headers: bearer(tokenA) })).status).toBe(401);
   });
 
+  it('toutSupprimer sur foyer hérité : foyer, données et captures supprimés; autres jetons → 401', async () => {
+    const { app, db, tokenA, foyerId, connexion, dataDir } = await creerContexte();
+    db.prepare('update foyers set appareils_suivis = 0 where id = ?').run(foyerId);
+    const b = await connexion();
+    await remplir(app, tokenA);
+    mkdirSync(join(dataDir, 'bugs'), { recursive: true });
+    const nom = '11111111-2222-3333-4444-555555555555.png';
+    writeFileSync(join(dataDir, 'bugs', nom), 'x');
+    db.prepare(
+      "insert into bug_reports (foyer_id, type, titre, issue_url, capture_name, created_at) values (?, 'bug', 't', 'u', ?, '2026-10-12T10:00:00Z')",
+    ).run(foyerId, nom);
+
+    const res = await app.request('/foyers/moi', {
+      method: 'DELETE',
+      headers: { ...JSON_H, ...bearer(tokenA) },
+      body: JSON.stringify({ toutSupprimer: true }),
+    });
+    expect(await res.json()).toEqual({ ok: true, foyerSupprime: true });
+    expect(compte(db, 'foyers')).toBe(0);
+    expect(compte(db, 'weights')).toBe(0);
+    expect(compte(db, 'etat')).toBe(0);
+    expect(compte(db, 'bug_reports')).toBe(0);
+    expect(compte(db, 'sessions')).toBe(0);
+    expect(existsSync(join(dataDir, 'bugs', nom))).toBe(false);
+    expect((await app.request('/sync/etat', { headers: bearer(b.token) })).status).toBe(401);
+    expect((await app.request('/sync/etat', { headers: bearer(tokenA) })).status).toBe(401);
+  });
+
+  it('toutSupprimer ≠ true (absent, false, texte) : comportement inchangé', async () => {
+    const { app, db, foyerId, connexion } = await creerContexte();
+    db.prepare('update foyers set appareils_suivis = 0 where id = ?').run(foyerId);
+    for (const corps of ['{"toutSupprimer":false}', '{"toutSupprimer":"true"}', 'pas du json']) {
+      const { token } = await connexion(); // le jeton précédent est révoqué
+      const res = await app.request('/foyers/moi', { method: 'DELETE', headers: { ...JSON_H, ...bearer(token) }, body: corps });
+      expect(await res.json()).toEqual({ ok: true, foyerSupprime: false });
+      expect(compte(db, 'foyers')).toBe(1);
+    }
+  });
+
   it('jeton valide d’un foyer qui n’existe plus → 401 (le client se déconnecte)', async () => {
     const { app, db, tokenA } = await creerContexte();
     db.prepare('delete from foyers').run();

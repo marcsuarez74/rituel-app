@@ -52,6 +52,16 @@ describe('sync: lecteur SSE (fetch)', () => {
     vi.unstubAllGlobals();
   });
 
+  it('401 (jeton révoqué) → onStatut(false, true), une seule tentative', async () => {
+    const f = vi.fn(async () => new Response('{}', { status: 401 }));
+    vi.stubGlobal('fetch', f);
+    const appels: Array<[boolean, boolean | undefined]> = [];
+    abonnerSse('https://rituel.example.fr/evenements', 'tok', () => {}, (o, r) => appels.push([o, r]));
+    await vi.waitFor(() => expect(appels).toEqual([[false, true]]));
+    expect(f).toHaveBeenCalledTimes(1);
+    vi.unstubAllGlobals();
+  });
+
   it('abort volontaire (désabonnement) → pas de onStatut(false) parasite', async () => {
     const s = streamControle();
     vi.stubGlobal('fetch', vi.fn(async () => new Response(s.stream)));

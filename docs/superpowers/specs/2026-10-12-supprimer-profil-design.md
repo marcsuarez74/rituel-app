@@ -54,3 +54,24 @@ Serveur : `server/test/routes-supprimer-foyer.test.ts` (dernier appareil, autre 
 `tests/supprimer-profil-ui.test.tsx`, `tests/supprimer-profil-app.test.tsx`.
 E2E : `tests/e2e/supprimer-profil.spec.ts` (annulation, suppression, 320/375, foyer mocké,
 réseau coupé).
+
+## Amendement 2026-10-12 — « dernier appareil > on supprime tout »
+Les foyers hérités n'étaient jamais supprimés (limite assumée plus haut). Décision : l'utilisateur
+peut l'affirmer lui-même.
+- **Dialogue** (foyer connecté seulement) : case non cochée par défaut « Je suis le dernier
+  appareil de ce foyer — supprimer aussi toutes les données du foyer sur le serveur. Les autres
+  membres perdront l'accès et leurs données. » Remise à zéro à la fermeture. Sans foyer : absente.
+- **Requête** : `DELETE /foyers/moi` avec corps `{ "toutSupprimer": true }` (+ `Content-Type`)
+  seulement si cochée; sinon aucun corps (inchangé). Pas envoyée en « supprimer quand même sur
+  ce téléphone » (local seul).
+- **Serveur** : `toutSupprimer === true` court-circuite le test « dernier appareil » (même
+  transaction, même cascade, captures, SSE) — pas de duplication. Le foyer disparu, `auth`
+  répond 401 à tous les autres jetons.
+- **Autres appareils** : tout 401 (pull, flush) → `deconnecterFoyer()` (déjà existant). Corrigé
+  ici : un 401 sur le flux SSE `/evenements` faisait une reconnexion toutes les 5 s sans fin;
+  `abonnerSse` signale désormais le refus (`onStatut(false, true)`) et l'engine se déconnecte
+  aussi. L'appareil reste utilisable en local (données conservées, état « hors foyer »,
+  possibilité de créer/rejoindre un foyer) — aucune boucle de resync, aucun crash.
+- **Tests** : serveur (foyer hérité tout supprimé, 401 sur autre jeton, option absente/invalide
+  inchangée), front (case visible seulement avec foyer, transmise; corps JSON; SSE 401),
+  e2e (requête mockée avec/sans paramètre, 320/375).

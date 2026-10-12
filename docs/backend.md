@@ -79,7 +79,15 @@ Route authentifiée (Bearer) : l'appareil quitte le foyer, dans une seule transa
   foyer). Réponse `{ ok: true, foyerSupprime: false }`.
 - **Foyer hérité** (créé avant cette fonction, `appareils_suivis = 0`) : des jetons non suivis
   peuvent circuler → le foyer n'est jamais supprimé automatiquement (jeton révoqué seulement).
-  Pour vider un tel foyer : « Supprimer les données du foyer » (purge) dans Profil › Foyer.
+- **Suppression explicite du foyer** (amendement 2026-10-12) : corps JSON optionnel
+  `{ "toutSupprimer": true }` (seule la valeur booléenne `true` compte; absent, `false` ou corps
+  illisible = comportement ci-dessus). Le serveur supprime alors le foyer quoi qu'il en soit
+  (sessions suivies ou non, `appareils_suivis` ignoré) par le **même chemin** que le dernier
+  appareil : cascade des tables liées, `bug_reports`, captures sur disque, flux SSE fermés.
+  Le foyer n'existant plus, **tous** ses jetons répondent 401 (sync et `/evenements`).
+  Réponse `{ ok: true, foyerSupprime: true }`. C'est la case « Je suis le dernier appareil… »
+  du dialogue (foyer connecté seulement, décochée par défaut), choix de l'utilisateur pour les
+  foyers hérités.
 
 ## Comment ça marche (résumé)
 

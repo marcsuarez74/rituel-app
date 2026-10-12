@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ProfilScreen } from '../src/components/ProfilScreen';
 import type { UserProfile } from '../src/lib/model';
+import { definirSession } from '../src/lib/sync/session';
 
 const { supprimerProfilMock } = vi.hoisted(() => ({ supprimerProfilMock: vi.fn() }));
 
@@ -85,7 +86,7 @@ describe('Supprimer mon profil (UI)', () => {
     await user.type(screen.getByLabelText(/Tape SUPPRIMER/), 'SUPPRIMER');
     await user.click(screen.getByRole('button', { name: 'Supprimer définitivement' }));
     await waitFor(() => expect(surSupprime).toHaveBeenCalledTimes(1));
-    expect(supprimerProfilMock).toHaveBeenCalledWith({ localSeulement: false });
+    expect(supprimerProfilMock).toHaveBeenCalledWith({ localSeulement: false, toutSupprimer: false });
   });
 
   it('serveur injoignable : message clair, réessayer ou supprimer quand même sur ce téléphone', async () => {
@@ -100,7 +101,7 @@ describe('Supprimer mon profil (UI)', () => {
 
     await user.click(screen.getByRole('button', { name: 'Réessayer' }));
     await waitFor(() => expect(surSupprime).toHaveBeenCalledTimes(1));
-    expect(supprimerProfilMock).toHaveBeenLastCalledWith({ localSeulement: false });
+    expect(supprimerProfilMock).toHaveBeenLastCalledWith({ localSeulement: false, toutSupprimer: false });
   });
 
   it('« Supprimer quand même sur ce téléphone » : suppression locale seule', async () => {
@@ -113,6 +114,38 @@ describe('Supprimer mon profil (UI)', () => {
 
     await user.click(screen.getByRole('button', { name: /Supprimer quand même sur ce téléphone/ }));
     await waitFor(() => expect(surSupprime).toHaveBeenCalledTimes(1));
-    expect(supprimerProfilMock).toHaveBeenLastCalledWith({ localSeulement: true });
+    expect(supprimerProfilMock).toHaveBeenLastCalledWith({ localSeulement: true, toutSupprimer: false });
+  });
+
+  describe('case « dernier appareil » (amendement 2026-10-12)', () => {
+    it('absente sans foyer connecté', async () => {
+      const { user } = monter();
+      await ouvrir(user);
+      expect(screen.queryByRole('checkbox')).toBeNull();
+    });
+
+    it('avec foyer : non cochée par défaut, texte explicite, transmise à la suppression', async () => {
+      definirSession('jeton', 'foyer-1');
+      const { user, surSupprime } = monter();
+      const dialogue = await ouvrir(user);
+      const case_ = screen.getByRole('checkbox', { name: /dernier appareil de ce foyer/ });
+      expect(case_).not.toBeChecked();
+      expect(dialogue).toHaveTextContent(/autres membres perdront l’accès et leurs données/);
+      await user.click(case_);
+      await user.type(screen.getByLabelText(/Tape SUPPRIMER/), 'SUPPRIMER');
+      await user.click(screen.getByRole('button', { name: 'Supprimer définitivement' }));
+      await waitFor(() => expect(surSupprime).toHaveBeenCalledTimes(1));
+      expect(supprimerProfilMock).toHaveBeenCalledWith({ localSeulement: false, toutSupprimer: true });
+    });
+
+    it('avec foyer, case décochée : toutSupprimer false', async () => {
+      definirSession('jeton', 'foyer-1');
+      const { user, surSupprime } = monter();
+      await ouvrir(user);
+      await user.type(screen.getByLabelText(/Tape SUPPRIMER/), 'SUPPRIMER');
+      await user.click(screen.getByRole('button', { name: 'Supprimer définitivement' }));
+      await waitFor(() => expect(surSupprime).toHaveBeenCalledTimes(1));
+      expect(supprimerProfilMock).toHaveBeenCalledWith({ localSeulement: false, toutSupprimer: false });
+    });
   });
 });
