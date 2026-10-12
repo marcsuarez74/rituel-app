@@ -6,6 +6,20 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 Ce fichier est **généré par [release-please](https://github.com/googleapis/release-please)** à partir des conventional commits (`feat` → mineur, `fix`/`perf` → correctif, `!` ou `BREAKING CHANGE:` → majeur) : ne pas l'éditer à la main. L'historique ci-dessous (jusqu'à 2.1.0) est conservé tel quel.
 
+## [2.6.0](https://github.com/marcsuarez74/rituel-app/compare/v2.5.0...v2.6.0) (2026-10-12)
+
+
+### Ajouté
+
+* police Bricolage Grotesque auto-hébergée (titres du thème Marché) ([39fb895](https://github.com/marcsuarez74/rituel-app/commit/39fb8955537fac66dc73ae3adf6302d3962bf9af))
+* thème Marché coloré (tokens, composants de base, méta PWA) ([0010f0a](https://github.com/marcsuarez74/rituel-app/commit/0010f0adf8543d4af6819e0936ec4d62200d65fc))
+
+
+### Corrigé
+
+* e2e mobile 320px — ligne de boutons d'onboarding et champ capture ([7d6fba5](https://github.com/marcsuarez74/rituel-app/commit/7d6fba5d4f9ccd62e17ef94bdc8fbee63599cf8f))
+* lisibilité des taglines d'onboarding, champs unifiés, docs design alignées ([ed44914](https://github.com/marcsuarez74/rituel-app/commit/ed44914a9a799354632b5f1f1a7befb4bf1fc5a2))
+
 ## [2.5.0](https://github.com/marcsuarez74/rituel-app/compare/v2.4.0...v2.5.0) (2026-10-12)
 
 
