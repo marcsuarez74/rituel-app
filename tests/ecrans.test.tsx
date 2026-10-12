@@ -117,6 +117,25 @@ describe('Courses', () => {
     localStorage.clear();
   });
 
+  it("pas de ligne « extras keto » sans membre keto ni article keto", () => {
+    const sansKeto = (): CycleActif => {
+      const c = actif();
+      for (const r of c.cycle.recettes) for (const i of r.ingredients) if (i.rayon === 'keto') i.rayon = 'epicerie';
+      for (const f of c.cycle.fixes) if (f.rayon === 'keto') f.rayon = 'epicerie';
+      return c;
+    };
+    const f = foyer();
+    render(<Courses actif={sansKeto()} foyer={{ ...f, membres: f.membres.map((m) => ({ ...m, regime: undefined })) }} semaine={0} aujourdhui="2026-10-03" syncVersion={0} />);
+    expect(screen.queryByText(/extras keto/)).not.toBeInTheDocument();
+    expect(screen.getByText(/éléments fixes/)).toBeInTheDocument();
+  });
+
+  it("ligne « extras keto » affichée dès qu'un membre est keto", () => {
+    const f = foyer();
+    render(<Courses actif={actif()} foyer={{ ...f, membres: [...f.membres, { id: 'k', prenom: 'K', type: 'adulte', suivi: false, regime: 'keto' }] }} semaine={0} aujourdhui="2026-10-03" syncVersion={0} />);
+    expect(screen.getByText(/extras keto/)).toBeInTheDocument();
+  });
+
   it('carte Estimé / Payé / Max, détail keto + fixes, alerte au-dessus du plafond', () => {
     const { unmount } = render(ecran(30));
     expect(screen.getByText('Estimé').nextSibling).toHaveTextContent('≈ 20 €'); // 7 dîners (le rituel reprend celui de lundi) + fixes

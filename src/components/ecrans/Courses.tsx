@@ -34,6 +34,7 @@ export function Courses({
   const lettre = LETTRES[semaine];
   const { lignes, placard } = listeCourses(actif.cycle, lettre, semaine);
   const estime = estimerSemaine(actif.cycle, lettre);
+  const avecKeto = estime.keto > 0 || foyer.membres.some((m) => m.regime === 'keto');
   const { coches, basculer } = useCoches(semaineCoches(actif.id, semaine), syncVersion);
   const { reports } = useReports(actif.id, syncVersion);
   const auFrigo = ingredientsAuFrigo(actif.cycle, semaine, reports);
@@ -85,7 +86,8 @@ export function Courses({
           </div>
         </div>
         <p className="muted">
-          Dont extras keto {environ(estime.keto)} · éléments fixes {environ(estime.fixes)}
+          {avecKeto && <>Dont extras keto {environ(estime.keto)} · </>}
+          {avecKeto ? 'éléments' : 'Dont éléments'} fixes {environ(estime.fixes)}
         </p>
         {max != null && depasse(Math.max(estime.total, paye)) && (
           <p className="budget-alerte" role="status">
