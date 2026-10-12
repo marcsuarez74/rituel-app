@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import {
   COMPLEMENTS_PRESETS,
-  MAGASINS_PRESETS,
   OBJECTIF_TYPES,
   PREFERENCES_PRESETS,
   PROFILS_META,
+  avecMagasin,
+  champsMagasins,
   REGIMES,
   normaliseComplement,
   nouvelIdProfil,
@@ -21,6 +22,7 @@ import { addWeight, getWeights, saveProfile } from '../../lib/storage';
 import { syncActif } from '../../lib/sync/config';
 import { lireSession } from '../../lib/sync/session';
 import { Icon } from '../Icon';
+import { ChampMagasins } from '../ChampMagasins';
 
 export function Onboarding({
   onDone,
@@ -55,7 +57,8 @@ export function Onboarding({
   const [complements, setComplements] = useState<string[]>([]);
   const [nouveauComplement, setNouveauComplement] = useState('');
   const [regime, setRegime] = useState<Regime>('aucun');
-  const [magasin, setMagasin] = useState('');
+  const [magasins, setMagasins] = useState<string[]>([]);
+  const [nouveauMagasin, setNouveauMagasin] = useState('');
   const [budgetMax, setBudgetMax] = useState('');
   const [preferences, setPreferences] = useState<string[]>([]);
   const [nouvellePreference, setNouvellePreference] = useState('');
@@ -63,6 +66,13 @@ export function Onboarding({
   const [profileFinal, setProfileFinal] = useState<UserProfile | null>(null);
 
   const migration = prefill != null;
+
+  // Indicateur : seuls les écrans réellement traversés comptent. Sans suivi,
+  // les étapes 2 et 3 (corps, objectif) sont sautées : 1 → 4 → 5 = écrans 1, 2, 3
+  // sur 3 (et non « 4 » dès le 2e écran).
+  const ecrans: number[] = saisie.suivi ? [1, 2, 3, 4, 5] : [1, 4, 5];
+  const total = ecrans.length;
+  const rang = Math.max(1, ecrans.indexOf(step) + 1);
 
   const aller = (n: 1 | 2 | 3 | 4 | 5 | 6) => {
     setError(null);
@@ -235,7 +245,7 @@ export function Onboarding({
       objectif: { type: objectifType, ...(echeance ? { echeance } : {}) },
       complements: [...complements],
       regime,
-      ...(magasin.trim() ? { magasin: magasin.trim() } : {}),
+      ...champsMagasins(avecMagasin(magasins, nouveauMagasin)),
       ...(budgetMax ? { budgetMax: parseEuro(budgetMax)! } : {}),
       ...(preferences.length > 0 ? { preferences: [...preferences] } : {}),
     };
@@ -264,9 +274,12 @@ export function Onboarding({
     <div className="onboarding">
       {!migration && (
         <div className="onboarding-dots" role="group" aria-label="Progression de l'onboarding">
-          {[1, 2, 3, 4, 5].map((n) => (
-            <span key={n} className={n <= step ? 'onboarding-dot-active' : undefined} />
+          {Array.from({ length: total }, (_, i) => (
+            <span key={i} aria-hidden="true" className={i + 1 <= rang ? 'onboarding-dot-active' : undefined} />
           ))}
+          <span className="sr-only">
+            Étape {rang} sur {total}
+          </span>
         </div>
       )}
 
@@ -583,25 +596,16 @@ export function Onboarding({
               <p className="onboarding-sub">
                 Dernière étape — pour les listes, le budget et les prochains cycles. Tout est optionnel.
               </p>
-              <div className="onboarding-field">
-                <label htmlFor="ob-magasin">Magasin habituel</label>
-                <input
-                  id="ob-magasin"
-                  type="text"
-                  list="ob-magasins"
-                  placeholder="Lidl, Intermarché…"
-                  value={magasin}
-                  onChange={(e) => {
-                    setError(null);
-                    setMagasin(e.target.value);
-                  }}
-                />
-                <datalist id="ob-magasins">
-                  {MAGASINS_PRESETS.map((m) => (
-                    <option key={m} value={m} />
-                  ))}
-                </datalist>
-              </div>
+              <ChampMagasins
+                idPrefix="ob-magasin"
+                valeur={magasins}
+                onChange={(v) => {
+                  setError(null);
+                  setMagasins(v);
+                }}
+                saisie={nouveauMagasin}
+                onSaisie={setNouveauMagasin}
+              />
               <div className="onboarding-field">
                 <label htmlFor="ob-budget">Budget max courses / semaine (€, optionnel)</label>
                 <input

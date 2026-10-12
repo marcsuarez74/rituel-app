@@ -50,6 +50,7 @@ export function MonCycle({
   foyer,
   profil,
   aujourdhui,
+  vueInitiale,
   onRetour,
   onCycle,
   onFoyer,
@@ -59,12 +60,15 @@ export function MonCycle({
   foyer: ReglagesFoyer;
   profil: UserProfile;
   aujourdhui: string;
+  // 'generer' : arrivée directe depuis l'onboarding (prompt prêt à copier).
+  vueInitiale?: 'generer';
   onRetour: () => void;
   onCycle: (c: CycleActif) => void;
   onFoyer: (f: ReglagesFoyer) => void;
   onVoirCourses: () => void;
 }) {
-  const [vue, setVue] = useState<Vue>('etat');
+  const [vue, setVue] = useState<Vue>(vueInitiale ?? 'etat');
+  const [direct, setDirect] = useState(vueInitiale === 'generer'); // tant qu'on n'a pas quitté l'arrivée directe
   const [copie, setCopie] = useState<string | null>(null);
   const [resultat, setResultat] = useState<ResultatImport | null>(null);
   const [debut, setDebut] = useState(() => prochainJour(aujourdhui, foyer.jourCourses));
@@ -115,12 +119,18 @@ export function MonCycle({
 
   const estimes = resultat?.cycle ? LETTRES.map((l) => estimerSemaine(resultat.cycle!, l).total) : [];
   const plusCher = Math.max(0, ...estimes);
-  const retour = vue === 'etat' ? onRetour : () => setVue('etat');
+  const quitte = vue === 'etat' || (direct && vue === 'generer');
+  const retour = quitte
+    ? onRetour
+    : () => {
+        setVue('etat');
+        setDirect(false);
+      };
 
   return (
     <div className="mon-cycle">
       <button type="button" className="profil-back" onClick={retour}>
-        <Icon name="chev-left" size={16} /> {vue === 'etat' ? 'Profil' : 'Mon cycle'}
+        <Icon name="chev-left" size={16} /> {vue === 'etat' ? 'Profil' : quitte ? 'Plus tard' : 'Mon cycle'}
       </button>
       <h1>Mon cycle</h1>
 
@@ -257,7 +267,11 @@ export function MonCycle({
 
       {vue === 'generer' && (
         <>
-          <p className="muted">3 étapes, une fois par cycle.</p>
+          <p className="muted">
+            {direct
+              ? "Ton foyer est prêt : le prompt aussi. Copie-le, colle-le dans ton IA, puis importe les 4 fichiers qu'elle te rend."
+              : '3 étapes, une fois par cycle.'}
+          </p>
           <section className="profile-section">
             <h2>1 · Copie le prompt</h2>
             <p>Il contient votre foyer, votre semaine type, le budget et les règles du cycle.</p>
@@ -285,14 +299,14 @@ export function MonCycle({
             </button>
           </section>
           <section className="profile-section">
-            <h2>2 · Colle-le dans Claude</h2>
-            <p>Nouvelle conversation, colle, envoie. Claude prépare 4 fichiers (menu-A.json … menu-D.json) : télécharge-les.</p>
+            <h2>2 · Colle-le dans ton IA</h2>
+            <p>Nouvelle conversation, colle, envoie. Ton IA (Claude de préférence) prépare 4 fichiers (menu-A.json … menu-D.json) : télécharge-les.</p>
             <a className="bouton-contour" href="https://claude.ai/new" target="_blank" rel="noreferrer">
               Ouvrir Claude
             </a>
           </section>
           <section className="profile-section">
-            <h2>3 · Importe les fichiers</h2>
+            <h2>3 · Importe les 4 fichiers</h2>
             <label className="bouton-plein import-fichiers">
               Choisir les fichiers .json
               <input type="file" multiple accept="application/json,.json" className="sr-only" onChange={(e) => void importer(e)} />

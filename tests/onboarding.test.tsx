@@ -94,7 +94,8 @@ describe('Onboarding — étape 1 (prénom, pour qui, routine ou suivi)', () => 
     expect(screen.getByRole('radio', { name: 'Juste moi' })).toBeChecked();
     expect(screen.getByRole('radio', { name: /Juste la routine/ })).toBeChecked();
     const dots = screen.getByRole('group', { name: /Progression/ });
-    expect(dots.querySelectorAll('span')).toHaveLength(5);
+    // Routine seule (défaut) : 3 écrans (bienvenue, compléments, maison) → 3 points.
+    expect(dots.querySelectorAll('span[aria-hidden]')).toHaveLength(3);
   });
 
   it('prénom obligatoire', async () => {
@@ -113,7 +114,7 @@ describe('Onboarding — étape 1 (prénom, pour qui, routine ou suivi)', () => 
     expect(screen.queryByLabelText("Prénom d'un enfant")).not.toBeInTheDocument();
     await user.click(screen.getByRole('radio', { name: 'En famille' }));
     await user.type(screen.getByLabelText("Prénom d'un enfant"), 'Léo');
-    await user.click(screen.getByRole('button', { name: /Ajouter/ }));
+    await user.click(screen.getByRole('button', { name: 'Ajouter' }));
     await user.type(screen.getByLabelText("Prénom d'un enfant"), 'Zoé{Enter}');
     await user.click(screen.getByRole('button', { name: 'Retirer Léo' }));
     expect(screen.getByRole('button', { name: 'Retirer Zoé' })).toBeInTheDocument();
@@ -154,6 +155,35 @@ describe('Onboarding — étape 1 (prénom, pour qui, routine ou suivi)', () => 
       { id: 'therese', prenom: 'Thérèse', type: 'adulte', suivi: false },
       { id: 'leo', prenom: 'Léo', type: 'enfant', suivi: false },
     ]);
+  });
+});
+
+describe('Onboarding — indicateur d étapes (retour test utilisateur : « étape 4 » à l écran 2)', () => {
+  const position = () => {
+    const g = screen.getByRole('group', { name: /Progression/ });
+    return {
+      texte: g.textContent,
+      actifs: g.querySelectorAll('.onboarding-dot-active').length,
+      total: g.querySelectorAll('span[aria-hidden]').length,
+    };
+  };
+
+  it('routine seule : le 2e écran (compléments) est « étape 2 sur 3 », pas 4', async () => {
+    const user = userEvent.setup();
+    render(<Onboarding onDone={() => {}} />);
+    await etape1(user, 'Léa', false);
+    expect(screen.getByRole('heading', { name: /Personnalisation/ })).toBeInTheDocument();
+    expect(position()).toMatchObject({ actifs: 2, total: 3 });
+    expect(position().texte).toMatch(/Étape 2 sur 3/);
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    expect(position()).toMatchObject({ actifs: 3, total: 3 });
+    expect(position().texte).toMatch(/Étape 3 sur 3/);
+  });
+
+  it('avec suivi : 5 étapes, l écran infos est « étape 2 sur 5 »', async () => {
+    await allerEtape2();
+    expect(position()).toMatchObject({ actifs: 2, total: 5 });
+    expect(position().texte).toMatch(/Étape 2 sur 5/);
   });
 });
 
@@ -287,12 +317,12 @@ describe('Onboarding — étape 4 (compléments, régime — sans doublon d obje
     const user = await allerEtape4();
     await user.click(screen.getByRole('button', { name: 'Whey' }));
     await user.type(screen.getByLabelText('Ajouter un complément'), 'whey');
-    await user.click(screen.getByRole('button', { name: /Ajouter/ }));
+    await user.click(screen.getByRole('button', { name: 'Ajouter' }));
 
     expect(screen.getByRole('alert')).toHaveTextContent(/déjà sélectionné/i);
     await user.clear(screen.getByLabelText('Ajouter un complément'));
     await user.type(screen.getByLabelText('Ajouter un complément'), 'Zinc');
-    await user.click(screen.getByRole('button', { name: /Ajouter/ }));
+    await user.click(screen.getByRole('button', { name: 'Ajouter' }));
     expect(screen.getByRole('button', { name: /Zinc/ })).toBeInTheDocument();
   });
 
@@ -300,7 +330,7 @@ describe('Onboarding — étape 4 (compléments, régime — sans doublon d obje
     const user = await allerEtape4();
     await user.click(screen.getByRole('button', { name: 'Créatine' }));
     await user.type(screen.getByLabelText('Ajouter un complément'), 'creatine');
-    await user.click(screen.getByRole('button', { name: /Ajouter/ }));
+    await user.click(screen.getByRole('button', { name: 'Ajouter' }));
 
     expect(screen.getByRole('alert')).toHaveTextContent(/déjà sélectionné/i);
     await user.clear(screen.getByLabelText('Ajouter un complément'));
@@ -315,15 +345,11 @@ describe('Onboarding — étape 4 (compléments, régime — sans doublon d obje
 });
 
 describe('Onboarding — étape 5 (maison & courses)', () => {
-  it('affiche les champs maison avec le datalist magasins', async () => {
+  it('affiche les magasins en puces multi-sélection et les champs maison', async () => {
     await allerEtape5();
 
-    expect(screen.getByLabelText('Magasin habituel')).toHaveAttribute('list', 'ob-magasins');
-    // <option value="…"/> n'a pas de texte : on vérifie les valeurs du datalist.
-    const valeurs = [...document.querySelectorAll('#ob-magasins option')].map((o) =>
-      o.getAttribute('value'),
-    );
-    expect(valeurs).toContain('Intermarché');
+    expect(screen.getByRole('group', { name: 'Magasins habituels' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Intermarché' })).toHaveAttribute('aria-pressed', 'false');
     expect(screen.getByLabelText('Budget max courses / semaine (€, optionnel)')).toBeInTheDocument();
     // Qui est à table : le foyer ; quels repas : la semaine type — plus de questions en double.
     expect(screen.queryByLabelText('Personnes à table')).not.toBeInTheDocument();
@@ -332,17 +358,42 @@ describe('Onboarding — étape 5 (maison & courses)', () => {
     expect(screen.getByRole('button', { name: 'Batch-friendly' })).toBeInTheDocument();
   });
 
+  it('plusieurs magasins : le premier est le principal, un ajout libre et un texte en attente sont gardés', async () => {
+    const user = await allerEtape5();
+    await user.click(screen.getByRole('button', { name: 'Aldi' }));
+    await user.click(screen.getByRole('button', { name: 'Lidl' }));
+    await user.type(screen.getByLabelText("Nom d'un autre magasin"), 'Marché{Enter}');
+    expect(screen.getByRole('button', { name: 'Marché' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByText(/Principal : Aldi/)).toBeInTheDocument();
+    // doublon (casse ignorée) refusé
+    await user.type(screen.getByLabelText("Nom d'un autre magasin"), 'aldi{Enter}');
+    expect(screen.getByRole('alert')).toHaveTextContent(/déjà sélectionné/);
+    // décocher un magasin le retire
+    await user.click(screen.getByRole('button', { name: 'Lidl' }));
+    // texte en attente (« Ajouter » oublié) pris à l'enregistrement
+    await user.clear(screen.getByLabelText("Nom d'un autre magasin"));
+    await user.type(screen.getByLabelText("Nom d'un autre magasin"), 'Biocoop');
+    soumettre();
+    await waitFor(() =>
+      expect(onDone).toHaveBeenCalledWith(
+        expect.objectContaining({ magasin: 'Aldi', magasins: ['Aldi', 'Marché', 'Biocoop'] }),
+      ),
+    );
+    expect(loadProfile()?.magasins).toEqual(['Aldi', 'Marché', 'Biocoop']);
+    expect(loadFoyer()?.magasins).toEqual(['Aldi', 'Marché', 'Biocoop']);
+  });
+
   it('bascule les préférences presets et refuse le doublon à l ajout libre', async () => {
     const user = await allerEtape5();
     await user.click(screen.getByRole('button', { name: 'Petit budget' }));
     expect(screen.getByRole('button', { name: 'Petit budget' })).toHaveAttribute('aria-pressed', 'true');
     await user.click(screen.getByRole('button', { name: 'Healthy' }));
     await user.type(screen.getByLabelText('Ajouter une préférence'), 'healthy');
-    await user.click(screen.getByRole('button', { name: /Ajouter/ }));
+    await user.click(screen.getByRole('button', { name: 'Ajouter' }));
     expect(screen.getByRole('alert')).toHaveTextContent(/déjà sélectionné/i);
     await user.clear(screen.getByLabelText('Ajouter une préférence'));
     await user.type(screen.getByLabelText('Ajouter une préférence'), 'Végé');
-    await user.click(screen.getByRole('button', { name: /Ajouter/ }));
+    await user.click(screen.getByRole('button', { name: 'Ajouter' }));
     expect(screen.getByRole('button', { name: /Végé/ })).toBeInTheDocument();
   });
 
@@ -356,7 +407,7 @@ describe('Onboarding — étape 5 (maison & courses)', () => {
 
   it('C est parti enregistre le profil v2 complet (régime choisi à l étape 4 + maison)', async () => {
     const user = await allerEtape5({ regime: 'keto', complements: ['Créatine'] });
-    await user.type(screen.getByLabelText('Magasin habituel'), 'Lidl');
+    await user.click(screen.getByRole('button', { name: 'Lidl' }));
     await user.type(screen.getByLabelText('Budget max courses / semaine (€, optionnel)'), '40');
     soumettre();
 
@@ -370,6 +421,7 @@ describe('Onboarding — étape 5 (maison & courses)', () => {
         complements: ['Créatine'],
         regime: 'keto',
         magasin: 'Lidl',
+        magasins: ['Lidl'],
         budgetMax: 40,
       } satisfies UserProfile),
     );

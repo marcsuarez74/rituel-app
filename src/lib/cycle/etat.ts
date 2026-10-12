@@ -1,4 +1,4 @@
-import { PROFILS_META, estSuivi, prenomProfil, type Regime, type UserProfile } from '../model';
+import { PROFILS_META, champsMagasins, estSuivi, magasinsDe, prenomProfil, type Regime, type UserProfile } from '../model';
 import { empilerMutation } from '../sync/outbox';
 import { FICHIER, type Forme, liste, objet, opt, verifierForme } from './schema';
 import type { Cycle, Jour, MembreId } from './types';
@@ -39,7 +39,8 @@ export interface ReglagesFoyer {
   jourRituel: Jour;
   semaine: Record<Jour, JourType>;
   exceptions: ExceptionFoyer[];
-  magasin?: string;
+  magasin?: string; // principal (forme historique, toujours écrit)
+  magasins?: string[]; // v2.4 — liste ordonnée ; lire via magasinsDe()
   budgetMax?: number; // € / semaine, foyer entier
 }
 
@@ -102,6 +103,7 @@ const FOYER = objet({
   semaine: objet(Object.fromEntries(JOURS.map((j) => [j, JOUR_TYPE]))),
   exceptions: liste(objet({ regle: 'texte', effet: 'texte', actif: 'booleen' })),
   magasin: opt('texte'),
+  magasins: opt(liste('texte')),
   budgetMax: opt('nombre'),
 });
 
@@ -202,7 +204,7 @@ export const foyerParDefaut = (profil: UserProfile | null): ReglagesFoyer => {
     jourRituel: 'dimanche',
     semaine: Object.fromEntries(JOURS.map((j) => [j, jourParDefaut(membres)])) as Record<Jour, JourType>,
     exceptions: [],
-    ...(profil?.magasin ? { magasin: profil.magasin } : {}),
+    ...(profil ? champsMagasins(magasinsDe(profil)) : {}),
     ...(profil?.budgetMax ? { budgetMax: profil.budgetMax } : {}),
   };
 };

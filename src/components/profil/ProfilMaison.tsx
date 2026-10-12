@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { MAGASINS_PRESETS, normaliseComplement } from '../../lib/model';
+import { avecMagasin, champsMagasins, magasinsDe, normaliseComplement } from '../../lib/model';
 import type { UserProfile } from '../../lib/model';
 import { parseEuro } from '../../lib/prix';
 import { saveProfile } from '../../lib/storage';
 import { Icon } from '../Icon';
+import { ChampMagasins } from '../ChampMagasins';
 import { Alerte, Fil } from './presente';
 
 // Page détail « Courses & budget » — magasin, budget, préférences des
@@ -15,7 +16,8 @@ export function ProfilMaison({
   profile: UserProfile;
   onProfileSaved?: (p: UserProfile) => void;
 }) {
-  const [magasin, setMagasin] = useState(profile.magasin ?? '');
+  const [magasins, setMagasins] = useState<string[]>(magasinsDe(profile));
+  const [nouveauMagasin, setNouveauMagasin] = useState('');
   const [budgetMax, setBudgetMax] = useState(profile.budgetMax != null ? String(profile.budgetMax) : '');
   const [preferences, setPreferences] = useState<string[]>([...(profile.preferences ?? [])]);
   const [nouvellePreference, setNouvellePreference] = useState('');
@@ -26,7 +28,8 @@ export function ProfilMaison({
   const [synced, setSynced] = useState(profile.id);
   if (synced !== profile.id) {
     setSynced(profile.id);
-    setMagasin(profile.magasin ?? '');
+    setMagasins(magasinsDe(profile));
+    setNouveauMagasin('');
     setBudgetMax(profile.budgetMax != null ? String(profile.budgetMax) : '');
     setPreferences([...(profile.preferences ?? [])]);
     setNouvellePreference('');
@@ -51,12 +54,13 @@ export function ProfilMaison({
     // delete + set de enregistrerObjectif) — jamais de valeur vide écrite.
     const updated: UserProfile = { ...profile };
     delete updated.magasin;
+    delete updated.magasins;
     delete updated.budgetMax;
     delete updated.preferences;
     // Champs retirés (spec 2026-10-07 §1 ter) : nettoyés au passage.
     delete updated.personnes;
     delete updated.repasJour;
-    if (magasin.trim()) updated.magasin = magasin.trim();
+    Object.assign(updated, champsMagasins(avecMagasin(magasins, nouveauMagasin)));
     if (bud != null) updated.budgetMax = bud;
     if (preferences.length > 0) updated.preferences = [...preferences];
     maj(updated);
@@ -77,26 +81,20 @@ export function ProfilMaison({
   return (
     <section className="detail-page">
       <h2>Courses &amp; budget</h2>
-      <div className="onboarding-field">
-        <label htmlFor="pf-magasin">Magasin habituel</label>
-        <input
-          id="pf-magasin"
-          type="text"
-          list="pf-magasins"
-          placeholder="Lidl, Intermarché…"
-          value={magasin}
-          onChange={(e) => {
-            setSaved(false);
-            setErreur(null);
-            setMagasin(e.target.value);
-          }}
-        />
-        <datalist id="pf-magasins">
-          {MAGASINS_PRESETS.map((m) => (
-            <option key={m} value={m} />
-          ))}
-        </datalist>
-      </div>
+      <ChampMagasins
+        idPrefix="pf-magasin"
+        valeur={magasins}
+        onChange={(v) => {
+          setSaved(false);
+          setErreur(null);
+          setMagasins(v);
+        }}
+        saisie={nouveauMagasin}
+        onSaisie={(v) => {
+          setSaved(false);
+          setNouveauMagasin(v);
+        }}
+      />
       <div className="onboarding-field">
         <label htmlFor="pf-budget">Budget max courses / semaine (€)</label>
         <input

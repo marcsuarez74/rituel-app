@@ -29,6 +29,25 @@ async function assertStyleGuideline(page: import('@playwright/test').Page, label
   expect(style.rayon, `${label} : rayon token 12px`).toBe('12px');
 }
 
+// Après « Ta semaine » (Passer), l'onboarding enchaîne sur Mon cycle (prompt à copier) ;
+// « Plus tard » en sort vers l'app (cycle d'exemple).
+async function passerTaSemaineEtMonCycle(page: import('@playwright/test').Page) {
+  await page.getByRole('button', { name: 'Passer' }).click();
+  await expect(page.getByRole('heading', { name: 'Mon cycle', level: 1 })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Copier le prompt' })).toBeVisible();
+  await page.getByRole('button', { name: 'Plus tard' }).click();
+}
+
+// Points allumés / total + libellé accessible de l'indicateur d'étapes.
+async function stepper(page: import('@playwright/test').Page) {
+  const g = page.getByRole('group', { name: /Progression/ });
+  return {
+    actifs: await g.locator('.onboarding-dot-active').count(),
+    total: await g.locator('span[aria-hidden]').count(),
+    texte: (await g.textContent()) ?? '',
+  };
+}
+
 test.describe('Onboarding 5 étapes — mobile', () => {
   test('étape 2 : aucun débordement horizontal et champs dans le viewport', async ({ page }) => {
     const largeur = page.viewportSize()!.width;
@@ -72,7 +91,6 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     await expect(page.getByRole('heading', { name: /Maison & courses/ })).toBeVisible();
     await assertPasDeDebordement(page);
     for (const label of [
-      'Magasin habituel',
       'Budget max courses / semaine',
     ]) {
       await assertStyleGuideline(page, label);
@@ -104,7 +122,13 @@ test.describe('Onboarding 5 étapes — mobile', () => {
 
     await expect(page.getByRole('heading', { name: /Maison & courses/ })).toBeVisible();
     await assertPasDeDebordement(page);
-    await page.getByLabel('Magasin habituel').fill('Lidl');
+    // Plusieurs magasins : le premier choisi est le principal.
+    await page.getByRole('button', { name: 'Lidl', exact: true }).click();
+    await page.getByRole('button', { name: 'Aldi', exact: true }).click();
+    await page.getByLabel("Nom d'un autre magasin").fill('Marché');
+    await page.getByRole('button', { name: 'Ajouter ce magasin' }).click();
+    await expect(page.getByRole('button', { name: 'Marché', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await assertPasDeDebordement(page);
     await page.getByLabel('Budget max courses / semaine').fill('40');
     await page.getByRole('button', { name: /C'est parti/ }).click();
 
@@ -115,8 +139,8 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     const taSemaine = page.getByRole('heading', { name: 'Ta semaine' });
     await plusTard.or(taSemaine).first().waitFor();
     if (await plusTard.isVisible()) await plusTard.click();
-    // Étape optionnelle « Ta semaine » : on la passe.
-    await page.getByRole('button', { name: 'Passer' }).click();
+    // Étape optionnelle « Ta semaine » : on la passe ; l'onboarding arrive ensuite sur Mon cycle.
+    await passerTaSemaineEtMonCycle(page);
 
     // Profil enregistré + cycle d'exemple auto-chargé → shell direct
     await expect(shell).toBeVisible();
@@ -130,6 +154,7 @@ test.describe('Onboarding 5 étapes — mobile', () => {
       complements: ['Créatine'],
       regime: 'keto',
       magasin: 'Lidl',
+      magasins: ['Lidl', 'Aldi', 'Marché'],
       budgetMax: 40,
     });
   });
@@ -153,8 +178,8 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     const taSemaine = page.getByRole('heading', { name: 'Ta semaine' });
     await plusTard.or(taSemaine).first().waitFor();
     if (await plusTard.isVisible()) await plusTard.click();
-    // Étape optionnelle « Ta semaine » : on la passe.
-    await page.getByRole('button', { name: 'Passer' }).click();
+    // Étape optionnelle « Ta semaine » : on la passe ; l'onboarding arrive ensuite sur Mon cycle.
+    await passerTaSemaineEtMonCycle(page);
 
     // L'app s'affiche sans crash : salutation (Aujourd'hui) avec le prénom
     // prérempli + cycle d'exemple.
@@ -195,7 +220,7 @@ test.describe('Onboarding 5 étapes — mobile', () => {
       await assertPasDeDebordement(page);
       await plusTard.click();
     }
-    await page.getByRole('button', { name: 'Passer' }).click();
+    await passerTaSemaineEtMonCycle(page);
     const nav = page.getByRole('navigation', { name: 'Navigation principale' });
     await expect(nav.getByRole('button')).toHaveText(["Aujourd'hui", 'Menu', 'Courses', 'Rituel']);
     await expect(page.getByText('Salut Jean 👋')).toBeVisible();
@@ -229,8 +254,8 @@ test.describe('Onboarding 5 étapes — mobile', () => {
     const taSemaine = page.getByRole('heading', { name: 'Ta semaine' });
     await plusTard.or(taSemaine).first().waitFor();
     if (await plusTard.isVisible()) await plusTard.click();
-    // Étape optionnelle « Ta semaine » : on la passe.
-    await page.getByRole('button', { name: 'Passer' }).click();
+    // Étape optionnelle « Ta semaine » : on la passe ; l'onboarding arrive ensuite sur Mon cycle.
+    await passerTaSemaineEtMonCycle(page);
 
     await expect(shell).toBeVisible();
     const profil = await page.evaluate(() => JSON.parse(localStorage.getItem('sportapp:profile')!));
@@ -307,10 +332,54 @@ test.describe('Écran Profil — mobile', () => {
     await expect(page.getByRole('heading', { name: 'Courses & budget', level: 2 })).toBeVisible();
     await assertPasDeDebordement(page);
     for (const label of [
-      'Magasin habituel',
       'Budget max courses / semaine',
     ]) {
       await assertStyleGuideline(page, label);
     }
   });
 });
+
+// Stepper : « étape 2 » ne doit jamais s'afficher « 4 » (étapes sautées sans suivi),
+// et la fin d'onboarding arrive sur Mon cycle avec le prompt copiable — 320 et 375.
+for (const largeur of [320, 375]) {
+  test(`onboarding routine seule : stepper juste, magasins multiples, arrivée sur Mon cycle, à ${largeur}px`, async ({ page }) => {
+    await page.setViewportSize({ width: largeur, height: 700 });
+    await page.goto('/');
+    await page.evaluate(() => document.fonts.ready);
+    await page.getByLabel("Comment tu t'appelles ?").fill('Léa');
+    expect(await stepper(page)).toMatchObject({ actifs: 1, total: 3 });
+    await assertPasDeDebordement(page);
+    await page.getByRole('button', { name: /Continuer/ }).click();
+
+    await expect(page.getByRole('heading', { name: /Personnalisation/ })).toBeVisible();
+    expect(await stepper(page)).toMatchObject({ actifs: 2, total: 3 });
+    expect((await stepper(page)).texte).toContain('Étape 2 sur 3');
+    await assertPasDeDebordement(page);
+    await page.getByRole('button', { name: /Continuer/ }).click();
+
+    await expect(page.getByRole('heading', { name: /Maison & courses/ })).toBeVisible();
+    expect((await stepper(page)).texte).toContain('Étape 3 sur 3');
+    await page.getByRole('button', { name: 'Carrefour', exact: true }).click();
+    await page.getByRole('button', { name: 'Grand Frais', exact: true }).click();
+    await expect(page.getByText(/Principal : Carrefour/)).toBeVisible();
+    await assertPasDeDebordement(page);
+    await page.getByRole('button', { name: /C'est parti/ }).click();
+
+    const plusTard = page.getByRole('button', { name: 'Plus tard' });
+    const taSemaine = page.getByRole('heading', { name: 'Ta semaine' });
+    await plusTard.or(taSemaine).first().waitFor();
+    if (!(await taSemaine.isVisible())) await plusTard.click(); // étape sync optionnelle (build de prod)
+    await page.getByRole('button', { name: 'Passer' }).click();
+
+    // Mon cycle : bouton copier visible d'emblée, 3 étapes claires, rien ne déborde.
+    await expect(page.getByRole('heading', { name: 'Mon cycle', level: 1 })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Copier le prompt' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '1 · Copie le prompt' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '2 · Colle-le dans ton IA' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: '3 · Importe les 4 fichiers' })).toBeVisible();
+    await assertPasDeDebordement(page);
+
+    const profil = await page.evaluate(() => JSON.parse(localStorage.getItem('sportapp:profile')!));
+    expect(profil).toMatchObject({ magasin: 'Carrefour', magasins: ['Carrefour', 'Grand Frais'] });
+  });
+}

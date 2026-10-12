@@ -150,7 +150,7 @@ test.describe('Shell v2 — barre du bas', () => {
       await page.getByRole('button', { name: /Mon profil/ }).click();
       await page.getByRole('button', { name: /Mon cycle/ }).click();
       await page.getByRole('button', { name: 'Créer mon premier cycle' }).click();
-      await expect(page.getByRole('heading', { name: '3 · Importe les fichiers' })).toBeVisible();
+      await expect(page.getByRole('heading', { name: '3 · Importe les 4 fichiers' })).toBeVisible();
       const debord = () =>
         page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       expect(await debord()).toBeLessThanOrEqual(OVERFLOW_TOLERANCE);

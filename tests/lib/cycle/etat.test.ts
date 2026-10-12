@@ -63,6 +63,20 @@ describe('foyer', () => {
     expect(foyerParDefaut({ ...profilMel, id: 'mel-3f9a', suivi: false }).membres[0].suivi).toBe(false);
   });
 
+  it('défaut : plusieurs magasins du profil repris dans le foyer (magasin = principal)', () => {
+    const f = foyerParDefaut({ ...profilMel, magasin: 'Aldi', magasins: ['Aldi', 'Lidl'] });
+    expect(f).toMatchObject({ magasin: 'Aldi', magasins: ['Aldi', 'Lidl'] });
+  });
+
+  it('foyer à magasins[] : sauvé / relu ; foyer ancien à magasin unique : toujours valide', () => {
+    const base = foyerParDefaut({ ...profilMel, id: 'mel-3f9a' });
+    saveFoyer({ ...base, magasin: 'Lidl', magasins: ['Lidl', 'Aldi'] });
+    expect(loadFoyer()).toMatchObject({ magasin: 'Lidl', magasins: ['Lidl', 'Aldi'] });
+    saveFoyer({ ...base, magasin: 'Lidl', magasins: undefined });
+    expect(loadFoyer()?.magasin).toBe('Lidl');
+    expect(loadFoyer()?.magasins).toBeUndefined();
+  });
+
   it('défaut des profils historiques marc / melanie : les deux adultes (compatibilité)', () => {
     const f = foyerParDefaut(profilMel);
     expect(f.membres.map((m) => [m.id, m.prenom, !!m.telephone])).toEqual([

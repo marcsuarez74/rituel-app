@@ -299,7 +299,7 @@ describe('ProfilScreen — Courses & budget', () => {
     localStorage.clear();
   });
 
-  it('préremplit les champs depuis le profil et propose le datalist magasins', async () => {
+  it('préremplit les champs depuis le profil (magasin unique ancien = une puce cochée)', async () => {
     const user = userEvent.setup();
     render(
       <ProfilScreen
@@ -319,8 +319,8 @@ describe('ProfilScreen — Courses & budget', () => {
     await user.click(ouvrirPage('Courses & budget'));
 
     const maison = page('Courses & budget');
-    expect(screen.getByLabelText('Magasin habituel')).toHaveValue('Lidl');
-    expect(screen.getByLabelText('Magasin habituel')).toHaveAttribute('list', 'pf-magasins');
+    expect(within(maison).getByRole('button', { name: 'Lidl' })).toHaveAttribute('aria-pressed', 'true');
+    expect(within(maison).getByRole('button', { name: 'Aldi' })).toHaveAttribute('aria-pressed', 'false');
     // inputs texte (+ inputMode) : jest-dom renvoie la valeur sous forme de chaîne.
     expect(screen.getByLabelText('Budget max courses / semaine (€)')).toHaveValue('40');
     expect(screen.queryByLabelText('Personnes à table')).not.toBeInTheDocument(); // le foyer le dit
@@ -338,15 +338,16 @@ describe('ProfilScreen — Courses & budget', () => {
     await user.click(ouvrirPage('Courses & budget'));
     const maison = page('Courses & budget');
 
-    await user.type(screen.getByLabelText('Magasin habituel'), 'Lidl');
+    await user.click(within(maison).getByRole('button', { name: 'Lidl' }));
+    await user.click(within(maison).getByRole('button', { name: 'Aldi' }));
     await user.type(screen.getByLabelText('Budget max courses / semaine (€)'), '40');
-    await user.click(within(maison).getByRole('button', { name: /Ajouter/ })); // sans saisir → no-op
+    await user.click(within(maison).getByRole('button', { name: 'Ajouter' })); // sans saisir → no-op
     await user.type(screen.getByLabelText('Ajouter une préférence'), 'Batch-friendly');
-    await user.click(within(maison).getByRole('button', { name: /Ajouter/ }));
+    await user.click(within(maison).getByRole('button', { name: 'Ajouter' }));
     await user.click(screen.getByRole('button', { name: 'Enregistrer maison & courses' }));
 
     expect(loadProfile()).toEqual(
-      expect.objectContaining({ magasin: 'Lidl', budgetMax: 40, preferences: ['Batch-friendly'] }),
+      expect.objectContaining({ magasin: 'Lidl', magasins: ['Lidl', 'Aldi'], budgetMax: 40, preferences: ['Batch-friendly'] }),
     );
     expect(screen.getByRole('status')).toHaveTextContent(/Enregistré/);
   });
@@ -384,7 +385,7 @@ describe('ProfilScreen — Courses & budget', () => {
     );
     await user.click(ouvrirPage('Courses & budget'));
 
-    await user.clear(screen.getByLabelText('Magasin habituel'));
+    await user.click(screen.getByRole('button', { name: 'Lidl' })); // décoche l'unique magasin
     await user.clear(screen.getByLabelText('Budget max courses / semaine (€)'));
     await user.click(screen.getByRole('button', { name: /Retirer Healthy/ }));
     await user.click(screen.getByRole('button', { name: 'Enregistrer maison & courses' }));
