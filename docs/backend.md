@@ -62,6 +62,25 @@ facultative et quelques infos d'appareil à `POST /bugs`, qui crée une issue Gi
 de donnée de santé : le dépôt est public. Quota 3/jour/foyer (table `bug_reports`).
 Mise en place du jeton : `server/README.md` § Signaler un bug.
 
+## Supprimer son profil — `DELETE /foyers/moi`
+
+Profil › « Supprimer mon profil » (spec `docs/superpowers/specs/2026-10-12-supprimer-profil-design.md`).
+Route authentifiée (Bearer) : l'appareil quitte le foyer, dans une seule transaction SQLite.
+
+- Le jeton est révoqué (table `tokens_revoques`, empreinte sha256) : ses requêtes suivantes
+  (y compris `/evenements`) répondent **401**. Un jeton dont le foyer n'existe plus répond aussi 401.
+- `/connexion` enregistre chaque jeton émis dans `sessions` (« appareils connectés »).
+- **Dernier appareil** (aucune autre session vivante, foyer créé avec le suivi des appareils) :
+  le foyer est supprimé → cascade sur `weeks`, `checks`, `weights`, `depenses`, `profiles`,
+  `etat`, `bug_reports`, `sessions`; les captures de bugs du foyer sont effacées du disque;
+  les flux SSE du foyer sont fermés. Réponse `{ ok: true, foyerSupprime: true }`.
+- **Autres appareils présents** : seul le jeton est retiré; les données partagées restent
+  intactes (le modèle n'a pas de données « propres à un membre » côté serveur : tout est au
+  foyer). Réponse `{ ok: true, foyerSupprime: false }`.
+- **Foyer hérité** (créé avant cette fonction, `appareils_suivis = 0`) : des jetons non suivis
+  peuvent circuler → le foyer n'est jamais supprimé automatiquement (jeton révoqué seulement).
+  Pour vider un tel foyer : « Supprimer les données du foyer » (purge) dans Profil › Foyer.
+
 ## Comment ça marche (résumé)
 
 - **Outbox locale** (`sportapp:sync:outbox`) : toute mutation passe par

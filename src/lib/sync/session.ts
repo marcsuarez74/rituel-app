@@ -69,3 +69,19 @@ export const genererCodeFoyer = (): string => {
     .join('');
   return `${mot()}-${mot()}-${hex}`;
 };
+
+// Suppression de profil : l'appareil quitte le foyer (jeton révoqué ; foyer supprimé
+// si c'était le dernier appareil). 401 = jeton déjà refusé / foyer déjà supprimé :
+// le but est atteint. Toute autre issue (réseau, 5xx) lève 'serveur-injoignable'.
+export const quitterFoyerServeur = async (token: string): Promise<void> => {
+  let res: Response;
+  try {
+    res = await fetch(`${SYNC_URL}/foyers/moi`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  } catch {
+    throw new Error('serveur-injoignable');
+  }
+  if (!res.ok && res.status !== 401) throw new Error('serveur-injoignable');
+};

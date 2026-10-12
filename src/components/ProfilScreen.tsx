@@ -15,6 +15,7 @@ import { ProfilInfos } from './profil/ProfilInfos';
 import { ProfilFoyer } from './profil/ProfilFoyer';
 import { ProfilMaison } from './profil/ProfilMaison';
 import { ProfilObjectif } from './profil/ProfilObjectif';
+import { SupprimerProfil } from './profil/SupprimerProfil';
 
 // Navigation interne : hub (vue générale) ou page détail.
 type Vue = 'hub' | 'objectif' | 'infos' | 'maison' | 'foyer';
@@ -46,6 +47,7 @@ export function ProfilScreen({
   onSemaineType,
   onIdentite,
   onSignalerBug,
+  onProfilSupprime,
 }: {
   profile: UserProfile;
   onBack: () => void;
@@ -59,6 +61,7 @@ export function ProfilScreen({
   onSemaineType?: () => void;
   onIdentite?: (p: UserProfile) => void;
   onSignalerBug?: () => void;
+  onProfilSupprime?: () => void;
 }) {
   const [vue, setVue] = useState<Vue>('hub');
 
@@ -131,6 +134,7 @@ export function ProfilScreen({
                 </button>
               )}
             </div>
+            {onProfilSupprime && <SupprimerProfil onSupprime={onProfilSupprime} />}
           </div>
           <p className="muted profil-about">
             Rituel v{__APP_VERSION__} — vos données restent sur votre téléphone.

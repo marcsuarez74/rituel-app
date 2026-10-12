@@ -133,6 +133,24 @@ function App() {
 
   const position = actif ? positionCycle(actif, aujourdhui) : null;
 
+  // Profil supprimé (données locales déjà effacées) : retour à l'état initial → onboarding.
+  const reinitialiserApp = () => {
+    setProfile(null);
+    setCycleStocke(null);
+    setFoyerStocke(null);
+    setExemple(null);
+    setProfilOuvert(false);
+    setOnglet('aujourdhui');
+    setSemaineVue(null);
+    setJourVu(null);
+    setGuide(null);
+    setMonCycle(false);
+    setSemaineType(null);
+    setSignalerBug(false);
+    setRecette(null);
+    setSyncVersion((v) => v + 1);
+  };
+
   const enregistrerFoyer = (f: ReglagesFoyer) => {
     saveFoyer(f);
     setFoyerStocke(f);
@@ -216,6 +234,7 @@ function App() {
             onSemaineType={() => setSemaineType('profil')}
             onIdentite={setProfile}
             onBack={() => setProfilOuvert(false)}
+            onProfilSupprime={reinitialiserApp}
             onChangeProfile={() => {
               removeProfile();
               setProfile(null);

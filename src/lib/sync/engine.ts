@@ -46,7 +46,14 @@ import {
   type MutationSync,
   type TableSync,
 } from './outbox';
-import { definirCode, demanderSession, definirSession, effacerSession, lireSession } from './session';
+import {
+  definirCode,
+  demanderSession,
+  definirSession,
+  effacerSession,
+  lireSession,
+  quitterFoyerServeur,
+} from './session';
 
 export type SyncEtat = 'off' | 'hors-foyer' | 'attente' | 'sync' | 'erreur';
 
@@ -529,6 +536,24 @@ export const purgerFoyer = async (): Promise<void> => {
   if (!client) return; // déconnexion pendant la flush → plus rien à purger
   await client.purger(); // serveur d'abord — jamais de données orphelines
   deconnecterFoyer();
+};
+
+// Supprimer son profil (spec 2026-10-12). Serveur d'abord : un échec réseau lève
+// 'serveur-injoignable' sans rien toucher (retry ou `localSeulement`). Ensuite le
+// moteur est coupé et l'outbox vidée AVANT d'effacer les clés — une flush en vol ou un
+// pull tardif voit « plus de session » et n'écrit ni ne pousse plus rien. Seules les
+// clés `sportapp:*` de cette origine partent.
+export const supprimerProfil = async (opts: { localSeulement?: boolean } = {}): Promise<void> => {
+  const session = lireSession();
+  if (session && syncActif() && !opts.localSeulement) await quitterFoyerServeur(session.token);
+  deconnecterFoyer(); // coupe SSE + timers, vide l'outbox, efface session et code
+  const cles: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k?.startsWith('sportapp:')) cles.push(k);
+  }
+  for (const k of cles) localStorage.removeItem(k);
+  definirEtat(syncActif() ? 'hors-foyer' : 'off');
 };
 
 // Amorçage une seule fois par chargement de l'app (idempotent).
