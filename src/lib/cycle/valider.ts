@@ -1,3 +1,4 @@
+import { normaliserFichier } from './alias';
 import { estimerSemaine } from './budget';
 import { FICHIER, verifierForme } from './schema';
 import type { Cycle, CycleFichier, MenuSemaine, MembreId, Recette, Repas } from './types';
@@ -30,18 +31,26 @@ const SEUIL_KETO = 30;
 const DINERS_PROPRES_MIN = 5;
 const egal = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
-const lire = (nom: string, contenu: string): { fichier?: CycleFichier; erreurs: string[] } => {
+const lire = (nom: string, contenu: string): { fichier?: CycleFichier; erreurs: string[]; alertes: string[] } => {
   let brut: unknown;
   try {
     brut = JSON.parse(contenu);
   } catch {
-    return { erreurs: [`${nom} : JSON illisible (le fichier est incomplet ou mal copié).`] };
+    return { erreurs: [`${nom} : JSON illisible (le fichier est incomplet ou mal copié).`], alertes: [] };
   }
   const o = brut as Partial<CycleFichier> | null;
-  if (o?.format !== 'rituel-cycle') return { erreurs: [`${nom} · format : « rituel-cycle » attendu.`] };
-  if (o.version !== 2) return { erreurs: [`${nom} · version : 2 attendu (reçu ${String(o.version)}).`] };
-  const erreurs = verifierForme(brut, FICHIER).map((e) => `${nom} · ${e}.`);
-  return erreurs.length ? { erreurs } : { fichier: brut as CycleFichier, erreurs: [] };
+  if (o?.format !== 'rituel-cycle') return { erreurs: [`${nom} · format : « rituel-cycle » attendu.`], alertes: [] };
+  if (o.version !== 2) return { erreurs: [`${nom} · version : 2 attendu (reçu ${String(o.version)}).`], alertes: [] };
+  const norm = normaliserFichier(brut, nom);
+  // Rayons/unités inconnus : déjà signalés par `norm`, groupés par valeur.
+  const forme = verifierForme(brut, FICHIER, '', 500)
+    .filter((e) => !/\.(rayon|unite) : /.test(e))
+    .slice(0, 20)
+    .map((e) => `${nom} · ${e}.`);
+  const erreurs = [...norm.erreurs, ...forme];
+  return erreurs.length
+    ? { erreurs, alertes: norm.alertes }
+    : { fichier: brut as CycleFichier, erreurs: [], alertes: norm.alertes };
 };
 
 const fusionner = (fichiers: CycleFichier[]): { cycle?: Cycle; erreurs: string[] } => {
@@ -200,5 +209,5 @@ export const importerCycle = (
 
   const erreursRegles = regles(cycle, ctx);
   if (erreursRegles.length) return { cycle: null, erreurs: erreursRegles, alertes: [] };
-  return { cycle, erreurs: [], alertes: alertes(cycle, ctx) };
+  return { cycle, erreurs: [], alertes: [...lus.flatMap((l) => l.alertes), ...alertes(cycle, ctx)] };
 };

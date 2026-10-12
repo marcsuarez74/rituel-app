@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReglagesFoyer } from '../../src/lib/cycle/etat';
 import type { UserProfile } from '../../src/lib/model';
+import { DIFFICULTES, JOURS, LETTRES, MOMENTS, RAYONS, UNITES } from '../../src/lib/cycle/types';
 import { assemblePromptIa, schemaContrat } from '../../src/lib/promptIa';
 import { foyerDuo } from './cycle/fabrique';
 
@@ -143,7 +144,7 @@ describe('assemblePromptIa (cycle v2)', () => {
 
   it('embarque le contrat tel quel depuis types.ts', () => {
     const s = schemaContrat();
-    expect(s.startsWith('export interface Macros')).toBe(true);
+    expect(s.startsWith('export type Jour')).toBe(true);
     expect(s).toContain('export interface CycleFichier');
     expect(s).not.toContain('export interface Cycle {');
     expect(prompt()).toContain(s);
@@ -168,5 +169,10 @@ describe('assemblePromptIa (cycle v2)', () => {
       precedentes: [],
     });
     expect(t).toContain('Magasins : Aldi (principal), Lidl');
+  });
+
+  it('le prompt liste toutes les valeurs autorisées (rayon, unité, moment, difficulté, jour, lettre)', () => {
+    const p = prompt();
+    for (const v of [...RAYONS, ...UNITES, ...MOMENTS, ...DIFFICULTES, ...JOURS, ...LETTRES]) expect(p).toContain(`'${v}'`);
   });
 });

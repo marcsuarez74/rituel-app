@@ -22,9 +22,9 @@ const OBJECTIFS_PROMPT: Record<ObjectifType, string> = {
 
 const kg = (n: number): string => n.toLocaleString('fr-FR', { maximumFractionDigits: 1 });
 
-// Le contrat (interfaces Macros … CycleFichier) recopié tel quel depuis types.ts.
+// Le contrat (unions Jour … Difficulte, interfaces Macros … CycleFichier) recopié tel quel depuis types.ts.
 export const schemaContrat = (): string => {
-  const debut = typesSource.indexOf('export interface Macros');
+  const debut = typesSource.indexOf('export type Jour');
   const fin = typesSource.indexOf('// </schema>');
   return typesSource.slice(debut, fin).trim();
 };
