@@ -28,7 +28,7 @@ Déployée sur le VPS : https://rituel.marco-studio.fr (conteneur Docker : PWA +
 
 ```
 src/
-├── App.tsx               # Shell : onboarding → « Ta semaine » → barre du bas 5 onglets ; écrans poussés
+├── App.tsx               # Shell : onboarding → « Ta semaine » → barre du bas 4 onglets ; écrans poussés
 ├── main.tsx              # migrerV2() (remise à zéro 2.0, une fois) puis rendu
 ├── lib/                  # Cœur logique, ZÉRO React (testable isolément)
 │   ├── model.ts          # Profil (UserProfile, objectifs, régimes, PROFILS_META)
