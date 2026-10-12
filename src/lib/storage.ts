@@ -1,5 +1,5 @@
 import { estIdProfil, type DepenseEntry, type ProfileKey, type ProfilLegacy, type UserProfile } from './model';
-import { normaliseComplement } from './model';
+import { magasinsDe, normaliseComplement } from './model';
 import { empilerMutation } from './sync/outbox';
 
 const PROFILE_KEY = 'sportapp:profile';
@@ -119,6 +119,7 @@ export const saveProfile = (profile: UserProfile): void => {
       ? { prenom: profile.prenom.trim() }
       : {}),
     ...(profile.magasin !== undefined ? { magasin: profile.magasin.trim() } : {}),
+    ...(profile.magasins !== undefined ? { magasins: magasinsDe({ magasins: profile.magasins }) } : {}),
     ...(profile.preferences !== undefined
       ? { preferences: normaliseChampsLibres(profile.preferences) }
       : {}),
@@ -221,6 +222,10 @@ export const loadProfile = (): UserProfile | null => {
     complements: [...p.complements],
     regime: p.regime,
     ...(isStr(p.magasin) && p.magasin.trim() ? { magasin: p.magasin.trim() } : {}),
+    // magasins[] : ignoré en bloc s'il est illégal (le magasin unique survit).
+    ...(Array.isArray(p.magasins) && p.magasins.length > 0 && p.magasins.every(isStr)
+      ? { magasins: magasinsDe({ magasins: p.magasins }) }
+      : {}),
     ...(optionalPositif(p.budgetMax) && p.budgetMax !== undefined ? { budgetMax: p.budgetMax } : {}),
     ...(Array.isArray(p.preferences) && p.preferences.every(isStr)
       ? { preferences: [...p.preferences] }

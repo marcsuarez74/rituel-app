@@ -460,6 +460,18 @@ describe('storage: profil — champs maison & courses', () => {
     expect(loadProfile()).toEqual({ ...base, magasin: 'Lidl', preferences: ['Healthy'] });
   });
 
+  it('roundtrip magasins[] (liste) ; un profil ancien à magasin unique reste lisible tel quel', () => {
+    saveProfile({ ...base, magasin: 'Lidl', magasins: ['Lidl', 'Aldi'] });
+    expect(loadProfile()).toEqual({ ...base, magasin: 'Lidl', magasins: ['Lidl', 'Aldi'] });
+    localStorage.setItem('sportapp:profile', JSON.stringify({ ...base, magasin: 'Lidl' }));
+    expect(loadProfile()).toEqual({ ...base, magasin: 'Lidl' });
+  });
+
+  it('loadProfile ignore un magasins[] illégal sans perdre le magasin unique', () => {
+    localStorage.setItem('sportapp:profile', JSON.stringify({ ...base, magasin: 'Lidl', magasins: [3, 'Aldi'] }));
+    expect(loadProfile()).toEqual({ ...base, magasin: 'Lidl' });
+  });
+
   it('loadProfile ignore un champ optionnel illégal sans invalider le profil', () => {
     saveProfile({ ...base, budgetMax: 40 });
     // réécrit la clé en injectant des champs illégaux

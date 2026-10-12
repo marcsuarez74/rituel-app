@@ -31,7 +31,8 @@ export interface UserProfile {
   complements: string[];
   regime: Regime;
   // v2.1 — Maison & courses : tout optionnel, ignoré champ par champ si illégal (storage)
-  magasin?: string; // nom libre, trim (ex. « Lidl »)
+  magasin?: string; // nom libre, trim (ex. « Lidl ») — principal ; forme historique, toujours écrit
+  magasins?: string[]; // v2.4 — liste ordonnée (le 1er = principal) ; lire via magasinsDe()
   budgetMax?: number; // € / semaine (plafond)
   preferences?: string[]; // types de plats souhaités (presets + libre) — pour le prompt IA
   personnes?: number; // personnes à table (entier ≥ 1)
@@ -118,3 +119,29 @@ export const COMPLEMENTS_PRESETS = ['Whey', 'Créatine', 'Oméga-3', 'Collagène
 // Comparaison insensible casse/accents pour dédoublonner les compléments.
 export const normaliseComplement = (s: string): string =>
   s.trim().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+
+// Magasins (v2.4) : liste ordonnée, le premier est le « principal ». Forme
+// rétrocompatible : `magasin` (chaîne, ancienne forme) reste écrit = principal,
+// donc lisible par les anciens clients (sync) ; `magasins` porte la liste.
+// Lecture : un `magasin` seul = liste d'un élément ; un `magasin` qui n'est pas
+// dans la liste (modifié par un ancien client) passe en tête, rien n'est perdu.
+export const magasinsDe = (x: { magasin?: string; magasins?: string[] }): string[] => {
+  const out: string[] = [];
+  const ajouter = (v: unknown) => {
+    if (typeof v !== 'string') return;
+    const t = v.trim().slice(0, 40);
+    if (t && !out.some((o) => normaliseComplement(o) === normaliseComplement(t))) out.push(t);
+  };
+  const liste = Array.isArray(x.magasins) ? x.magasins : [];
+  const unique = typeof x.magasin === 'string' ? x.magasin.trim() : '';
+  if (unique && !liste.some((m) => typeof m === 'string' && normaliseComplement(m) === normaliseComplement(unique)))
+    ajouter(unique);
+  liste.forEach(ajouter);
+  return out;
+};
+
+// Champs à écrire pour une liste de magasins ({} si vide → clés absentes).
+export const champsMagasins = (liste: string[]): { magasin?: string; magasins?: string[] } => {
+  const l = magasinsDe({ magasins: liste });
+  return l.length > 0 ? { magasins: l, magasin: l[0] } : {};
+};

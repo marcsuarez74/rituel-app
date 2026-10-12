@@ -4,7 +4,7 @@ import { ordreJours } from './cycle/calendrier';
 import type { ReglagesFoyer } from './cycle/etat';
 import { prenomMembre } from './cycle/menu';
 import { ageDepuis } from './dates';
-import type { ObjectifType, UserProfile } from './model';
+import { magasinsDe, type ObjectifType, type UserProfile } from './model';
 import type { WeightEntry } from './storage';
 
 // Prompt maître du cycle v2 (spec 2026-10-07 §6.1 + annexe) : le template ne
@@ -80,9 +80,19 @@ const semaineType = (foyer: ReglagesFoyer): string =>
     })
     .join('\n');
 
+// Un magasin : formulation historique. Plusieurs : le premier est le principal
+// (prix estimés chez lui) ; si les courses se répartissent, l'IA l'indique.
+const libelleMagasins = (magasins: string[]): string => {
+  if (magasins.length === 0) return 'Magasin : supermarché habituel';
+  if (magasins.length === 1) return `Magasin : ${magasins[0]}`;
+  const [principal, ...autres] = magasins;
+  return `Magasins : ${principal} (principal), ${autres.join(', ')} — estime les prix chez ${principal} ; si certains articles se trouvent mieux ailleurs, indique la répartition par magasin dans \`remarques\``;
+};
+
 export const assemblePromptIa = (c: ContextePrompt): string => {
   const { foyer, profil } = c;
-  const magasin = foyer.magasin || profil.magasin;
+  const fm = magasinsDe(foyer);
+  const magasins = fm.length > 0 ? fm : magasinsDe(profil);
   const budget = foyer.budgetMax ?? profil.budgetMax;
   const exceptions = foyer.exceptions.filter((e) => e.actif).map((e) => `${e.regle} → ${e.effet}`);
   const valeurs: Record<string, string> = {
@@ -92,7 +102,7 @@ export const assemblePromptIa = (c: ContextePrompt): string => {
     SEMAINE_TYPE: semaineType(foyer),
     EXCEPTIONS: exceptions.length ? exceptions.join(' ; ') : 'aucune',
     COURSES: [
-      `Magasin : ${magasin || 'supermarché habituel'}`,
+      libelleMagasins(magasins),
       budget != null
         ? `budget max : ${budget} € par semaine pour TOUT le foyer (extras keto et articles fixes compris)`
         : 'pas de budget max fixé',

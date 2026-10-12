@@ -226,7 +226,12 @@ function App() {
               // Magasin et budget vivent dans le foyer une fois celui-ci enregistré.
               if (foyerStocke) {
                 // undefined → clé omise au JSON (champ vidé dans le profil).
-                enregistrerFoyer({ ...foyerStocke, magasin: p.magasin || undefined, budgetMax: p.budgetMax });
+                enregistrerFoyer({
+                  ...foyerStocke,
+                  magasin: p.magasin || undefined,
+                  magasins: p.magasins?.length ? p.magasins : undefined,
+                  budgetMax: p.budgetMax,
+                });
               }
             }}
           />

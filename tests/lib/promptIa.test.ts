@@ -148,4 +148,25 @@ describe('assemblePromptIa (cycle v2)', () => {
     expect(s).not.toContain('export interface Cycle {');
     expect(prompt()).toContain(s);
   });
+
+  it('un seul magasin : formulation inchangée', () => {
+    expect(prompt()).toContain('Magasin : Lidl ·');
+  });
+
+  it('plusieurs magasins : liste, principal = premier, répartition à indiquer', () => {
+    const t = prompt({ ...foyer(), magasin: 'Lidl', magasins: ['Lidl', 'Grand Frais', 'Aldi'] });
+    expect(t).toContain('Magasins : Lidl (principal), Grand Frais, Aldi');
+    expect(t).toMatch(/estime les prix chez Lidl/);
+    expect(t).toMatch(/répartition/);
+  });
+
+  it('foyer sans magasin : repli sur la liste du profil', () => {
+    const t = assemblePromptIa({
+      foyer: { ...foyer(), magasin: undefined },
+      profil: { ...profil, magasins: ['Aldi', 'Lidl'], magasin: 'Aldi' },
+      dernierPoids: null,
+      precedentes: [],
+    });
+    expect(t).toContain('Magasins : Aldi (principal), Lidl');
+  });
 });

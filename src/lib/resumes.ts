@@ -1,6 +1,6 @@
 import { ageDepuis } from './dates';
 import { fmtKg } from './text';
-import { OBJECTIF_TYPES, REGIMES, estSuivi } from './model';
+import { OBJECTIF_TYPES, REGIMES, estSuivi, magasinsDe } from './model';
 import type { UserProfile } from './model';
 import type { WeightEntry } from './storage';
 import type { SyncEtat } from './sync/engine';
@@ -49,7 +49,8 @@ export const resumeInfos = (profile: UserProfile): string => {
 // Tuile Maison & courses : magasin et budget — pill compacte (qui est à table : le foyer).
 export const resumeMaison = (profile: UserProfile): string => {
   const champs: string[] = [];
-  if (profile.magasin) champs.push(profile.magasin);
+  const magasins = magasinsDe(profile);
+  if (magasins.length > 0) champs.push(magasins.join(', '));
   if (profile.budgetMax != null) champs.push(`${profile.budgetMax}`.replace('.', ',') + ' €');
   return champs.length > 0 ? champs.join(' · ') : '—';
 };
