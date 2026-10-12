@@ -5,7 +5,7 @@ Source de vérité : `src/index.css` (section `:root`). Toute valeur ici doit y 
 ## Principes
 
 - **Thème clair unique « Marché coloré »** — pas de dark mode, pas de `prefers-color-scheme`
-- **Ultra visible** : contraste texte ≥ 4,5:1 partout (règle repo — texte principal ≈ 13,9:1 sur papier, texte secondaire ≈ 7:1 sur papier et ≈ 7,6:1 sur cartes, blanc sur basilic ≈ 6,4:1 ; garde-fous : `tests/contraste.test.ts` et `tests/css-tokens.test.ts`), hiérarchie typographique forte, cibles tactiles ≥ 48 px
+- **Ultra visible** : contraste texte ≥ 4,5:1 partout (règle repo — texte principal ≈ 13,9:1 sur papier, texte secondaire ≈ 7:1 sur papier et ≈ 7,6:1 sur cartes, blanc sur basilic ≈ 6,5:1 ; garde-fous : `tests/contraste.test.ts` et `tests/css-tokens.test.ts`), hiérarchie typographique forte, cibles tactiles ≥ 48 px
 - **Le jaune fruit n'est jamais une couleur de texte** : `--accent-2` (= `--fru`) ne sert qu'aux fonds/bordures — texte sur jaune fruit = encre
 - **Style marché** : papier crème, encre brune, bordures franches 2 px d'encre, ombres décalées sans flou, rayons organiques « faits main », étiquettes kraft ; une couleur par famille du marché (rayons) et une par plat (palette des plats, annexe A.2 de la spec)
 - **Fluide** : transitions douces sur les éléments interactifs uniquement + kill-switch `prefers-reduced-motion` ; animations en `transform`/`opacity` (`--entree` 0,24 s, `--sortie` 0,16 s)
@@ -28,7 +28,7 @@ spec 2026-10-12. Les noms historiques (`--bg`, `--surface`, `--text`…) restent
 | `--encre` (alias `--text`) | `#2a2219` | texte principal, traits, bordures, ombres — ≈ 13,9:1 sur papier |
 | `--encre-2` (alias `--muted`) | `#5e4f3c` | texte secondaire — ≈ 7:1 sur papier, ≈ 7,6:1 sur cartes |
 | `--ardoise` / `--craie` / `--craie-jaune` | `#26332f` / `#f7f0de` / `#f2d36b` | ardoise du marchand : toast, carte « maintenant » |
-| `--basilic` (alias `--accent`) | `#2d6a37` | **accent principal** : actions, liens, coches, focus, sélection — texte blanc dessus (≈ 6,4:1) |
+| `--basilic` (alias `--accent`) | `#2d6a37` | **accent principal** : actions, liens, coches, focus, sélection — texte blanc dessus (≈ 6,5:1) |
 | `--basilic-clair` | `#d4ead2` | fonds basilic très clairs |
 | `--fru` (alias `--accent-2`) | `#f2c230` | **surbrillance jaune fruit** : onglet actif, avatar, minuteur terminé. **Jamais en couleur de texte** |
 | `--leg`/`--leg-t` · `--fru`/`--fru-t` · `--fra`/`--fra-t` · `--via`/`--via-t` · `--epi`/`--epi-t` | vive / claire | familles du marché : vive = formes (liserés, couvercles, cases), claire = fond derrière le texte |
@@ -37,7 +37,7 @@ spec 2026-10-12. Les noms historiques (`--bg`, `--surface`, `--text`…) restent
 | `--citron-surface` / `--citron-line` | alias `--fru-t` / `--kraft-fonce` | usages transitoires (rituel « pot », rayon keto) jusqu'aux PR 3-4 |
 
 ⚠️ Ne jamais coder une couleur en dur dans un composant — utiliser `var(--token)`. **Règle Marché :
-texte blanc `#ffffff` sur basilic** (boutons pleins, coches, pill actives) — ≈ 6,4:1 ; **texte encre
+texte blanc `#ffffff` sur basilic** (boutons pleins, coches, pill actives) — ≈ 6,5:1 ; **texte encre
 sur jaune fruit** (étiquette de l'onglet actif, minuteur terminé, carte Mélanie onboarding) — ≈ 9,3:1 ;
 texte posé sur une couleur claire `-t` = toujours `--encre` ; jamais de texte sur une couleur vive
 (famille ou plat).
@@ -105,9 +105,9 @@ Padding standard des cartes : `var(--sp-16)`. Gouttières page : `var(--sp-16)`.
 |---|---|---|
 | `.onboarding` | premier lancement (5 étapes) + migration préremplie | fond halos radiaux basilic/jaune fruit, full-dvh, safe-areas ; note migration `.onb-note` (fond jaune fruit 32 %) + `.mig-prof` (profil ancien détecté) |
 | `.onboarding-dots` / `.onboarding-dot-active` | progression 5 étapes | pill 12→22px, active = `--accent` |
-| `.onboarding-card-marc` / `-melanie` (+ `.sel`) | choix du profil (étape 1 : sélection + prénom « C'est ton prénom ? ») | dégradés 135deg en tokens (basilic→mix encre, texte blanc ; jaune fruit→mix encre, texte encre) + glow coloré, émoji 38px, prénom 19px/700, active `scale(0.97)` ; sélection = ring `box-shadow 0 0 0 2px` accent 25 % + `aria-pressed` |
+| `.onboarding-card-marc` / `-melanie` (+ `.sel`) | choix du profil (étape 1 : sélection + prénom « C'est ton prénom ? ») | dégradés 135deg en tokens (basilic→mix encre, texte blanc ; jaune fruit→mix encre, texte encre) + glow coloré, émoji 38px, tagline par carte (blanc sur Marc, encre sur Mélanie — revue PR 1 C1), prénom 22px/700, active `scale(0.97)` ; sélection = ring `box-shadow 0 0 0 2px` accent 25 % + `aria-pressed` |
 | `.onboarding-cta` (+ `.onb-full`) | CTA final « C'est parti ! 🚀 » (étape 5) | fond `--accent`, texte blanc, 48px, glow, pleine largeur |
-| `.onb-btnrow` / `.onb-next` / `.onb-back` / `.onb-skip` | navigation entre les étapes 2-5 (Passer aux étapes 2-4, retour seul à l'étape 5) | row flex ; next = pill basilic (flex: 1) texte blanc 48px ; back = ghost bordure `--border` 48px ; skip = tertiaire discret « Passer », texte muted mixé (`color-mix` ≥ 4,5:1), 48px — ≥ 48px partout |
+| `.onb-btnrow` / `.onb-next` / `.onb-back` / `.onb-skip` | navigation entre les étapes 2-5 (Passer aux étapes 2-4, retour seul à l'étape 5) | row flex ; next = pill basilic (flex: 1) texte blanc 48px ; back = ghost bordure `--border` 48px ; skip = tertiaire discret « Passer », texte muted (`var(--muted)`), 48px — ≥ 48px partout |
 | `.onb-label` / `.onb-hint` / `.onb-row2` | étiquette de bloc, hint muted et row 2 champs (personnes / repas par jour — onboarding étape 5 et Profil) | label 12px/700 uppercase muted ; row2 = flex, chaque champ `flex: 1` + `min-width: 0` |
 | `.profil-back` | navigation retour écran Profil | ghost, ≥ 48px (encre 14px/600) |
 | `.btn` | action principale | fond `--accent`, texte blanc, 700, min-height 48 px, active `scale(0.97)` |
@@ -119,7 +119,7 @@ Padding standard des cartes : `var(--sp-16)`. Gouttières page : `var(--sp-16)`.
 | `.alerte-douce` | alerte non bloquante (« Rythme ambitieux ») | fond jaune fruit clair + filet kraft, icône info basilic, texte `--fs-meta` |
 | `.rcards-ligne` | cartes radio en une colonne (onboarding étape 1 : « Juste la routine » / « Suivre mon poids ») | modificateur de `.rcards` : `grid-template-columns: 1fr` |
 | `.partage-foyer` | créer / rejoindre un foyer (fin d'onboarding, Profil › Foyer) : code en `.sync-code`, boutons Copier / Partager en `.onb-row2` qui passe à la ligne, « Es-tu X ? » en `.rline` | réutilise `.onboarding-cta`, `.bouton-contour`, `.lien`, `.alerte-douce` |
-| `.suivi-off` | encart « Suivi coupé » de la page Objectif (juste la routine) | surface + bordure pointillée, texte muted mixé ≥ 4,5:1 |
+| `.suivi-off` | encart « Suivi coupé » de la page Objectif (juste la routine) | surface + bordure pointillée, texte muted (`var(--muted)`) |
 | `.pied-collant` | bouton « Enregistrer » unique collé en bas d'une page détail | sticky bottom, fond `--creme`, filet haut, bouton plein pleine largeur, safe-area iOS |
 | `.weight-chart` + `.weight-*` | courbe de poids SVG (WeightChart) dans la carte jaune fruit `.pesee-card` | chips Départ/Actuel/Objectif, aire dégradée `--accent` 22 %→0, ligne lissée Catmull-Rom, ligne objectif, points départ/actuel ; labels SVG `--fs-chart` encre-2 (≥ 4,5:1 sur fond jaune fruit mixé) |
 | `.profil-screen` | écran Profil | sections `.profile-section` |
@@ -160,7 +160,7 @@ Jeu SVG maison via `src/components/Icon.tsx` (`<Icon name size strokeWidth?>`) �
 ## Accessibilité
 
 - `:focus-visible` : outline 3 px `--accent`, offset 2 px — toujours visible, jamais supprimé
-- Contrastes texte mesurés (garde-fou `tests/contraste.test.ts`) : encre/papier ≈ 13,9:1 · encre-2/papier ≈ 7,0:1 · encre-2/cartes ≈ 7,6:1 · blanc `#ffffff`/basilic ≈ 6,4:1 · encre/jaune fruit ≈ 9,3:1 · tomate/papier ≈ 5,5:1
+- Contrastes texte mesurés (garde-fou `tests/contraste.test.ts`) : encre/papier ≈ 13,9:1 · encre-2/papier ≈ 7,0:1 · encre-2/cartes ≈ 7,6:1 · blanc `#ffffff`/basilic ≈ 6,5:1 · encre/jaune fruit ≈ 9,3:1 · tomate/papier ≈ 5,5:1
 - `prefers-reduced-motion: reduce` → toutes transitions désactivées (`!important`, seule utilisation autorisée)
 
 ---

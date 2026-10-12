@@ -85,6 +85,22 @@ describe('contrat CSS — polices auto-hébergées', () => {
   });
 });
 
+describe('contrat CSS — champs de formulaire (revue PR 1, I3)', () => {
+  // Revue PR 1, I3 : .semaine-type select (fond surface-2, sans bordure) et
+  // .addrow input (fond --bg, bordure 1,5 px) divergeaient du champ standard du
+  // thème — fond blanc + bordure encre 2 px, comme la maquette.
+  const CHAMPS = ['.semaine-type select', '.addrow input'];
+
+  for (const sel of CHAMPS) {
+    it(`${sel} porte le champ standard (fond --surface, bordure encre 2 px)`, () => {
+      const bloc = css.match(new RegExp(sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*\\{([^}]*)\\}'))?.[1] ?? '';
+      expect(bloc, `${sel} introuvable dans index.css`).not.toBe('');
+      expect(bloc, `${sel} : fond`).toMatch(/background:\s*var\(--surface\)/);
+      expect(bloc, `${sel} : bordure`).toMatch(/border:\s*2px solid var\(--encre\)/);
+    });
+  }
+});
+
 describe('contrat CSS — tokens d\'espacement', () => {
   // Garde anti-régression silencieuse : si le CSS est réorganisé et que le
   // sélecteur ci-dessous ne matche plus rien, ce test le signale.

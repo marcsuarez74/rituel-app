@@ -12,7 +12,7 @@ Complète `design-system.md` (les tokens) avec les règles d'usage. Source de v�
 ## Structure d'écran
 
 - `App.tsx` choisit : `Onboarding` (pas de profil) → étape « Ta semaine » (foyer jamais enregistré) → shell, ou un écran poussé (Profil, Mon cycle, Ma semaine type, fiche recette, mode guidé). **Pas d'écran intermédiaire** : sans cycle importé, le cycle d'exemple se charge (chunk à la demande)
-- Shell : en-tête fin (`.en-tete` : seul `h1` = titre de l'écran, avatar 48 px + point de sync) → ligne semaine (`.ligne-semaine`, Menu/Courses/Rituel seulement) → contenu → barre du bas fixe (`.barre-onglets`, 5 onglets, icône + libellé toujours visibles, actif = `aria-current="page"` + pastille)
+- Shell : en-tête fin (`.en-tete` : seul `h1` = titre de l'écran, avatar 50 px + point de sync) → ligne semaine (`.ligne-semaine`, Menu/Courses/Rituel seulement) → contenu → barre du bas fixe (`.barre-onglets`, 5 onglets, icône + libellé toujours visibles, actif = `aria-current="page"` + pastille)
 - **Personnalisé** : repas, portions, macros et versions du membre actif ; les versions des autres membres en lignes secondaires
 - Sections = `h2` dans des cartes (`section.profile-section`). États vides systématiques (`.muted`)
 - Écran poussé : bouton retour en haut (`.profil-back`), pas de barre du bas ; actions principales dans un pied fixe (`.pied-recette`)

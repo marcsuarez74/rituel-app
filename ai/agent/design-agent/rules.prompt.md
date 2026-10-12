@@ -30,7 +30,7 @@ Colors:
 
 Typography:
 
-- use ONLY the tokens: sizes --fs-hero/--fs-h1/--fs-h2/--fs-h3/--fs-body/--fs-sec/--fs-meta/--fs-micro/--fs-chart (+ --fs-emoji onboarding), line-heights --lh-none/--lh-tight/--lh-title/--lh-body, spacing --sp-2…--sp-24 (échelle 2px), radii --r-orga/--r-orga-2/--r-bouton, shadows --shadow/--shadow-forte/--shadow-bouton — no raw values, enforced by tests/css-tokens.test.ts + tests/contraste.test.ts
+- use ONLY the tokens: sizes --fs-hero/--fs-h1/--fs-h2/--fs-h3/--fs-body/--fs-sec/--fs-meta/--fs-micro/--fs-chart (+ --fs-emoji onboarding), line-heights --lh-none/--lh-tight/--lh-title/--lh-body, spacing --sp-2…--sp-24 (échelle 2px), radii --r-orga/--r-orga-2/--r-bouton, shadows --shadow/--shadow-forte/--shadow-bouton — no raw values (tailles, interlignages et espacements audités par tests/css-tokens.test.ts ; contrastes de couleur par tests/contraste.test.ts)
 - maintain consistency
 
 Responsive:

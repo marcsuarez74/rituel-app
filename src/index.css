@@ -1280,9 +1280,9 @@ button:active:not(:disabled) {
 .semaine-type select {
   min-height: 48px;
   padding: 0 var(--sp-12);
-  border: 0;
+  border: 2px solid var(--encre);
   border-radius: 12px;
-  background: var(--surface-2);
+  background: var(--surface);
   color: var(--text);
   font: inherit;
 }
@@ -1901,7 +1901,17 @@ progress {
 .onboarding-card-tagline {
   font-size: var(--fs-meta);
   font-weight: 600;
-  color: color-mix(in srgb, var(--encre) 80%, var(--fru));
+}
+
+/* Couleur par carte (revue PR 1, C1) : un mix unique était illisible sur le
+   fond basilic de la carte Marc. Chaque couleur tient sur les deux bornes du
+   dégradé — garde-fou : tests/contraste.test.ts. */
+.onboarding-card-marc .onboarding-card-tagline {
+  color: #ffffff;
+}
+
+.onboarding-card-melanie .onboarding-card-tagline {
+  color: var(--text);
 }
 
 .onboarding-form {
@@ -2185,8 +2195,8 @@ progress {
 .addrow input {
   flex: 1;
   min-width: 0;
-  border: 1.5px solid var(--encre);
-  background: var(--bg);
+  border: 2px solid var(--encre);
+  background: var(--surface);
   border-radius: 12px;
   padding: var(--sp-10) var(--sp-12);
   font: 500 var(--fs-meta) Poppins, sans-serif;
@@ -2318,8 +2328,6 @@ progress {
   font-weight: 700;
   color: var(--text);
 }
-
-/* muted seul sur crème < 4,5:1 — mix standard design-system.md (cf. .week-dates) */
 .hub-sous {
   display: flex;
   align-items: center;
