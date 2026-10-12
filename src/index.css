@@ -2014,7 +2014,8 @@ progress {
 }
 .onb-btnrow {
   display: flex;
-  gap: var(--sp-10);
+  gap: var(--sp-8);
+  flex-wrap: wrap; /* filet anti-débordement à 320px (échelle typo annexe A) */
   margin-top: var(--sp-24);
   align-items: center;
 }
@@ -2033,6 +2034,7 @@ progress {
   justify-content: center;
   gap: var(--sp-8);
   min-height: 48px;
+  padding: 0 var(--sp-2); /* neutralise le padding UA : à 320px la btnrow tient */
   border: 0;
   border-radius: 999px;
   background: var(--accent);
@@ -2045,7 +2047,7 @@ progress {
 }
 .onb-skip {
   min-height: 48px;
-  padding: 0 var(--sp-12);
+  padding: 0 var(--sp-10);
   border: none;
   background: none;
   color: var(--muted);
@@ -2060,7 +2062,7 @@ progress {
   background: var(--surface);
   color: var(--text);
   border-radius: 999px;
-  padding: 0 var(--sp-20);
+  padding: 0 var(--sp-14);
   font: 600 var(--fs-meta) Poppins, sans-serif;
   cursor: pointer;
 }
@@ -2755,6 +2757,9 @@ progress {
 
 .signaler-champ {
   display: grid;
+  /* Le file control natif (WebKit) ne se compresse pas seul : la piste
+     grid « auto » s'élargirait de 29px à 320px — on la borne. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-6);
   min-width: 0;
   font-size: var(--fs-sec);
@@ -2779,7 +2784,9 @@ progress {
 }
 
 .signaler-champ input[type='file'] {
+  width: 100%;
   max-width: 100%;
+  min-width: 0;
   font-size: var(--fs-sec);
 }
 
