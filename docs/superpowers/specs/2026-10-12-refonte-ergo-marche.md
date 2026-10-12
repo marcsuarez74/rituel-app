@@ -50,18 +50,19 @@ Ce document réunit la **spec** (partie I : ce qu'on livre et pourquoi) et le **
 
 ### 3.1 Tokens (remplacent Herbes dans `src/index.css` `:root`)
 
-Valeurs reprises de la maquette (bloc `:root` du fichier `-marche.html`, à recopier tel quel) :
+Valeurs reprises de la maquette (bloc `:root` du fichier `-marche.html`). **Les valeurs exactes
+sont dans l'annexe A**, qui fait foi :
 
 - **Fond** : `--papier #fbf1dc` (papier d'emballage crème), `--papier-2 #f4e3bf` (barre
   d'onglets, pieds, zones creuses), fond hors app `#efe0bd`.
 - **Encre** : `--encre` (texte et traits, brun-noir), `--encre-2` (texte secondaire —
   **doit tenir 4,5:1 sur `--papier` ET sur les cartes blanches** : l'ancien `--muted` Herbes à
   4,41:1 ne doit pas être reproduit).
-- **Action** : vert de marché pour le bouton plein (texte blanc ≥ 4,5:1), jaune « fruit »
+- **Action** : `--basilic #2d6a37` pour le bouton plein (texte blanc ≥ 4,5:1), jaune « fruit »
   (`--fru`) pour l'onglet actif et l'avatar (jamais en texte).
 - **Familles d'aliments** (Courses, étiquettes) : une teinte + une teinte claire `-t` par
   famille (`--fru`, `--leg`, `--via`, …).
-- **Couleur par plat** : palette de 8 couleurs dédiées aux plats (voir §5.4).
+- **Couleur par plat** : palette de 9 couleurs dédiées aux plats (voir §5.4 et annexe A.2).
 - **Formes** : bordure `2px solid var(--encre)`, ombre franche décalée (`5px 6px 0 var(--encre)`)
   pour les cartes « posées », rayon organique `--r-orga`, contours en pointillés pour « à faire
   le jour même » / « désactivé ».
@@ -218,7 +219,7 @@ cette page unique.
 ### 5.4 Données dérivées (logique pure dans `src/lib/cycle/`)
 
 - **`couleurPlat(recetteId, rituel)`** : les plats cuisinés au rituel reçoivent les couleurs de
-  la palette dans leur ordre d'apparition (garantit des couleurs distinctes ≤ 8 plats) ; les
+  la palette (annexe A.2) dans leur ordre d'apparition (garantit des couleurs distinctes ≤ 9 plats) ; les
   autres recettes, une couleur par hachage stable de l'id. Même couleur partout (Aujourd'hui,
   Semaine, Rituel, rangement).
 - **`grilleDimanche(cycle, semaine)`** : pour chaque jour × moment, `{ repas, recetteId,
@@ -420,7 +421,7 @@ Branche `feat/navigation-4-onglets`.
    semaine intégrée (reprend `LigneSemaine`), sélecteur de jours, liens « Ma semaine type » et
    « Prépare tes prochains menus ».
 5. **Couleur par plat** : `src/lib/cycle/couleurs.ts` `couleurPlat` (§5.4) — test unitaire
-   d'abord (`tests/lib/cycle/couleurs.test.ts` : distinctes pour ≤ 8 plats du rituel, stable
+   d'abord (`tests/lib/cycle/couleurs.test.ts` : distinctes pour ≤ 9 plats du rituel, stable
    pour un même id, défaut pour id inconnu). Utilisée par les cartes repas.
 6. **Moi** : `ProfilScreen.tsx` restylé et renommé à l'affichage « Moi », liste §4.6, sections
    Suivi poids et Objectif si `estSuivi`.
@@ -468,8 +469,9 @@ Branche `feat/rituel-parallele`. La plus lourde : découper en commits par sous-
    (`src/components/Confettis.tsx`, rien sous reduced-motion). Tests : cocher un geste persiste
    (`sportapp:checks:cycle:…`), lancer 2 minuteurs puis changer d'étape → toujours visibles,
    échéance → `role="alert"`, rangement complet → « Tout est rangé » actif.
-7. **Illustrations** : `src/components/illustrations/` (Boite, Frigo, Congelateur, Marmite,
-   Vignette1-3) reprises du SVG de la maquette.
+7. **Illustrations** : `src/components/illustrations/`, un composant React par illustration de
+   l'annexe A.4, tracés copiés depuis la maquette (couleurs via props / tokens, pas de hex en dur
+   sauf les aplats décrits en A.4).
 8. e2e : `tests/e2e/rituel.spec.ts` (parcours complet dimanche à 320 et 375 : explication →
    Commencer → 2 minuteurs → On range → fin), pas de débordement, aucun « cycle ».
 9. Gate + `e2e` + `e2e:preview`.
@@ -526,3 +528,92 @@ menus`.
 - AGENTS.md, CLAUDE.md et `ai/` décrivent « Marché coloré », 4 onglets et le vocabulaire
   « menus ».
 - Mesure manuelle sur iPhone : un dimanche réel de bout en bout (explication → rangement).
+
+---
+
+# Annexe A — Valeurs exactes de la maquette (font foi)
+
+Source : `docs/superpowers/mockups/2026-10-12-refonte-ergo-marche.html` (bloc `:root` l.13-39,
+`PLATS` l.349-359, illustrations l.420-430). La maquette est autonome (couleurs et SVG inline) ;
+seules les polices y viennent de Google Fonts — l'app, elle, les **auto-héberge** (§3.2).
+
+## A.1 Tokens `:root`
+
+| Token | Valeur | Usage |
+|---|---|---|
+| `--papier` | `#fbf1dc` | fond de l'app (papier d'emballage crème) |
+| `--papier-2` | `#f4e3bf` | barre d'onglets, pieds fixes, zones creuses |
+| `--kraft` / `--kraft-fonce` | `#e2c08d` / `#c99f62` | étiquettes (créneaux, statuts), cadre de l'ardoise |
+| `--encre` | `#2a2219` | tout le texte, traits, bordures, ombres |
+| `--encre-2` | `#5e4f3c` | texte secondaire (6,9:1 sur le papier) |
+| `--ardoise` / `--craie` / `--craie-jaune` | `#26332f` / `#f7f0de` / `#f2d36b` | carte « Ce midi » (tableau du marchand) |
+| `--basilic` / `--basilic-clair` | `#2d6a37` / `#d4ead2` | marque, bouton plein, liens, coches faites |
+| `--tomate-txt` | `#b3321f` | danger, alerte minuteur (5,5:1 sur le papier) |
+| `--blanc` | `#fffaf0` | cartes, champs |
+| fond hors app (`html, body`) | `#efe0bd` | autour du cadre sur grand écran |
+
+Familles du marché (vive pour les formes, `-t` claire derrière le texte) :
+
+| Famille | Vive | Claire |
+|---|---|---|
+| `--leg` Légumes | `#4e9a3a` | `#d9efcf` |
+| `--fru` Fruits | `#f2c230` | `#fdf0b8` |
+| `--fra` Frais | `#5aaee0` | `#d5ecf9` |
+| `--via` Boucherie | `#e2553f` | `#fbd6cf` |
+| `--epi` Épicerie | `#e08a1e` | `#fbe2c0` |
+
+Typographie : `--fs-titre 30px`, `--fs-h1 26px`, `--fs-h2 22px`, `--fs-h3 19px`,
+`--fs-body 17px`, `--fs-sec 16px`, `--fs-meta 14px`, `--fs-micro 13px` ; corps `line-height 1.55`.
+Titres Bricolage Grotesque (500, 700, 800 ; axe `opsz` 12–96), corps Poppins (400–700).
+
+Formes et mouvement :
+- `--r-orga: 26px 20px 28px 18px` et `--r-orga-2: 18px 26px 20px 28px` (coins « faits main »).
+- Bordures `2px solid var(--encre)` ; ombres franches sans flou : `5px 6px 0` (panneaux),
+  `4px 5px 0` (cartes posées), `3px 4px 0` (boutons pleins), `1px 1px 0` (petites étiquettes).
+- `--entree: 0.24s cubic-bezier(0.2, 0.8, 0.2, 1)` ; `--sortie: 0.16s cubic-bezier(0.4, 0, 1, 1)`.
+- Désactivé : fond `--papier`, texte `--encre-2`, bordure en pointillés, pas d'ombre.
+
+Les noms `--fs-*` de la maquette seront alignés sur l'échelle existante de `src/index.css`
+(exigée par `tests/css-tokens.test.ts`) : on reprend les **valeurs**, pas forcément les noms.
+
+## A.2 Palette des plats
+
+Ordre d'attribution pour `couleurPlat` (couleur vive `c` pour pastilles, liserés, couvercles ;
+claire `t` derrière le texte) :
+
+| # | Vive | Claire | Exemple maquette |
+|---|---|---|---|
+| 1 | `#e3b505` | `#fbeeb0` | Curry |
+| 2 | `#b8336a` | `#f6d3e1` | Lentilles |
+| 3 | `#d63a2a` | `#f9d3cc` | Chili |
+| 4 | `#ee7d1a` | `#fde0c2` | Soupe |
+| 5 | `#9a6a3a` | `#ecdcc8` | Poulet |
+| 6 | `#2fa58a` | `#cdeee4` | Taboulé |
+| 7 | `#5a9a2c` | `#dcefc9` | Pesto |
+| 8 | `#8a7a62` | `#e8e1d4` | Omelette |
+| 9 | `#4f9fd6` | `#d6ebf8` | Tartines |
+
+Le texte posé sur une couleur claire est toujours `--encre` ; jamais de texte sur la couleur vive.
+
+## A.3 Icônes d'interface
+
+Tracés repris de `src/components/Icon.tsx` (home, couverts, cart, pot, chevrons, check, clock,
+copy, plus). **À ajouter** dans `Icon.tsx` : `calendrier` (onglet Semaine) — absent de la
+maquette, à dessiner dans le même style (24×24, trait 2,2).
+
+## A.4 Illustrations (trait d'encre `#2a2219`, aplats de couleur)
+
+| Fonction maquette | Composant à créer | Aplats | Où |
+|---|---|---|---|
+| `illuBox(c, t, jour)` | `Boite` (props couleur du plat, jour) | couleur du plat + étiquette kraft | carte « Ce midi », zone Box |
+| `illuBocal(c, t)` | `Bocal` | couleur du plat | lignes « On range », Au frigo |
+| `illuFrigo` / `illuFrigoGrand` | `Frigo` (taille) | `#d5ecf9` | zone Frigo, vignette 3 |
+| `illuCongel` | `Congelateur` | `#e3e9f6` | zone Congélateur |
+| `illuSac` | `Sac` | `#e2c08d` | Courses |
+| `illuCasserole` | `Casserole` | `#e2553f` | vignette 1, Rituel |
+| `illuMicro` | `MicroOndes` | `#d9efcf` | vignette 3 (« tu réchauffes ») |
+| `illuLegumes` | `Legumes` | familles légumes | écran de fin, états vides |
+
+Règles : `aria-hidden` quand décoratives, `role="img"` + libellé quand porteuses de sens
+(la boîte « Lundi ») ; les 2 aplats `#d5ecf9` et `#e3e9f6` deviennent des tokens
+(`--fra-t` existe déjà pour le premier, ajouter `--givre: #e3e9f6`).
