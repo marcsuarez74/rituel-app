@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rituel, refonte simple</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Tokens repris tels quels de src/index.css (thème clair « Herbes ») */
+:root {
+  --bg: #f0f2eb;
+  --surface: #fcfdf9;
+  --surface-2: #e7eae0;
+  --border: #e1e6da;
+  --text: #26312b;
+  --muted: #6e7a6c;
+  --accent: #3e7a46;
+  --accent-2: #f2dc7b;
+  --citron-surface: #fdf6d8;
+  --citron-line: #e3c94f;
+  --creme: #f5f1e6;
+  --danger: #b4452f;
+  --shadow: 0 4px 16px rgb(38 49 43 / 0.08);
+  --radius: 18px;
+  color-scheme: light;
+  /* Échelle relevée pour la lisibilité : corps 17 px, secondaire 16 px. */
+  --fs-titre: 26px; --fs-h1: 24px; --fs-h2: 21px; --fs-h3: 18px; --fs-body: 17px;
+  --fs-sec: 16px; --fs-meta: 14px; --fs-micro: 13px;
+  --sp-4: 4px; --sp-6: 6px; --sp-8: 8px; --sp-12: 12px; --sp-16: 16px; --sp-20: 20px;
+  --sp-24: 24px; --sp-32: 32px;
+  --lh-tight: 1.2; --lh-title: 1.25; --lh-body: 1.55;
+  /* --muted fait 4,41:1 sur --surface : le texte secondaire prend ce mélange (≥ 4,5:1). */
+  --muted-txt: color-mix(in srgb, var(--muted) 70%, var(--text));
+  --t: 0.2s ease;
+  --entree: 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+  --sortie: 0.17s cubic-bezier(0.4, 0, 1, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--surface-2); }
+body {
+  margin: 0;
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: 'Poppins', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background-color var(--t), border-color var(--t), color var(--t), transform 0.12s ease; }
+button:active:not(:disabled) { transform: scale(0.97); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+p { margin: 0 0 var(--sp-8); }
+h1, h2, h3 { margin: 0; line-height: var(--lh-title); font-weight: 700; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+.ico { flex: none; display: block; }
+
+/* ================= Page de présentation (hors app) ================= */
+.page { max-width: 1240px; margin: 0 auto; padding: var(--sp-24) var(--sp-16) 64px; }
+.intro { max-width: 760px; }
+.intro h1 { font-size: var(--fs-titre); }
+.intro > p { color: var(--muted-txt); font-size: var(--fs-sec); margin-top: var(--sp-8); }
+.panneaux { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: var(--sp-16); margin-top: var(--sp-24); }
+.panneau { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--sp-20); }
+.panneau h2 { font-size: var(--fs-h3); margin-bottom: var(--sp-12); }
+.panneau ol { counter-reset: n; }
+.panneau li { position: relative; padding: var(--sp-8) 0 var(--sp-8) 36px; border-top: 1px solid var(--border); font-size: var(--fs-sec); }
+.panneau li:first-child { border-top: 0; }
+.panneau ol li::before { counter-increment: n; content: counter(n); position: absolute; left: 0; top: 9px; width: 24px; height: 24px; border-radius: 999px; background: var(--accent); color: #ffffff; font-size: var(--fs-micro); font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.panneau ul li::before { content: ""; position: absolute; left: 8px; top: 18px; width: 8px; height: 8px; border-radius: 999px; background: var(--accent-2); border: 1px solid var(--citron-line); }
+.panneau b { font-weight: 700; }
+.galerie { display: flex; flex-wrap: wrap; gap: 48px var(--sp-24); justify-content: center; margin-top: 48px; }
+.poste { width: min(375px, 100%); display: flex; flex-direction: column; gap: var(--sp-8); }
+.poste-titre { font-size: var(--fs-h3); margin: 0; }
+.poste-aide { font-size: var(--fs-sec); color: var(--muted-txt); min-height: 50px; margin: 0; }
+.demo { align-self: flex-start; min-height: 48px; padding: 0 var(--sp-16); border: 1px dashed var(--accent); border-radius: 999px; background: transparent; color: var(--accent); font-size: var(--fs-sec); font-weight: 600; }
+
+/* ================= Téléphone et squelette commun ================= */
+.phone { width: 100%; height: 760px; border: 8px solid var(--text); border-radius: 44px; background: var(--bg); box-shadow: 0 24px 48px rgb(38 49 43 / 0.18); overflow: hidden; position: relative; isolation: isolate; }
+.ecran { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--bg); }
+.defile { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: var(--sp-4) var(--sp-20) var(--sp-32); scrollbar-width: none; }
+.defile::-webkit-scrollbar { display: none; }
+
+/* En-tête d'onglet : titre + date, avatar (EnTete de l'app) */
+.en-tete { display: flex; align-items: center; gap: var(--sp-12); padding: var(--sp-20) var(--sp-20) var(--sp-12); }
+.en-tete-txt { flex: 1; min-width: 0; }
+.en-tete h1 { font-size: var(--fs-h1); }
+.en-tete-txt p { margin: 2px 0 0; color: var(--muted-txt); font-size: var(--fs-sec); }
+.avatar { position: relative; flex: none; display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; padding: 0; border: 0; border-radius: 999px; background: var(--accent); color: #ffffff; font-size: var(--fs-h3); font-weight: 700; }
+.avatar-pt { position: absolute; right: 0; bottom: 0; width: 14px; height: 14px; border-radius: 999px; border: 2px solid var(--bg); background: var(--accent-2); }
+
+/* En-tête d'écran poussé : toujours le même Retour en haut à gauche (profil-back de l'app) */
+.tete-pousse { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-12); min-height: 64px; padding: var(--sp-8) var(--sp-20) 0 var(--sp-12); }
+.retour { display: inline-flex; align-items: center; gap: var(--sp-4); min-height: 48px; padding: 0 var(--sp-12) 0 var(--sp-4); border: 0; border-radius: 999px; background: none; color: var(--accent); font-size: var(--fs-body); font-weight: 600; }
+.tete-info { font-size: var(--fs-sec); font-weight: 600; }
+.titre-pousse { font-size: var(--fs-titre); margin: var(--sp-8) 0 var(--sp-16); }
+
+/* BarreOnglets (4 onglets ici, 5 dans l'app) */
+.barre-onglets { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: var(--sp-6) var(--sp-4) var(--sp-8); background: var(--surface); border-top: 1px solid var(--border); }
+.onglet { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 58px; padding: 0; border: 0; background: none; color: var(--muted-txt); font-size: 12px; font-weight: 600; white-space: nowrap; }
+.onglet-icone { display: flex; padding: var(--sp-4) var(--sp-16); border-radius: 999px; transition: background-color var(--t); }
+.onglet[aria-current="page"] { color: var(--text); }
+.onglet[aria-current="page"] .onglet-icone { background: color-mix(in srgb, var(--accent) 18%, var(--surface)); color: var(--accent); }
+
+/* Pied fixe : une seule action principale (pied-recette de l'app) */
+.pied { display: flex; align-items: center; gap: var(--sp-12); padding: var(--sp-12) var(--sp-20) var(--sp-16); background: var(--surface); border-top: 1px solid var(--border); }
+.pied .bouton-plein { flex: 1; padding-inline: var(--sp-12); }
+.pied .lien { flex: none; }
+
+/* Boutons : un plein par écran, le reste en liens */
+.bouton-plein, .bouton-contour { display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-8); min-height: 56px; padding: var(--sp-12) var(--sp-20); border-radius: 16px; font-size: var(--fs-body); font-weight: 700; line-height: var(--lh-tight); text-align: center; }
+.bouton-plein { border: 2px solid var(--accent); background: var(--accent); color: #ffffff; }
+.bouton-contour { border: 2px solid var(--accent); background: var(--surface); color: var(--accent); }
+.bouton-plein:disabled { opacity: 0.45; cursor: not-allowed; }
+.large { width: 100%; }
+.lien { display: inline-flex; align-items: center; gap: var(--sp-4); min-height: 48px; padding: 0 var(--sp-4); border: 0; background: none; color: var(--accent); font-size: var(--fs-sec); font-weight: 600; text-align: left; }
+.lien.centre { width: 100%; justify-content: center; }
+
+/* Textes */
+.surtitre { margin: 0 0 var(--sp-4); color: var(--accent); font-size: var(--fs-meta); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.titre-section { margin: var(--sp-32) 0 var(--sp-12); font-size: var(--fs-h3); }
+.second { color: var(--muted-txt); font-size: var(--fs-sec); }
+
+/* Carte « Maintenant » (action-du-jour de l'app) */
+.maintenant { padding: var(--sp-20); border: 2px solid var(--accent); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+.maintenant h2 { font-size: var(--fs-h2); margin: var(--sp-4) 0 var(--sp-8); }
+.maintenant p { font-size: var(--fs-body); }
+.maintenant .bouton-plein { margin-top: var(--sp-8); }
+
+/* Listes à lignes simples */
+.liste { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 0 var(--sp-16); }
+.liste + .liste { margin-top: var(--sp-12); }
+.ligne { display: flex; align-items: center; gap: var(--sp-12); width: 100%; min-height: 68px; padding: var(--sp-12) 0; border: 0; border-top: 1px solid var(--border); background: none; text-align: left; }
+.liste > .ligne:first-child, .liste > :first-child .ligne { border-top: 0; }
+.ligne-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ligne-sur { color: var(--accent); font-size: var(--fs-meta); font-weight: 700; }
+.ligne-titre { font-size: var(--fs-body); font-weight: 600; line-height: var(--lh-title); }
+.ligne-sous { color: var(--muted-txt); font-size: var(--fs-sec); line-height: var(--lh-title); }
+.ligne .chev-ico { color: var(--muted-txt); transition: transform var(--t); }
+[aria-expanded="true"] > .chev-ico { transform: rotate(180deg); }
+.ligne.statique { cursor: default; }
+.depli { padding: 0 0 var(--sp-16); animation: depli 0.18s ease-out; }
+@keyframes depli { from { opacity: 0; transform: translateY(-4px); } }
+.tag { flex: none; display: inline-flex; align-items: center; gap: var(--sp-4); padding: 0 var(--sp-8); border-radius: 999px; font-size: var(--fs-micro); font-weight: 700; line-height: 24px; white-space: nowrap; }
+.tag.auj { background: var(--accent); color: #ffffff; }
+.tag.contour { border: 1px solid var(--accent); color: var(--accent); }
+.tag.citron { background: var(--citron-surface); border: 1px solid var(--citron-line); color: var(--text); }
+.tag.fait { background: color-mix(in srgb, var(--accent) 14%, var(--surface)); color: var(--accent); }
+.barre { height: 8px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+.barre > span { display: block; height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.25s ease; }
+
+/* Grosses cases à cocher (ligne-cochable + case de l'app, agrandies) */
+.coche-ligne { display: flex; align-items: center; gap: var(--sp-16); width: 100%; min-height: 64px; padding: var(--sp-8) 0; border: 0; border-top: 1px solid var(--border); background: none; text-align: left; }
+.liste > .coche-ligne:first-child, .rayon-titre + .coche-ligne { border-top: 0; }
+.coche-ligne.long { align-items: flex-start; padding: var(--sp-16) 0; }
+.coche-txt { flex: 1; min-width: 0; font-size: var(--fs-body); line-height: var(--lh-body); }
+.case { flex: none; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 2px solid var(--muted); border-radius: 10px; background: var(--surface); color: transparent; transition: background-color 0.15s ease, border-color 0.15s ease; }
+.coche-ligne[aria-pressed="true"] .case { border-color: var(--accent); background: var(--accent); color: #ffffff; }
+.coche-ligne[aria-pressed="true"] .coche-txt { color: var(--muted-txt); text-decoration: line-through; }
+.case.pop { animation: pop 0.22s ease-out; }
+@keyframes pop { 0% { transform: scale(0.8); } 60% { transform: scale(1.14); } 100% { transform: scale(1); } }
+.qte { flex: none; color: var(--muted-txt); font-size: var(--fs-sec); font-weight: 600; }
+.rayon-titre { display: flex; align-items: center; gap: var(--sp-8); padding: var(--sp-16) 0 var(--sp-4); font-size: var(--fs-h3); font-weight: 700; }
+.rayon-titre .ico { color: var(--accent); }
+
+/* Repli : « Voir plus », sections repliées */
+.repli { display: flex; align-items: center; gap: var(--sp-12); width: 100%; min-height: 64px; padding: var(--sp-12) 0; border: 0; background: none; text-align: left; font-size: var(--fs-body); font-weight: 600; }
+.repli .compte { flex: 1; color: var(--muted-txt); font-size: var(--fs-sec); }
+.repli .chev-ico { color: var(--muted-txt); transition: transform var(--t); }
+.repli[aria-expanded="true"] .chev-ico { transform: rotate(180deg); }
+
+/* Segment (segment de l'app) */
+.segment { display: grid; grid-auto-columns: minmax(0, 1fr); grid-auto-flow: column; gap: var(--sp-4); padding: var(--sp-4); border-radius: 16px; background: var(--surface-2); }
+.segment button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 56px; padding: var(--sp-4); border: 0; border-radius: 12px; background: none; color: var(--muted-txt); font-size: var(--fs-sec); font-weight: 600; line-height: var(--lh-tight); }
+.segment button small { font-size: var(--fs-micro); font-weight: 500; }
+.segment button[aria-checked="true"] { background: var(--surface); box-shadow: var(--shadow); color: var(--accent); }
+
+/* Aujourd'hui */
+.vide-ligne { padding: var(--sp-16) 0; font-size: var(--fs-body); }
+
+/* Semaine */
+.bandeau { display: flex; align-items: center; gap: var(--sp-8); width: 100%; min-height: 48px; margin: var(--sp-12) 0 0; padding: var(--sp-8) var(--sp-12); border: 0; border-radius: 12px; background: var(--citron-surface); text-align: left; font-size: var(--fs-sec); font-weight: 600; }
+.bandeau .point { flex: none; width: 10px; height: 10px; border-radius: 999px; background: var(--citron-line); }
+.bandeau span:nth-child(2) { flex: 1; }
+.jours { margin-top: var(--sp-16); }
+.jour-nom { flex: 1; min-width: 0; font-size: var(--fs-body); }
+.jour-nom b { font-weight: 700; }
+.jour-nom span { color: var(--muted-txt); font-size: var(--fs-sec); }
+.jour-tags { display: flex; gap: var(--sp-4); }
+.repas { display: flex; align-items: center; gap: var(--sp-12); width: 100%; min-height: 68px; padding: var(--sp-8) var(--sp-12); margin-top: var(--sp-8); border: 0; border-radius: 14px; background: var(--bg); text-align: left; }
+.repas .chev-ico { color: var(--muted-txt); }
+.repas.dehors .ligne-titre { color: var(--muted-txt); font-weight: 500; }
+.tuile { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 12px; background: color-mix(in srgb, var(--accent) 12%, var(--surface)); color: var(--accent); }
+.tuile.box { background: var(--citron-surface); border: 1px solid var(--citron-line); color: var(--text); }
+.tuile.dehors { background: transparent; border: 1.5px dashed var(--muted); color: var(--muted-txt); }
+.prochain { align-self: flex-start; margin-top: var(--sp-4); }
+.flash { animation: flash 0.4s ease; }
+@keyframes flash { from { opacity: 0.4; } to { opacity: 1; } }
+
+/* Courses */
+.resume { padding: var(--sp-16); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.resume-ligne { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 var(--sp-8); }
+.resume-ligne b { font-size: var(--fs-h3); }
+.resume .repli { min-height: 52px; padding: var(--sp-8) 0 0; font-weight: 500; }
+.resume .repli b { font-weight: 700; }
+.kv { display: flex; justify-content: space-between; gap: var(--sp-12); padding: var(--sp-8) 0; border-top: 1px solid var(--border); font-size: var(--fs-sec); }
+.kv span:last-child { font-weight: 600; text-align: right; }
+.fini { display: flex; align-items: center; gap: var(--sp-12); padding: var(--sp-16) 0; font-weight: 600; }
+.ok-rond { flex: none; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 999px; background: var(--accent); color: #ffffff; }
+.fantome-ligne { position: absolute; z-index: 5; pointer-events: none; padding: 0 var(--sp-16); background: var(--surface); border-radius: 12px; box-shadow: var(--shadow); }
+.fantome-ligne .coche-ligne { border: 0; }
+
+/* Rituel et mode guidé */
+.grand { font-size: var(--fs-h2); margin: 0 0 var(--sp-8); }
+.guide-progres { display: flex; gap: var(--sp-4); padding: var(--sp-8) var(--sp-20) 0; }
+.guide-progres span { flex: 1; height: 6px; border-radius: 999px; background: var(--surface-2); }
+.guide-progres .fait { background: var(--accent); }
+.guide-progres .courant { background: var(--accent-2); }
+.minuteur { display: inline-flex; align-items: center; gap: var(--sp-8); min-height: 52px; margin-bottom: var(--sp-16); padding: var(--sp-8) var(--sp-20) var(--sp-8) var(--sp-16); border: 2px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text); font-size: var(--fs-body); font-weight: 600; font-variant-numeric: tabular-nums; }
+.minuteur .ico { color: var(--accent); }
+.minuteur.lance { border-color: var(--citron-line); background: var(--accent-2); }
+.minuteur.lance .ico { color: var(--text); }
+.note { display: flex; gap: var(--sp-12); align-items: flex-start; margin: var(--sp-16) 0 0; padding: var(--sp-12) var(--sp-16); border: 1px solid var(--citron-line); border-radius: 14px; background: var(--citron-surface); font-size: var(--fs-sec); }
+.note .ico { margin-top: 3px; }
+.note p { margin: 0; }
+.ingr { display: flex; justify-content: space-between; gap: var(--sp-12); padding: var(--sp-8) 0; border-top: 1px solid var(--border); font-size: var(--fs-sec); }
+.ingr span:last-child { flex: none; color: var(--muted-txt); font-weight: 600; }
+.succes { text-align: center; padding: var(--sp-32) var(--sp-8); }
+.succes .ok-rond { width: 72px; height: 72px; margin: 0 auto var(--sp-16); }
+.succes h1 { font-size: var(--fs-titre); margin-bottom: var(--sp-8); }
+
+/* Recette : étapes du jour J (etape-num de l'app) */
+.etapes li { display: flex; align-items: flex-start; gap: var(--sp-12); padding: var(--sp-8) 0; }
+.etapes li p { flex: 1; margin: 0; padding-top: var(--sp-8); }
+.etapes li.faite p { color: var(--muted-txt); text-decoration: line-through; }
+.etape-num { flex: none; width: 48px; height: 48px; padding: 0; border: 2px solid var(--accent); border-radius: 999px; background: var(--surface); color: var(--accent); font-weight: 700; }
+.etape-num[aria-pressed="true"] { background: var(--accent); color: #ffffff; }
+.pastilles { display: flex; flex-wrap: wrap; gap: var(--sp-8); margin: 0 0 var(--sp-8); }
+.pastille { display: inline-flex; align-items: center; gap: var(--sp-6); padding: var(--sp-4) var(--sp-12); border-radius: 999px; background: var(--surface-2); font-size: var(--fs-sec); font-weight: 600; }
+.liste-texte li { padding: var(--sp-8) 0; border-top: 1px solid var(--border); font-size: var(--fs-sec); }
+.liste-texte li:first-child { border-top: 0; }
+
+/* Assistant */
+.pas-wiz { margin: var(--sp-4) 0 var(--sp-20); }
+.pas-wiz p { margin: 0 0 var(--sp-8); font-size: var(--fs-sec); font-weight: 600; }
+.pas-barre { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-4); }
+.pas-barre span { height: 6px; border-radius: 999px; background: var(--surface-2); }
+.pas-barre .fait { background: var(--accent); }
+.question { font-size: var(--fs-h1); margin: 0 0 var(--sp-12); }
+.message { position: relative; max-height: 200px; overflow: hidden; margin: var(--sp-16) 0 var(--sp-8); padding: var(--sp-16); border: 1px solid var(--border); border-radius: 14px; background: var(--surface); font-size: var(--fs-sec); white-space: pre-line; }
+.message::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 56px; background: linear-gradient(transparent, var(--surface)); }
+.depot { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--sp-8); width: 100%; min-height: 140px; margin-top: var(--sp-16); border: 2px dashed var(--accent); border-radius: var(--radius); background: var(--surface); color: var(--accent); font-size: var(--fs-body); font-weight: 700; }
+.recu { display: flex; gap: var(--sp-12); align-items: center; margin-top: var(--sp-16); padding: var(--sp-16); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+.recu p { margin: 0; }
+
+/* Éditeur de semaine type */
+.type-grille { margin-top: var(--sp-16); padding: var(--sp-8) var(--sp-12); }
+.type-tete, .type-ligne { display: grid; grid-template-columns: 3.4em minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: var(--sp-8); }
+.type-tete { padding: var(--sp-4) 0; font-size: var(--fs-meta); font-weight: 700; color: var(--muted-txt); }
+.type-tete span:not(:first-child) { text-align: center; }
+.type-ligne { padding: var(--sp-6) 0; border-top: 1px solid var(--border); }
+.type-ligne .j { font-size: var(--fs-sec); font-weight: 700; }
+.type-ligne.change { margin: 0 calc(-1 * var(--sp-12)); padding-left: var(--sp-12); padding-right: var(--sp-12); background: var(--citron-surface); border-top-color: var(--citron-line); }
+.puce-mode { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 60px; padding: var(--sp-4); border: 2px solid var(--border); border-radius: 14px; background: var(--surface); font-size: var(--fs-sec); font-weight: 600; line-height: var(--lh-tight); }
+.puce-mode .ico { color: var(--accent); }
+
+/* Moi (profil-hub de l'app) */
+.profil-hub { display: flex; align-items: center; gap: var(--sp-12); background: var(--creme); border-radius: var(--radius); padding: var(--sp-16); }
+.hub-avatar { flex: none; display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 999px; background: var(--accent); color: #ffffff; font-size: var(--fs-h3); font-weight: 700; }
+.hub-nom { margin: 0; font-size: var(--fs-h3); font-weight: 700; }
+.hub-sous { margin: 0; font-size: var(--fs-sec); color: var(--muted-txt); }
+.reglage { display: flex; align-items: center; gap: var(--sp-8); width: 100%; min-height: 60px; padding: var(--sp-8) 0; border: 0; border-top: 1px solid var(--border); background: none; text-align: left; }
+.liste > .reglage:first-child { border-top: 0; }
+.reglage-nom { flex: none; font-weight: 600; }
+.reglage-val { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right; color: var(--muted-txt); font-size: var(--fs-sec); }
+.reglage .ico { color: var(--muted-txt); }
+.danger { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 56px; margin-top: var(--sp-32); border: 1px solid color-mix(in srgb, var(--danger) 40%, var(--border)); border-radius: 16px; background: var(--surface); color: var(--danger); font-size: var(--fs-body); font-weight: 700; }
+.version { margin-top: var(--sp-16); text-align: center; font-size: var(--fs-meta); color: var(--muted-txt); }
+
+/* Feuille, voile, toast */
+.voile { position: absolute; inset: 0; z-index: 8; background: rgb(38 49 43 / 0.45); }
+.feuille { position: absolute; left: 0; right: 0; bottom: 0; z-index: 9; display: flex; flex-direction: column; gap: var(--sp-12); max-height: 88%; overflow-y: auto; padding: var(--sp-24) var(--sp-20); border-radius: 24px 24px 0 0; background: var(--surface); }
+.feuille h2 { font-size: var(--fs-h2); }
+.feuille .poignee { align-self: center; width: 40px; height: 5px; margin: -12px 0 var(--sp-4); border-radius: 999px; background: var(--surface-2); }
+.feuille label { font-weight: 600; }
+.feuille input { width: 100%; min-height: 56px; border: 2px solid var(--border); background: var(--surface); border-radius: 14px; padding: 0 var(--sp-16); font: inherit; font-size: var(--fs-h3); font-weight: 600; color: var(--text); }
+.plat-f { display: flex; align-items: center; gap: var(--sp-12); padding: var(--sp-8) var(--sp-12); border-radius: 14px; background: var(--bg); }
+.plat-f .ligne-txt { flex: 1; }
+.toast { position: absolute; z-index: 12; left: var(--sp-16); right: var(--sp-16); bottom: 96px; padding: var(--sp-12) var(--sp-16); border-radius: 14px; background: var(--text); color: #ffffff; font-size: var(--fs-sec); font-weight: 600; animation: monte-toast 0.22s ease-out; }
+.ecran.a-pied .toast { bottom: 108px; }
+.ecran.a-pied.a-onglets .toast { bottom: 176px; }
+@keyframes monte-toast { from { opacity: 0; transform: translateY(12px); } }
+
+/* ================= Mouvement : transform et opacity uniquement ================= */
+.entre-droite { animation: entre-droite var(--entree) both; }
+@keyframes entre-droite { from { transform: translateX(100%); } }
+.recule-gauche { animation: recule-gauche var(--entree) both; }
+@keyframes recule-gauche { to { transform: translateX(-24%); opacity: 0.6; } }
+.sort-droite { animation: sort-droite var(--sortie) both; }
+@keyframes sort-droite { to { transform: translateX(100%); } }
+.revient-gauche { animation: revient-gauche var(--sortie) both; }
+@keyframes revient-gauche { from { transform: translateX(-24%); opacity: 0.6; } }
+.fondu { animation: fondu 0.15s ease-out both; }
+@keyframes fondu { from { opacity: 0.35; } }
+.fantome { pointer-events: none; }
+.voile.anim { animation: fondu-voile var(--entree) both; }
+@keyframes fondu-voile { from { opacity: 0; } }
+.feuille.anim { animation: monte var(--entree) both; }
+@keyframes monte { from { transform: translateY(100%); } }
+.feuille.descend { animation: descend var(--sortie) both; }
+@keyframes descend { to { transform: translateY(100%); } }
+.voile.efface { animation: efface var(--sortie) both; }
+@keyframes efface { to { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="intro">
+    <h1>Rituel, refonte simple</h1>
+    <p>Maquette du 12 octobre 2026, troisième passe. Onze écrans cliquables, dessinés avec les composants de l'app. Les téléphones partagent les mêmes données : ce que tu coches dans l'un se voit dans les autres.</p>
+  </header>
+
+  <div class="panneaux">
+    <section class="panneau" aria-labelledby="t-principes">
+      <h2 id="t-principes">Principes</h2>
+      <ol>
+        <li><b>Une seule action principale par écran</b>, en bouton plein. Le reste est un lien.</li>
+        <li><b>Trois blocs au plus</b> avant de faire défiler. Le secondaire est replié.</li>
+        <li><b>Les mots de tous les jours</b> : phrases courtes, tutoiement, verbes d'action.</li>
+        <li><b>Lisible</b> : texte en 17 px, titres francs, pas de gris sur l'essentiel, chaque icône a son libellé.</li>
+        <li><b>Le même squelette partout</b> : en-tête, contenu, action en pied, onglets. Retour toujours en haut à gauche.</li>
+      </ol>
+    </section>
+    <section class="panneau" aria-labelledby="t-change">
+      <h2 id="t-change">Ce qui change</h2>
+      <ul>
+        <li><b>4 onglets</b> : Aujourd'hui, Semaine, Courses, Rituel. L'avatar ouvre « Moi », le suivi tient sur une ligne.</li>
+        <li><b>Aujourd'hui</b> : une carte « Maintenant », puis le midi et le soir. Sans menus en cours : « Prépare tes prochains menus ».</li>
+        <li><b>Semaine</b> : les 7 jours, aujourd'hui déplié. « Cette semaine » ou « La suivante ».</li>
+        <li><b>Semaine type</b> : un changement ne touche que les prochains menus, et c'est affiché.</li>
+        <li><b>Prochains menus</b> : un assistant en 3 étapes, une question par écran.</li>
+        <li><b>Courses</b> : ce qui est pris descend dans « Déjà pris ». « J'ai payé » arrive quand tout est coché.</li>
+        <li><b>Rituel</b> : un plat par étape dans le mode guidé, avec ses gestes, ses ingrédients et sa conservation.</li>
+        <li><b>Vocabulaire</b> : on parle de <b>menus</b> (4 semaines) et de <b>rituel</b> (le dimanche), sans mot technique.</li>
+      </ul>
+    </section>
+  </div>
+
+  <main class="galerie" id="galerie"></main>
+</div>
+<script>
+'use strict';
+/* ---------- Icônes : tracés repris de src/components/Icon.tsx (viewBox 24, trait 2, bouts ronds) ---------- */
+const PATHS = {
+  home: '<path d="M4 11l8-7 8 7v8a1 1 0 01-1 1h-4v-6h-6v6H5a1 1 0 01-1-1z"/>',
+  couverts: '<path d="M7 3v8a2 2 0 0 0 4 0V3"/><path d="M9 11v10"/><path d="M17 3c-2 0-3 2-3 5s1 4 3 4v9"/>',
+  cart: '<circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M3 4h2l2.3 11.5h9.9l1.8-8H6.2"/>',
+  pot: '<path d="M6 10.5h12v4.5a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4z"/><path d="M3.5 10.5h17M10 10.5V8h4v2.5"/>',
+  box: '<rect x="4" y="9" width="16" height="11" rx="2"/><path d="M4 13.5h16M12 13.5V20"/>',
+  chev: '<path d="M6 9.5l6 6 6-6"/>',
+  'chev-left': '<path d="M14.5 6l-6 6 6 6"/>',
+  'chev-right': '<path d="M9.5 6l6 6-6 6"/>',
+  check: '<path d="M4 12.5l5 5L20 6.5"/>',
+  clock: '<circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8.1v.1"/>',
+  copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 5H6a2 2 0 00-2 2v9"/>',
+  plus: '<path d="M12 5.5v13M5.5 12h13"/>',
+  snow: '<path d="M12 3v18M4.5 7.8l15 8.4M19.5 7.5l-15 9"/>',
+  leaf: '<path d="M20 4C10.5 4 4.5 10 4.5 18c0 .8.2 2 .2 2s9-.4 12.8-5.5C20 7.5 20 4 20 4z"/><path d="M5.5 19.5C8 13.5 12 9.5 16.5 7.5"/>',
+  fish: '<path d="M15.5 12c0 2.8-2.4 5-5.5 5-2.8 0-5.3-2-7-5 1.7-3 4.3-5 7-5 3.1 0 5.5 2.2 5.5 5z"/><path d="M15.5 12l4.5-3.5v7z"/><circle cx="7.6" cy="11" r=".8"/>',
+  wheat: '<path d="M12 21V8"/><path d="M12 8C9.5 8 7.5 6 7.5 3.5 10 3.5 12 5.5 12 8zM12 8c2.5 0 4.5-2 4.5-4.5C14 3.5 12 5.5 12 8zM12 14.5c-2.5 0-4.5-2-4.5-4.5 2.5 0 4.5 2 4.5 4.5zM12 14.5c2.5 0 4.5-2 4.5-4.5-2.5 0-4.5 2-4.5 4.5z"/>'
+};
+const ic = (n, s = 22, cls = '') => `<svg class="ico${cls ? ' ' + cls : ''}" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${s < 16 ? 2.5 : 2}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${PATHS[n]}</svg>`;
+
+/* ---------- Données ---------- */
+const JK = ['lun','mar','mer','jeu','ven','sam','dim'];
+const JN = { lun:'Lundi', mar:'Mardi', mer:'Mercredi', jeu:'Jeudi', ven:'Vendredi', sam:'Samedi', dim:'Dimanche' };
+const JC = { lun:'Lun.', mar:'Mar.', mer:'Mer.', jeu:'Jeu.', ven:'Ven.', sam:'Sam.', dim:'Dim.' };
+const MOIS = ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+const MODES = { box:{ i:'box', nom:'Box' }, maison:{ i:'home', nom:'Maison' }, dehors:{ i:'couverts', nom:'Dehors' } };
+const DEJ = {
+  lun:'Salade de lentilles, feta & betterave', mar:'Poulet rôti, boulgour aux herbes', mer:'Quiche poireaux & chèvre',
+  jeu:'Taboulé de quinoa, pois chiches rôtis', ven:'Pâtes complètes au pesto', sam:'Omelette aux champignons, salade', dim:'Rôti de porc, purée de carottes'
+};
+const DIN = {
+  lun:'Curry de pois chiches, riz basmati', mar:'Soupe de potimarron, tartines', mer:'Chili sin carne',
+  jeu:'Gratin de courgettes au jambon', ven:'Pizza maison tomate-mozza', sam:'Saumon au four, haricots verts', dim:'Velouté de champignons, œuf mollet'
+};
+const PLAT_DEHORS = { dej:'Déjeuner à l\'extérieur', din:'Dîner à l\'extérieur' };
+function decale(obj, w) { const i0 = ((w - 2) * 3 + 70) % 7; const r = {}; JK.forEach((k, i) => { r[k] = obj[JK[(i + i0) % 7]]; }); return r; }
+function plat(w, k, r) { return decale(r === 'dej' ? DEJ : DIN, w)[k]; }
+function dateDe(w, i) { return new Date(2026, 9, 5 + 7 * (w - 1) + i); }
+function fmt(d) { return d.getDate() + ' ' + MOIS[d.getMonth()]; }
+
+const ITEMS = [
+  { n:'Oignons jaunes', q:'1 kg', ray:'leg' }, { n:'Ail', q:'1 tête', ray:'leg' },
+  { n:'Pois chiches', q:'2 boîtes', ray:'epi', k:'lun', r:'din' }, { n:'Lait de coco', q:'40 cl', ray:'epi', k:'lun', r:'din' },
+  { n:'Potimarron', q:'1', ray:'leg', k:'mar', r:'din' }, { n:'Pain de campagne', q:'1', ray:'epi', k:'mar', r:'din' },
+  { n:'Haricots rouges', q:'2 boîtes', ray:'epi', k:'mer', r:'din' }, { n:'Tomates concassées', q:'800 g', ray:'epi', k:'mer', r:'din' },
+  { n:'Courgettes', q:'4', ray:'leg', k:'jeu', r:'din' }, { n:'Jambon blanc', q:'4 tranches', ray:'frais', k:'jeu', r:'din' },
+  { n:'Mozzarella', q:'2', ray:'frais', k:'ven', r:'din' }, { n:'Pâte à pizza', q:'1', ray:'frais', k:'ven', r:'din' },
+  { n:'Pavés de saumon', q:'2', ray:'viande', k:'sam', r:'din' }, { n:'Haricots verts', q:'400 g', ray:'leg', k:'sam', r:'din' },
+  { n:'Champignons de Paris', q:'500 g', ray:'leg', k:'dim', r:'din' }, { n:'Œufs', q:'12', ray:'frais', k:'dim', r:'din' },
+  { n:'Lentilles vertes', q:'500 g', ray:'epi', k:'lun', r:'dej' }, { n:'Feta', q:'200 g', ray:'frais', k:'lun', r:'dej' }, { n:'Betteraves cuites', q:'2', ray:'leg', k:'lun', r:'dej' },
+  { n:'Cuisses de poulet', q:'4', ray:'viande', k:'mar', r:'dej' }, { n:'Boulgour', q:'500 g', ray:'epi', k:'mar', r:'dej' }, { n:'Persil plat', q:'1 botte', ray:'leg', k:'mar', r:'dej' },
+  { n:'Poireaux', q:'3', ray:'leg', k:'mer', r:'dej' }, { n:'Chèvre frais', q:'150 g', ray:'frais', k:'mer', r:'dej' }, { n:'Pâte brisée', q:'1', ray:'frais', k:'mer', r:'dej' },
+  { n:'Quinoa', q:'400 g', ray:'epi', k:'jeu', r:'dej' }, { n:'Concombre', q:'1', ray:'leg', k:'jeu', r:'dej' }, { n:'Menthe fraîche', q:'1 botte', ray:'leg', k:'jeu', r:'dej' },
+  { n:'Pâtes complètes', q:'500 g', ray:'epi', k:'ven', r:'dej' }, { n:'Pesto', q:'1 pot', ray:'epi', k:'ven', r:'dej' }, { n:'Tomates cerises', q:'250 g', ray:'leg', k:'ven', r:'dej' },
+  { n:'Salade verte', q:'1', ray:'leg', k:'sam', r:'dej' }, { n:'Ciboulette', q:'1 botte', ray:'leg', k:'sam', r:'dej' }, { n:'Comté', q:'200 g', ray:'frais', k:'sam', r:'dej' },
+  { n:'Rôti de porc', q:'800 g', ray:'viande', k:'dim', r:'dej' }, { n:'Pommes de terre', q:'1 kg', ray:'leg', k:'dim', r:'dej' }, { n:'Thym', q:'1 botte', ray:'leg', k:'dim', r:'dej' }
+];
+const RAYONS = [ ['leg','Fruits et légumes','leaf'], ['frais','Frais','snow'], ['viande','Boucherie et poisson','fish'], ['epi','Épicerie','wheat'] ];
+const MAISON = ['Huile d\'olive','Riz basmati','Paprika fumé','Cumin','Bouillon de légumes','Crème fraîche','Parmesan'];
+const RESERVE = [['Chili sin carne','4 portions, avant mercredi'],['Lentilles cuites','2 portions, avant mardi'],['Sauce tomate maison','1 bocal, au congélateur']];
+
+/* Recettes : « rit » = ce qui se fait au rituel du dimanche, « jour » = la finition le jour même. */
+const RECETTES = {
+  'Curry de pois chiches, riz basmati': { t:'35 min', rit:['Émincer 1 oignon et 2 gousses d\'ail, les faire revenir 5 min.','Ajouter 2 c. à c. de curry, puis les pois chiches égouttés et le lait de coco.','Mijoter 20 min à couvert, saler. Cuire le riz à part.','Laisser tiédir, répartir en 2 boîtes (curry et riz).'], jour:['Réchauffer 3 min au micro-ondes en remuant à mi-temps.','Parsemer de coriandre ou de persil.'], cons:'3 jours au frigo' },
+  'Soupe de potimarron, tartines': { t:'40 min', rit:['Couper le potimarron en cubes, sans l\'éplucher.','Faire revenir 1 oignon, ajouter le potimarron et 1 l de bouillon.','Cuire 25 min, mixer, saler et poivrer.','Mettre en bocaux une fois tiède.'], jour:['Réchauffer à feu doux 5 min.','Griller les tartines, filet d\'huile d\'olive.'], cons:'4 jours au frigo, 3 mois au congélateur' },
+  'Chili sin carne': { t:'45 min', rit:['Faire revenir oignon, ail et 1 poivron 5 min.','Ajouter cumin, paprika, tomates concassées et haricots rouges rincés.','Mijoter 30 min, goûter, ajuster.','Faire 4 portions : 2 pour mercredi, 2 pour la réserve.'], jour:['Réchauffer 4 min au micro-ondes.','Servir avec du riz et un peu de crème fraîche.'], cons:'4 jours au frigo, 3 mois au congélateur' },
+  'Gratin de courgettes au jambon': { t:'45 min', rit:['Laver et couper les courgettes en rondelles.','Les saler 10 min, les éponger, les ranger en boîte.'], jour:['Four à 200 °C. Alterner courgettes et jambon dans un plat.','Verser 2 œufs battus avec 10 cl de crème, ajouter le comté.','Cuire 30 min, jusqu\'à ce que ce soit doré.'], cons:'Courgettes prêtes : 3 jours' },
+  'Pizza maison tomate-mozza': { t:'25 min', rit:['Préparer la sauce : tomates, ail, origan, 15 min à feu doux.','Mettre en bocal.'], jour:['Four à 240 °C. Étaler la pâte, mettre la sauce.','Ajouter la mozzarella, cuire 12 min.','Finir avec du basilic.'], cons:'Sauce : 5 jours au frigo' },
+  'Saumon au four, haricots verts': { t:'25 min', rit:['Équeuter les haricots verts, les cuire 5 min dans l\'eau salée.','Les refroidir dans l\'eau froide, les ranger en boîte.'], jour:['Four à 200 °C. Saumon, citron, sel, poivre : 12 min.','Faire sauter les haricots 3 min à la poêle.'], cons:'Haricots cuits : 3 jours' },
+  'Velouté de champignons, œuf mollet': { t:'30 min', rit:['Faire revenir 1 oignon et les champignons 10 min.','Ajouter 75 cl de bouillon, cuire 15 min, mixer.','Mettre en bocaux une fois tiède.'], jour:['Réchauffer le velouté 5 min.','Cuire les œufs 6 min, les écaler, les poser sur le velouté.'], cons:'3 jours au frigo' },
+  'Salade de lentilles, feta & betterave': { t:'25 min', rit:['Cuire les lentilles 20 min dans l\'eau sans sel.','Égoutter, assaisonner tièdes : moutarde, vinaigre, huile.','Remplir les box : lentilles, betterave en dés à part.'], jour:['Ajouter la feta émiettée au moment de manger.','Remuer, c\'est prêt : ça se mange froid.'], cons:'3 jours au frigo' },
+  'Poulet rôti, boulgour aux herbes': { t:'50 min', rit:['Rôtir les cuisses de poulet 40 min à 200 °C avec thym et ail.','Cuire le boulgour 10 min, ajouter persil et citron.','Effilocher le poulet, remplir les box.'], jour:['Réchauffer 2 min au micro-ondes, ou manger froid.','Ajouter un peu de citron.'], cons:'3 jours au frigo' },
+  'Quiche poireaux & chèvre': { t:'55 min', rit:['Émincer les poireaux, les faire fondre 15 min au beurre.','Laisser refroidir, ranger en boîte.'], jour:['Four à 180 °C. Mettre la pâte dans le moule, étaler les poireaux.','Battre 3 œufs et 20 cl de crème, verser, ajouter le chèvre.','Cuire 35 min.'], cons:'Poireaux prêts : 3 jours' },
+  'Taboulé de quinoa, pois chiches rôtis': { t:'30 min', rit:['Cuire le quinoa 12 min, le laisser refroidir.','Rôtir les pois chiches au paprika, 20 min à 200 °C.','Mélanger quinoa, concombre, menthe, citron, huile. Remplir les box.'], jour:['Ajouter les pois chiches au dernier moment pour qu\'ils restent croquants.'], cons:'3 jours au frigo' },
+  'Pâtes complètes au pesto': { t:'15 min', rit:[], jour:['Cuire les pâtes 10 min, garder un peu d\'eau de cuisson.','Mélanger avec le pesto et les tomates cerises coupées.','Parmesan au moment de servir.'], cons:'Se fait le jour même' },
+  'Omelette aux champignons, salade': { t:'15 min', rit:[], jour:['Faire sauter les champignons 5 min.','Battre 6 œufs avec la ciboulette, verser, cuire 4 min.','Servir avec la salade et du comté.'], cons:'Se fait le jour même' },
+  'Rôti de porc, purée de carottes': { t:'1 h 20', rit:['Éplucher et cuire carottes et pommes de terre 20 min.','Les écraser en purée avec un peu de beurre, ranger en boîte.'], jour:['Four à 180 °C. Rôti avec thym et ail, 1 h.','Réchauffer la purée 4 min.'], cons:'Purée : 3 jours' }
+};
+const RITUEL_RECETTES = ['Curry de pois chiches, riz basmati','Salade de lentilles, feta & betterave','Chili sin carne','Soupe de potimarron, tartines','Quiche poireaux & chèvre','Taboulé de quinoa, pois chiches rôtis','Poulet rôti, boulgour aux herbes'];
+const ACTIF = { 'Curry de pois chiches, riz basmati':15, 'Salade de lentilles, feta & betterave':10, 'Chili sin carne':15, 'Soupe de potimarron, tartines':10, 'Quiche poireaux & chèvre':10, 'Taboulé de quinoa, pois chiches rôtis':10, 'Poulet rôti, boulgour aux herbes':10 };
+
+/* ---------- État partagé ---------- */
+const typeDepart = () => ({
+  dej: { lun:'box', mar:'box', mer:'maison', jeu:'box', ven:'dehors', sam:'maison', dim:'maison' },
+  din: { lun:'maison', mar:'maison', mer:'maison', jeu:'maison', ven:'maison', sam:'maison', dim:'maison' }
+});
+const S = {
+  enCours: typeDepart(),     // semaine type figée au lancement des menus en cours
+  type: (t => { t.dej.mer = 'box'; return t; })(typeDepart()), // semaine type modifiable : ne joue qu'aux prochains menus
+  coche: new Set(['Oignons jaunes','Ail','Pois chiches','Lait de coco','Potimarron','Lentilles vertes','Feta','Quinoa','Cuisses de poulet']),
+  rituel: new Set(),
+  sous: new Set(),
+  paye: null,
+  copie: false
+};
+const modeEnCours = (k, r) => S.enCours[r][k];
+function changements() { const l = []; ['dej','din'].forEach(r => JK.forEach(k => { if (S.type[r][k] !== S.enCours[r][k]) l.push({ k, r }); })); return l; }
+function compte(t) { const n = { box:0, dehors:0, maison:0, din:0 }; JK.forEach(k => { n[t.dej[k]]++; if (t.din[k] !== 'dehors') n.din++; }); return n; }
+const itemsActifs = () => ITEMS.filter(it => !it.k || modeEnCours(it.k, it.r) !== 'dehors');
+const pluriel = (n, s, p) => n + ' ' + (n > 1 ? p : s);
+function ouEst(nom) { for (const r of ['dej','din']) for (const k of JK) if (plat(2, k, r) === nom) return { k, r }; return null; }
+const quand = o => `Pour ${JN[o.k].toLowerCase()} ${o.r === 'dej' ? 'midi' : 'soir'}`;
+
+/* Le rituel, plat par plat : 1 tâche commune, 7 plats, 1 tâche commune = 1 h 40. */
+const ETAPES = () => {
+  const nb = compte(S.enCours).box * 2;
+  const legumes = ITEMS.filter(x => x.ray === 'leg' && (!x.k || RITUEL_RECETTES.includes(plat(2, x.k, x.r))));
+  const plats = RITUEL_RECETTES.map(n => {
+    const o = ouEst(n); const r = RECETTES[n];
+    return { t:n, plat:true, moment:quand(o), min:ACTIF[n], sous:r.rit,
+      ingr: ITEMS.filter(x => x.k === o.k && x.r === o.r).concat([{ n:'Huile d\'olive', q:'2 c. à s.' }, { n:'Sel, poivre', q:'' }]),
+      cons:'Étiqueter : ' + r.cons };
+  });
+  return [
+    { t:'Laver les légumes', moment:'Pour tous les plats', min:10, sous:['Sortir tous les légumes sur le plan de travail.','Laver potimarron, poireaux, betteraves, concombre et herbes.','Émincer d\'un coup tous les oignons et l\'ail.'], ingr:legumes, cons:null },
+    ...plats,
+    { t:'Remplir les ' + nb + ' box', moment:'Pour finir', min:10, sous:['Sortir les ' + nb + ' boîtes et leurs couvercles.','Répartir les plats, la sauce à part.','Laisser tiédir 20 min, puis fermer.','Ranger : lundi devant, la réserve au congélateur.'], ingr:[], cons:'Étiqueter chaque box : le jour et le plat' }
+  ];
+};
+const duree = m => m < 60 ? m + ' min' : `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')}`;
+
+/* ---------- Téléphones ---------- */
+const P = [
+  { titre:'Aujourd\'hui', aide:'Une carte « Maintenant », un bouton. Touche « J\'ai pris ma box » : la carte passe au dîner.', jour:'normal', tab:'auj' },
+  { titre:'Aujourd\'hui, jour de rituel', aide:'Le dimanche, le rituel est la seule chose à faire.', jour:'rituel', tab:'auj' },
+  { titre:'Aujourd\'hui, sans menus', aide:'Pas d\'impasse : le bouton ouvre l\'assistant des prochains menus.', jour:'hors', tab:'auj' },
+  { titre:'Semaine', aide:'Aujourd\'hui est déplié. Touche un autre jour pour l\'ouvrir, un repas pour le changer.', jour:'normal', tab:'sem' },
+  { titre:'Semaine, un repas touché', aide:'Choisis « Dehors » puis « Enregistrer » : cette semaine ne bouge pas, seuls les prochains menus changent.', jour:'normal', tab:'sem', sheet:{ kind:'repas', w:2, k:'jeu', r:'dej' } },
+  { titre:'Prochains menus', aide:'Trois étapes, une question par écran. Retour revient à l\'étape d\'avant.', jour:'hors', tab:'auj', stack:[{ v:'wiz' }] },
+  { titre:'Courses', aide:'Coche un article : il descend dans « Déjà pris ». « J\'ai payé » n\'apparaît qu\'une fois tout coché.', jour:'normal', tab:'courses', demo:'Tout cocher (démo)' },
+  { titre:'Rituel', aide:'Avant de commencer : les plats du jour et un seul bouton.', jour:'normal', tab:'rituel' },
+  { titre:'Mode guidé', aide:'Un plat par étape : coche les gestes, lance le minuteur, passe à l\'étape suivante.', jour:'rituel', tab:'rituel', stack:[{ v:'guide' }], guide:1 },
+  { titre:'Recette', aide:'Le jour J d\'abord. Ce qui a été fait au rituel est replié.', jour:'normal', tab:'auj', stack:[{ v:'recette', d:'Curry de pois chiches, riz basmati' }] },
+  { titre:'Moi', aide:'Une ligne par réglage, trois groupes. Se déconnecter est à part, en bas.', jour:'normal', tab:'auj', stack:[{ v:'moi' }] }
+];
+P.forEach(p => {
+  p.stack = p.stack || [];
+  p.week = 2; p.jours = new Set(['lun']);
+  p.wiz = { step:1, recu:false, lance:false }; p.guide = p.guide || 0;
+  p.ouvert = new Set(); p.heroFait = false; p.minut = null; p.recPas = new Set();
+  if (p.sheet) { p.draft = { mode: S.type[p.sheet.r][p.sheet.k] }; p.anim = false; }
+});
+
+/* ---------- Fragments ---------- */
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const attrs = o => Object.entries(o).map(([a, v]) => ` data-${a}="${esc(v)}"`).join('');
+const btn = (cls, a, label, extra = {}, more = '') => `<button type="button" class="${cls}" data-a="${a}"${attrs(extra)}${more}>${label}</button>`;
+
+const enTete = (titre, sous) => `<header class="en-tete"><div class="en-tete-txt"><h1>${titre}</h1>${sous ? `<p>${sous}</p>` : ''}</div><button type="button" class="avatar" data-a="moi" aria-label="Moi : Marc">M<span class="avatar-pt" aria-hidden="true"></span></button></header>`;
+const tetePousse = (droite = '') => `<header class="tete-pousse"><button type="button" class="retour" data-a="back">${ic('chev-left', 22)}Retour</button>${droite}</header>`;
+function onglets(p) {
+  const t = [['auj','Aujourd\'hui','home'],['sem','Semaine','couverts'],['courses','Courses','cart'],['rituel','Rituel','pot']];
+  return `<nav class="barre-onglets" aria-label="Navigation principale">${t.map(([v, l, i]) =>
+    `<button type="button" class="onglet" data-a="tab" data-v="${v}"${p.tab === v ? ' aria-current="page"' : ''}><span class="onglet-icone">${ic(i, 22)}</span>${l}</button>`).join('')}</nav>`;
+}
+const maintenant = (sur, titre, texte, action) => `<section class="maintenant" aria-label="Maintenant" aria-live="polite"><p class="surtitre">${sur}</p><h2>${titre}</h2><p>${texte}</p>${action}</section>`;
+const ligneRecette = (sur, nom, tag = '') => `<button type="button" class="ligne" data-a="recette" data-v="${esc(nom)}"><span class="ligne-txt"><span class="ligne-sur">${sur}</span><span class="ligne-titre">${nom}</span></span>${tag}${ic('chev-right', 20, 'chev-ico')}</button>`;
+function repli(p, id, titre, nb, contenu) {
+  const o = p.ouvert.has(id);
+  return `<button type="button" class="repli" data-a="repli" data-v="${id}" aria-expanded="${o}">${titre}<span class="compte">${nb}</span>${ic('chev', 20, 'chev-ico')}</button>${o ? `<div class="depli">${contenu()}</div>` : ''}`;
+}
+const cocheLigne = (a, v, txt, on, extra = '', long = false) => `<button type="button" class="coche-ligne${long ? ' long' : ''}" aria-pressed="${on}" data-a="${a}" data-v="${esc(v)}"><span class="case">${ic('check', 20)}</span><span class="coche-txt">${txt}</span>${extra}</button>`;
+const note = (icone, html) => `<div class="note">${ic(icone, 20)}<p>${html}</p></div>`;
+
+/* ---------- Onglets ---------- */
+function ligneSuivi(p) {
+  const o = p.ouvert.has('suivi');
+  return `<h2 class="titre-section">Mon suivi</h2><div class="liste"><button type="button" class="ligne" data-a="repli" data-v="suivi" aria-expanded="${o}"><span class="ligne-txt"><span class="ligne-titre">82,4 kg, soit 1,2 kg de moins</span></span>${ic('chev', 20, 'chev-ico')}</button>
+    ${o ? `<div class="depli"><p>Objectif : 79 kg en janvier.</p><div class="barre" aria-hidden="true"><span style="width:26%"></span></div><p style="margin-top:var(--sp-12)">Séance ce soir : jambes, 18 h 30.</p>${btn('lien', 'suivi', 'Voir tout mon suivi' + ic('chev-right', 18))}</div>` : ''}</div>`;
+}
+function ecranAuj(p) {
+  const et = ETAPES(); const tot = et.reduce((a, e) => a + e.min, 0);
+  if (p.jour === 'hors') return { tete: enTete('Bonjour Marc', 'Lundi 2 novembre'), onglets: true,
+    corps: maintenant('Maintenant', 'Prépare tes prochains menus', 'Tes menus d\'octobre sont finis. Il te faut 10 minutes, en 3 étapes.', btn('bouton-plein large', 'wiz', 'Préparer mes menus'))
+      + `<h2 class="titre-section">Au menu aujourd'hui</h2><div class="liste"><p class="vide-ligne">Rien de prévu. Dans la réserve : <b>velouté de champignons</b>, 2 portions.</p></div>` + ligneSuivi(p) };
+  if (p.jour === 'rituel') {
+    const commence = S.rituel.size > 0 && S.rituel.size < et.length; const fini = S.rituel.size === et.length;
+    return { tete: enTete('Bonjour Marc', 'Dimanche 18 octobre'), onglets: true,
+      corps: maintenant('Maintenant', fini ? 'Rituel terminé, bravo' : 'C\'est le jour du rituel', fini ? 'Tes box et tes dîners sont prêts pour la semaine.' : `${RITUEL_RECETTES.length} plats, environ ${duree(tot)}. Ensuite, ta semaine est prête.`,
+          fini ? '' : btn('bouton-plein large', 'guide', commence ? 'Reprendre le rituel' : 'Commencer le rituel'))
+        + `<h2 class="titre-section">Au menu aujourd'hui</h2><div class="liste">${ligneRecette('Midi · maison', plat(2, 'dim', 'dej'))}${ligneRecette('Soir · maison', plat(2, 'dim', 'din'))}</div>` + ligneSuivi(p) };
+  }
+  const dej = plat(2, 'lun', 'dej'), din = plat(2, 'lun', 'din');
+  const carte = !p.heroFait
+    ? maintenant('Ce midi', 'Ta box est prête', `${dej}. Au frigo, deuxième étagère.`, btn('bouton-plein large', 'heroFait', 'J\'ai pris ma box'))
+    : maintenant('Ce soir', 'Réchauffe le curry', `${din}. Il est déjà cuisiné : 3 minutes au micro-ondes.`, btn('bouton-plein large', 'recette', 'Voir la recette', { v: din }));
+  return { tete: enTete('Bonjour Marc', 'Lundi 12 octobre'), onglets: true,
+    corps: carte + `<h2 class="titre-section">Au menu aujourd'hui</h2><div class="liste">${ligneRecette('Midi · en box', dej, p.heroFait ? `<span class="tag fait">${ic('check', 14)}Pris</span>` : '')}${ligneRecette('Soir · maison', din)}</div>` + ligneSuivi(p) };
+}
+function ecranVide(p, titre, texte) {
+  return { tete: enTete(titre, 'Aucun menu en cours'), onglets: true,
+    corps: `<div class="succes"><h1 style="font-size:var(--fs-h2)">Rien de prévu pour l'instant</h1><p>${texte}</p>${btn('bouton-plein large', 'wiz', 'Préparer mes menus')}</div>` };
+}
+
+function ecranSem(p) {
+  if (p.jour === 'hors') return ecranVide(p, 'Semaine', 'Les repas de la semaine arrivent avec tes prochains menus.');
+  const w = p.week; const ch = changements();
+  const seg = `<div class="segment" role="radiogroup" aria-label="Choisir la semaine">${[[2, 'Cette semaine'], [3, 'La suivante']].map(([v, l]) =>
+    `<button type="button" role="radio" data-a="week" data-v="${v}" aria-checked="${w === v}">${l}<small>${dateDe(v, 0).getDate()} – ${fmt(dateDe(v, 6))}</small></button>`).join('')}</div>`;
+  const bandeau = ch.length ? `<button type="button" class="bandeau" data-a="type"><span class="point" aria-hidden="true"></span><span>${pluriel(ch.length, 'changement prévu', 'changements prévus')} pour tes prochains menus</span>${ic('chev-right', 18)}</button>` : '';
+  const jours = JK.map((k, i) => {
+    const d = dateDe(w, i); const auj = w === 2 && i === 0; const o = p.jours.has(k);
+    const tags = (auj ? '<span class="tag auj">Aujourd\'hui</span>' : '') + (k === 'sam' ? '<span class="tag contour">Courses</span>' : '') + (k === 'dim' ? '<span class="tag citron">Rituel</span>' : '');
+    return `<div><button type="button" class="ligne" data-a="jour" data-v="${k}" aria-expanded="${o}"><span class="jour-nom"><b>${JN[k]}</b> <span>${fmt(d)}</span></span>${tags ? `<span class="jour-tags">${tags}</span>` : ''}${ic('chev', 20, 'chev-ico')}</button>
+      ${o ? `<div class="depli">${repas(p, w, k, 'dej')}${repas(p, w, k, 'din')}</div>` : ''}</div>`;
+  }).join('');
+  return { tete: enTete('Semaine', 'Semaine ' + w + ' sur 4'), onglets: true, corps: seg + bandeau + `<div class="liste jours">${jours}</div>` };
+}
+function repas(p, w, k, r) {
+  const mode = modeEnCours(k, r); const futur = S.type[r][k];
+  const nom = mode === 'dehors' ? PLAT_DEHORS[r] : plat(w, k, r);
+  const badge = futur !== mode ? `<span class="tag citron prochain">${MODES[futur].nom} dès les prochains menus</span>` : '';
+  return `<button type="button" class="repas ${mode}${p.flash === k + '-' + r ? ' flash' : ''}" data-a="slot" data-k="${k}" data-r="${r}" data-w="${w}">
+    <span class="tuile ${mode}">${ic(MODES[mode].i, 20)}</span><span class="ligne-txt"><span class="ligne-sur">${r === 'dej' ? 'Midi' : 'Soir'} · ${MODES[mode].nom.toLowerCase()}</span><span class="ligne-titre">${nom}</span>${badge}</span>${ic('chev-right', 20, 'chev-ico')}</button>`;
+}
+
+function ecranCourses(p) {
+  if (p.jour === 'hors') return ecranVide(p, 'Courses', 'Ta liste se calcule toute seule à partir de tes menus.');
+  const items = itemsActifs(); const restants = items.filter(it => !S.coche.has(it.n)); const pris = items.filter(it => S.coche.has(it.n));
+  const tout = !restants.length;
+  const budget = S.paye ? `Payé : <b>${S.paye}</b> sur 120 €` : 'Budget : <b>82 € prévus</b> sur 120 €';
+  let corps = `<section class="resume" aria-label="Où j'en suis">
+    <p class="resume-ligne"><span><b>${pris.length} sur ${items.length}</b> dans le panier</span></p>
+    <div class="barre" role="progressbar" aria-valuemin="0" aria-valuemax="${items.length}" aria-valuenow="${pris.length}" aria-label="Articles dans le panier"><span style="width:${pris.length / items.length * 100}%"></span></div>
+    <button type="button" class="repli" data-a="repli" data-v="budget" aria-expanded="${p.ouvert.has('budget')}"><span style="flex:1">${budget}</span>${ic('chev', 20, 'chev-ico')}</button>
+    ${p.ouvert.has('budget') ? `<div class="depli"><div class="kv"><span>Magasin</span><span>Biocoop</span></div><div class="kv"><span>Prévu cette semaine</span><span>82 €</span></div><div class="kv"><span>Limite par semaine</span><span>120 €</span></div></div>` : ''}
+  </section>`;
+  if (tout) corps += `<div class="liste" style="margin-top:var(--sp-16)"><p class="fini"><span class="ok-rond">${ic('check', 22)}</span>${S.paye ? 'Courses finies, ticket noté.' : 'Tout est dans le panier.'}</p></div>`;
+  else {
+    corps += `<div class="liste" style="margin-top:var(--sp-16)">`;
+    RAYONS.forEach(([id, nom, icone]) => {
+      const l = restants.filter(it => it.ray === id); if (!l.length) return;
+      corps += `<h3 class="rayon-titre">${ic(icone, 20)}${nom}</h3>` + l.map(it => cocheLigne('coche', it.n, it.n, false, `<span class="qte">${it.q}</span>`)).join('');
+    });
+    corps += `</div>`;
+  }
+  corps += `<div class="liste" style="margin-top:var(--sp-16)">${repli(p, 'deja', 'Déjà pris', pris.length, () => pris.map(it => cocheLigne('coche', it.n, it.n, true, `<span class="qte">${it.q}</span>`)).join(''))}</div>`;
+  corps += `<div class="liste" style="margin-top:var(--sp-12)">${repli(p, 'maison', 'À vérifier à la maison', MAISON.length, () => `<p class="second">Achète-les seulement s'il n'y en a plus.</p>` + MAISON.map(n => cocheLigne('coche', n, n, S.coche.has(n))).join(''))}</div>`;
+  return { tete: enTete('Courses', 'Samedi 17 octobre'), onglets: true, corps, pied: tout && !S.paye ? btn('bouton-plein', 'payer', 'J\'ai payé') : '' };
+}
+
+function ecranRituel(p) {
+  if (p.jour === 'hors') return ecranVide(p, 'Rituel', 'Ta séance de cuisine du dimanche arrive avec tes prochains menus.');
+  const et = ETAPES(); const tot = et.reduce((a, e) => a + e.min, 0); const faits = S.rituel.size; const fini = faits === et.length;
+  const lignes = et.map((e, i) => e.plat ? { e, i } : null).filter(Boolean).map(({ e, i }) =>
+    ligneRecette(e.moment, e.t, S.rituel.has(i) ? `<span class="tag fait">${ic('check', 14)}Fait</span>` : '')).join('');
+  const corps = `<h2 class="grand">Ce dimanche : ${RITUEL_RECETTES.length} plats, environ ${duree(tot)}</h2>
+    <p>${fini ? 'Tout est fait. Ta semaine est prête.' : faits ? `${faits} étapes faites sur ${et.length}. Tu reprends où tu en étais.` : 'Un plat à la fois, on te guide pas à pas.'}</p>
+    <div class="liste" style="margin-top:var(--sp-16)">${lignes}</div>
+    <div class="liste" style="margin-top:var(--sp-16)">${repli(p, 'reserve', 'Dans la réserve', RESERVE.length, () => `<ul class="liste-texte">${RESERVE.map(r => `<li><b>${r[0]}</b><br><span class="second">${r[1]}</span></li>`).join('')}</ul>`)}</div>`;
+  return { tete: enTete('Rituel', 'Dimanche 18 octobre'), onglets: true, corps, pied: fini ? '' : btn('bouton-plein', 'guide', faits ? 'Reprendre' : 'Commencer') };
+}
+
+/* ---------- Écrans poussés ---------- */
+function ecranRecette(p, nom) {
+  const r = RECETTES[nom];
+  if (!r) return { tete: tetePousse(), corps: `<h1 class="titre-pousse">${nom}</h1><p>Recette non détaillée dans cette maquette.</p>` };
+  const ing = ITEMS.filter(x => x.k && plat(2, x.k, x.r) === nom).concat([{ n:'Huile d\'olive', q:'2 c. à s.' }, { n:'Sel, poivre', q:'' }]);
+  const pas = r.jour.map((x, j) => { const k = nom + '|' + j; const f = p.recPas.has(k);
+    return `<li${f ? ' class="faite"' : ''}><button type="button" class="etape-num" data-a="recPas" data-v="${esc(k)}" aria-pressed="${f}" aria-label="Étape ${j + 1} faite">${j + 1}</button><p>${x}</p></li>`; }).join('');
+  return { tete: tetePousse(), corps: `<h1 class="titre-pousse">${nom}</h1>
+    <div class="pastilles"><span class="pastille">${ic('clock', 18)}${r.t}</span><span class="pastille">2 portions</span></div>
+    <h2 class="titre-section" style="margin-top:var(--sp-16)">Le jour J</h2><ol class="etapes">${pas}</ol>
+    <div class="liste" style="margin-top:var(--sp-24)">
+      ${repli(p, 'ingr', 'Ingrédients', ing.length, () => ing.map(x => `<div class="ingr"><span>${x.n}</span><span>${x.q}</span></div>`).join(''))}
+      <div style="border-top:1px solid var(--border)">${repli(p, 'rit', 'Déjà fait au rituel', r.rit.length ? r.rit.length + ' gestes' : 'rien', () => r.rit.length ? `<ul class="liste-texte">${r.rit.map(x => `<li>${x}</li>`).join('')}</ul>` : '<p>Ce plat se fait le jour même.</p>')}</div>
+    </div>
+    ${note('snow', 'Se garde : ' + r.cons + '.')}` };
+}
+function ecranSuivi() {
+  const pesees = [['12 oct.','82,4 kg'],['8 oct.','82,9 kg'],['5 oct.','83,6 kg']];
+  return { tete: tetePousse(), pied: btn('bouton-plein', 'toast', 'Ajouter une pesée', { v:'Pesée ajoutée : 82,4 kg.' }),
+    corps: `<h1 class="titre-pousse">Mon suivi</h1>
+    <p class="surtitre">Objectif : 79 kg en janvier</p><p style="font-size:var(--fs-titre);font-weight:700;margin:0">82,4 kg</p><p>Encore 3,4 kg. À ce rythme : mi-janvier.</p>
+    <div class="barre" aria-hidden="true"><span style="width:26%"></span></div>
+    <h2 class="titre-section">Mes pesées</h2><div class="liste">${pesees.map(x => `<div class="kv" style="padding:var(--sp-12) 0"><span>${x[0]}</span><span>${x[1]}</span></div>`).join('')}</div>
+    <h2 class="titre-section">Mes séances</h2><div class="liste"><div class="kv" style="padding:var(--sp-12) 0"><span>Lundi, 18 h 30</span><span>Jambes</span></div><div class="kv" style="padding:var(--sp-12) 0"><span>Mercredi</span><span>Haut du corps</span></div><div class="kv" style="padding:var(--sp-12) 0"><span>Samedi matin</span><span>Course, 40 min</span></div></div>` };
+}
+function tempsRestant(p) { const ms = Math.max(0, p.minut.fin - Date.now()); const s = Math.ceil(ms / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; }
+function ecranGuide(p) {
+  const et = ETAPES(); const i = p.guide;
+  const progres = `<div class="guide-progres" aria-hidden="true">${et.map((_, j) => `<span class="${j === i ? 'courant' : S.rituel.has(j) ? 'fait' : ''}"></span>`).join('')}</div>`;
+  if (i >= et.length) return { tete: tetePousse('<span class="tete-info">Terminé</span>') + progres, pied: btn('bouton-plein', 'back', 'Fermer'),
+    corps: `<div class="succes"><div class="ok-rond">${ic('check', 36)}</div><h1>Rituel terminé !</h1><p>Ta semaine est prête. Bon appétit à vous deux.</p></div>` };
+  const e = et[i]; const lance = p.minut && p.minut.i === i;
+  const minut = lance
+    ? btn('minuteur lance', 'minuteur', `${ic('clock', 20)}<span class="temps" data-fin="${p.minut.fin}">${tempsRestant(p)}</span> · Arrêter`, { v:i }, ' aria-label="Arrêter le minuteur"')
+    : btn('minuteur', 'minuteur', `${ic('clock', 20)}Minuteur · ${e.min} min`, { v:i });
+  const gestes = e.sous.map((s, j) => { const k = i + '-' + j; return cocheLigne('sous', k, s, S.sous.has(k), '', true); }).join('');
+  return { tete: tetePousse(`<span class="tete-info">Étape ${i + 1} sur ${et.length}</span>`) + progres,
+    pied: (i > 0 ? btn('lien', 'guidePrev', ic('chev-left', 18) + 'Précédente') : '') + btn('bouton-plein', 'guideNext', i === et.length - 1 ? 'J\'ai fini' : 'Étape suivante'),
+    corps: `<p class="surtitre" style="margin-top:var(--sp-16)">${e.moment}</p><h1 class="titre-pousse" style="margin-top:0">${e.t}</h1>${minut}
+      <div class="liste">${gestes}</div>
+      ${e.ingr.length ? `<div class="liste" style="margin-top:var(--sp-12)">${repli(p, 'ingr', 'Ingrédients', e.ingr.length, () => e.ingr.map(x => `<div class="ingr"><span>${x.n}</span><span>${x.q}</span></div>`).join(''))}</div>` : ''}
+      ${e.cons ? note('snow', e.cons) : ''}` };
+}
+function editeurType() {
+  const ligne = k => {
+    const diff = S.type.dej[k] !== S.enCours.dej[k] || S.type.din[k] !== S.enCours.din[k];
+    const puce = r => { const m = MODES[S.type[r][k]]; return `<button type="button" class="puce-mode" data-a="typeMode" data-k="${k}" data-r="${r}" aria-label="${JN[k]} ${r === 'dej' ? 'midi' : 'soir'} : ${m.nom}. Toucher pour changer">${ic(m.i, 18)}${m.nom}</button>`; };
+    return `<div class="type-ligne${diff ? ' change' : ''}"><span class="j">${JC[k]}</span>${puce('dej')}${puce('din')}</div>`;
+  };
+  return `<div class="liste type-grille"><div class="type-tete"><span>Jour</span><span>Midi</span><span>Soir</span></div>${JK.map(ligne).join('')}</div>
+    <p class="second" style="margin-top:var(--sp-12)">Touche une case pour passer de Box à Maison, puis à Dehors. Les jours changés sont en jaune.</p>`;
+}
+function ecranType() {
+  return { tete: tetePousse(), pied: btn('bouton-plein', 'wiz', 'Préparer mes prochains menus'),
+    corps: `<h1 class="titre-pousse">Ma semaine type</h1><p>Elle sert à préparer tes prochains menus. La semaine en cours ne change pas.</p>${editeurType()}` };
+}
+function ecranWiz(p) {
+  const s = p.wiz.step; const ch = changements(); const n = compte(S.type);
+  if (p.wiz.lance) return { tete: tetePousse(), pied: btn('bouton-plein', 'voirSem', 'Voir ma semaine'),
+    corps: `<div class="succes"><div class="ok-rond">${ic('check', 36)}</div><h1>Tes menus sont prêts</h1><p>Premières courses samedi 31 octobre. Premier rituel dimanche 1er novembre.</p></div>` };
+  const pas = `<div class="pas-wiz"><p>Étape ${s} sur 3</p><div class="pas-barre" aria-hidden="true">${[1, 2, 3].map(x => `<span class="${x <= s ? 'fait' : ''}"></span>`).join('')}</div></div>`;
+  let corps = '', pied = '';
+  if (s === 1) {
+    corps = `<h1 class="question">Ta semaine type est-elle toujours la bonne ?</h1><p>Elle décide des box, des courses et du rituel des 4 prochaines semaines.</p>
+      ${ch.length ? `<p><b>${pluriel(ch.length, 'jour a changé', 'jours ont changé')}</b> depuis octobre, en jaune.</p>` : ''}${editeurType()}`;
+    pied = btn('bouton-plein', 'wizGo', 'Oui, continuer', { v:2 });
+  } else if (s === 2) {
+    const boxJ = JK.filter(k => S.type.dej[k] === 'box').map(k => JN[k].toLowerCase()).join(', ');
+    const dehJ = JK.filter(k => S.type.dej[k] === 'dehors').map(k => JN[k].toLowerCase()).join(', ') || 'aucun';
+    corps = `<h1 class="question">Demande tes menus à une IA</h1>
+      <p>On a écrit pour toi un message qui décrit ton foyer : copie-le, colle-le dans ChatGPT ou une autre IA, et garde sa réponse.</p>
+      <div class="message" aria-label="Aperçu du message">Bonjour ! Prépare 4 semaines de menus pour Marc et Mélanie.
+Courses le samedi, cuisine le dimanche pour toute la semaine.
+Midis en box : ${boxJ}.
+Midis dehors : ${dehJ}.
+Dîners à la maison : ${n.din} par semaine.
+Budget : 120 € par semaine.</div>
+      ${S.copie ? `<p><b>${ic('check', 18).replace('class="ico"', 'class="ico" style="display:inline;vertical-align:-3px;color:var(--accent)"')} Message copié.</b> ${btn('lien', 'copier', 'Le copier à nouveau')}</p>` : ''}`;
+    pied = S.copie ? btn('bouton-plein', 'wizGo', 'J\'ai la réponse, continuer', { v:3 }) : btn('bouton-plein', 'copier', ic('copy', 20) + 'Copier le message');
+  } else {
+    corps = `<h1 class="question">Ajoute la réponse de l'IA</h1><p>Choisis le fichier que l'IA t'a donné. Rituel vérifie tout pour toi.</p>`;
+    if (!p.wiz.recu) corps += btn('depot', 'recevoir', ic('plus', 30) + 'Choisir le fichier');
+    else {
+      corps += `<div class="recu"><span class="ok-rond">${ic('check', 22)}</span><p><b>C'est bon !</b><br>4 semaines de menus, ${n.box * 8} box et ${n.din * 4} dîners.</p></div>
+        ${note('info', 'À savoir : le saumon revient 3 fois en semaine 2. Tu peux lancer quand même.')}
+        ${btn('lien', 'recevoir', 'Choisir un autre fichier')}`;
+      pied = btn('bouton-plein', 'lancer', 'Lancer mes menus');
+    }
+  }
+  return { tete: tetePousse(), corps: pas + corps, pied };
+}
+function ecranMoi() {
+  const n = compte(S.type);
+  const l = (v, t, val) => `<button type="button" class="reglage" data-a="moiRow" data-v="${v}"><span class="reglage-nom">${t}</span><span class="reglage-val">${val}</span>${ic('chev-right', 20)}</button>`;
+  return { tete: tetePousse(), corps: `<h1 class="titre-pousse">Moi</h1>
+    <div class="profil-hub"><span class="hub-avatar" aria-hidden="true">M</span><div><p class="hub-nom">Marc</p><p class="hub-sous">Foyer de Marc et Mélanie</p></div></div>
+    <h2 class="titre-section">Moi</h2><div class="liste">${l('infos', 'Mes infos', '41 ans, 1,78 m')}${l('objectif', 'Mon objectif', '79 kg en janvier')}</div>
+    <h2 class="titre-section">Mon foyer</h2><div class="liste">${l('membres', 'Membres', 'Marc, Mélanie')}${l('type', 'Semaine type', `${n.box} box, ${n.dehors} dehors`)}${l('magasin', 'Magasin', 'Biocoop')}${l('budget', 'Budget', '120 € par semaine')}</div>
+    <h2 class="titre-section">Ce téléphone</h2><div class="liste">${l('partage', 'Partage avec Mélanie', 'Activé')}${l('profil', 'Changer de profil', 'Mélanie')}</div>
+    <button type="button" class="danger" data-a="toast" data-v="Maquette : la déconnexion demanderait une confirmation.">Se déconnecter</button>
+    <p class="version">Rituel v2.1.0</p>` };
+}
+
+/* ---------- Feuilles ---------- */
+function feuille(p) {
+  const sh = p.sheet; if (!sh) return '';
+  const id = 'f-' + P.indexOf(p); let c = '';
+  if (sh.kind === 'repas') {
+    const { w, k, r } = sh; const actuel = modeEnCours(k, r);
+    const nom = actuel === 'dehors' ? PLAT_DEHORS[r] : plat(w, k, r);
+    const opts = r === 'dej' ? ['box','maison','dehors'] : ['maison','dehors'];
+    const d = p.draft.mode; const change = d !== S.type[r][k];
+    c = `<h2 id="${id}">${JN[k]} ${fmt(dateDe(w, JK.indexOf(k)))}, ${r === 'dej' ? 'midi' : 'soir'}</h2>
+      <div class="plat-f"><span class="tuile ${actuel}">${ic(MODES[actuel].i, 20)}</span><span class="ligne-txt"><span class="ligne-titre">${nom}</span></span></div>
+      ${actuel !== 'dehors' ? btn('lien', 'recette', 'Voir la recette' + ic('chev-right', 18), { v:nom }) : ''}
+      <p style="margin:var(--sp-8) 0 0;font-weight:600">D'habitude, ce repas, c'est :</p>
+      <div class="segment" role="radiogroup" aria-label="D'habitude, ce repas">${opts.map(m => `<button type="button" role="radio" data-a="draft" data-v="${m}" aria-checked="${d === m}">${ic(MODES[m].i, 20)}${MODES[m].nom}</button>`).join('')}</div>
+      <p class="second" style="margin:0">Ça changera à partir de tes prochains menus. Cette semaine ne bouge pas.</p>
+      ${btn('bouton-plein large', 'appliquer', 'Enregistrer', {}, change ? '' : ' disabled')}${btn('lien centre', 'fermer', 'Annuler')}`;
+  } else if (sh.kind === 'payer') {
+    c = `<h2 id="${id}">Combien as-tu payé ?</h2><p class="second" style="margin:0">Le montant du ticket remplace la somme prévue.</p>
+      <label for="m-${P.indexOf(p)}">Montant du ticket</label>
+      <input id="m-${P.indexOf(p)}" inputmode="decimal" value="84,30 €">
+      ${btn('bouton-plein large', 'payeOk', 'Enregistrer')}${btn('lien centre', 'fermer', 'Annuler')}`;
+  }
+  return `<div class="voile${p.anim ? ' anim' : ''}" data-a="fermer"></div><div class="feuille${p.anim ? ' anim' : ''}" role="dialog" aria-modal="true" aria-labelledby="${id}"><span class="poignee" aria-hidden="true"></span>${c}</div>`;
+}
+
+/* ---------- Rendu : le même squelette pour tous les écrans ---------- */
+function rendu(p) {
+  const top = p.stack[p.stack.length - 1];
+  const s = top
+    ? { recette: () => ecranRecette(p, top.d), suivi: () => ecranSuivi(p), guide: () => ecranGuide(p), type: () => ecranType(p), wiz: () => ecranWiz(p), moi: () => ecranMoi(p) }[top.v]()
+    : { auj: ecranAuj, sem: ecranSem, courses: ecranCourses, rituel: ecranRituel }[p.tab](p);
+  const pied = s.pied && !p.sheet;
+  return `<div class="ecran${pied ? ' a-pied' : ''}${s.onglets ? ' a-onglets' : ''}">${s.tete}<div class="defile">${s.corps}</div>${pied ? `<div class="pied">${s.pied}</div>` : ''}${s.onglets ? onglets(p) : ''}${feuille(p)}${p.toast ? `<div class="toast" role="status">${p.toast}</div>` : ''}</div>`;
+}
+const gal = document.getElementById('galerie');
+gal.innerHTML = P.map((p, i) => `<article class="poste"><h2 class="poste-titre">${p.titre}</h2><p class="poste-aide">${p.aide}</p>${p.demo ? `<button type="button" class="demo" data-demo="${i}">${p.demo}</button>` : ''}<div class="phone" data-i="${i}"></div></article>`).join('');
+
+function toutRendre(focus) {
+  document.querySelectorAll('.phone').forEach(ph => {
+    const p = P[+ph.dataset.i];
+    const d = ph.querySelector('.ecran:not(.fantome) .defile'); const pos = d && !p.resetScroll ? d.scrollTop : 0;
+    ph.querySelectorAll('.fantome').forEach(f => f.remove());
+    ph.innerHTML = rendu(p);
+    const d2 = ph.querySelector('.defile'); if (d2) d2.scrollTop = pos;
+    p.resetScroll = false; p.anim = false; p.flash = null;
+  });
+  if (focus) {
+    const ph = document.querySelector(`.phone[data-i="${focus.i}"]`);
+    const cible = (focus.sel && ph.querySelector(focus.sel)) || (focus.repli && ph.querySelector(focus.repli))
+      || ph.querySelector('.feuille [aria-checked="true"], .feuille input') || ph.querySelector('.retour') || ph.querySelector('.en-tete h1');
+    if (cible) { if (cible.tagName === 'H1') cible.setAttribute('tabindex', '-1'); cible.focus({ preventScroll: true }); }
+  }
+}
+
+/* ---------- Mouvement : jamais bloquant (fantômes sans pointeur), coupé sous prefers-reduced-motion ---------- */
+const calme = matchMedia('(prefers-reduced-motion: reduce)');
+function fantome(el, cls, apres) {
+  el.classList.add('fantome', ...cls.split(' ')); el.setAttribute('aria-hidden', 'true'); el.inert = true;
+  const fin = () => el.remove(); el.addEventListener('animationend', fin, { once: true }); setTimeout(fin, 400);
+  apres(el);
+}
+function transition(ph, vieux, sens, info) {
+  if (calme.matches || !vieux) return;
+  const neuf = ph.querySelector('.ecran'); if (!neuf) return;
+  if (sens === 'push') { fantome(vieux, 'recule-gauche', el => ph.insertBefore(el, neuf)); neuf.classList.add('entre-droite'); restaure(vieux, info); }
+  else if (sens === 'pop') { fantome(vieux, 'sort-droite', el => ph.appendChild(el)); neuf.classList.add('revient-gauche'); restaure(vieux, info); }
+  else if (sens === 'fade') neuf.classList.add('fondu');
+  else if (sens === 'ferme') {
+    const v = vieux.querySelector('.voile'), f = vieux.querySelector('.feuille'); if (!v || !f) return;
+    v.classList.remove('anim'); f.classList.remove('anim');
+    fantome(v, 'efface', el => neuf.appendChild(el)); fantome(f, 'descend', el => neuf.appendChild(el));
+  }
+}
+function restaure(vieux, info) { const d = vieux.querySelector('.defile'); if (d && info) d.scrollTop = info.pos; }
+function glisseVersDejaPris(ph, ligne, rect) {
+  if (calme.matches) return;
+  const cible = ph.querySelector('[data-v="deja"]'); const ecran = ph.querySelector('.ecran'); if (!cible || !ecran) return;
+  const base = ph.getBoundingClientRect(); const rc = cible.getBoundingClientRect();
+  const g = document.createElement('div'); g.className = 'fantome fantome-ligne'; g.setAttribute('aria-hidden', 'true');
+  g.style.cssText = `left:${rect.left - base.left - 16 - 8}px;top:${rect.top - base.top - 8}px;width:${rect.width + 32}px`;
+  ligne.querySelector('.case').classList.add('pop'); g.appendChild(ligne); ecran.appendChild(g);
+  const dy = Math.min(rc.top, base.bottom - 160) - rect.top;
+  g.animate([{ transform: 'translateY(0)', opacity: 1 }, { transform: `translateY(${dy}px) scale(0.96)`, opacity: 0 }], { duration: 240, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'forwards' }).onfinish = () => g.remove();
+}
+
+const timers = {};
+function toast(p, i, txt) { p.toast = txt; clearTimeout(timers[i]); timers[i] = setTimeout(() => { p.toast = null; toutRendre(); }, 2600); }
+function synchroEtape(i) { const e = ETAPES()[i]; if (e.sous.length && e.sous.every((_, j) => S.sous.has(i + '-' + j))) S.rituel.add(i); else S.rituel.delete(i); }
+const pousser = (p, v, extra = {}) => { p.stack.push(Object.assign({ v }, extra)); p.sheet = null; p.resetScroll = true; };
+function premiereEtape() { const et = ETAPES(); let i = 0; while (i < et.length && S.rituel.has(i)) i++; return i; }
+
+const ACTIONS = {
+  tab: (p, d) => { p.tab = d.v; p.stack = []; p.resetScroll = true; },
+  moi: p => pousser(p, 'moi'),
+  back: p => { const top = p.stack[p.stack.length - 1];
+    if (top && top.v === 'wiz' && p.wiz.step > 1 && !p.wiz.lance) p.wiz.step--; else p.stack.pop(); p.resetScroll = true; },
+  recette: (p, d) => pousser(p, 'recette', { d: d.v }),
+  recPas: (p, d) => { p.recPas.has(d.v) ? p.recPas.delete(d.v) : p.recPas.add(d.v); },
+  suivi: p => pousser(p, 'suivi'),
+  heroFait: p => { p.heroFait = true; },
+  guide: p => { p.guide = premiereEtape(); p.ouvert.delete('ingr'); p.minut = null; pousser(p, 'guide'); },
+  guideNext: p => { const e = ETAPES()[p.guide]; e.sous.forEach((_, j) => S.sous.add(p.guide + '-' + j)); S.rituel.add(p.guide); p.guide++; p.ouvert.delete('ingr'); p.minut = null; p.resetScroll = true; },
+  guidePrev: p => { p.guide = Math.max(0, p.guide - 1); p.ouvert.delete('ingr'); p.minut = null; p.resetScroll = true; },
+  minuteur: (p, d) => { const i = +d.v; p.minut = p.minut && p.minut.i === i ? null : { i, fin: Date.now() + ETAPES()[i].min * 60000 }; },
+  sous: (p, d) => { S.sous.has(d.v) ? S.sous.delete(d.v) : S.sous.add(d.v); synchroEtape(+d.v.split('-')[0]); },
+  type: p => pousser(p, 'type'),
+  wiz: p => { p.wiz = { step:1, recu:false, lance:false }; pousser(p, 'wiz'); },
+  wizGo: (p, d) => { p.wiz.step = +d.v; p.resetScroll = true; },
+  copier: (p, d, i) => { S.copie = true; toast(p, i, 'Message copié. Colle-le dans ton IA.'); },
+  recevoir: p => { p.wiz.recu = true; },
+  lancer: p => { S.enCours = JSON.parse(JSON.stringify(S.type)); p.wiz.lance = true; p.resetScroll = true; },
+  voirSem: p => { p.stack = []; p.tab = 'sem'; p.jour = 'normal'; p.week = 2; p.jours = new Set(['lun']); p.resetScroll = true; },
+  typeMode: (p, d) => { const ordre = d.r === 'dej' ? ['box','maison','dehors'] : ['maison','dehors'];
+    S.type[d.r][d.k] = ordre[(ordre.indexOf(S.type[d.r][d.k]) + 1) % ordre.length]; },
+  week: (p, d) => { p.week = +d.v; p.jours = new Set(p.week === 2 ? ['lun'] : []); },
+  jour: (p, d) => { p.jours.has(d.v) ? p.jours.delete(d.v) : p.jours.add(d.v); },
+  slot: (p, d) => { p.sheet = { kind:'repas', w:+d.w, k:d.k, r:d.r }; p.draft = { mode: S.type[d.r][d.k] }; p.anim = true; },
+  draft: (p, d) => { p.draft.mode = d.v; },
+  appliquer: (p, d, i) => { const { k, r } = p.sheet; S.type[r][k] = p.draft.mode; p.sheet = null; p.flash = `${k}-${r}`;
+    toast(p, i, S.type[r][k] === S.enCours[r][k] ? 'C\'est comme avant.' : `Noté pour tes prochains menus : ${JN[k].toLowerCase()} ${r === 'dej' ? 'midi' : 'soir'}, ${MODES[S.type[r][k]].nom.toLowerCase()}.`); },
+  fermer: p => { p.sheet = null; },
+  coche: (p, d) => { S.coche.has(d.v) ? S.coche.delete(d.v) : S.coche.add(d.v); },
+  repli: (p, d) => { p.ouvert.has(d.v) ? p.ouvert.delete(d.v) : p.ouvert.add(d.v); },
+  payer: p => { p.sheet = { kind:'payer' }; p.anim = true; },
+  payeOk: (p, d, i) => { const inp = document.querySelector(`.phone[data-i="${i}"] input`); S.paye = (inp && inp.value.trim()) || '84,30 €'; p.sheet = null; toast(p, i, 'Ticket noté. Bonne semaine !'); },
+  moiRow: (p, d, i) => { if (d.v === 'type') pousser(p, 'type'); else toast(p, i, 'Maquette : cet écran ne change pas.'); },
+  toast: (p, d, i) => toast(p, i, d.v)
+};
+const GARDE = ['coche','sous','recPas','typeMode','draft','repli','week','jour','minuteur','guideNext','guidePrev','wizGo','copier','recevoir'];
+
+document.addEventListener('click', e => {
+  const demo = e.target.closest('[data-demo]');
+  if (demo) { itemsActifs().forEach(it => S.coche.add(it.n)); toutRendre(); return; }
+  const t = e.target.closest('[data-a]'); if (!t || t.disabled) return;
+  const ph = t.closest('.phone'); if (!ph || t.closest('.fantome')) return;
+  const i = +ph.dataset.i; const p = P[i]; const a = t.dataset.a;
+  const fn = ACTIONS[a]; if (!fn) return;
+  const avant = { pile: p.stack.length, tab: p.tab, wiz: p.wiz.step, lance: p.wiz.lance, guide: p.guide, sheet: !!p.sheet };
+  const vieux = ph.querySelector('.ecran:not(.fantome)'); const dv = vieux && vieux.querySelector('.defile');
+  const info = { pos: dv ? dv.scrollTop : 0 };
+  const coche = a === 'coche' && !S.coche.has(t.dataset.v) && !t.closest('.depli') ? { ligne: t, rect: t.getBoundingClientRect() } : null;
+  fn(p, t.dataset, i);
+  const top = p.stack[p.stack.length - 1];
+  let sens = null;
+  if (p.stack.length > avant.pile) sens = 'push';
+  else if (p.stack.length < avant.pile) sens = 'pop';
+  else if (top && top.v === 'wiz' && (p.wiz.step !== avant.wiz || p.wiz.lance !== avant.lance)) sens = p.wiz.step < avant.wiz ? 'pop' : 'push';
+  else if (top && top.v === 'guide' && p.guide !== avant.guide) sens = p.guide < avant.guide ? 'pop' : 'push';
+  else if (p.tab !== avant.tab) sens = 'fade';
+  else if (avant.sheet && !p.sheet) sens = 'ferme';
+  let sel = null;
+  if (GARDE.includes(a)) {
+    sel = `[data-a="${a}"]` + ['v','k','r'].filter(x => t.dataset[x] != null).map(x => `[data-${x}="${CSS.escape(t.dataset[x])}"]`).join('');
+    if (a.startsWith('guide') || a === 'wizGo' || a === 'copier' || a === 'recevoir') sel = null;
+  }
+  toutRendre({ i, sel, repli: a === 'coche' ? '[data-a="coche"][aria-pressed="false"]' : null });
+  if (sens) transition(ph, vieux, sens, info);
+  if (coche) glisseVersDejaPris(ph, coche.ligne, coche.rect);
+  if (a === 'sous' || (a === 'coche' && !coche)) { const c = ph.querySelector(sel + ' .case'); if (c && !calme.matches) c.classList.add('pop'); }
+});
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  P.forEach(p => { p.sheet = null; }); toutRendre();
+});
+/* Minuteur fictif, mais il compte : seul son texte change, sans redessiner l'écran. */
+setInterval(() => {
+  document.querySelectorAll('.ecran:not(.fantome) .temps[data-fin]').forEach(el => {
+    const p = P[+el.closest('.phone').dataset.i]; if (p.minut) el.textContent = tempsRestant(p);
+  });
+}, 1000);
+toutRendre();
+</script>
+</body>
+</html>
