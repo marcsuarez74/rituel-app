@@ -31,7 +31,7 @@ List components:
 
 ## UI Code
 
-Provide React functional components (named exports) using the semantic classes above, light Herbes theme only, touch targets >= 48px.
+Provide React functional components (named exports) using the semantic classes above, light Marché coloré theme only, touch targets >= 48px.
 
 ---
 

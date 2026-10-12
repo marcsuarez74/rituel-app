@@ -17,7 +17,7 @@ Déployée sur le VPS : https://rituel.marco-studio.fr (conteneur Docker : PWA +
 | Langage | TypeScript strict (mode strict complet) | 5.9 |
 | Tests | Vitest + Testing Library (happy-dom) | 5.x |
 | PWA | vite-plugin-pwa (Workbox, autoUpdate) | 1.x |
-| Styling | CSS pur, un seul fichier `src/index.css`, **thème clair Herbes** | — |
+| Styling | CSS pur, un seul fichier `src/index.css`, **thème clair « Marché coloré »** | — |
 | Lint | ESLint 9 (flat config) + typescript-eslint + react-hooks | 9.x |
 
 **Volontairement absent** : routeur, lib d'état (Redux/Zustand/NGXS), framework CSS (Tailwind/MUI), i18n, Sentry. `useState` + props suffisent — ne rien ajouter sans discussion.

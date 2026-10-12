@@ -12,8 +12,11 @@ async function assertPasDeDebordement(page: import('@playwright/test').Page) {
 }
 
 // Guideline (ui-guideline.md « Ultra visible » + design-system.md « Champs ») :
-// cible tactile ≥ 48px, fond surface-2 (#e7eae0), rayon token 12px — pas le rendu natif.
-const SURFACE_2 = 'rgb(231, 234, 224)'; // var(--surface-2) résolue
+// cible tactile ≥ 48px, fond du champ standard Marché var(--surface) #fffaf0,
+// rayon organique var(--r-orga-2) — pas le rendu natif. (Aligné au design system
+// 2026-10-12 : l'ancien contrat attendait le token Herbes --surface-2 + 12px.)
+const CHAMP_FOND = 'rgb(255, 250, 240)'; // var(--surface) résolue
+const CHAMP_RAYON = '18px 26px 20px 28px'; // var(--r-orga-2) résolue
 
 async function assertStyleGuideline(page: import('@playwright/test').Page, label: string) {
   const champ = page.getByLabel(label);
@@ -25,8 +28,8 @@ async function assertStyleGuideline(page: import('@playwright/test').Page, label
     const s = getComputedStyle(el);
     return { fond: s.backgroundColor, rayon: s.borderRadius };
   });
-  expect(style.fond, `${label} : fond tokens Herbes (surface-2)`).toBe(SURFACE_2);
-  expect(style.rayon, `${label} : rayon token 12px`).toBe('12px');
+  expect(style.fond, `${label} : fond champ standard Marché (surface)`).toBe(CHAMP_FOND);
+  expect(style.rayon, `${label} : rayon organique du champ standard (r-orga-2)`).toBe(CHAMP_RAYON);
 }
 
 // Après « Ta semaine » (Passer), l'onboarding enchaîne sur Mon cycle (prompt à copier) ;

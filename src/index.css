@@ -1,8 +1,9 @@
 /*
- * Rituel — design system « Herbes » (thème clair unique, fin du dark mode).
- * Palette sauge/basilic/citron : fond #f0f2eb, action basilic #3e7a46 (texte blanc
- * dessus ≈ 5,2:1), surbrillance citron #f2dc7b (texte encre dessus ≈ 9,8:1 — le citron
- * n'est jamais une couleur de texte).
+ * Rituel — design system « Marché coloré » (thème clair unique, remplace Herbes).
+ * Annexe A de la spec 2026-10-12 (valeurs qui font foi) : fond papier crème, encre
+ * brune, bordures franches, une couleur par famille du marché et par plat. Le basilic
+ * reste la couleur des actions (#2d6a37, texte blanc dessus ≈ 6,4:1) ; le jaune fruit
+ * (—fru) sert aux étiquettes actives et à l'avatar, jamais en couleur de texte.
  * Cibles tactiles ≥ 48px, transitions douces sur les éléments interactifs uniquement.
  */
 
@@ -39,34 +40,88 @@
   src: url('./assets/fonts/poppins-700.woff2') format('woff2');
 }
 
+/* Bricolage Grotesque (thème « Marché coloré ») : titres et boutons pleins,
+   700 et 800 seulement (la 500 de la maquette ne sert pas au texte courant). */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./assets/fonts/bricolage-grotesque-700.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url('./assets/fonts/bricolage-grotesque-800.woff2') format('woff2');
+}
+
 :root {
-  --bg: #f0f2eb;
-  --creme: #f5f1e6; /* canvas du hub Profil (maquette v5) */
-  --surface: #fcfdf9;
-  --surface-2: #e7eae0;
-  --border: #e1e6da;
-  --text: #26312b;
-  --muted: #6e7a6c;
-  --accent: #3e7a46; /* basilic */
-  --accent-2: #f2dc7b; /* citron */
-  --citron-surface: #fdf6d8; /* fond des items « pot citron » (rituel) */
-  --citron-line: #e3c94f; /* bordure des items « pot citron » (rituel) */
-  --danger: #b4452f;
-  --shadow: 0 4px 16px rgb(38 49 43 / 0.08);
-  --radius: 18px;
+  /* Marché coloré — valeurs de l'annexe A (maquette 2026-10-12, fait foi) */
+  --papier: #fbf1dc; /* fond : papier d'emballage crème */
+  --papier-2: #f4e3bf; /* barre d'onglets, zones creuses */
+  --papier-3: #efe0bd; /* fond hors app (overscroll) */
+  --kraft: #e2c08d; /* étiquettes kraft */
+  --kraft-fonce: #c99f62; /* filets internes, cadre des étiquettes */
+  --encre: #2a2219; /* texte, traits, bordures, ombres */
+  --encre-2: #5e4f3c; /* texte secondaire : ≥ 6,9:1 sur papier ET sur cartes */
+  --ardoise: #26332f; /* tableau du marchand (carte « maintenant », toast) */
+  --craie: #f7f0de;
+  --craie-jaune: #f2d36b;
+  --basilic: #2d6a37; /* marque et action principale */
+  --basilic-clair: #d4ead2;
+  --tomate-txt: #b3321f; /* danger : 5,5:1 sur le papier */
+  --blanc: #fffaf0; /* cartes, champs */
+  /* Familles du marché : vive pour les formes, claire derrière le texte */
+  --leg: #4e9a3a;
+  --leg-t: #d9efcf;
+  --fru: #f2c230;
+  --fru-t: #fdf0b8;
+  --fra: #5aaee0;
+  --fra-t: #d5ecf9;
+  --via: #e2553f;
+  --via-t: #fbd6cf;
+  --epi: #e08a1e;
+  --epi-t: #fbe2c0;
+  --givre: #e3e9f6; /* aplat congélateur (illustrations) */
+  /* Alias : les noms utilisés par les composants pointent vers les valeurs Marché */
+  --bg: var(--papier);
+  --creme: var(--papier-2); /* canvas du hub Profil (zone creuse) */
+  --surface: var(--blanc);
+  --surface-2: var(--papier-2);
+  --border: var(--kraft-fonce); /* filets discrets ; les cartes portent l'encre */
+  --text: var(--encre);
+  --muted: var(--encre-2);
+  --accent: var(--basilic);
+  --accent-2: var(--fru); /* surbrillance jaune fruit — jamais une couleur de texte */
+  --citron-surface: var(--fru-t); /* usage transitoire (rituel/keto) jusqu'aux PR 3-4 */
+  --citron-line: var(--kraft-fonce);
+  --danger: var(--tomate-txt);
+  /* Formes : coins faits main, ombres franches sans flou */
+  --r-orga: 26px 20px 28px 18px;
+  --r-orga-2: 18px 26px 20px 28px;
+  --r-bouton: 18px 22px 18px 24px;
+  --radius: var(--r-orga);
+  --shadow: 4px 5px 0 var(--encre); /* cartes posées */
+  --shadow-forte: 5px 6px 0 var(--encre); /* panneaux */
+  --shadow-bouton: 3px 4px 0 var(--encre); /* boutons pleins */
+  --entree: 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+  --sortie: 0.16s cubic-bezier(0.4, 0, 1, 1);
   color-scheme: light;
-  /* Échelle typographique — 8 niveaux texte + graphique + émoji (spec 2026-09-17) */
-  --fs-hero: 26px;
-  --fs-h1: 22px;
-  --fs-h2: 20px;
-  --fs-h3: 17px;
-  --fs-body: 16px;
-  --fs-sec: 14px;
-  --fs-meta: 12px;
-  --fs-micro: 11px;
+  /* Échelle typographique — valeurs Marché (annexe A), noms conservés */
+  --fs-hero: 30px;
+  --fs-h1: 26px;
+  --fs-h2: 22px;
+  --fs-h3: 19px;
+  --fs-body: 17px;
+  --fs-sec: 16px;
+  --fs-meta: 14px;
+  --fs-micro: 13px;
   --fs-chart: 10px;
   --fs-emoji: 38px;
-  /* Échelle d'espacement 2 px — le nom du token est sa valeur (utilisée en Task 2) */
+  /* Échelle d'espacement 2 px — le nom du token est sa valeur */
   --sp-2: 2px;
   --sp-4: 4px;
   --sp-6: 6px;
@@ -80,8 +135,8 @@
   /* Interlignage */
   --lh-none: 1;
   --lh-tight: 1.2;
-  --lh-title: 1.25;
-  --lh-body: 1.5;
+  --lh-title: 1.12;
+  --lh-body: 1.55;
 }
 
 *,
@@ -91,7 +146,7 @@
 }
 
 html {
-  background: var(--bg);
+  background: var(--papier-3);
 }
 
 body {
@@ -130,8 +185,12 @@ textarea {
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 3px solid var(--accent);
   outline-offset: 2px;
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .sr-only {
@@ -175,21 +234,25 @@ textarea {
   flex: 1;
   min-width: 0;
   margin: 0;
-  font-weight: 700;
 }
 
 .avatar {
   position: relative;
   flex: none;
-  width: 48px;
-  height: 48px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--accent);
-  color: #ffffff;
-  font-family: inherit;
-  font-size: var(--fs-h3);
-  font-weight: 700;
+  /* Initiale centrée (défaut repéré par Marc dans une version antérieure de la maquette). */
+  display: inline-grid;
+  place-items: center;
+  line-height: var(--lh-none);
+  width: 50px;
+  height: 50px;
+  padding: 0;
+  border: 2px solid var(--encre);
+  border-radius: 46% 54% 50% 50%;
+  background: var(--accent-2);
+  color: var(--encre);
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: var(--fs-h2);
+  font-weight: 800;
 }
 
 .avatar-pt {
@@ -252,8 +315,8 @@ textarea {
   max-width: 560px;
   margin: 0 auto;
   padding: var(--sp-6) var(--sp-4) calc(var(--sp-8) + env(safe-area-inset-bottom));
-  background: var(--surface);
-  border-top: 1px solid var(--border);
+  background: var(--papier-2);
+  border-top: 2px solid var(--encre);
 }
 
 .onglet {
@@ -266,26 +329,28 @@ textarea {
   min-height: 56px;
   border: 0;
   background: none;
-  color: var(--muted);
+  color: var(--encre-2);
   font-family: inherit;
-  font-size: var(--fs-meta);
+  font-size: var(--fs-micro); /* 13 px : « Aujourd'hui » tient à 320 px sur 5 colonnes */
   font-weight: 600;
-  white-space: nowrap; /* « Aujourd'hui » tient à 320 px : pas de gras à l'actif */
+  white-space: nowrap;
 }
 
 .onglet-icone {
   display: flex;
-  padding: var(--sp-4) var(--sp-16);
-  border-radius: 999px;
+  padding: var(--sp-4) var(--sp-10);
+  border-radius: 999px 999px 999px 999px / 60% 70% 60% 70%;
 }
 
 .onglet[aria-current='page'] {
-  color: var(--text);
+  color: var(--encre);
+  font-weight: 700;
 }
 
+/* Onglet actif = étiquette jaune fruit encadrée d'encre (jamais de texte sur la couleur vive). */
 .onglet[aria-current='page'] .onglet-icone {
-  background: color-mix(in srgb, var(--accent) 18%, var(--surface));
-  color: var(--accent);
+  background: var(--fru);
+  box-shadow: inset 0 0 0 2px var(--encre);
 }
 
 .aujourdhui-date::first-letter {
@@ -300,17 +365,28 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: var(--sp-8);
-  min-height: 52px;
+  min-height: 56px;
   padding: var(--sp-12) var(--sp-20);
-  border-radius: 14px;
-  font-weight: 700;
+  font-family: 'Bricolage Grotesque', 'Poppins', sans-serif;
+  font-size: var(--fs-h3);
+  font-weight: 800;
+  line-height: var(--lh-tight);
+  text-align: center;
   cursor: pointer;
 }
 
 .bouton-plein {
-  border: 2px solid var(--accent);
+  border: 2px solid var(--encre);
+  border-radius: var(--r-bouton);
   background: var(--accent);
   color: #ffffff;
+  box-shadow: var(--shadow-bouton);
+}
+
+/* Pressé : le bouton « s'enfonce » sous le doigt (maquette). */
+.bouton-plein:active:not(:disabled) {
+  box-shadow: 1px 1px 0 var(--encre);
+  transform: translate(2px, 3px);
 }
 
 .bouton-plein[aria-pressed='true'] {
@@ -319,14 +395,19 @@ textarea {
 }
 
 .bouton-contour {
-  border: 2px solid var(--accent);
+  border: 2px solid var(--encre);
+  border-radius: var(--r-bouton);
   background: var(--surface);
-  color: var(--accent);
+  color: var(--text);
 }
 
+/* Désactivé (maquette) : fond papier, texte secondaire, pointillés, pas d'ombre. */
 .bouton-plein:disabled,
 .bouton-contour:disabled {
-  opacity: 0.45;
+  border-style: dashed;
+  background: var(--papier);
+  color: var(--encre-2);
+  box-shadow: none;
   cursor: not-allowed;
 }
 
@@ -341,7 +422,53 @@ textarea {
   background: none;
   color: var(--accent);
   font-size: var(--fs-sec);
-  font-weight: 600;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.lien.centre {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Étiquettes kraft (maquette) : provenance, statuts — le point papier à gauche. */
+.kraft {
+  flex: none;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: var(--sp-2) var(--sp-10) var(--sp-2) var(--sp-16);
+  background: var(--kraft);
+  border-radius: var(--sp-4) var(--sp-10) var(--sp-10) var(--sp-4);
+  color: var(--encre);
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  line-height: var(--lh-tight);
+  white-space: nowrap;
+}
+
+.kraft::before {
+  content: '';
+  position: absolute;
+  left: var(--sp-6);
+  top: calc(50% - var(--sp-2));
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--papier);
+  box-shadow: inset 0 0 0 1.5px var(--encre);
+}
+
+.kraft.pointille {
+  background: var(--papier);
+  border: 2px dashed var(--kraft-fonce);
+}
+
+.kraft.dehors {
+  background: var(--papier-2);
 }
 
 .semaine-carte-titre {
@@ -382,9 +509,10 @@ textarea {
   gap: var(--sp-8);
   margin-bottom: var(--sp-16);
   padding: var(--sp-16);
-  border: 2px solid var(--accent);
-  border-radius: var(--radius);
+  border: 2px solid var(--encre);
+  border-radius: var(--r-orga-2);
   background: var(--surface);
+  box-shadow: var(--shadow);
 }
 
 .action-du-jour h2,
@@ -432,8 +560,8 @@ textarea {
   min-width: 0;
   min-height: 64px;
   padding: var(--sp-6) 0;
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  border: 2px solid var(--encre);
+  border-radius: var(--r-orga-2);
   background: var(--surface);
   color: var(--text);
   font-size: var(--fs-meta);
@@ -466,8 +594,8 @@ textarea {
 .carte-repas {
   margin-bottom: var(--sp-12);
   padding: var(--sp-12);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border: 2px solid var(--encre);
+  border-radius: var(--r-orga-2);
   background: var(--surface);
 }
 
@@ -520,8 +648,8 @@ textarea {
   justify-content: center;
   width: 48px;
   height: 48px;
-  border: 2px solid var(--border);
-  border-radius: 14px;
+  border: 2px solid var(--encre);
+  border-radius: 9px 11px 8px 12px;
   background: var(--surface);
   color: transparent;
 }
@@ -539,7 +667,7 @@ textarea {
   gap: var(--sp-6);
   margin: var(--sp-8) 0 0;
   padding-top: var(--sp-8);
-  border-top: 1px solid var(--border);
+  border-top: 1.5px dashed var(--kraft-fonce);
   font-size: var(--fs-sec);
 }
 
@@ -582,7 +710,7 @@ textarea {
 }
 
 .recette-tete h1 {
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .pastilles {
@@ -652,7 +780,9 @@ textarea {
 .segment button[aria-checked='true'],
 .segment button[aria-selected='true'] {
   background: var(--surface);
-  box-shadow: var(--shadow);
+  color: var(--encre);
+  font-weight: 700;
+  box-shadow: inset 0 0 0 2px var(--encre);
 }
 
 .variante {
@@ -673,7 +803,7 @@ textarea {
   min-height: 48px;
   padding: var(--sp-4) 0;
   border: 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1.5px dashed var(--kraft-fonce);
   background: none;
   color: var(--text);
   text-align: left;
@@ -686,8 +816,8 @@ textarea {
   justify-content: center;
   width: 26px;
   height: 26px;
-  border: 2px solid var(--muted);
-  border-radius: 8px;
+  border: 2px solid var(--encre);
+  border-radius: 7px 9px 6px 10px;
   color: transparent;
 }
 
@@ -713,8 +843,8 @@ textarea {
   gap: var(--sp-12);
   margin-bottom: var(--sp-10);
   padding: var(--sp-12);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border: 2px solid var(--encre);
+  border-radius: var(--r-orga);
   background: var(--surface);
 }
 
@@ -891,7 +1021,7 @@ textarea {
 .etape-detail {
   margin-top: var(--sp-8);
   padding-top: var(--sp-8);
-  border-top: 1px solid var(--border);
+  border-top: 1.5px dashed var(--kraft-fonce);
 }
 
 .etape-detail p {
@@ -906,8 +1036,8 @@ textarea {
   min-height: 64px;
   margin-bottom: var(--sp-8);
   padding: var(--sp-10) var(--sp-12);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border: 2px solid var(--encre);
+  border-radius: var(--r-orga-2);
   background: var(--surface);
   color: var(--text);
   text-align: left;
@@ -977,7 +1107,7 @@ textarea {
 }
 
 .guide h1 {
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .guide .anticipe {
@@ -992,7 +1122,7 @@ textarea {
 }
 
 .mon-cycle h1 {
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .semaines-cycle {
@@ -1066,7 +1196,7 @@ textarea {
 
 .a-placer {
   padding-top: var(--sp-8);
-  border-top: 1px solid var(--border);
+  border-top: 1.5px dashed var(--kraft-fonce);
 }
 
 .a-placer p {
@@ -1080,7 +1210,7 @@ textarea {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  background: rgb(38 49 43 / 0.45);
+  background: rgb(42 34 25 / 0.5);
 }
 
 .feuille {
@@ -1090,8 +1220,10 @@ textarea {
   width: 100%;
   max-width: 560px;
   padding: var(--sp-20) var(--sp-16) calc(var(--sp-16) + env(safe-area-inset-bottom));
-  border-radius: var(--radius) var(--radius) 0 0;
-  background: var(--surface);
+  border: 2px solid var(--encre);
+  border-bottom: 0;
+  border-radius: var(--r-orga) var(--r-orga) 0 0;
+  background: var(--papier);
 }
 
 .option-report {
@@ -1100,8 +1232,8 @@ textarea {
   gap: var(--sp-2);
   min-height: 56px;
   padding: var(--sp-10) var(--sp-14);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  border: 2px solid var(--encre);
+  border-radius: var(--r-orga-2);
   background: var(--surface);
   color: var(--text);
   text-align: left;
@@ -1126,8 +1258,8 @@ textarea {
   margin: 0 auto;
   padding: var(--sp-8) var(--sp-8) var(--sp-8) var(--sp-16);
   border-radius: 14px;
-  background: var(--text);
-  color: #ffffff;
+  background: var(--ardoise);
+  color: var(--craie);
   font-weight: 600;
 }
 
@@ -1142,15 +1274,15 @@ textarea {
 }
 
 .semaine-type h1 {
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .semaine-type select {
   min-height: 48px;
   padding: 0 var(--sp-12);
-  border: 0;
+  border: 2px solid var(--encre);
   border-radius: 12px;
-  background: var(--surface-2);
+  background: var(--surface);
   color: var(--text);
   font: inherit;
 }
@@ -1213,7 +1345,7 @@ textarea {
   margin: 0 auto;
   padding: var(--sp-12) var(--sp-16) calc(var(--sp-12) + env(safe-area-inset-bottom));
   background: var(--surface);
-  border-top: 1px solid var(--border);
+  border-top: 1.5px dashed var(--kraft-fonce);
 }
 
 .pied-recette:empty {
@@ -1237,22 +1369,25 @@ h1,
 h2,
 h3 {
   margin: 0 0 var(--sp-8);
+  font-family: 'Bricolage Grotesque', 'Poppins', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.01em;
   line-height: var(--lh-title);
 }
 
 h1 {
   font-size: var(--fs-h1);
-  font-weight: 600;
+  font-weight: 800;
 }
 
 h2 {
   font-size: var(--fs-h2);
-  font-weight: 600;
+  font-weight: 800;
 }
 
 h3 {
   font-size: var(--fs-h3);
-  font-weight: 600;
+  font-weight: 800;
 }
 
 p {
@@ -1267,9 +1402,8 @@ p {
 
 .profile-section {
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  border: 2px solid var(--encre);
+  border-radius: var(--r-orga-2);
   padding: var(--sp-16);
   margin-bottom: var(--sp-12);
 }
@@ -1340,9 +1474,9 @@ p {
 
 .suivi-hero {
   background: var(--surface);
-  border-radius: var(--radius);
+  border: 2px solid var(--encre);
+  border-radius: var(--r-orga);
   padding: var(--sp-16);
-  box-shadow: var(--shadow);
   margin-bottom: var(--sp-16);
 }
 
@@ -1456,12 +1590,12 @@ input[type='search'],
 input[type='password'] {
   min-height: 48px;
   padding: var(--sp-10) var(--sp-12);
-  background: var(--surface-2);
+  background: var(--surface);
   color: var(--text);
   font: inherit;
   font-size: var(--fs-body);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  border: 2px solid var(--encre);
+  border-radius: var(--r-orga-2);
 }
 
 input[type='checkbox'] {
@@ -1479,8 +1613,7 @@ input[type='checkbox'] {
   gap: var(--sp-8);
   flex-wrap: wrap;
   margin-bottom: var(--sp-12);
-  /* Compteur sur --bg : le muted seul descend à 3,99:1 — mix pour passer ≥ 4,5:1. */
-  color: color-mix(in srgb, var(--muted) 70%, var(--text));
+  color: var(--muted); /* encre-2 : ≥ 6,9:1 sur papier et sur cartes */
   font-weight: 700;
 }
 
@@ -1498,7 +1631,7 @@ progress {
   gap: var(--sp-6);
   margin: var(--sp-8) 0 0;
   font-size: var(--fs-meta);
-  color: color-mix(in srgb, var(--muted) 70%, var(--text));
+  color: var(--muted);
 }
 
 .qui,
@@ -1548,7 +1681,7 @@ progress {
 
 .weight-list li {
   padding: var(--sp-8) 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1.5px dashed var(--kraft-fonce);
 }
 
 .weight-list li:last-child {
@@ -1609,11 +1742,11 @@ progress {
   stroke-width: 1;
 }
 
-/* Labels du graphe (SVG) sur la carte citron : le muted seul descend à 4,07:1
-   sur le fond mixé — mix 60% pour passer ≥ 4,5:1 ; 8px acceptés (graphe SVG). */
+/* Labels du graphe (SVG) : encre-2 tient largement 4,5:1 sur la carte mixée ;
+   10px acceptés (graphe SVG). */
 .weight-grid-label,
 .weight-mois {
-  fill: color-mix(in srgb, var(--muted) 60%, var(--text));
+  fill: var(--muted);
   font-size: var(--fs-chart);
   font-family: inherit;
 }
@@ -1651,7 +1784,7 @@ progress {
 }
 
 .weight-label {
-  fill: color-mix(in srgb, var(--muted) 60%, var(--text));
+  fill: var(--muted);
   font-size: var(--fs-chart);
   font-family: inherit;
 }
@@ -1686,7 +1819,7 @@ progress {
 .onboarding h1 {
   margin-top: var(--sp-16);
   font-size: var(--fs-h1);
-  font-weight: 700;
+  font-weight: 800;
   line-height: var(--lh-tight);
 }
 
@@ -1739,13 +1872,13 @@ progress {
 }
 
 .onboarding-card-marc {
-  background: linear-gradient(135deg, #3e7a46, #2e5d35);
+  background: linear-gradient(135deg, var(--basilic), color-mix(in srgb, var(--basilic) 75%, var(--encre)));
   box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 35%, transparent);
   color: #ffffff;
 }
 
 .onboarding-card-melanie {
-  background: linear-gradient(135deg, #f2dc7b, #d9bc4f);
+  background: linear-gradient(135deg, var(--accent-2), color-mix(in srgb, var(--accent-2) 72%, var(--encre)));
   box-shadow: 0 6px 18px color-mix(in srgb, var(--accent-2) 35%, transparent);
   color: var(--text);
 }
@@ -1768,7 +1901,17 @@ progress {
 .onboarding-card-tagline {
   font-size: var(--fs-meta);
   font-weight: 600;
-  color: rgb(39 41 50 / 0.75);
+}
+
+/* Couleur par carte (revue PR 1, C1) : un mix unique était illisible sur le
+   fond basilic de la carte Marc. Chaque couleur tient sur les deux bornes du
+   dégradé — garde-fou : tests/contraste.test.ts. */
+.onboarding-card-marc .onboarding-card-tagline {
+  color: #ffffff;
+}
+
+.onboarding-card-melanie .onboarding-card-tagline {
+  color: var(--text);
 }
 
 .onboarding-form {
@@ -1871,7 +2014,8 @@ progress {
 }
 .onb-btnrow {
   display: flex;
-  gap: var(--sp-10);
+  gap: var(--sp-8);
+  flex-wrap: wrap; /* filet anti-débordement à 320px (échelle typo annexe A) */
   margin-top: var(--sp-24);
   align-items: center;
 }
@@ -1890,6 +2034,7 @@ progress {
   justify-content: center;
   gap: var(--sp-8);
   min-height: 48px;
+  padding: 0 var(--sp-2); /* neutralise le padding UA : à 320px la btnrow tient */
   border: 0;
   border-radius: 999px;
   background: var(--accent);
@@ -1902,10 +2047,10 @@ progress {
 }
 .onb-skip {
   min-height: 48px;
-  padding: 0 var(--sp-12);
+  padding: 0 var(--sp-10);
   border: none;
   background: none;
-  color: color-mix(in srgb, var(--muted) 70%, var(--text));
+  color: var(--muted);
   font: 600 var(--fs-sec) Poppins, sans-serif;
 }
 .onb-skip:active {
@@ -1913,11 +2058,11 @@ progress {
 }
 .onb-back {
   min-height: 48px;
-  border: 1.5px solid var(--border);
+  border: 1.5px solid var(--encre);
   background: var(--surface);
   color: var(--text);
   border-radius: 999px;
-  padding: 0 var(--sp-20);
+  padding: 0 var(--sp-14);
   font: 600 var(--fs-meta) Poppins, sans-serif;
   cursor: pointer;
 }
@@ -1937,7 +2082,7 @@ progress {
   margin-top: var(--sp-14);
 }
 .rcard {
-  border: 1.5px solid var(--border);
+  border: 1.5px solid var(--encre);
   background: var(--surface);
   border-radius: 14px;
   padding: var(--sp-12);
@@ -1980,7 +2125,7 @@ progress {
   display: flex;
   align-items: center;
   gap: var(--sp-10);
-  border: 1.5px solid var(--border);
+  border: 1.5px solid var(--encre);
   background: var(--surface);
   border-radius: 12px;
   padding: var(--sp-12) var(--sp-14);
@@ -2024,7 +2169,7 @@ progress {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-6);
-  border: 1.5px solid var(--border);
+  border: 1.5px solid var(--encre);
   background: var(--surface);
   border-radius: 999px;
   padding: var(--sp-8) var(--sp-14);
@@ -2052,8 +2197,8 @@ progress {
 .addrow input {
   flex: 1;
   min-width: 0;
-  border: 1.5px solid var(--border);
-  background: var(--bg);
+  border: 2px solid var(--encre);
+  background: var(--surface);
   border-radius: 12px;
   padding: var(--sp-10) var(--sp-12);
   font: 500 var(--fs-meta) Poppins, sans-serif;
@@ -2064,7 +2209,7 @@ progress {
   align-items: center;
   gap: var(--sp-6);
   min-height: 48px;
-  border: 1.5px solid var(--border);
+  border: 1.5px solid var(--encre);
   background: var(--surface);
   border-radius: 999px;
   padding: 0 var(--sp-14);
@@ -2165,15 +2310,16 @@ progress {
 .hub-avatar {
   width: 52px;
   height: 52px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: var(--surface);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font: inherit;
-  font-size: var(--fs-h3);
-  font-weight: 700;
+  border: 2px solid var(--encre);
+  border-radius: 46% 54% 50% 50%;
+  background: var(--accent-2);
+  color: var(--encre);
+  display: inline-grid;
+  place-items: center;
+  line-height: var(--lh-none);
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: var(--fs-h2);
+  font-weight: 800;
   flex-shrink: 0;
 }
 
@@ -2184,15 +2330,13 @@ progress {
   font-weight: 700;
   color: var(--text);
 }
-
-/* muted seul sur crème < 4,5:1 — mix standard design-system.md (cf. .week-dates) */
 .hub-sous {
   display: flex;
   align-items: center;
   gap: var(--sp-6);
   margin-top: var(--sp-2);
   font-size: var(--fs-meta);
-  color: color-mix(in srgb, var(--muted) 70%, var(--text));
+  color: var(--muted);
 }
 
 .hub-pt {
@@ -2202,7 +2346,7 @@ progress {
   background: var(--accent);
   flex-shrink: 0;
 }
-.hub-pt.gris { background: var(--surface-2); border: 1px solid var(--border); }
+.hub-pt.gris { background: var(--surface-2); border: 1.5px solid var(--encre); }
 .hub-pt.danger { background: var(--danger); }
 
 .hub-section {
@@ -2224,8 +2368,8 @@ progress {
   margin-bottom: var(--sp-8);
   padding: var(--sp-12) var(--sp-14);
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border: 2px solid var(--encre);
+  border-radius: var(--r-orga-2);
   color: var(--accent);
   text-align: left;
   font: inherit;
@@ -2258,8 +2402,8 @@ progress {
 
 .hub-action {
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border: 2px solid var(--encre);
+  border-radius: var(--r-orga-2);
   padding: var(--sp-12) var(--sp-14);
   min-height: 48px;
   font: inherit;
@@ -2279,7 +2423,7 @@ progress {
 .zone-danger {
   margin-top: var(--sp-16);
   padding-top: var(--sp-16);
-  border-top: 1px solid var(--border);
+  border-top: 1.5px dashed var(--kraft-fonce);
 }
 
 .sp-desc p {
@@ -2369,7 +2513,7 @@ progress {
 .obj-rythme {
   margin: var(--sp-2) 0 0;
   font-size: var(--fs-sec);
-  color: color-mix(in srgb, var(--muted) 70%, var(--text));
+  color: var(--muted);
 }
 
 .rcards {
@@ -2386,7 +2530,7 @@ progress {
   gap: var(--sp-6);
   min-height: 48px;
   padding: var(--sp-12);
-  border: 1.5px solid var(--border);
+  border: 1.5px solid var(--encre);
   border-radius: var(--radius);
   background: var(--surface);
   color: var(--text);
@@ -2416,7 +2560,7 @@ progress {
 .rcard-d {
   font-size: var(--fs-meta);
   line-height: var(--lh-body);
-  color: color-mix(in srgb, var(--muted) 70%, var(--text));
+  color: var(--muted);
 }
 
 .rcard[aria-checked='true'] {
@@ -2478,7 +2622,7 @@ progress {
   border-radius: var(--radius);
   background: var(--surface);
   font-size: var(--fs-sec);
-  color: color-mix(in srgb, var(--muted) 70%, var(--text));
+  color: var(--muted);
 }
 
 .chip-autre {
@@ -2491,7 +2635,7 @@ progress {
   bottom: 0;
   margin: var(--sp-16) calc(-1 * var(--sp-14)) calc(-1 * var(--sp-14));
   padding: var(--sp-12) var(--sp-14) calc(var(--sp-14) + env(safe-area-inset-bottom));
-  border-top: 1px solid var(--border);
+  border-top: 1.5px dashed var(--kraft-fonce);
   background: var(--creme);
 }
 
@@ -2525,7 +2669,7 @@ progress {
 }
 
 .profil-ghost {
-  border: 1.5px solid var(--border);
+  border: 1.5px solid var(--encre);
   background: var(--surface);
   color: var(--text);
   border-radius: 999px;
@@ -2567,7 +2711,7 @@ progress {
 .sync-code {
   padding: var(--sp-12) var(--sp-16);
   background: var(--surface-2);
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--encre);
   border-radius: var(--radius);
   font-size: var(--fs-h3);
   line-height: var(--lh-title);
@@ -2613,6 +2757,9 @@ progress {
 
 .signaler-champ {
   display: grid;
+  /* Le file control natif (WebKit) ne se compresse pas seul : la piste
+     grid « auto » s'élargirait de 29px à 320px — on la borne. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-6);
   min-width: 0;
   font-size: var(--fs-sec);
@@ -2627,17 +2774,19 @@ progress {
 
 .signaler-champ textarea {
   padding: var(--sp-10) var(--sp-12);
-  background: var(--surface-2);
+  background: var(--surface);
   color: var(--text);
   font: inherit;
   font-size: var(--fs-body);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  border: 2px solid var(--encre);
+  border-radius: var(--r-orga-2);
   resize: vertical;
 }
 
 .signaler-champ input[type='file'] {
+  width: 100%;
   max-width: 100%;
+  min-width: 0;
   font-size: var(--fs-sec);
 }
 
@@ -2652,12 +2801,12 @@ progress {
   max-width: 100%;
   max-height: 200px;
   border-radius: 12px;
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--encre);
 }
 
 .signaler-infos {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--encre);
   border-radius: var(--radius);
   padding: var(--sp-12) var(--sp-16);
   font-size: var(--fs-sec);

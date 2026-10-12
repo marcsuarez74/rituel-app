@@ -52,6 +52,55 @@ describe('contrat CSS — tokens de typographie', () => {
   });
 });
 
+describe('contrat CSS — polices auto-hébergées', () => {
+  // La maquette charge Google Fonts ; l'app, jamais (offline-first) : chaque police
+  // déclarée vit dans src/assets/fonts/ (précachée par le glob woff2 du service worker).
+  it('le CSS ne charge aucune police externe (http)', () => {
+    const externes = [...css.matchAll(/url\((https?:\/\/[^)]+)\)/g)].map(([, u]) => u);
+    expect(externes, `urls externes : ${externes.join(' | ')}`).toEqual([]);
+  });
+
+  it('chaque @font-face pointe vers un fichier du disque', () => {
+    const urls = [...css.matchAll(/url\((['"]?)(\.\/assets\/fonts\/[^)'"]+)\1\)/g)].map(([, , u]) => u);
+    expect(urls.length).toBeGreaterThan(0);
+    for (const u of urls) {
+      expect(() => readFileSync(join(process.cwd(), 'src', u)), `${u} absent`).not.toThrow();
+    }
+  });
+
+  it('Bricolage Grotesque (titres « Marché ») est déclarée en 700 et 800, avec sa licence OFL', () => {
+    const faces = [...css.matchAll(/@font-face\s*{[^}]*}/g)].map((m) => m[0]);
+    const bricolage = faces.filter((f) => f.includes("'Bricolage Grotesque'"));
+    expect(bricolage.length, 'Bricolage Grotesque non déclarée').toBeGreaterThanOrEqual(2);
+    for (const graisse of ['700', '800']) {
+      expect(
+        bricolage.some((f) => f.includes(`font-weight: ${graisse}`)),
+        `graisse ${graisse} manquante`,
+      ).toBe(true);
+    }
+    expect(
+      () => readFileSync(join(process.cwd(), 'src', 'assets', 'fonts', 'OFL.txt')),
+      'licence OFL absente',
+    ).not.toThrow();
+  });
+});
+
+describe('contrat CSS — champs de formulaire (revue PR 1, I3)', () => {
+  // Revue PR 1, I3 : .semaine-type select (fond surface-2, sans bordure) et
+  // .addrow input (fond --bg, bordure 1,5 px) divergeaient du champ standard du
+  // thème — fond blanc + bordure encre 2 px, comme la maquette.
+  const CHAMPS = ['.semaine-type select', '.addrow input'];
+
+  for (const sel of CHAMPS) {
+    it(`${sel} porte le champ standard (fond --surface, bordure encre 2 px)`, () => {
+      const bloc = css.match(new RegExp(sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*\\{([^}]*)\\}'))?.[1] ?? '';
+      expect(bloc, `${sel} introuvable dans index.css`).not.toBe('');
+      expect(bloc, `${sel} : fond`).toMatch(/background:\s*var\(--surface\)/);
+      expect(bloc, `${sel} : bordure`).toMatch(/border:\s*2px solid var\(--encre\)/);
+    });
+  }
+});
+
 describe('contrat CSS — tokens d\'espacement', () => {
   // Garde anti-régression silencieuse : si le CSS est réorganisé et que le
   // sélecteur ci-dessous ne matche plus rien, ce test le signale.

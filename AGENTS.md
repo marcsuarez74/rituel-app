@@ -4,12 +4,12 @@ Guide pour les agents IA travaillant sur ce repo. Règles courtes, KISS : si une
 
 ## Le projet
 
-**Rituel** — PWA React (thème clair « Herbes ») de routine cuisine (menus, courses, rituel batch) et de suivi diet/sport, pour n'importe quel foyer (né pour Marc & Mélanie). 100 % front + backend optionnel de sync (serveur VPS + SQLite — voir `docs/backend.md`) ; sans configuration, l'app reste strictement locale :
+**Rituel** — PWA React (thème clair « Marché coloré ») de routine cuisine (menus, courses, rituel batch) et de suivi diet/sport, pour n'importe quel foyer (né pour Marc & Mélanie). 100 % front + backend optionnel de sync (serveur VPS + SQLite — voir `docs/backend.md`) ; sans configuration, l'app reste strictement locale :
 
 - **Le cycle** (v2.0) : 4 menus A-D d'une semaine chacun + **un seul rituel batch** commun aux 4 semaines, générés par Claude (abonnement, prompt copié depuis Profil › Mon cycle) en 4 fichiers JSON, importés et vérifiés par l'app. Un nouveau cycle se débloque quand les 4 semaines (+ pauses) sont passées ; sinon on relance le même. Sans cycle importé : **cycle d'exemple** chargé à la demande (`src/assets/cycle-exemple.json`, anonymisé — alex/sam/lou/noa sont rattachés au foyer au chargement)
 - **Navigation** : barre du bas à 5 onglets (Aujourd'hui · Menu · Courses · Rituel · Suivi), en-tête fin avec l'avatar (Profil) et le point de sync, ligne semaine ‹ Sem. N · Menu X › sur Menu/Courses/Rituel. Écrans poussés : fiche recette, mode guidé, Mon cycle, Ma semaine type, Profil
 - **Foyer** (`ReglagesFoyer`) : membres (adultes suivis, enfants sans âge), jour des courses (début de chaque semaine du cycle), jour du rituel, semaine type jour par jour, exceptions récurrentes, magasin, budget hebdo **souple** (alerte, jamais de prix baissés)
-- **UX personnalisée** : onboarding en **5 étapes** dont seule l'étape 1 est obligatoire (prénom libre, pour qui on cuisine — partenaire, enfants —, « juste la routine » ou suivi), puis « Partager avec ton foyer » (créer → code ; rejoindre → rattachement « Es-tu X ? », le foyer du serveur gagne ; plus tard) et l'étape optionnelle « Ta semaine » (rythme) ; accent unique (basilic #3e7a46 + citron #f2dc7b) ; le prénom (profil) sert aux salutations et au prompt
+- **UX personnalisée** : onboarding en **5 étapes** dont seule l'étape 1 est obligatoire (prénom libre, pour qui on cuisine — partenaire, enfants —, « juste la routine » ou suivi), puis « Partager avec ton foyer » (créer → code ; rejoindre → rattachement « Es-tu X ? », le foyer du serveur gagne ; plus tard) et l'étape optionnelle « Ta semaine » (rythme) ; accents « Marché » (action basilic #2d6a37, surbrillance jaune fruit #f2c230 jamais en texte, fond papier #fbf1dc, encre #2a2219) ; le prénom (profil) sert aux salutations et au prompt
 - **Suivi** : objectif + poids (séances, cibles, rappels : reportés)
 - Coches, reports, pesées persistés en **localStorage**
 - Déployée en PWA offline-first sur le VPS : https://rituel.marco-studio.fr (un conteneur Docker sert la PWA et l'API de sync)
@@ -74,7 +74,7 @@ Règle de répartition : la logique va dans `src/lib/` (testable sans React), le
 - TypeScript strict. Fonctions nommées, exports nommés (pas de default export).
 - React 18 : composants fonctionnels, hooks uniquement. Pas de lib d'état ni de contexte — `useState` + props suffisent.
 - Si un composant doit re-synchroniser son état quand une prop change (semaine, profil, version de sync), utiliser le pattern **render-phase reset** déjà en place (`useCoches`, `useReports`, `Pesees.tsx`) — ne pas inventer un autre pattern.
-- CSS : un seul fichier `src/index.css`, classes **sémantiques** (`.menu-card`, `.checklist`, `.done`…), variables du design system sur `:root` (tokens Herbes : `--accent` basilic #3e7a46, `--accent-2` citron #f2dc7b — jamais une couleur de texte, typo **Poppins** auto-hébergée). **Thème clair unique** — pas de dark mode, pas de `prefers-color-scheme`, pas de framework CSS. Icônes SVG via `src/components/Icon.tsx` (pas d'émoji dans l'UI, sauf onboarding/salutations). Typo, espacement (échelle 2 px) et interlignage sont tokenisés (`--fs-*`, `--sp-*`, `--lh-*`) — garde-fou : `tests/css-tokens.test.ts`.
+- CSS : un seul fichier `src/index.css`, classes **sémantiques** (`.menu-card`, `.checklist`, `.done`…), variables du design system sur `:root` (tokens « Marché coloré » : `--accent` basilic #2d6a37 — texte blanc dessus, `--accent-2` jaune fruit #f2c230 — jamais une couleur de texte, fond `--papier` #fbf1dc, texte `--encre` #2a2219, typo **Poppins + Bricolage Grotesque** auto-hébergées ; valeurs = annexe A de la spec 2026-10-12, garde-fou `tests/contraste.test.ts`). **Thème clair unique** — pas de dark mode, pas de `prefers-color-scheme`, pas de framework CSS. Icônes SVG via `src/components/Icon.tsx` (pas d'émoji dans l'UI, sauf onboarding/salutations). Typo, espacement (échelle 2 px) et interlignage sont tokenisés (`--fs-*`, `--sp-*`, `--lh-*`) — garde-fou : `tests/css-tokens.test.ts`.
 - Cibles tactiles ≥ 48 px, contraste ≥ 4.5:1, transitions sur les éléments interactifs seulement. « Ultra visible » est une exigence produit, pas une préférence.
 - Textes utilisateur en **français**, accents compris.
 - YAGNI : pas de nouvelle dépendance sans discussion, pas d'abstraction avant le 2e cas d'usage réel.
@@ -144,7 +144,7 @@ Toute lecture passe par `safeParse` + garde de forme : une donnée corrompue se 
 - `ai/context/` — le contexte projet à lire avec l'agent : `project-architecture.md` (stack, patterns, build), `design-system.md` (tokens, source = `src/index.css`), `ui-guideline.md` (règles UI), `performance.md` (budgets, anti-patterns)
 - Un travail de design/UI doit suivre `ai/agent/design-agent/` : lire ses prompts et le contexte, adopter son rôle et ses règles
 
-Ces fichiers sont **adaptés à CE projet** (React + Vite + CSS sémantique, thème clair Herbes) — s'ils contiennent du générique non applicable (ex. Tailwind), la contrainte du repo gagne : tokens = variables CSS de `src/index.css`, pas de framework CSS. Si `src/index.css` et `ai/context/design-system.md` divergent, corriger les deux.
+Ces fichiers sont **adaptés à CE projet** (React + Vite + CSS sémantique, thème clair « Marché coloré ») — s'ils contiennent du générique non applicable (ex. Tailwind), la contrainte du repo gagne : tokens = variables CSS de `src/index.css`, pas de framework CSS. Si `src/index.css` et `ai/context/design-system.md` divergent, corriger les deux.
 
 ## Si quelque chose est ambigu
 
