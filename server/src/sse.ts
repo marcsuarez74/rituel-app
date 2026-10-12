@@ -10,6 +10,8 @@ export interface RegistreSse {
   ajouter: (foyerId: string, flux: FluxSse) => () => void;
   /** Diffuse `event: changement` + rev à tous les flux du foyer. */
   diffuser: (foyerId: string, rev: number) => void;
+  /** Ferme tous les flux d'un foyer (foyer supprimé). */
+  fermerFoyer: (foyerId: string) => void;
 }
 
 export const creerRegistreSse = ({ heartbeatMs = 25_000 }: { heartbeatMs?: number } = {}): RegistreSse => {
@@ -38,6 +40,9 @@ export const creerRegistreSse = ({ heartbeatMs = 25_000 }: { heartbeatMs?: numbe
     diffuser: (foyerId, rev) => {
       const bloc = `event: changement\ndata: ${JSON.stringify({ rev })}\n\n`;
       for (const flux of fluxParFoyer.get(foyerId) ?? []) flux.envoyer(bloc);
+    },
+    fermerFoyer: (foyerId) => {
+      for (const flux of [...(fluxParFoyer.get(foyerId) ?? [])]) flux.fermer();
     },
   };
 };

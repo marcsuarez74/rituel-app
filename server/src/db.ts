@@ -9,7 +9,8 @@ create table if not exists foyers (
   id text primary key,            -- uuid (crypto.randomUUID)
   code_hash text not null unique, -- pbkdf2-sha256$100000$salt$hash (b64url)
   rev integer not null default 0, -- compteur de changements (SSE)
-  created_at text not null
+  created_at text not null,
+  appareils_suivis integer not null default 0 -- 1 = tous les jetons du foyer sont dans sessions (spec 2026-10-12)
 );
 create table if not exists weeks (
   foyer_id text not null references foyers on delete cascade,
@@ -49,6 +50,20 @@ create table if not exists bug_reports (
   capture_name text, created_at text not null
 );
 create index if not exists bug_reports_foyer on bug_reports (foyer_id, created_at);
+-- Appareils connectés (un jeton émis par /connexion = une ligne) : sert à savoir si
+-- un appareil qui quitte le foyer en est le dernier. Clé = sha256 du jeton.
+create table if not exists sessions (
+  token_hash text primary key,
+  foyer_id text not null references foyers on delete cascade,
+  created_at text not null,
+  expire_at text not null
+);
+create index if not exists sessions_foyer on sessions (foyer_id);
+-- Jetons révoqués (suppression de profil) : refusés en 401 jusqu'à leur expiration.
+create table if not exists tokens_revoques (
+  token_hash text primary key,
+  expire_at text not null
+);
 `;
 
 export const ouvrirDb = (chemin: string): Database.Database => {
@@ -56,5 +71,11 @@ export const ouvrirDb = (chemin: string): Database.Database => {
   db.pragma('journal_mode = WAL');
   db.pragma('foreign_keys = ON');
   db.exec(MIGRATION);
+  // Bases antérieures à la suppression de profil : colonne ajoutée à 0 (foyers « hérités »,
+  // dont des jetons non suivis peuvent encore circuler → jamais supprimés automatiquement).
+  const colonnes = db.prepare('pragma table_info(foyers)').all() as { name: string }[];
+  if (!colonnes.some((c) => c.name === 'appareils_suivis')) {
+    db.exec('alter table foyers add column appareils_suivis integer not null default 0');
+  }
   return db;
 };

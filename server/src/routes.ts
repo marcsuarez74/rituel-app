@@ -6,7 +6,7 @@ import type { Database } from 'better-sqlite3';
 import { Hono } from 'hono';
 import type { Context } from 'hono';
 import { cors } from 'hono/cors';
-import { hashCode, signerToken, verifierCode, verifierToken } from './auth.js';
+import { DUREE_TOKEN_S, empreinteToken, hashCode, signerToken, verifierCode, verifierToken } from './auth.js';
 import {
   CAPTURE_MAX,
   NOM_CAPTURE,
@@ -59,7 +59,7 @@ export interface OptionsApp {
   };
 }
 
-type EnvApp = { Variables: { foyerId: string } };
+type EnvApp = { Variables: { foyerId: string; jeton: string } };
 
 const estObjet = (v: unknown): v is Record<string, unknown> =>
   !!v && typeof v === 'object' && !Array.isArray(v);
@@ -105,12 +105,22 @@ export const creerApp = ({ db, secret, origines, heartbeatMs, statique, commit, 
   const app = new Hono<EnvApp>();
   const limiter = creerLimiteur({ max: 10, fenetreMs: 60_000 });
   const registre: RegistreSse = creerRegistreSse({ heartbeatMs });
+  const dossierBugs = join(dataDir ?? 'data', 'bugs');
 
   const ip = (c: Context): string =>
     c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'local';
-  const foyerDuToken = (c: Context): string | null => {
+  const jetonBrut = (c: Context): string | null => {
     const h = c.req.header('Authorization');
-    return h?.startsWith('Bearer ') ? verifierToken(h.slice(7), secret) : null;
+    return h?.startsWith('Bearer ') ? h.slice(7) : null;
+  };
+  // Jeton signé ET foyer existant ET jeton non révoqué (suppression de profil).
+  const foyerDuToken = (c: Context): string | null => {
+    const jeton = jetonBrut(c);
+    const foyerId = jeton ? verifierToken(jeton, secret) : null;
+    if (!jeton || !foyerId) return null;
+    if (!db.prepare('select 1 from foyers where id = ?').get(foyerId)) return null;
+    if (db.prepare('select 1 from tokens_revoques where token_hash = ?').get(empreinteToken(jeton))) return null;
+    return foyerId;
   };
   const incrementerRev = (foyerId: string): number => {
     db.prepare('update foyers set rev = rev + 1 where id = ?').run(foyerId);
@@ -130,10 +140,12 @@ export const creerApp = ({ db, secret, origines, heartbeatMs, statique, commit, 
     const foyer = foyerDuToken(c);
     if (!foyer) return c.json({ erreur: 'token-invalide' }, 401);
     c.set('foyerId', foyer);
+    c.set('jeton', jetonBrut(c) ?? '');
     await next();
   };
   app.use('/sync/*', auth);
   app.use('/evenements', auth);
+  app.delete('/foyers/moi', auth);
   app.post('/bugs', auth); // POST seulement : le GET des captures reste public
 
   // Sonde de santé (Docker HEALTHCHECK, vérification après déploiement).
@@ -156,7 +168,7 @@ export const creerApp = ({ db, secret, origines, heartbeatMs, statique, commit, 
       return c.json({ erreur: 'code-occupe' }, 409);
     }
     const id = randomUUID();
-    db.prepare('insert into foyers (id, code_hash, rev, created_at) values (?, ?, 0, ?)').run(
+    db.prepare('insert into foyers (id, code_hash, rev, created_at, appareils_suivis) values (?, ?, 0, ?, 1)').run(
       id,
       hashCode(code),
       new Date().toISOString(),
@@ -174,7 +186,60 @@ export const creerApp = ({ db, secret, origines, heartbeatMs, statique, commit, 
     }[];
     const foyer = foyers.find((f) => verifierCode(code, f.code_hash));
     if (!foyer) return c.json({ erreur: 'code-refuse' }, 401);
-    return c.json({ token: signerToken(foyer.id, secret), foyerId: foyer.id });
+    const token = signerToken(foyer.id, secret);
+    const maintenant = Date.now();
+    db.prepare('insert into sessions (token_hash, foyer_id, created_at, expire_at) values (?, ?, ?, ?)').run(
+      empreinteToken(token),
+      foyer.id,
+      new Date(maintenant).toISOString(),
+      new Date(maintenant + DUREE_TOKEN_S * 1000).toISOString(),
+    );
+    return c.json({ token, foyerId: foyer.id });
+  });
+
+  // Suppression de profil (spec 2026-10-12) : l'appareil quitte le foyer. Son jeton est
+  // révoqué ; s'il en était le dernier appareil connu (et que tous les jetons du foyer
+  // sont suivis), le foyer et toutes ses données partent avec lui. Sinon les données
+  // partagées restent intactes pour les autres. Une seule transaction SQLite.
+  app.delete('/foyers/moi', (c) => {
+    const foyerId = c.get('foyerId');
+    const empreinte = empreinteToken(c.get('jeton'));
+    const maintenant = new Date().toISOString();
+    const supprime = db.transaction((): { foyerSupprime: boolean; captures: string[] } => {
+      db.prepare('delete from tokens_revoques where expire_at <= ?').run(maintenant);
+      db.prepare('delete from sessions where expire_at <= ?').run(maintenant);
+      db.prepare('insert or ignore into tokens_revoques (token_hash, expire_at) values (?, ?)').run(
+        empreinte,
+        new Date(Date.now() + DUREE_TOKEN_S * 1000).toISOString(),
+      );
+      db.prepare('delete from sessions where token_hash = ?').run(empreinte);
+      const { suivi } = db.prepare('select appareils_suivis as suivi from foyers where id = ?').get(foyerId) as {
+        suivi: number;
+      };
+      const { autres } = db
+        .prepare('select count(*) as autres from sessions where foyer_id = ?')
+        .get(foyerId) as { autres: number };
+      if (suivi !== 1 || autres > 0) return { foyerSupprime: false, captures: [] };
+      const captures = (
+        db.prepare('select capture_name from bug_reports where foyer_id = ? and capture_name is not null').all(foyerId) as {
+          capture_name: string;
+        }[]
+      ).map((r) => r.capture_name);
+      db.prepare('delete from foyers where id = ?').run(foyerId); // cascade : toutes les tables liées
+      return { foyerSupprime: true, captures };
+    })();
+    if (supprime.foyerSupprime) {
+      for (const nom of supprime.captures) {
+        if (!NOM_CAPTURE.test(nom)) continue;
+        try {
+          unlinkSync(join(dossierBugs, nom));
+        } catch {
+          /* déjà absent */
+        }
+      }
+      registre.fermerFoyer(foyerId);
+    }
+    return c.json({ ok: true, foyerSupprime: supprime.foyerSupprime });
   });
 
   // ---- Sync (auth Bearer) ----
@@ -280,6 +345,7 @@ export const creerApp = ({ db, secret, origines, heartbeatMs, statique, commit, 
             } catch {
               /* déjà fermé */
             }
+            retirer?.();
           },
         });
       },
@@ -296,8 +362,6 @@ export const creerApp = ({ db, secret, origines, heartbeatMs, statique, commit, 
   });
 
   // ---- Signaler un bug (issue GitHub) ----
-
-  const dossierBugs = join(dataDir ?? 'data', 'bugs');
 
   app.post('/bugs', async (c) => {
     const foyerId = c.get('foyerId');

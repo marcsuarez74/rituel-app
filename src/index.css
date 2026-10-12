@@ -2275,6 +2275,48 @@ progress {
 .hub-action.danger { color: var(--danger); }
 .hub-action .fleche { color: var(--surface-2); }
 
+/* Zone dangereuse (spec 2026-10-12) : séparée des actions courantes. */
+.zone-danger {
+  margin-top: var(--sp-16);
+  padding-top: var(--sp-16);
+  border-top: 1px solid var(--border);
+}
+
+.sp-desc p {
+  margin: 0 0 var(--sp-8);
+  font-size: var(--fs-sec);
+  overflow-wrap: anywhere;
+}
+
+.sp-alerte {
+  margin: 0;
+  padding: var(--sp-10) var(--sp-12);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--danger) 12%, var(--surface));
+  color: var(--danger);
+  font-size: var(--fs-sec);
+  overflow-wrap: anywhere;
+}
+
+.bouton-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: var(--sp-12) var(--sp-20);
+  border: 2px solid var(--danger);
+  border-radius: 14px;
+  background: var(--danger);
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.bouton-danger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 /* ---------- Page Objectif (spec 2026-10-07 §4) ---------- */
 
 .obj-resume {

@@ -1,4 +1,4 @@
-import { createHmac, pbkdf2Sync, randomBytes, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, pbkdf2Sync, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 
 const b64url = (b: Buffer): string => b.toString('base64url');
 const b64urlVersBuffer = (s: string): Buffer => Buffer.from(s, 'base64url');
@@ -24,10 +24,15 @@ export const verifierCode = (code: string, stocke: string): boolean => {
 
 const claimsB64url = (v: unknown): string => b64url(Buffer.from(JSON.stringify(v), 'utf8'));
 
-export const signerToken = (foyerId: string, secret: string, dureeS = 365 * 24 * 3600): string => {
+export const DUREE_TOKEN_S = 365 * 24 * 3600;
+
+// Empreinte du jeton : clé des tables `sessions` et `tokens_revoques` (jamais le jeton brut).
+export const empreinteToken = (token: string): string => createHash('sha256').update(token).digest('hex');
+
+export const signerToken = (foyerId: string, secret: string, dureeS = DUREE_TOKEN_S): string => {
   const t = Math.floor(Date.now() / 1000);
   const entete = claimsB64url({ alg: 'HS256', typ: 'JWT' });
-  const corps = claimsB64url({ foyerId, iat: t, exp: t + dureeS });
+  const corps = claimsB64url({ foyerId, jti: randomUUID(), iat: t, exp: t + dureeS });
   const signature = b64url(createHmac('sha256', secret).update(`${entete}.${corps}`).digest());
   return `${entete}.${corps}.${signature}`;
 };
