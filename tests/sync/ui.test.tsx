@@ -81,36 +81,36 @@ describe('sync UI: app', () => {
     await waitFor(() =>
       expect(screen.queryByRole('heading', { name: /Bienvenue sur Rituel/ })).toBeNull(),
     );
-    expect(screen.getByRole('heading', { level: 1, name: "Aujourd'hui" })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Bonjour Marc' })).toBeInTheDocument();
   });
 });
 
 describe('sync UI: en-tête', () => {
   const entete = (syncEtat: Parameters<typeof EnTete>[0]['syncEtat']) => (
-    <EnTete titre="Menu" prenom="Marc" syncEtat={syncEtat} onProfil={() => {}} />
+    <EnTete titre="Menus" prenom="Marc" syncEtat={syncEtat} onProfil={() => {}} />
   );
 
-  it('sans sync : avatar seul, sans point', () => {
+  it('sans sync : avatar seul, sans point, aria-label « Moi : {prénom} »', () => {
     const { container } = render(entete('off'));
-    expect(screen.getByRole('button', { name: 'Mon profil' })).toHaveTextContent('M');
+    expect(screen.getByRole('button', { name: 'Moi : Marc' })).toHaveTextContent('M');
     expect(container.querySelector('.avatar-pt')).toBeNull();
   });
 
-  it('le point de l’avatar porte l’état de la sync', () => {
+  it('le point de l’avatar porte l’état de la sync, le nom accessible reste stable', () => {
     const { container, rerender } = render(entete('hors-foyer'));
-    expect(screen.getByRole('button', { name: 'Mon profil — Local' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Moi : Marc' })).toBeInTheDocument();
     expect(container.querySelector('.avatar-pt')).toHaveClass('gris');
     rerender(entete('erreur'));
     expect(container.querySelector('.avatar-pt')).toHaveClass('danger');
     rerender(entete('sync'));
-    expect(screen.getByRole('button', { name: 'Mon profil — Duo connecté' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Moi : Marc' })).toBeInTheDocument();
     expect(container.querySelector('.avatar-pt')).toHaveClass('basilic');
   });
 
   it('tap sur l’avatar : ouvre le profil', async () => {
     const onProfil = vi.fn();
-    render(<EnTete titre="Menu" prenom="Marc" syncEtat="sync" onProfil={onProfil} />);
-    await userEvent.setup().click(screen.getByRole('button', { name: /Mon profil/ }));
+    render(<EnTete titre="Menus" prenom="Marc" syncEtat="sync" onProfil={onProfil} />);
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Moi : Marc' }));
     expect(onProfil).toHaveBeenCalledOnce();
   });
 });
@@ -145,7 +145,7 @@ describe('sync UI: bloc profil', () => {
     const { connecterFoyer } = await import('../../src/lib/sync/engine');
     renderProfil('hors-foyer');
     const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: /voir le foyer/ }));
+    await user.click(screen.getByRole('button', { name: /Foyer et partage/ }));
     await user.click(screen.getByRole('button', { name: 'Rejoindre un foyer' }));
     await user.type(screen.getByLabelText('Code de foyer'), 'rituel-2026');
     await user.click(screen.getByRole('button', { name: 'Rejoindre' }));
@@ -157,7 +157,7 @@ describe('sync UI: bloc profil', () => {
     vi.mocked(engine.connecterFoyer).mockRejectedValueOnce(new Error('code-refuse'));
     renderProfil('attente');
     const u = userEvent.setup();
-    await u.click(screen.getByRole('button', { name: /voir le foyer/ }));
+    await u.click(screen.getByRole('button', { name: /Foyer et partage/ }));
     await u.click(screen.getByRole('button', { name: 'Rejoindre un foyer' }));
     await u.type(screen.getByLabelText('Code de foyer'), 'mauvais');
     await u.click(screen.getByRole('button', { name: 'Rejoindre' }));
@@ -170,7 +170,7 @@ describe('sync UI: bloc profil', () => {
     saveFoyer({ ...foyerParDefaut(profil()), membres: [...foyerParDefaut(profil()).membres, { id: 'therese-3f9a', prenom: 'Thérèse', type: 'adulte', suivi: false }] });
     renderProfil('sync');
     const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: /voir le foyer/ }));
+    await user.click(screen.getByRole('button', { name: /Foyer et partage/ }));
     expect(screen.getByText('toi · ce téléphone')).toBeInTheDocument();
     expect(screen.getByText('Thérèse').closest('.membre')).toHaveTextContent('adulte · pas encore de téléphone');
     expect(screen.queryByText('romarin-basilic-3f9a2c7e')).not.toBeInTheDocument();
@@ -186,7 +186,7 @@ describe('sync UI: bloc profil', () => {
     vi.stubGlobal('confirm', confirmSpy);
     renderProfil('sync');
     const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: /voir le foyer/ }));
+    await user.click(screen.getByRole('button', { name: /Foyer et partage/ }));
     await user.click(screen.getByRole('button', { name: /supprimer les données du foyer/i }));
     expect(confirmSpy).toHaveBeenCalledTimes(2);
     expect(purgerFoyer).toHaveBeenCalledOnce();
@@ -200,7 +200,7 @@ describe('sync UI: bloc profil', () => {
     vi.mocked(purgerFoyer).mockImplementation(() => new Promise(() => {}));
     renderProfil('sync');
     const u = userEvent.setup();
-    await u.click(screen.getByRole('button', { name: /voir le foyer/ }));
+    await u.click(screen.getByRole('button', { name: /Foyer et partage/ }));
     await u.click(screen.getByRole('button', { name: /supprimer les données du foyer/i }));
     await u.click(screen.getByRole('button', { name: /suppression/i }));
     expect(purgerFoyer).toHaveBeenCalledOnce();
@@ -240,7 +240,7 @@ describe('profil: création de foyer (VPS)', () => {
     });
     renderProfil();
     const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: /voir le foyer/ }));
+    await user.click(screen.getByRole('button', { name: /Foyer et partage/ }));
     await user.click(screen.getByRole('button', { name: 'Créer mon foyer' }));
     expect(await screen.findByText('romarin-basilic-3f9a2c7e')).toBeInTheDocument();
     expect(engine.connecterFoyer).toHaveBeenCalledWith('romarin-basilic-3f9a2c7e');
@@ -254,7 +254,7 @@ describe('profil: création de foyer (VPS)', () => {
     creerFoyerMock.mockRejectedValueOnce(new Error('code-occupe'));
     renderProfil();
     const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: /voir le foyer/ }));
+    await user.click(screen.getByRole('button', { name: /Foyer et partage/ }));
     await user.click(screen.getByRole('button', { name: 'Créer mon foyer' }));
     expect(await screen.findByRole('alert')).toHaveTextContent(/déjà pris/i);
   });
@@ -262,7 +262,7 @@ describe('profil: création de foyer (VPS)', () => {
   it('note de posture VPS', async () => {
     renderProfil();
     const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: /voir le foyer/ }));
+    await user.click(screen.getByRole('button', { name: /Foyer et partage/ }));
     expect(screen.getByText(/votre serveur.*rituel\.marco-studio\.fr/i)).toBeInTheDocument();
   });
 });

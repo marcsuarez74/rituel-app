@@ -9,14 +9,13 @@ import { repasAvecReports } from '../../lib/cycle/reports';
 import type { Lettre, MembreId } from '../../lib/cycle/types';
 import { formatJourMoisCourt } from '../../lib/dates';
 import { formatEuro } from '../../lib/prix';
+import { fmtKg } from '../../lib/text';
+import { getWeights } from '../../lib/storage';
 import { Icon } from '../Icon';
 import { RepasDuJour } from '../menu/RepasDuJour';
 import type { Onglet } from '../shell/onglets';
 import { useCoches } from '../useCoches';
 import { useReports } from '../useReports';
-
-const dateLongue = (iso: string): string =>
-  new Date(`${iso}T12:00:00`).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 
 const etatHorsSemaine = (numero: number, p: Exclude<PositionCycle, { etat: 'semaine' }>): string =>
   p.etat === 'pause'
@@ -37,48 +36,41 @@ function Jauge({ label, faits, total, onClick }: { label: string; faits: number;
   );
 }
 
-// Écran « maintenant » (spec v2 §3, écran 1) : la semaine en un coup d'œil,
-// la prochaine action du jour (rituel, courses), les repas du jour cochables.
+// Écran « maintenant » (spec refonte §4.2) : les repas du jour cochables,
+// la carte Suivi (si suivi actif), les jauges vers la semaine et les courses.
 export function Aujourdhui({
   actif,
   foyer,
   moi,
-  prenom,
   aujourdhui,
   position,
   exemple,
+  suivi,
   syncVersion,
   onOuvrirRecette,
   onAller,
+  onSuivi,
 }: {
   actif: CycleActif;
   foyer: ReglagesFoyer;
   moi: MembreId;
-  prenom: string;
   aujourdhui: string;
   position: PositionCycle;
   exemple: boolean;
+  suivi: boolean;
   syncVersion: number;
   onOuvrirRecette: (recetteId: string, coche: string) => void;
   onAller: (o: Onglet) => void;
+  onSuivi: () => void;
 }) {
   const index = position.etat === 'semaine' ? position.index : 0;
   const { coches, basculer } = useCoches(semaineCoches(actif.id, index), syncVersion);
   const { reports, enregistrer } = useReports(actif.id, syncVersion);
-  const tete = (
-    <>
-      <p className="greeting">Salut {prenom} 👋</p>
-      <p className="muted aujourdhui-date">{dateLongue(aujourdhui)}</p>
-    </>
-  );
   if (position.etat !== 'semaine') {
     return (
-      <>
-        {tete}
-        <section className="profile-section">
-          <h2>{etatHorsSemaine(actif.numero, position)}</h2>
-        </section>
-      </>
+      <section className="profile-section">
+        <h2>{etatHorsSemaine(actif.numero, position)}</h2>
+      </section>
     );
   }
 
@@ -89,17 +81,17 @@ export function Aujourdhui({
   const achetes = courses.filter((l) => coches[l.id]).length;
   const duJour = repasAvecReports(actif.cycle, index, jour, moi, reports);
   const rituel = actif.cycle.rituel;
+  const derniere = suivi ? getWeights(moi).at(-1) : null;
 
   return (
     <>
-      {tete}
       <section className="profile-section semaine-carte" aria-label="Ma semaine">
         <p className="semaine-carte-titre">
           Cycle {actif.numero} · semaine {index + 1} sur 4 · Menu {lettre}
         </p>
-        {exemple && <p className="muted">Cycle d'exemple : il te montre l'app en attendant ton premier cycle.</p>}
+        {exemple && <p className="muted">Menus d'exemple : ils te montrent l'app en attendant tes menus.</p>}
         <div className="jauges">
-          <Jauge label="Repas" faits={repas.faits} total={repas.total} onClick={() => onAller('menu')} />
+          <Jauge label="Repas" faits={repas.faits} total={repas.total} onClick={() => onAller('semaine')} />
           <Jauge label="Courses" faits={achetes} total={courses.length} onClick={() => onAller('courses')} />
         </div>
       </section>
@@ -135,7 +127,7 @@ export function Aujourdhui({
 
       <div className="menu-jour-tete">
         <h2>Au menu aujourd'hui</h2>
-        <button type="button" className="lien" onClick={() => onAller('menu')}>
+        <button type="button" className="lien" onClick={() => onAller('semaine')}>
           Toute la semaine
         </button>
       </div>
@@ -152,6 +144,17 @@ export function Aujourdhui({
         onBasculer={basculer}
         onOuvrir={onOuvrirRecette}
       />
+      {suivi && (
+        <section className="carte-suivi" aria-label="Suivi">
+          <Icon name="courbe" size={24} />
+          <p className="carte-suivi-valeur">
+            {derniere ? `Mon suivi : ${fmtKg(derniere.kg)} kg` : 'Mon suivi'}
+          </p>
+          <button type="button" className="bouton-contour" onClick={onSuivi}>
+            Ajouter une pesée
+          </button>
+        </section>
+      )}
     </>
   );
 }

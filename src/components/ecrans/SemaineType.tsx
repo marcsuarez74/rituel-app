@@ -58,7 +58,7 @@ export function SemaineType({
     <div className="semaine-type">
       {!compact && (
         <button type="button" className="profil-back" onClick={onRetour}>
-          <Icon name="chev-left" size={16} /> Profil
+          <Icon name="chev-left" size={16} /> Moi
         </button>
       )}
       <h1>{compact ? 'Ta semaine' : 'Ma semaine type'}</h1>

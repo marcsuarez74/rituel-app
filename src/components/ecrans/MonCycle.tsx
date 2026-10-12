@@ -132,7 +132,7 @@ export function MonCycle({
       <button type="button" className="profil-back" onClick={retour}>
         <Icon name="chev-left" size={16} /> {vue === 'etat' ? 'Profil' : quitte ? 'Plus tard' : 'Mon cycle'}
       </button>
-      <h1>Mon cycle</h1>
+      <h1>Mes menus</h1>
 
       {vue === 'etat' && (
         <>

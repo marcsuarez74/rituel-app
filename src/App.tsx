@@ -3,7 +3,6 @@ import { Aujourdhui } from './components/ecrans/Aujourdhui';
 import { BarreOnglets } from './components/shell/BarreOnglets';
 import { ONGLETS, type Onglet } from './components/shell/onglets';
 import { EnTete } from './components/shell/EnTete';
-import { LigneSemaine } from './components/shell/LigneSemaine';
 import { positionCycle } from './lib/cycle/calendrier';
 import { semaineCoches } from './lib/cycle/etat';
 import type { Jour } from './lib/cycle/types';
@@ -12,6 +11,7 @@ import { chargerCycleExemple, semaineParDefaut } from './lib/cycle/courant';
 import { type CycleActif, type ReglagesFoyer, assurerMoi, foyerParDefaut, loadCycle, loadFoyer, saveFoyer } from './lib/cycle/etat';
 import { todayISO } from './lib/dates';
 import { estSuivi, prenomProfil } from './lib/model';
+import { capitalize } from './lib/text';
 import type { UserProfile } from './lib/model';
 import { loadProfile, loadProfilLegacy, removeProfile } from './lib/storage';
 import { initSync, type SyncEtat } from './lib/sync/engine';
@@ -20,7 +20,7 @@ import { initSync, type SyncEtat } from './lib/sync/engine';
 const Onboarding = lazy(() => import('./components/onboarding/Onboarding').then((m) => ({ default: m.Onboarding })));
 const ProfilScreen = lazy(() => import('./components/ProfilScreen').then((m) => ({ default: m.ProfilScreen })));
 const Suivi = lazy(() => import('./components/ecrans/Suivi').then((m) => ({ default: m.Suivi })));
-const Menu = lazy(() => import('./components/ecrans/Menu').then((m) => ({ default: m.Menu })));
+const Semaine = lazy(() => import('./components/ecrans/Semaine').then((m) => ({ default: m.Semaine })));
 const Courses = lazy(() => import('./components/ecrans/Courses').then((m) => ({ default: m.Courses })));
 const Rituel = lazy(() => import('./components/ecrans/Rituel').then((m) => ({ default: m.Rituel })));
 const Guide = lazy(() => import('./components/ecrans/Guide').then((m) => ({ default: m.Guide })));
@@ -29,8 +29,12 @@ const SignalerBug = lazy(() => import('./components/ecrans/SignalerBug').then((m
 const MonCycle = lazy(() => import('./components/ecrans/MonCycle').then((m) => ({ default: m.MonCycle })));
 const Recette = lazy(() => import('./components/ecrans/Recette').then((m) => ({ default: m.Recette })));
 
-// Onglets avec la ligne semaine.
-const AVEC_SEMAINE: Onglet[] = ['menu', 'courses', 'rituel'];
+// Sous-titre de l'en-tête : la date du jour (la position dans les menus vit
+// dans l'onglet Semaine).
+const dateLongue = (iso: string): string =>
+  capitalize(
+    new Date(`${iso}T12:00:00`).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }),
+  );
 
 
 const Chargement = () => (
@@ -62,6 +66,8 @@ function App() {
   const [semaineType, setSemaineType] = useState<'etape' | 'profil' | null>(null);
   const [profilOuvert, setProfilOuvert] = useState(false);
   const [signalerBug, setSignalerBug] = useState(false);
+  // Suivi poids : écran poussé ouvert depuis la carte Suivi ou depuis Moi.
+  const [suiviOuvert, setSuiviOuvert] = useState(false);
   // Fiche recette poussée ; `coche` = le repas d'où on vient (« C'est fait »).
   const [recette, setRecette] = useState<{ id: string; coche?: { semaine: string; id: string } } | null>(null);
   // Sync optionnelle : état (point sur l'avatar) et version de re-rendu —
@@ -132,6 +138,12 @@ function App() {
   const prenom = prenomProfil(profile.id, profile);
   const actif = cycleStocke ?? exemple?.actif ?? null;
   const suivi = estSuivi(profile);
+  const resumeFoyer =
+    foyer.membres.length > 1 ? `Foyer de ${foyer.membres.map((m) => m.prenom).join(' et ')}` : undefined;
+  const ouvrirSuivi = () => {
+    setProfilOuvert(false);
+    setSuiviOuvert(true);
+  };
 
   const position = actif ? positionCycle(actif, aujourdhui) : null;
 
@@ -142,6 +154,7 @@ function App() {
     setFoyerStocke(null);
     setExemple(null);
     setProfilOuvert(false);
+    setSuiviOuvert(false);
     setOnglet('aujourdhui');
     setSemaineVue(null);
     setJourVu(null);
@@ -227,6 +240,17 @@ function App() {
     );
   }
 
+  // Suivi poids, poussé depuis la carte Aujourd'hui ou Moi (§4.6).
+  if (suiviOuvert) {
+    return (
+      <div className="main-content">
+        <Suspense fallback={<Chargement />}>
+          <Suivi profile={profile} syncVersion={syncVersion} onRetour={() => setSuiviOuvert(false)} />
+        </Suspense>
+      </div>
+    );
+  }
+
   if (profilOuvert) {
     return (
       <div className="main-content">
@@ -234,18 +258,19 @@ function App() {
           <ProfilScreen
             profile={profile}
             syncEtat={syncEtat}
-            cycle={actif?.numero}
             resumeCycle={
               !cycleStocke
-                ? "Cycle d'exemple · crée le tien"
+                ? "Menus d'exemple · crée les tiens"
                 : position?.etat === 'semaine'
-                  ? `Cycle ${cycleStocke.numero} · semaine ${position.index + 1} sur 4 · menu ${position.lettre}`
+                  ? `Menu ${position.lettre} · semaine ${position.index + 1} sur 4`
                   : position?.etat === 'termine'
                     ? `Cycle ${cycleStocke.numero} terminé`
                     : `Cycle ${cycleStocke.numero}`
             }
             onMonCycle={() => setMonCycle(true)}
+            onSuivi={ouvrirSuivi}
             onSignalerBug={() => setSignalerBug(true)}
+            resumeFoyer={resumeFoyer}
             resumeSemaine={`${foyer.membres.length} personnes · courses ${foyer.jourCourses.slice(0, 3)}. · rituel ${foyer.jourRituel.slice(0, 3)}.`}
             onSemaineType={() => setSemaineType('profil')}
             onIdentite={setProfile}
@@ -276,8 +301,18 @@ function App() {
   }
 
   const semaine = semaineVue ?? (position ? semaineParDefaut(position) : 0);
-  const ecran: Onglet = onglet === 'suivi' && !suivi ? 'aujourdhui' : onglet; // suivi coupé depuis Profil
-  const titre = ONGLETS.find((o) => o.id === ecran)!.label;
+  // Titre + sous-titre de l'en-tête (spec refonte §4.1/§4.3) : salutation sur
+  // Aujourd'hui, « Menus » sur l'onglet Semaine (le libellé de l'onglet reste
+  // « Semaine »), date ou position en sous-titre.
+  const ecran = onglet;
+  const titre =
+    ecran === 'aujourdhui' ? `Bonjour ${prenom}` : ecran === 'semaine' ? 'Menus' : ONGLETS.find((o) => o.id === ecran)!.label;
+  const sousTitre =
+    ecran === 'aujourdhui'
+      ? dateLongue(aujourdhui)
+      : ecran === 'semaine'
+        ? `Semaine ${semaine + 1} sur 4`
+        : dateLongue(aujourdhui);
   const ouvrirRecette = (n: number) => (id: string, coche: string) =>
     actif && setRecette({ id, coche: { semaine: semaineCoches(actif.id, n), id: coche } });
 
@@ -326,17 +361,7 @@ function App() {
   return (
     <div className="shell">
       <div className="main-content">
-        <EnTete titre={titre} prenom={prenom} syncEtat={syncEtat} onProfil={() => setProfilOuvert(true)} />
-        {actif && AVEC_SEMAINE.includes(ecran) && (
-          <LigneSemaine
-            cal={actif}
-            index={semaine}
-            onChange={(n) => {
-              setSemaineVue(n);
-              setJourVu(null);
-            }}
-          />
-        )}
+        <EnTete titre={titre} sousTitre={sousTitre} prenom={prenom} syncEtat={syncEtat} onProfil={() => setProfilOuvert(true)} />
         <main>
           {!actif || !position ? (
             <Chargement />
@@ -347,17 +372,18 @@ function App() {
                   actif={actif}
                   foyer={foyer}
                   moi={profile.id}
-                  prenom={prenom}
                   aujourdhui={aujourdhui}
                   position={position}
                   exemple={!cycleStocke}
+                  suivi={suivi}
                   syncVersion={syncVersion}
                   onOuvrirRecette={ouvrirRecette(position.etat === 'semaine' ? position.index : 0)}
                   onAller={setOnglet}
+                  onSuivi={ouvrirSuivi}
                 />
               )}
-              {ecran === 'menu' && (
-                <Menu
+              {ecran === 'semaine' && (
+                <Semaine
                   actif={actif}
                   foyer={foyer}
                   semaine={semaine}
@@ -366,6 +392,12 @@ function App() {
                   syncVersion={syncVersion}
                   jourVu={jourVu}
                   onJour={setJourVu}
+                  onSemaine={(n) => {
+                    setSemaineVue(n);
+                    setJourVu(null);
+                  }}
+                  onSemaineType={() => setSemaineType('profil')}
+                  onProchainsMenus={() => setMonCycle(true)}
                   onOuvrirRecette={ouvrirRecette(semaine)}
                 />
               )}
@@ -384,12 +416,11 @@ function App() {
                   onOuvrirRecette={(id) => setRecette({ id })}
                 />
               )}
-              {ecran === 'suivi' && <Suivi profile={profile} syncVersion={syncVersion} />}
             </Suspense>
           )}
         </main>
       </div>
-      <BarreOnglets actif={ecran} suivi={suivi} onSelect={setOnglet} />
+      <BarreOnglets actif={ecran} onSelect={setOnglet} />
     </div>
   );
 }

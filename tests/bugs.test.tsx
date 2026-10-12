@@ -103,9 +103,9 @@ describe('SignalerBug (écran)', () => {
     expect(screen.queryByLabelText(/titre/i)).toBeNull();
   });
 
-  it('sans foyer : explique qu’il faut connecter un foyer (Profil › Foyer)', () => {
+  it('sans foyer : explique qu’il faut connecter un foyer (Moi › Foyer et partage)', () => {
     render(<SignalerBug onRetour={() => {}} page="profil" />);
-    expect(screen.getByText(/Profil › Foyer/)).toBeInTheDocument();
+    expect(screen.getByText(/Moi › Foyer et partage/)).toBeInTheDocument();
     expect(screen.queryByLabelText(/titre/i)).toBeNull();
   });
 
@@ -187,7 +187,7 @@ describe('SignalerBug (écran)', () => {
     const onRetour = vi.fn();
     const user = userEvent.setup();
     render(<SignalerBug onRetour={onRetour} page="profil" />);
-    await user.click(screen.getByRole('button', { name: /profil/i }));
+    await user.click(screen.getByRole('button', { name: /Moi/ }));
     expect(onRetour).toHaveBeenCalled();
   });
 });
