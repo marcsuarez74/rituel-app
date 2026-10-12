@@ -64,6 +64,13 @@ export function Onboarding({
 
   const migration = prefill != null;
 
+  // Indicateur : seuls les écrans réellement traversés comptent. Sans suivi,
+  // les étapes 2 et 3 (corps, objectif) sont sautées : 1 → 4 → 5 = écrans 1, 2, 3
+  // sur 3 (et non « 4 » dès le 2e écran).
+  const ecrans: number[] = saisie.suivi ? [1, 2, 3, 4, 5] : [1, 4, 5];
+  const total = ecrans.length;
+  const rang = Math.max(1, ecrans.indexOf(step) + 1);
+
   const aller = (n: 1 | 2 | 3 | 4 | 5 | 6) => {
     setError(null);
     setStep(n);
@@ -264,9 +271,12 @@ export function Onboarding({
     <div className="onboarding">
       {!migration && (
         <div className="onboarding-dots" role="group" aria-label="Progression de l'onboarding">
-          {[1, 2, 3, 4, 5].map((n) => (
-            <span key={n} className={n <= step ? 'onboarding-dot-active' : undefined} />
+          {Array.from({ length: total }, (_, i) => (
+            <span key={i} aria-hidden="true" className={i + 1 <= rang ? 'onboarding-dot-active' : undefined} />
           ))}
+          <span className="sr-only">
+            Étape {rang} sur {total}
+          </span>
         </div>
       )}
 

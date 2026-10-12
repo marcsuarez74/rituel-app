@@ -94,7 +94,8 @@ describe('Onboarding — étape 1 (prénom, pour qui, routine ou suivi)', () => 
     expect(screen.getByRole('radio', { name: 'Juste moi' })).toBeChecked();
     expect(screen.getByRole('radio', { name: /Juste la routine/ })).toBeChecked();
     const dots = screen.getByRole('group', { name: /Progression/ });
-    expect(dots.querySelectorAll('span')).toHaveLength(5);
+    // Routine seule (défaut) : 3 écrans (bienvenue, compléments, maison) → 3 points.
+    expect(dots.querySelectorAll('span[aria-hidden]')).toHaveLength(3);
   });
 
   it('prénom obligatoire', async () => {
@@ -154,6 +155,35 @@ describe('Onboarding — étape 1 (prénom, pour qui, routine ou suivi)', () => 
       { id: 'therese', prenom: 'Thérèse', type: 'adulte', suivi: false },
       { id: 'leo', prenom: 'Léo', type: 'enfant', suivi: false },
     ]);
+  });
+});
+
+describe('Onboarding — indicateur d étapes (retour test utilisateur : « étape 4 » à l écran 2)', () => {
+  const position = () => {
+    const g = screen.getByRole('group', { name: /Progression/ });
+    return {
+      texte: g.textContent,
+      actifs: g.querySelectorAll('.onboarding-dot-active').length,
+      total: g.querySelectorAll('span[aria-hidden]').length,
+    };
+  };
+
+  it('routine seule : le 2e écran (compléments) est « étape 2 sur 3 », pas 4', async () => {
+    const user = userEvent.setup();
+    render(<Onboarding onDone={() => {}} />);
+    await etape1(user, 'Léa', false);
+    expect(screen.getByRole('heading', { name: /Personnalisation/ })).toBeInTheDocument();
+    expect(position()).toMatchObject({ actifs: 2, total: 3 });
+    expect(position().texte).toMatch(/Étape 2 sur 3/);
+    await user.click(screen.getByRole('button', { name: /Continuer/ }));
+    expect(position()).toMatchObject({ actifs: 3, total: 3 });
+    expect(position().texte).toMatch(/Étape 3 sur 3/);
+  });
+
+  it('avec suivi : 5 étapes, l écran infos est « étape 2 sur 5 »', async () => {
+    await allerEtape2();
+    expect(position()).toMatchObject({ actifs: 2, total: 5 });
+    expect(position().texte).toMatch(/Étape 2 sur 5/);
   });
 });
 
