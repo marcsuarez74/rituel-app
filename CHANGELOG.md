@@ -6,6 +6,14 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 Ce fichier est **généré par [release-please](https://github.com/googleapis/release-please)** à partir des conventional commits (`feat` → mineur, `fix`/`perf` → correctif, `!` ou `BREAKING CHANGE:` → majeur) : ne pas l'éditer à la main. L'historique ci-dessous (jusqu'à 2.1.0) est conservé tel quel.
 
+## [2.5.0](https://github.com/marcsuarez74/rituel-app/compare/v2.4.0...v2.5.0) (2026-10-12)
+
+
+### Ajouté
+
+* **profil:** case « dernier appareil » — supprimer tout le foyer ([7bd2224](https://github.com/marcsuarez74/rituel-app/commit/7bd222482816e8160afd5dcd8d09c2d116221063))
+* **profil:** case « dernier appareil » pour supprimer le foyer entier ([5ee3d66](https://github.com/marcsuarez74/rituel-app/commit/5ee3d66c6f15e08af7fce057d91c014bfedeeb59))
+
 ## [2.4.0](https://github.com/marcsuarez74/rituel-app/compare/v2.3.0...v2.4.0) (2026-10-12)
 
 
