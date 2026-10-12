@@ -301,6 +301,26 @@ describe('Mon cycle', () => {
     expect(loadCycle()).toMatchObject({ numero: 1, debut: '2026-10-10', pauses: [] });
   });
 
+  it('import : aperçu rassurant, sans liste exhaustive ; notes de l’IA dédoublonnées dans un repli', async () => {
+    const user = userEvent.setup();
+    render(<Ecran />);
+    await user.click(screen.getByRole('button', { name: 'Créer mon premier cycle' }));
+    const fs = quatreFichiers();
+    fs.forEach((f) => {
+      f.remarques = ['Estimation à 118 € par semaine.', 'Menu varié.'];
+      f.recettes[0].ingredients.push({ nom: 'Z', quantite: 25, unite: 'cl', rayon: 'fruits-legumes', prixEstime: 1 } as never);
+    });
+    deposer(fs);
+    expect(await screen.findByRole('heading', { name: 'Ton cycle est prêt' })).toBeInTheDocument();
+    expect(screen.queryByText('À savoir')).not.toBeInTheDocument();
+    expect(screen.queryByText(/corrigé en/)).not.toBeInTheDocument();
+    const resume = screen.getByText(/Notes de ton IA \(2\)/);
+    expect(resume.closest('details')).not.toHaveAttribute('open');
+    await user.click(resume);
+    expect(screen.getAllByText('Menu varié.')).toHaveLength(1);
+    expect(screen.getByText(/rangés? automatiquement/)).toBeInTheDocument();
+  });
+
   it('import : début dans le passé accepté, le jour des courses suit', async () => {
     const user = userEvent.setup();
     render(<Ecran />);

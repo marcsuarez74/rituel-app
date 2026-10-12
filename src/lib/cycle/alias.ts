@@ -53,6 +53,8 @@ const ALIAS_UNITE: Record<string, { unite: string; facteur: number }> = {
 export interface RapportNormalisation {
   alertes: string[];
   erreurs: string[];
+  /** Nombre d'ingrédients dont un rayon ou une unité a été corrigé. */
+  nbCorriges: number;
 }
 
 const pluriel = (n: number, mot: string) => `${n} ${mot}${n > 1 ? 's' : ''}`;
@@ -119,5 +121,7 @@ export const normaliserFichier = (brut: unknown, nom: string): RapportNormalisat
         `${nom} · unité « ${v} » inconnue (${pluriel(n, 'ingrédient')}) — valeurs autorisées : ${UNITES.join(', ')}.`,
     ),
   ];
-  return { alertes, erreurs };
+  const nbCorriges =
+    [...rayons.values()].reduce((s, e) => s + e.n, 0) + [...unites.values()].reduce((s, e) => s + e.n, 0);
+  return { alertes, erreurs, nbCorriges };
 };

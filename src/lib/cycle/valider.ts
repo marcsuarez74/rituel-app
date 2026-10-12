@@ -21,26 +21,70 @@ export interface ContexteValidation {
   recettesPrecedentes?: string[];
 }
 
+/** Alertes classées par ce que l'utilisateur a à en faire. */
+export interface AlertesClassees {
+  /** Règles de l'app : peuvent demander une action (budget, glucides…). */
+  actions: string[];
+  /** Remarques de l'IA, dédoublonnées : informatives. */
+  notes: string[];
+  /** Conversions d'alias déjà appliquées par l'app : jamais listées. */
+  techniques: string[];
+  /** Nombre d'ingrédients rangés/convertis automatiquement. */
+  nbCorriges: number;
+}
+
 export interface ResultatImport {
   cycle: Cycle | null;
   erreurs: string[];
+  /** Toutes les alertes à plat (copie pour l'IA, compatibilité). */
   alertes: string[];
+  classees: AlertesClassees;
 }
+
+const VIDE: AlertesClassees = { actions: [], notes: [], techniques: [], nbCorriges: 0 };
+
+const empreinte = (t: string): Set<string> =>
+  new Set(
+    t
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)
+      .filter(Boolean),
+  );
+
+const quasiIdentiques = (a: Set<string>, b: Set<string>): boolean => {
+  if (a.size === 0 || b.size === 0) return a.size === b.size;
+  let commun = 0;
+  for (const m of a) if (b.has(m)) commun += 1;
+  return commun / (a.size + b.size - commun) >= 0.85;
+};
+
+/** Même texte (à la casse, aux accents et à la ponctuation près) ou quasi identique → une seule. */
+export const dedoublonnerNotes = (notes: string[]): string[] => {
+  const gardees: { texte: string; emp: Set<string> }[] = [];
+  for (const texte of notes) {
+    const emp = empreinte(texte);
+    if (!gardees.some((g) => quasiIdentiques(g.emp, emp))) gardees.push({ texte, emp });
+  }
+  return gardees.map((g) => g.texte);
+};
 
 const SEUIL_KETO = 30;
 const DINERS_PROPRES_MIN = 5;
 const egal = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
-const lire = (nom: string, contenu: string): { fichier?: CycleFichier; erreurs: string[]; alertes: string[] } => {
+type Lu = { fichier?: CycleFichier; erreurs: string[]; alertes: string[]; nbCorriges: number };
+const lire = (nom: string, contenu: string): Lu => {
   let brut: unknown;
   try {
     brut = JSON.parse(contenu);
   } catch {
-    return { erreurs: [`${nom} : JSON illisible (le fichier est incomplet ou mal copié).`], alertes: [] };
+    return { erreurs: [`${nom} : JSON illisible (le fichier est incomplet ou mal copié).`], alertes: [], nbCorriges: 0 };
   }
   const o = brut as Partial<CycleFichier> | null;
-  if (o?.format !== 'rituel-cycle') return { erreurs: [`${nom} · format : « rituel-cycle » attendu.`], alertes: [] };
-  if (o.version !== 2) return { erreurs: [`${nom} · version : 2 attendu (reçu ${String(o.version)}).`], alertes: [] };
+  if (o?.format !== 'rituel-cycle') return { erreurs: [`${nom} · format : « rituel-cycle » attendu.`], alertes: [], nbCorriges: 0 };
+  if (o.version !== 2) return { erreurs: [`${nom} · version : 2 attendu (reçu ${String(o.version)}).`], alertes: [], nbCorriges: 0 };
   const norm = normaliserFichier(brut, nom);
   // Rayons/unités inconnus : déjà signalés par `norm`, groupés par valeur.
   const forme = verifierForme(brut, FICHIER, '', 500)
@@ -49,8 +93,8 @@ const lire = (nom: string, contenu: string): { fichier?: CycleFichier; erreurs: 
     .map((e) => `${nom} · ${e}.`);
   const erreurs = [...norm.erreurs, ...forme];
   return erreurs.length
-    ? { erreurs, alertes: norm.alertes }
-    : { fichier: brut as CycleFichier, erreurs: [], alertes: norm.alertes };
+    ? { erreurs, alertes: norm.alertes, nbCorriges: norm.nbCorriges }
+    : { fichier: brut as CycleFichier, erreurs: [], alertes: norm.alertes, nbCorriges: norm.nbCorriges };
 };
 
 const fusionner = (fichiers: CycleFichier[]): { cycle?: Cycle; erreurs: string[] } => {
@@ -154,8 +198,9 @@ const regles = (cycle: Cycle, ctx: ContexteValidation): string[] => {
   return [...erreurs];
 };
 
+// Alertes de règles de l'app : celles qui peuvent demander une action.
 const alertes = (cycle: Cycle, ctx: ContexteValidation): string[] => {
-  const a: string[] = [...cycle.remarques];
+  const a: string[] = [];
   const recettes = new Map(cycle.recettes.map((r) => [r.id, r]));
 
   if (ctx.budgetMax != null)
@@ -202,12 +247,21 @@ export const importerCycle = (
 ): ResultatImport => {
   const lus = fichiers.map((f) => lire(f.nom, f.contenu));
   const erreursLecture = lus.flatMap((l) => l.erreurs);
-  if (erreursLecture.length) return { cycle: null, erreurs: erreursLecture, alertes: [] };
+  if (erreursLecture.length) return { cycle: null, erreurs: erreursLecture, alertes: [], classees: VIDE };
 
   const { cycle, erreurs } = fusionner(lus.map((l) => l.fichier!));
-  if (!cycle) return { cycle: null, erreurs, alertes: [] };
+  if (!cycle) return { cycle: null, erreurs, alertes: [], classees: VIDE };
 
   const erreursRegles = regles(cycle, ctx);
-  if (erreursRegles.length) return { cycle: null, erreurs: erreursRegles, alertes: [] };
-  return { cycle, erreurs: [], alertes: [...lus.flatMap((l) => l.alertes), ...alertes(cycle, ctx)] };
+  if (erreursRegles.length) return { cycle: null, erreurs: erreursRegles, alertes: [], classees: VIDE };
+  const techniques = lus.flatMap((l) => l.alertes);
+  const actions = alertes(cycle, ctx);
+  const notes = dedoublonnerNotes(cycle.remarques);
+  return {
+    cycle,
+    erreurs: [],
+    // Ordre historique conservé : conversions, remarques de l'IA, puis règles.
+    alertes: [...techniques, ...cycle.remarques, ...actions],
+    classees: { actions, notes, techniques, nbCorriges: lus.reduce((s, l) => s + l.nbCorriges, 0) },
+  };
 };
