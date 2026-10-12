@@ -1033,6 +1033,21 @@ textarea {
   color: var(--danger);
 }
 
+.notes-ia {
+  margin: 0 0 var(--sp-12);
+  padding: var(--sp-12);
+  border-radius: 12px;
+  background: var(--surface-2);
+  overflow-wrap: anywhere;
+}
+
+.notes-ia summary {
+  min-height: 24px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.notes-ia ul,
 .erreurs ul,
 .variante ul {
   margin: 0 0 var(--sp-8);

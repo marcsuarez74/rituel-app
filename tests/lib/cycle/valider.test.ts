@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import exempleRaw from '../../../src/assets/cycle-exemple.json?raw';
-import { importerCycle } from '../../../src/lib/cycle/valider';
+import { dedoublonnerNotes, importerCycle } from '../../../src/lib/cycle/valider';
 import { enFichiers, fichier, FOYER, quatreFichiers, recette } from './fabrique';
 
 const importer = (fs = quatreFichiers(), ctx = {}) => importerCycle(enFichiers(fs), ctx);
@@ -169,5 +169,51 @@ describe('cycle d’exemple (src/assets/cycle-exemple.json)', () => {
     expect(r.erreurs).toEqual([]);
     expect(r.alertes).toEqual([]);
     expect(r.cycle?.menus).toHaveLength(4);
+  });
+});
+
+describe('importerCycle — alertes classées', () => {
+  const avecRemarques = () => {
+    const fs = quatreFichiers();
+    fs.forEach((f, i) => {
+      f.remarques = [
+        'Budget réaliste ≈ 118 € par semaine.',
+        i === 0 ? 'Menu B privilégie le poisson.' : 'budget réaliste ≈ 118 € par semaine',
+      ];
+    });
+    fs[0].recettes[0].ingredients.push({
+      nom: 'Y',
+      quantite: 25,
+      unite: 'cl',
+      rayon: 'fruits-legumes',
+      prixEstime: 1,
+    } as never);
+    return fs;
+  };
+
+  it('range les règles de l’app en actions, les remarques en notes et les alias en techniques', () => {
+    const r = importer(avecRemarques(), { budgetMax: 20 });
+    expect(r.classees.actions.length).toBeGreaterThan(0);
+    expect(r.classees.actions.every((a) => /plafond|glucides|dîners propres|cycle précédent/.test(a))).toBe(true);
+    expect(r.classees.notes).toEqual(['Budget réaliste ≈ 118 € par semaine.', 'Menu B privilégie le poisson.']);
+    expect(r.classees.techniques.some((t) => /fruits-legumes/.test(t))).toBe(true);
+    expect(r.classees.nbCorriges).toBe(2);
+    expect(r.classees.actions.some((a) => /Budget réaliste|corrigé|convertie/.test(a))).toBe(false);
+  });
+
+  it('dédoublonne les remarques identiques ou quasi identiques, garde les différentes', () => {
+    expect(
+      dedoublonnerNotes([
+        'Estimé ≈ 118 € / semaine.',
+        'estimé ≈ 118 € / semaine',
+        'Estimé: 118 € / semaine !',
+        'Autre chose du tout',
+      ]),
+    ).toEqual(['Estimé ≈ 118 € / semaine.', 'Autre chose du tout']);
+  });
+
+  it('alertes à plat : conserve tout pour la compatibilité', () => {
+    const r = importer(avecRemarques(), { budgetMax: 20 });
+    expect(r.alertes).toContain('Menu B privilégie le poisson.');
   });
 });

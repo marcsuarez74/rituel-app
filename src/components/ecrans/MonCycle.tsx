@@ -327,11 +327,20 @@ export function MonCycle({
               </ul>
             </section>
           )}
-          {resultat.alertes.length > 0 && (
-            <section className="profile-section variante" aria-label="Alertes">
-              <h2>À savoir</h2>
+          {resultat.cycle && resultat.classees.actions.length === 0 && (
+            <section className="profile-section apercu-pret" aria-label="Résumé de l'import">
+              <h2>Ton cycle est prêt</h2>
+              <p className="muted">
+                4 menus importés, courses estimées entre {Math.round(Math.min(...estimes))} et{' '}
+                {Math.round(Math.max(...estimes))} € par semaine.
+              </p>
+            </section>
+          )}
+          {resultat.classees.actions.length > 0 && (
+            <section className="profile-section variante" aria-label="Points à regarder">
+              <h2>Quelques points avant de démarrer</h2>
               <ul>
-                {resultat.alertes.map((a) => (
+                {resultat.classees.actions.map((a) => (
                   <li key={a}>{a}</li>
                 ))}
               </ul>
@@ -350,11 +359,33 @@ export function MonCycle({
               )}
             </section>
           )}
-          {(resultat.erreurs.length > 0 || resultat.alertes.length > 0) && (
+          {(resultat.classees.notes.length > 0 || resultat.classees.nbCorriges > 0) && (
+            <details className="notes-ia">
+              <summary>
+                {resultat.classees.notes.length > 0
+                  ? `Notes de ton IA (${resultat.classees.notes.length})`
+                  : "Détails de l'import"}
+              </summary>
+              {resultat.classees.notes.length > 0 && (
+                <ul>
+                  {resultat.classees.notes.map((n) => (
+                    <li key={n}>{n}</li>
+                  ))}
+                </ul>
+              )}
+              {resultat.classees.nbCorriges > 0 && (
+                <p className="muted">
+                  {resultat.classees.nbCorriges} ingrédient{resultat.classees.nbCorriges > 1 ? 's' : ''} rangé
+                  {resultat.classees.nbCorriges > 1 ? 's' : ''} automatiquement dans le bon rayon ou la bonne unité.
+                </p>
+              )}
+            </details>
+          )}
+          {(resultat.erreurs.length > 0 || resultat.classees.actions.length > 0) && (
             <button
               type="button"
               className="bouton-contour"
-              onClick={() => void copierEt(messagePourClaude(resultat.erreurs, resultat.alertes), 'erreurs')}
+              onClick={() => void copierEt(messagePourClaude(resultat.erreurs, resultat.classees.actions), 'erreurs')}
             >
               <Icon name="copy" size={18} /> {copie === 'erreurs' ? 'Copié — colle-le à Claude' : 'Copier pour Claude'}
             </button>
