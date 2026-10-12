@@ -1,15 +1,15 @@
 Design rules:
 
-- always extract design tokens (colors, spacing, radius, typography)
+- always extract design tokens (colors, spacing, radius, typography, shadows)
 - never hardcode repeated values
 - group styles into reusable patterns
 
 Project constraints (Rituel — override any generic habit):
 
-- light Herbes theme ONLY (sage/basilic/citron), no dark mode, no prefers-color-scheme logic
+- light « Marché coloré » theme ONLY (papier/encre/basilic + familles du marché), no dark mode, no prefers-color-scheme logic
 - plain CSS in a single file (src/index.css), semantic classes — NO Tailwind, no CSS-in-JS
 - tokens live as CSS variables on :root — map every color/spacing/radius to var(--token)
-- touch targets >= 48px, contrast >= 4.5:1 ("ultra visible" is a product requirement)
+- touch targets >= 48px, contrast >= 4.5:1 ("ultra visible" is a product requirement, enforced by tests/contraste.test.ts)
 - texts in French
 
 Component strategy:
@@ -26,11 +26,11 @@ Spacing:
 Colors:
 
 - map colors to semantic CSS variables (see ai/context/design-system.md)
-- avoid raw hex values in components (white #ffffff on basilic fills, ink #26312b on citron fills are the accepted literals, per design-system.md)
+- avoid raw hex values in components (white #ffffff on basilic fills, ink --encre on jaune fruit fills are the accepted literals, per design-system.md)
 
 Typography:
 
-- use ONLY the tokens: sizes --fs-hero/--fs-h1/--fs-h2/--fs-h3/--fs-body/--fs-sec/--fs-meta/--fs-micro/--fs-chart (+ --fs-emoji onboarding), line-heights --lh-none/--lh-tight/--lh-title/--lh-body, spacing --sp-2…--sp-24 (échelle 2px) — no raw values, enforced by tests/css-tokens.test.ts
+- use ONLY the tokens: sizes --fs-hero/--fs-h1/--fs-h2/--fs-h3/--fs-body/--fs-sec/--fs-meta/--fs-micro/--fs-chart (+ --fs-emoji onboarding), line-heights --lh-none/--lh-tight/--lh-title/--lh-body, spacing --sp-2…--sp-24 (échelle 2px), radii --r-orga/--r-orga-2/--r-bouton, shadows --shadow/--shadow-forte/--shadow-bouton — no raw values, enforced by tests/css-tokens.test.ts + tests/contraste.test.ts
 - maintain consistency
 
 Responsive:

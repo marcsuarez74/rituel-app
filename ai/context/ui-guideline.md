@@ -21,13 +21,13 @@ Complète `design-system.md` (les tokens) avec les règles d'usage. Source de v�
 ## Onboarding (premier lancement)
 
 - 5 étapes obligatoires, lancées si `sportapp:profile` absent **ou en ancienne forme** (→ **migration préremplie**) ; style « grand écart fun » : dégradés saturés, émojis géants, **points de progression** en haut, boutons `.onb-back`/`.onb-next` à partir de l'étape 2
-- Étape 1 : deux grandes cartes profil (💪 Marc basilic / 🌿 Mélanie citron, tagline « Diet & sport » / « Keto & sport »)
+- Étape 1 : deux grandes cartes profil (💪 Marc basilic / 🌿 Mélanie jaune fruit, tagline « Diet & sport » / « Keto & sport »)
 - Étape 2 (infos) : « Salut {prénom} 👋 » + **date de naissance** (l'âge s'affiche calculé) + poids/taille avec bornes (30–250 kg, âge calculé 10–100 ans, 120–230 cm), erreur inline `role="alert"` ; en migration, note `.onb-note` + `.mig-prof`, étape 2 directe, seule la date à compléter
 - Étape 3 (objectif) : 4 cartes radio `.rcard` (Perte / Affiner / Masse / Maintien) + échéance (date optionnelle) + poids objectif — **pas de kcal/jour**
 - Étape 4 (compléments & régime) : chips presets + ajout libre (`.chips`/`.addrow`), radios `.rl` régime ; bouton « Continuer »
 - Étape 5 (maison & courses) : magasin habituel (datalist presets), budget max hebdo, foyer (`.onb-row2` personnes / repas par jour), préférences de plats (chips + libre) — **tout optionnel** ; CTA final « C'est parti ! 🚀 »
 - Submit = `saveProfile` (shape v2.1) + première pesée datée du jour ; pas de bouton « passer » (l'app est inutilisable sans profil — c'est voulu)
-- Accent unique Herbes partout : basilic = action/valeur principale, citron = surbrillance (jamais une couleur de texte)
+- Accents Marché coloré partout : basilic = action/valeur principale, jaune fruit = surbrillance (jamais une couleur de texte), papier/encre pour le fond et le texte
 
 ## Écran Profil
 
@@ -40,7 +40,7 @@ Complète `design-system.md` (les tokens) avec les règles d'usage. Source de v�
 
 - **Aujourd'hui** : jauges semaine (`.jauge`), action du jour (`.action-du-jour`, bordure basilic), repas du jour (`.carte-repas` : moment, titre, méta, coche 48 px `.coche`)
 - **Menu** : bande des 7 jours (`.bande-jours`, `role="tablist"`, point = journée faite), repas du jour, « Pas ce soir : reporter », « Ce soir, j'anticipe » (`.anticipe`, pointillé)
-- **Courses** : carte budget (`.budget-chiffres`, `.alerte` en `--danger`), chariot, mode magasin, rayons, extras keto en encadré citron en dernier, placard replié (`details.placard`)
+- **Courses** : carte budget (`.budget-chiffres`, `.alerte` en `--danger`), chariot, mode magasin, rayons, extras keto en encadré jaune fruit en dernier, placard replié (`details.placard`)
 - **Rituel** : segment 3 sections, déroulé en cartes dépliables ; mode guidé = une étape par écran, progression segmentée, minuteur (`.minuteur`)
 - **Mon cycle / Semaine type** : écrans poussés, choix en segments (`.segment` radio), listes de lignes `.hub-ligne` côté Profil
 
@@ -66,15 +66,15 @@ Complète `design-system.md` (les tokens) avec les règles d'usage. Source de v�
 ## Interactions tactiles
 
 - Zone de clic = toute la ligne du label (pas seulement la checkbox)
-- Nav segmented : `aria-current="page"` sur l'actif, différenciation visuelle forte (pilule glissante `--surface` + ombre, actif encre vs inactif muted) ; animation = rebond élastique 0,32s (pilule), tuée par `prefers-reduced-motion`
+- Nav segmented : `aria-current="page"` sur l'actif, différenciation visuelle forte (fond `--surface` + ring encre `inset 0 0 0 2px`, actif encre 700 vs inactif encre-2) ; `prefers-reduced-motion` tue les animations
 - `:focus-visible` toujours visible (clavier = outline accent) ; `.sr-only` pour les inputs fonctionnellement cachés mais focusables
 
 ## À ne PAS faire
 
-- ❌ Couleur hex en dur dans un composant (utiliser les tokens `var(--…)` ; sur basilic → texte blanc `#ffffff`, sur citron → texte encre `#26312b`)
+- ❌ Couleur hex en dur dans un composant (utiliser les tokens `var(--…)` ; sur basilic → texte blanc `#ffffff`, sur jaune fruit → texte encre `var(--encre)`)
 - ❌ Montrer les données de l'autre profil dans Mon suivi
 - ❌ Écran intermédiaire avant le contenu (pas de page « importer d'abord » — le cycle d'exemple suffit)
 - ❌ Nouveau pattern de sync d'état (celui du repo suffit)
 - ❌ Modal custom / lib de composants — `window.confirm` et les cartes suffisent
 - ❌ Animations longues (> 0,25 s) ou décoratives
-- ❌ Dark mode « parce qu'on peut » (le thème clair Herbes est le seul thème)
+- ❌ Dark mode « parce qu'on peut » (le thème clair « Marché coloré » est le seul thème)
