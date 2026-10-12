@@ -533,7 +533,7 @@ menus`.
 
 # Annexe A — Valeurs exactes de la maquette (font foi)
 
-Source : `docs/superpowers/mockups/2026-10-12-refonte-ergo-marche.html` (bloc `:root` l.13-40,
+Source : `docs/superpowers/mockups/2026-10-12-refonte-ergo-marche.html` (bloc `:root` l.13-39,
 `PLATS` l.349-359, illustrations l.420-430). La maquette est autonome (couleurs et SVG inline) ;
 seules les polices y viennent de Google Fonts — l'app, elle, les **auto-héberge** (§3.2).
 
