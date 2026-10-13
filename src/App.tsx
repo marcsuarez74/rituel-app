@@ -29,6 +29,7 @@ const Guide = lazy(() => import('./components/ecrans/Guide').then((m) => ({ defa
 const SemaineType = lazy(() => import('./components/ecrans/SemaineType').then((m) => ({ default: m.SemaineType })));
 const SignalerBug = lazy(() => import('./components/ecrans/SignalerBug').then((m) => ({ default: m.SignalerBug })));
 const MonCycle = lazy(() => import('./components/ecrans/MonCycle').then((m) => ({ default: m.MonCycle })));
+const ProchainsMenus = lazy(() => import('./components/ecrans/ProchainsMenus').then((m) => ({ default: m.ProchainsMenus })));
 const Recette = lazy(() => import('./components/ecrans/Recette').then((m) => ({ default: m.Recette })));
 
 // Sous-titre de l'en-tête : la date du jour (la position dans les menus vit
@@ -61,10 +62,13 @@ function App() {
   const [jourVu, setJourVu] = useState<Jour | null>(null); // jour consulté dans Menu
   const [guide, setGuide] = useState<number | null>(null); // étape du mode guidé ouvert
   const [monCycle, setMonCycle] = useState(false);
-  // Fin d'onboarding : Mon cycle s'ouvre directement sur « générer » (prompt à copier).
+  // Assistant « Prépare tes prochains menus » (génération en 3 étapes).
+  const [assistant, setAssistant] = useState(false);
+  // Fin d'onboarding : l'assistant s'ouvre directement (« Plus tard » possible).
   const [cycleDirect, setCycleDirect] = useState(false);
-  // Semaine type : 'etape' = étape « Ta semaine » juste après l'onboarding.
-  const [semaineType, setSemaineType] = useState<'etape' | 'profil' | null>(null);
+  // Semaine type : 'etape' = étape « Ta semaine » après l'onboarding ;
+  // 'assistant' = ouverte depuis l'assistant (on y revient en sortant).
+  const [semaineType, setSemaineType] = useState<'etape' | 'profil' | 'assistant' | null>(null);
   const [profilOuvert, setProfilOuvert] = useState(false);
   const [signalerBug, setSignalerBug] = useState(false);
   // Suivi poids : écran poussé ouvert depuis la carte Suivi ou depuis Moi.
@@ -196,12 +200,15 @@ function App() {
     </div>
   ) : null;
 
-  // Fin de l'étape « Ta semaine » de l'onboarding : sans cycle à soi, on
-  // enchaîne sur Mon cycle (génération) plutôt que sur le cycle d'exemple.
+  // Fin de l'étape « Ta semaine » de l'onboarding : sans menus à soi, on
+  // enchaîne sur l'assistant plutôt que sur les menus d'exemple. Ouverte depuis
+  // l'assistant, on y revient (le wizard reprend à l'étape 1).
   const finSemaineType = () => {
-    if (semaineType === 'etape' && !cycleStocke) {
+    if (semaineType === 'assistant') {
+      setAssistant(true);
+    } else if (semaineType === 'etape' && !cycleStocke) {
       setCycleDirect(true);
-      setMonCycle(true);
+      setAssistant(true);
     }
     setSemaineType(null);
   };
@@ -214,14 +221,52 @@ function App() {
             foyer={foyer}
             compact={semaineType === 'etape'}
             instantane={cycleStocke?.semaineAuLancement}
+            retourLabel={semaineType === 'assistant' ? 'Retour' : undefined}
             onRetour={() => finSemaineType()}
             onOuvrirAssistant={() => {
               setSemaineType(null);
-              setMonCycle(true);
+              setAssistant(true);
             }}
             onEnregistrer={(f) => {
               enregistrerFoyer(f);
               finSemaineType();
+            }}
+          />
+        </Suspense>
+        {toaster}
+      </div>
+    );
+  }
+
+  if (assistant) {
+    return (
+      <div className="main-content">
+        <Suspense fallback={<Chargement />}>
+          <ProchainsMenus
+            stocke={cycleStocke}
+            foyer={foyer}
+            profil={profile}
+            aujourdhui={aujourdhui}
+            direct={cycleDirect}
+            onRetour={() => {
+              setAssistant(false);
+              setCycleDirect(false);
+            }}
+            onCycle={(c) => {
+              setCycleStocke(c);
+              setSemaineVue(null);
+              setJourVu(null);
+            }}
+            onFoyer={setFoyerStocke}
+            onModifierSemaine={() => {
+              setAssistant(false);
+              setSemaineType('assistant');
+            }}
+            onVoirSemaine={() => {
+              setAssistant(false);
+              setCycleDirect(false);
+              setProfilOuvert(false);
+              setOnglet('semaine');
             }}
           />
         </Suspense>
@@ -237,13 +282,9 @@ function App() {
           <MonCycle
             stocke={cycleStocke}
             foyer={foyer}
-            profil={profile}
             aujourdhui={aujourdhui}
-            vueInitiale={cycleDirect ? 'generer' : undefined}
-            onRetour={() => {
-              setMonCycle(false);
-              setCycleDirect(false);
-            }}
+            onRetour={() => setMonCycle(false)}
+            onOuvrirAssistant={() => setAssistant(true)}
             onCycle={(c) => {
               setCycleStocke(c);
               setSemaineVue(null);
@@ -429,7 +470,7 @@ function App() {
                     setJourVu(null);
                   }}
                   onSemaineType={() => setSemaineType('profil')}
-                  onProchainsMenus={() => setMonCycle(true)}
+                  onProchainsMenus={() => setAssistant(true)}
                   instantane={actif.semaineAuLancement}                  onOuvrirRecette={ouvrirRecette(semaine)}
                 />
               )}

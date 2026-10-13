@@ -52,10 +52,14 @@ test.describe('Parcours rituel guidé et import de cycle', () => {
     await expect(page.getByRole('alert')).toHaveCount(0);
   });
 
-  test('Mes menus : import avec alias et remarques → aperçu apaisé, notes repliées', async ({ page }) => {
+  test('Assistant : import avec alias et remarques → aperçu apaisé, notes repliées', async ({ page }) => {
     await page.getByRole('button', { name: 'Moi : Marc' }).click();
     await page.getByRole('button', { name: /Mes menus/ }).click();
     await page.getByRole('button', { name: /Créer mes premiers menus/ }).click();
+    await expect(page.getByRole('heading', { name: 'Ta semaine type est-elle toujours la bonne ?' })).toBeVisible();
+    await page.getByRole('button', { name: 'Oui, continuer' }).click();
+    await page.getByRole('button', { name: /Copier la demande/ }).click();
+    await page.getByRole('button', { name: "J'ai la réponse, continuer" }).click();
 
     const fichiers = fichiersCycle('Cycle apaisé').map((f: { name: string; mimeType: string; buffer: Buffer }) => {
       const c = JSON.parse(f.buffer.toString());
@@ -65,7 +69,7 @@ test.describe('Parcours rituel guidé et import de cycle', () => {
     });
     await page.locator('input[type="file"]').setInputFiles(fichiers);
 
-    await expect(page.getByRole('heading', { name: 'Tes menus sont prêts' })).toBeVisible();
+    await expect(page.getByText("C'est bon : 4 semaines de menus.")).toBeVisible();
     await expect(page.getByText('À savoir')).toHaveCount(0);
     await expect(page.getByText(/corrigé en/)).toHaveCount(0);
     const repli = page.locator('details.notes-ia');
@@ -85,24 +89,27 @@ test.describe('Parcours rituel guidé et import de cycle', () => {
     }
   });
 
-  test('Mes menus : importer 4 fichiers valides puis démarrer le cycle', async ({ page }) => {
+  test('Assistant : importer 4 fichiers valides puis lancer mes menus', async ({ page }) => {
     await page.getByRole('button', { name: 'Moi : Marc' }).click();
     await page.getByRole('button', { name: /Mes menus/ }).click();
     await page.getByRole('button', { name: /Créer mes premiers menus/ }).click();
-    await verifierPasDeDebordement(page, 'Mes menus (import)');
+    await page.getByRole('button', { name: 'Oui, continuer' }).click();
+    await page.getByRole('button', { name: /Copier la demande/ }).click();
+    await page.getByRole('button', { name: "J'ai la réponse, continuer" }).click();
+    await verifierPasDeDebordement(page, 'Assistant (import)');
 
     await page.locator('input[type="file"]').setInputFiles(fichiersCycle('Cycle importé e2e'));
 
     await expect(page.getByText(/Aperçu des 4 semaines/)).toBeVisible();
     await expect(page.getByText(/À corriger avant de démarrer/)).toHaveCount(0);
-    await verifierPasDeDebordement(page, 'Mes menus (aperçu)');
+    await verifierPasDeDebordement(page, 'Assistant (aperçu)');
 
-    const demarrer = page.getByRole('button', { name: 'Démarrer les menus' });
-    await expect(demarrer).toBeEnabled();
-    await demarrer.click();
+    const lancer = page.getByRole('button', { name: 'Lancer mes menus' });
+    await expect(lancer).toBeEnabled();
+    await lancer.click();
 
-    await expect(page.getByRole('heading', { name: /Menus n° \d+ prêts/ })).toBeVisible();
-    await verifierPasDeDebordement(page, 'Mes menus (prêt)');
+    await expect(page.getByRole('heading', { name: 'Tes menus sont prêts' })).toBeVisible();
+    await verifierPasDeDebordement(page, 'Assistant (fin)');
 
     const cycle = (await lireStockage(page, 'sportapp:cycle')) as { cycle: { titre: string; menus: unknown[] } };
     expect(cycle.cycle.titre).toBe('Cycle importé e2e');

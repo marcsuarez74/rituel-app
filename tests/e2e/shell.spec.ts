@@ -100,7 +100,7 @@ test.describe('Shell v2 — barre du bas', () => {
   }
 
   for (const largeur of [320, 375]) {
-    test(`courses : carte budget, coche, mode magasin, sans débordement à ${largeur}px`, async ({ page }) => {
+    test(`courses : carte budget, coche, tout coché, « J'ai payé », sans débordement à ${largeur}px`, async ({ page }) => {
       await page.setViewportSize({ width: largeur, height: 667 });
       await page.goto('/');
       await page.evaluate(() => document.fonts.ready);
@@ -109,9 +109,11 @@ test.describe('Shell v2 — barre du bas', () => {
         .getByRole('button', { name: 'Courses', exact: true })
         .click();
       await expect(page.getByText('Estimé')).toBeVisible();
-      const premiere = page.locator('.rayon .ligne-cochable').first();
-      await premiere.click();
-      await expect(premiere).toHaveAttribute('aria-pressed', 'true');
+      // « J'ai payé » n'apparaît que quand TOUT est coché (spec PR 4).
+      const coches = page.locator('.rayon .ligne-cochable');
+      const total = await coches.count();
+      for (let i = 0; i < total; i++) await coches.nth(i).click();
+      await expect(page.getByText('Tout est dans le panier !')).toBeVisible();
       await page.getByRole('button', { name: /Mode magasin/ }).click();
       await page.getByRole('button', { name: /J'ai payé/ }).click();
       await expect(page.getByLabel('Total du ticket (€)')).toBeVisible();
@@ -151,14 +153,18 @@ test.describe('Shell v2 — barre du bas', () => {
   }
 
   for (const largeur of [320, 375]) {
-    test(`mes menus : Moi → génération en 3 étapes → import refusé expliqué, à ${largeur}px`, async ({ page }) => {
+    test(`assistant : Moi → 3 étapes → import refusé expliqué, à ${largeur}px`, async ({ page }) => {
       await page.setViewportSize({ width: largeur, height: 667 });
       await page.goto('/');
       await page.evaluate(() => document.fonts.ready);
       await page.getByRole('button', { name: 'Moi : Marc' }).click();
       await page.getByRole('button', { name: /Mes menus/ }).click();
       await page.getByRole('button', { name: 'Créer mes premiers menus' }).click();
-      await expect(page.getByRole('heading', { name: '3 · Importe les 4 fichiers' })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Ta semaine type est-elle toujours la bonne ?' })).toBeVisible();
+      await page.getByRole('button', { name: 'Oui, continuer' }).click();
+      await page.getByRole('button', { name: /Copier la demande/ }).click();
+      await page.getByRole('button', { name: "J'ai la réponse, continuer" }).click();
+      await expect(page.getByRole('heading', { name: "Ajoute la réponse de l'IA" })).toBeVisible();
       const debord = () =>
         page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
       expect(await debord()).toBeLessThanOrEqual(OVERFLOW_TOLERANCE);

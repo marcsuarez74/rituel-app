@@ -43,6 +43,7 @@ export function SemaineType({
   foyer,
   compact = false,
   instantane,
+  retourLabel = 'Moi',
   onEnregistrer,
   onRetour,
   onOuvrirAssistant,
@@ -51,6 +52,8 @@ export function SemaineType({
   compact?: boolean;
   /** Instantané de la semaine type au lancement des menus en cours (option B). */
   instantane?: unknown;
+  /** Libellé du retour (l'écran d'où l'on vient). */
+  retourLabel?: string;
   onEnregistrer: (f: ReglagesFoyer) => void;
   onRetour: () => void;
   onOuvrirAssistant?: () => void;
@@ -66,7 +69,7 @@ export function SemaineType({
     <div className="semaine-type">
       {!compact && (
         <button type="button" className="profil-back" onClick={onRetour}>
-          <Icon name="chev-left" size={16} /> Moi
+          <Icon name="chev-left" size={16} /> {retourLabel}
         </button>
       )}
       <h1>{compact ? 'Ta semaine' : 'Ma semaine type'}</h1>

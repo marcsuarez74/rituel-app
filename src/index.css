@@ -3541,3 +3541,98 @@ progress {
 .pied-recette.sur-onglets {
   bottom: calc(72px + env(safe-area-inset-bottom));
 }
+
+/* ---------- Assistant « Prépare tes prochains menus » (§7, maquette ecranWiz) ---------- */
+
+.etape-wiz {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-12);
+  margin: var(--sp-4) 0 var(--sp-16);
+  font-weight: 700;
+  font-size: var(--fs-sec);
+}
+
+.progres {
+  display: flex;
+  flex: 1;
+  max-width: 140px;
+  gap: var(--sp-4);
+}
+
+.progres span {
+  flex: 1;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--papier-2);
+  border: 1px solid var(--kraft-fonce);
+}
+
+.progres .fait {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.progres .ici {
+  background: var(--accent-2);
+  border-color: var(--encre);
+}
+
+.prochains-menus .question {
+  margin-bottom: var(--sp-8);
+}
+
+.resume-sem {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-8);
+  margin: var(--sp-12) 0;
+}
+
+.resume-sem span {
+  padding: var(--sp-4) var(--sp-12);
+  border: 2px solid var(--encre);
+  border-radius: 12px;
+  background: var(--surface);
+  font-weight: 600;
+  font-size: var(--fs-sec);
+}
+
+.message {
+  margin: var(--sp-12) 0;
+  border: 2px solid var(--encre);
+  border-radius: 6px 18px 18px 18px;
+  background: var(--surface);
+  font-size: var(--fs-sec);
+}
+
+.message summary {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sp-12);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.message pre {
+  max-height: 220px;
+  margin: 0;
+  padding: var(--sp-12);
+  overflow-y: auto;
+  border-top: 1.5px dashed var(--kraft-fonce);
+  font-size: var(--fs-sec);
+  line-height: var(--lh-body);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.fete {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-8);
+  padding: var(--sp-16) var(--sp-4) var(--sp-8);
+  text-align: center;
+}
