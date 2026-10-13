@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { Guide } from '../src/components/ecrans/Guide';
 import { MonCycle } from '../src/components/ecrans/MonCycle';
+import { ProchainsMenus } from '../src/components/ecrans/ProchainsMenus';
+import { Semaine } from '../src/components/ecrans/Semaine';
 import { SemaineType } from '../src/components/ecrans/SemaineType';
 import { Rituel } from '../src/components/ecrans/Rituel';
 import { useMinuteurs } from '../src/components/useMinuteurs';
@@ -165,15 +167,58 @@ describe('Courses', () => {
     const user = userEvent.setup();
     render(ecran());
     await user.click(screen.getByRole('button', { name: /Œufs/ }));
+    await user.click(screen.getByRole('button', { name: /Skyr/ }));
+    await user.click(screen.getByRole('button', { name: /Whey/ }));
     await user.click(screen.getByRole('button', { name: /Mode magasin/ }));
     expect(screen.queryByRole('button', { name: /Œufs/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Protéines' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /J'ai payé/ })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /J'ai payé/ }));
     await user.type(screen.getByLabelText('Total du ticket (€)'), '54,30');
     fireEvent.submit(document.querySelector('.ticket')!);
     expect(getDepenses()).toEqual([{ date: '2026-10-03', magasin: 'Courses', total: 54.3 }]);
     expect(screen.getByText('Payé').nextSibling).toHaveTextContent('54,30');
+  });
+
+  it('chaque rayon porte sa famille de couleur (--fam / --fam-t)', () => {
+    const { container } = render(ecran());
+    const cagettes = [...container.querySelectorAll<HTMLElement>('.rayon')];
+    expect(
+      cagettes.map((c) => [c.querySelector('h2')!.textContent, c.style.getPropertyValue('--fam'), c.style.getPropertyValue('--fam-t')]),
+    ).toEqual([
+      ['Protéines', 'var(--via)', 'var(--via-t)'],
+      ['Laitiers', 'var(--fra)', 'var(--fra-t)'],
+      ['Épicerie', 'var(--epi)', 'var(--epi-t)'],
+    ]);
+  });
+
+  it('« J’ai payé » seulement quand tout est coché : confettis, bannière, saisie du ticket', async () => {
+    const user = userEvent.setup();
+    render(ecran());
+    expect(screen.queryByRole('button', { name: /J'ai payé/ })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Œufs/ }));
+    await user.click(screen.getByRole('button', { name: /Skyr/ }));
+    await user.click(screen.getByRole('button', { name: /Whey/ }));
+    expect(screen.getByText('Tout est dans le panier !')).toBeInTheDocument();
+    expect(document.querySelectorAll('.confetti').length).toBeGreaterThan(0);
+    await user.click(screen.getByRole('button', { name: /J'ai payé/ }));
+    await user.type(screen.getByLabelText('Total du ticket (€)'), '54,30');
+    fireEvent.submit(document.querySelector('.ticket')!);
+    expect(getDepenses()).toEqual([{ date: '2026-10-03', magasin: 'Courses', total: 54.3 }]);
+    expect(screen.getByText('Payé').nextSibling).toHaveTextContent('54,30');
+  });
+
+  it('cocher puis décocher retire les confettis', async () => {
+    const user = userEvent.setup();
+    render(ecran());
+    await user.click(screen.getByRole('button', { name: /Œufs/ }));
+    await user.click(screen.getByRole('button', { name: /Skyr/ }));
+    await user.click(screen.getByRole('button', { name: /Whey/ }));
+    expect(document.querySelectorAll('.confetti').length).toBeGreaterThan(0);
+    await user.click(screen.getByRole('button', { name: /Œufs/ }));
+    expect(document.querySelectorAll('.confetti')).toHaveLength(0);
   });
 });
 
@@ -418,88 +463,57 @@ describe('mode guidé v2 (barre minuteurs, gestes, On range, fin)', () => {
   });
 });
 
+// Profils et foyer partagés par « Mes menus » et l'assistant (spec §7).
+const profilMarc = { id: 'marc' as const, objectif: { type: 'perte' as const }, complements: [], regime: 'aucun' as const };
+const foyerTest = (): ReglagesFoyer => ({
+  ...foyerParDefaut(null),
+  membres: [
+    { id: 'alex', prenom: 'Alex', type: 'adulte', suivi: true },
+    { id: 'sam', prenom: 'Sam', type: 'adulte', suivi: true, regime: 'keto' },
+    { id: 'lou', prenom: 'Lou', type: 'enfant', suivi: false },
+    { id: 'noa', prenom: 'Noa', type: 'enfant', suivi: false },
+  ],
+});
+
 describe('Mon cycle', () => {
-  const profilMarc = { id: 'marc' as const, objectif: { type: 'perte' as const }, complements: [], regime: 'aucun' as const };
-  const foyerTest = (): ReglagesFoyer => ({
-    ...foyerParDefaut(null),
-    membres: [
-      { id: 'alex', prenom: 'Alex', type: 'adulte', suivi: true },
-      { id: 'sam', prenom: 'Sam', type: 'adulte', suivi: true, regime: 'keto' },
-      { id: 'lou', prenom: 'Lou', type: 'enfant', suivi: false },
-      { id: 'noa', prenom: 'Noa', type: 'enfant', suivi: false },
-    ],
-  });
   const Ecran = ({ stocke: initial = null as CycleActif | null }) => {
     const [stocke, setStocke] = useState(initial);
     return (
       <MonCycle
         stocke={stocke}
         foyer={foyerTest()}
-        profil={profilMarc}
         aujourdhui="2026-10-07"
         onRetour={() => {}}
         onCycle={setStocke}
         onFoyer={() => {}}
         onVoirCourses={() => {}}
+        onOuvrirAssistant={() => {}}
       />
     );
   };
-  const deposer = (fichiers: object[]) =>
-    fireEvent.change(document.querySelector('input[type="file"]')!, {
-      target: { files: fichiers.map((f, i) => new File([JSON.stringify(f)], `menu-${'ABCD'[i]}.json`, { type: 'application/json' })) },
-    });
 
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it('sans cycle : génération en 3 étapes, import des 4 fichiers, aperçu, démarrage', async () => {
+  it('sans menus : le bouton ouvre l’assistant des prochains menus', async () => {
     const user = userEvent.setup();
-    render(<Ecran />);
+    const onOuvrirAssistant = vi.fn();
+    render(
+      <MonCycle
+        stocke={null}
+        foyer={foyerTest()}
+        aujourdhui="2026-10-07"
+        onRetour={() => {}}
+        onCycle={() => {}}
+        onFoyer={() => {}}
+        onVoirCourses={() => {}}
+        onOuvrirAssistant={onOuvrirAssistant}
+      />,
+    );
+    expect(screen.getByText(/Prépare les tiens avec une IA/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Créer mes premiers menus' }));
-    expect(screen.getByRole('link', { name: 'Ouvrir Claude' })).toHaveAttribute('href', 'https://claude.ai/new');
-
-    deposer(quatreFichiers());
-    expect(await screen.findByRole('heading', { name: 'Aperçu des 4 semaines' })).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: 'À corriger avant de démarrer' })).not.toBeInTheDocument();
-    expect(screen.getByLabelText(/Début des menus/)).toHaveValue('2026-10-10'); // prochain samedi
-
-    await user.click(screen.getByRole('button', { name: 'Démarrer les menus' }));
-    expect(screen.getByRole('heading', { name: 'Menus n° 1 prêts' })).toBeInTheDocument();
-    expect(loadCycle()).toMatchObject({ numero: 1, debut: '2026-10-10', pauses: [] });
-  });
-
-  it('import : aperçu rassurant, sans liste exhaustive ; notes de l’IA dédoublonnées dans un repli', async () => {
-    const user = userEvent.setup();
-    render(<Ecran />);
-    await user.click(screen.getByRole('button', { name: 'Créer mes premiers menus' }));
-    const fs = quatreFichiers();
-    fs.forEach((f) => {
-      f.remarques = ['Estimation à 118 € par semaine.', 'Menu varié.'];
-      f.recettes[0].ingredients.push({ nom: 'Z', quantite: 25, unite: 'cl', rayon: 'fruits-legumes', prixEstime: 1 } as never);
-    });
-    deposer(fs);
-    expect(await screen.findByRole('heading', { name: 'Tes menus sont prêts' })).toBeInTheDocument();
-    expect(screen.queryByText('À savoir')).not.toBeInTheDocument();
-    expect(screen.queryByText(/corrigé en/)).not.toBeInTheDocument();
-    const resume = screen.getByText(/Notes de ton IA \(2\)/);
-    expect(resume.closest('details')).not.toHaveAttribute('open');
-    await user.click(resume);
-    expect(screen.getAllByText('Menu varié.')).toHaveLength(1);
-    expect(screen.getByText(/rangés? automatiquement/)).toBeInTheDocument();
-  });
-
-  it('import : début dans le passé accepté, le jour des courses suit', async () => {
-    const user = userEvent.setup();
-    render(<Ecran />);
-    await user.click(screen.getByRole('button', { name: 'Créer mes premiers menus' }));
-    deposer(quatreFichiers());
-    // fireEvent.change : la saisie clavier d'un <input type="date"> n'est pas fiable sous happy-dom.
-    fireEvent.change(await screen.findByLabelText(/Début des menus/), { target: { value: '2026-10-04' } }); // dimanche passé
-    expect(screen.getByText('Le jour des courses passe au dimanche.')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Démarrer les menus' }));
-    expect(loadCycle()?.debut).toBe('2026-10-04');
-    expect(loadFoyer()?.jourCourses).toBe('dimanche');
+    expect(onOuvrirAssistant).toHaveBeenCalledTimes(1);
   });
 
   it('cycle en cours : changer la date de début (coches gardées), ou annuler', async () => {
@@ -519,33 +533,6 @@ describe('Mon cycle', () => {
     expect(loadCycle()).toMatchObject({ id: 'c1', debut: '2026-09-23' });
     expect(loadFoyer()?.jourCourses).toBe('mercredi');
     expect(screen.getByRole('heading', { name: 'Semaine 3 sur 4' })).toBeInTheDocument();
-  });
-
-  it('le prompt copié détaille aussi les autres membres suivis (profil reçu par la sync)', async () => {
-    const user = userEvent.setup();
-    const writeText = vi.fn().mockResolvedValue(undefined);
-    garderProfilFoyer({ id: 'sam', prenom: 'Sam', objectif: { type: 'masse' }, complements: [], regime: 'keto', taille: 170 });
-    render(<Ecran />);
-    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
-    await user.click(screen.getByRole('button', { name: 'Créer mes premiers menus' }));
-    await user.click(screen.getByRole('button', { name: /Copier le prompt/ }));
-    expect(writeText.mock.calls[0][0]).toContain('- sam (Sam) · adulte · suivi · régime keto · objectif : prendre de la masse · 170 cm');
-    Reflect.deleteProperty(navigator, 'clipboard');
-  });
-
-  it('fichiers incomplets : erreurs bloquantes, message à recoller pour Claude', async () => {
-    const user = userEvent.setup();
-    const writeText = vi.fn().mockResolvedValue(undefined);
-    render(<Ecran />);
-    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
-    await user.click(screen.getByRole('button', { name: 'Créer mes premiers menus' }));
-    deposer(quatreFichiers().slice(0, 3));
-    expect(await screen.findByRole('heading', { name: 'À corriger avant de démarrer' })).toBeInTheDocument();
-    expect(screen.getByText('Menu D manquant.')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Démarrer les menus' })).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /Copier pour Claude/ }));
-    expect(writeText.mock.calls[0][0]).toContain('- Menu D manquant.');
-    Reflect.deleteProperty(navigator, 'clipboard');
   });
 
   it('cycle en cours : semaines A-D, verrou, pause après la semaine en cours', async () => {
@@ -571,7 +558,232 @@ describe('Mon cycle', () => {
   });
 });
 
+describe('Assistant (prochains menus)', () => {
+  const Ecran = ({ stocke: initial = null as CycleActif | null, onVoirSemaine = (): void => {}, onModifierSemaine = (): void => {} }) => {
+    const [stocke, setStocke] = useState(initial);
+    return (
+      <ProchainsMenus
+        stocke={stocke}
+        foyer={foyerTest()}
+        profil={profilMarc}
+        aujourdhui="2026-10-07"
+        onRetour={() => {}}
+        onCycle={setStocke}
+        onFoyer={() => {}}
+        onModifierSemaine={onModifierSemaine}
+        onVoirSemaine={onVoirSemaine}
+      />
+    );
+  };
+  const deposer = (fichiers: object[]) =>
+    fireEvent.change(document.querySelector('input[type="file"]')!, {
+      target: { files: fichiers.map((f, i) => new File([JSON.stringify(f)], `menu-${'ABCD'[i]}.json`, { type: 'application/json' })) },
+    });
+
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('étape 1 : résumé de la semaine type, « La modifier », « Oui, continuer »', async () => {
+    const user = userEvent.setup();
+    const onModifierSemaine = vi.fn();
+    render(<Ecran onModifierSemaine={onModifierSemaine} />);
+    expect(screen.getByRole('heading', { name: 'Ta semaine type est-elle toujours la bonne ?' })).toBeInTheDocument();
+    expect(screen.getByText(/Elle décide des box, des courses et du rituel/)).toBeInTheDocument();
+    expect(screen.getByText('Étape 1 sur 3')).toBeInTheDocument();
+    expect(screen.getByText(/dîners maison/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'La modifier' }));
+    expect(onModifierSemaine).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByRole('button', { name: 'Oui, continuer' }));
+    expect(screen.getByRole('heading', { name: 'Demande tes menus à une IA' })).toBeInTheDocument();
+  });
+
+  it('étape 2 : « Copier la demande » met le prompt dans le presse-papiers, puis « J’ai la réponse, continuer »', async () => {
+    const user = userEvent.setup();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    render(<Ecran />);
+    await user.click(screen.getByRole('button', { name: 'Oui, continuer' }));
+    expect(screen.getByText(/Colle-la dans|colle-le dans/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Copier la demande/ }));
+    expect(writeText.mock.calls[0][0]).toContain('Sam');
+    await user.click(screen.getByRole('button', { name: "J'ai la réponse, continuer" }));
+    expect(screen.getByRole('heading', { name: "Ajoute la réponse de l'IA" })).toBeInTheDocument();
+    Reflect.deleteProperty(navigator, 'clipboard');
+  });
+
+  it('étape 2 : la demande copiée détaille aussi les autres membres suivis (profil reçu par la sync)', async () => {
+    const user = userEvent.setup();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    garderProfilFoyer({ id: 'sam', prenom: 'Sam', objectif: { type: 'masse' }, complements: [], regime: 'keto', taille: 170 });
+    render(<Ecran />);
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    await user.click(screen.getByRole('button', { name: 'Oui, continuer' }));
+    await user.click(screen.getByRole('button', { name: /Copier la demande/ }));
+    expect(writeText.mock.calls[0][0]).toContain('- sam (Sam) · adulte · suivi · régime keto · objectif : prendre de la masse · 170 cm');
+    Reflect.deleteProperty(navigator, 'clipboard');
+  });
+
+  it('étape 3 : import valide → bannière, « Lancer mes menus » ; lancer → « Tes menus sont prêts »', async () => {
+    const user = userEvent.setup();
+    const onVoirSemaine = vi.fn();
+    render(<Ecran onVoirSemaine={onVoirSemaine} />);
+    await user.click(screen.getByRole('button', { name: 'Oui, continuer' }));
+    await user.click(screen.getByRole('button', { name: /Copier la demande/ }));
+    await user.click(screen.getByRole('button', { name: "J'ai la réponse, continuer" }));
+    deposer(quatreFichiers());
+    expect(await screen.findByText("C'est bon : 4 semaines de menus.")).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'À corriger avant de démarrer' })).not.toBeInTheDocument();
+    expect(screen.getByLabelText(/Début des menus/)).toHaveValue('2026-10-10'); // prochain samedi
+    await user.click(screen.getByRole('button', { name: 'Lancer mes menus' }));
+    expect(screen.getByRole('heading', { name: 'Tes menus sont prêts' })).toBeInTheDocument();
+    expect(loadCycle()).toMatchObject({ numero: 1, debut: '2026-10-10', pauses: [] });
+    await user.click(screen.getByRole('button', { name: 'Voir ma semaine' }));
+    expect(onVoirSemaine).toHaveBeenCalledTimes(1);
+  });
+
+  it('étape 3 : notes de l’IA dédoublonnées dans un repli ; début dans le passé accepté', async () => {
+    const user = userEvent.setup();
+    render(<Ecran />);
+    await user.click(screen.getByRole('button', { name: 'Oui, continuer' }));
+    await user.click(screen.getByRole('button', { name: /Copier la demande/ }));
+    await user.click(screen.getByRole('button', { name: "J'ai la réponse, continuer" }));
+    const fs = quatreFichiers();
+    fs.forEach((f) => {
+      f.remarques = ['Estimation à 118 € par semaine.', 'Menu varié.'];
+      f.recettes[0].ingredients.push({ nom: 'Z', quantite: 25, unite: 'cl', rayon: 'fruits-legumes', prixEstime: 1 } as never);
+    });
+    deposer(fs);
+    expect(await screen.findByText("C'est bon : 4 semaines de menus.")).toBeInTheDocument();
+    expect(screen.queryByText('À savoir')).not.toBeInTheDocument();
+    const resume = screen.getByText(/Notes de ton IA \(2\)/);
+    expect(resume.closest('details')).not.toHaveAttribute('open');
+    await user.click(resume);
+    expect(screen.getAllByText('Menu varié.')).toHaveLength(1);
+    expect(screen.getByText(/rangés? automatiquement/)).toBeInTheDocument();
+
+    // fireEvent.change : la saisie clavier d'un <input type="date"> n'est pas fiable sous happy-dom.
+    fireEvent.change(screen.getByLabelText(/Début des menus/), { target: { value: '2026-10-04' } }); // dimanche passé
+    expect(screen.getByText('Le jour des courses passe au dimanche.')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Lancer mes menus' }));
+    expect(loadCycle()?.debut).toBe('2026-10-04');
+    expect(loadFoyer()?.jourCourses).toBe('dimanche');
+  });
+
+  it('étape 3 : import invalide → erreurs lisibles, « Copier pour Claude », pas de « Lancer mes menus »', async () => {
+    const user = userEvent.setup();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    render(<Ecran />);
+    await user.click(screen.getByRole('button', { name: 'Oui, continuer' }));
+    await user.click(screen.getByRole('button', { name: /Copier la demande/ }));
+    await user.click(screen.getByRole('button', { name: "J'ai la réponse, continuer" }));
+    deposer(quatreFichiers().slice(0, 3));
+    expect(await screen.findByRole('heading', { name: 'À corriger avant de démarrer' })).toBeInTheDocument();
+    expect(screen.getByText('Menu D manquant.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Lancer mes menus' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Copier pour Claude/ }));
+    expect(writeText.mock.calls.at(-1)![0]).toContain('- Menu D manquant.');
+    Reflect.deleteProperty(navigator, 'clipboard');
+  });
+
+  it('aucun « cycle » dans les textes de l’assistant, du début à la fin', async () => {
+    const user = userEvent.setup();
+    render(<Ecran />);
+    const aucunCycle = () => expect(document.body.textContent ?? '').not.toMatch(/cycle/i);
+    aucunCycle();
+    await user.click(screen.getByRole('button', { name: 'Oui, continuer' }));
+    await user.click(screen.getByRole('button', { name: /Copier la demande/ }));
+    await user.click(screen.getByRole('button', { name: "J'ai la réponse, continuer" }));
+    aucunCycle();
+    deposer(quatreFichiers());
+    await screen.findByText("C'est bon : 4 semaines de menus.");
+    aucunCycle();
+    await user.click(screen.getByRole('button', { name: 'Lancer mes menus' }));
+    expect(screen.getByRole('heading', { name: 'Tes menus sont prêts' })).toBeInTheDocument();
+    aucunCycle();
+  });
+});
+
+describe('Semaine (bandeau prochains menus)', () => {
+  const actif = (): CycleActif => ({ id: 'c1', numero: 1, debut: '2026-10-03', pauses: [], cycle: cycle() });
+  const ecran = (instantane?: unknown, onProchainsMenus = (): void => {}) => (
+    <Semaine
+      actif={actif()}
+      foyer={foyerDuo()}
+      semaine={0}
+      moi="marc"
+      aujourdhui="2026-10-03"
+      syncVersion={0}
+      jourVu={null}
+      onJour={() => {}}
+      onSemaine={() => {}}
+      onSemaineType={() => {}}
+      onProchainsMenus={onProchainsMenus}
+      onOuvrirRecette={() => {}}
+      instantane={instantane}
+    />
+  );
+
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('k > 0 : bandeau (sans détail) + lien vers l’assistant', async () => {
+    const user = userEvent.setup();
+    const f = foyerDuo();
+    const instantane = { ...f.semaine, lundi: { ...f.semaine.lundi, diner: 'rapide' as const } };
+    const onProchainsMenus = vi.fn();
+    render(ecran(instantane, onProchainsMenus));
+    expect(screen.getByText('1 changement pour tes prochains menus')).toBeInTheDocument();
+    expect(screen.queryByText('dès les prochains menus')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Prépare tes prochains menus' }));
+    expect(onProchainsMenus).toHaveBeenCalledTimes(1);
+  });
+
+  it('k = 0 ou instantané absent : pas de bandeau', () => {
+    render(ecran());
+    expect(screen.queryByText(/changement/)).not.toBeInTheDocument();
+    render(ecran(foyerDuo().semaine));
+    expect(screen.queryByText(/changement/)).not.toBeInTheDocument();
+  });
+});
+
 describe('Semaine type', () => {
+  it('changements depuis le lancement : bandeau, lien assistant, badges « dès les prochains menus »', async () => {
+    const user = userEvent.setup();
+    const f = foyerDuo();
+    const instantane = {
+      ...f.semaine,
+      lundi: { ...f.semaine.lundi, diner: 'rapide' as const },
+      jeudi: { ...f.semaine.jeudi, plusTard: ['nouveau'] },
+    };
+    const onOuvrirAssistant = vi.fn();
+    render(
+      <SemaineType
+        foyer={f}
+        instantane={instantane}
+        onOuvrirAssistant={onOuvrirAssistant}
+        onEnregistrer={() => {}}
+        onRetour={() => {}}
+      />,
+    );
+    expect(screen.getByText('2 changements pour tes prochains menus')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Prépare tes prochains menus' }));
+    expect(onOuvrirAssistant).toHaveBeenCalledTimes(1);
+    const lundi = screen.getByText('Lundi', { selector: 'summary b' }).closest('summary')!;
+    expect(lundi.textContent).toContain('dès les prochains menus');
+    const mardi = screen.getByText('Mardi', { selector: 'summary b' }).closest('summary')!;
+    expect(mardi.textContent).not.toContain('dès les prochains menus');
+    const jeudi = screen.getByText('Jeudi', { selector: 'summary b' }).closest('summary')!;
+    expect(jeudi.textContent).toContain('dès les prochains menus');
+  });
+
+  it('sans instantané (menus d’exemple ou ancien cycle) : ni bandeau ni badge', () => {
+    render(<SemaineType foyer={foyerDuo()} onEnregistrer={() => {}} onRetour={() => {}} />);
+    expect(screen.queryByText(/changement/)).not.toBeInTheDocument();
+  });
+
   it('un adulte sans téléphone (doublon) se retire ; un membre avec téléphone jamais', async () => {
     const user = userEvent.setup();
     const onEnregistrer = vi.fn();

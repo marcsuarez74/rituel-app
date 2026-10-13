@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { cleIngredient, formatQuantite, listeCourses } from '../../../src/lib/cycle/courses';
+import { cleIngredient, couleurRayon, formatQuantite, listeCourses } from '../../../src/lib/cycle/courses';
 import type { Cycle } from '../../../src/lib/cycle/types';
+import { RAYONS } from '../../../src/lib/cycle/types';
 import { importerCycle } from '../../../src/lib/cycle/valider';
 import { enFichiers, quatreFichiers } from './fabrique';
 
@@ -9,6 +10,22 @@ const cycleDe = (fs = quatreFichiers()): Cycle => {
   if (!r.cycle) throw new Error(r.erreurs.join('\n'));
   return r.cycle;
 };
+
+describe('couleurRayon (une famille par rayon, §4.4)', () => {
+  it('les 8 rayons ont une famille de couleur', () => {
+    const familles = RAYONS.map((r) => [r, couleurRayon(r)]);
+    expect(Object.fromEntries(familles)).toEqual({
+      proteines: 'via',
+      laitiers: 'fra',
+      feculents: 'epi',
+      legumes: 'leg',
+      fruits: 'fru',
+      epicerie: 'epi',
+      surgeles: 'fra',
+      keto: 'epi',
+    });
+  });
+});
 
 describe('cleIngredient', () => {
   it('ignore casse, accents, pluriel simple et précisions entre parenthèses', () => {

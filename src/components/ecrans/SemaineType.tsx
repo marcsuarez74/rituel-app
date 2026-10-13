@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { ordreJours } from '../../lib/cycle/calendrier';
 import type { ExceptionFoyer, JourType, ReglagesFoyer } from '../../lib/cycle/etat';
 import { ajouterEnfant, changerJour, resumeJour, retirerMembre } from '../../lib/cycle/foyer';
+import { changementsEnAttente } from '../../lib/cycle/semaineType';
 import { JOURS } from '../../lib/cycle/types';
 import type { Jour } from '../../lib/cycle/types';
 import { capitalize } from '../../lib/text';
+import { BandeauProchainsMenus } from '../BandeauProchainsMenus';
 import { Icon } from '../Icon';
 
 const JOURNEES = ['standard', 'sortie', 'repos', 'alternee'] as const;
@@ -40,25 +42,34 @@ function Choix<T extends string>({
 export function SemaineType({
   foyer,
   compact = false,
+  instantane,
+  retourLabel = 'Moi',
   onEnregistrer,
   onRetour,
+  onOuvrirAssistant,
 }: {
   foyer: ReglagesFoyer;
   compact?: boolean;
+  /** Instantané de la semaine type au lancement des menus en cours (option B). */
+  instantane?: unknown;
+  /** Libellé du retour (l'écran d'où l'on vient). */
+  retourLabel?: string;
   onEnregistrer: (f: ReglagesFoyer) => void;
   onRetour: () => void;
+  onOuvrirAssistant?: () => void;
 }) {
   const [f, setF] = useState(foyer);
   const [enfant, setEnfant] = useState('');
   const [exception, setException] = useState<ExceptionFoyer>({ regle: '', effet: '', actif: true });
   const adultes = f.membres.filter((m) => m.type === 'adulte');
   const jour = (j: Jour, maj: Partial<JourType>) => setF(changerJour(f, j, maj));
+  const changes = changementsEnAttente(f, instantane);
 
   return (
     <div className="semaine-type">
       {!compact && (
         <button type="button" className="profil-back" onClick={onRetour}>
-          <Icon name="chev-left" size={16} /> Moi
+          <Icon name="chev-left" size={16} /> {retourLabel}
         </button>
       )}
       <h1>{compact ? 'Ta semaine' : 'Ma semaine type'}</h1>
@@ -68,6 +79,7 @@ export function SemaineType({
           jour par jour se règle ensuite dans Profil › Ma semaine type.
         </p>
       )}
+      {onOuvrirAssistant && <BandeauProchainsMenus k={changes.length} onOuvrir={onOuvrirAssistant} />}
 
       <section className="profile-section" aria-labelledby="h-rythme">
         <h2 id="h-rythme">Rythme</h2>
@@ -136,6 +148,7 @@ export function SemaineType({
                 <summary>
                   <b>{capitalize(j)}</b>
                   <span className="muted">{resumeJour(f, j)}</span>
+                  {changes.includes(j) && <span className="badge-prochains">dès les prochains menus</span>}
                 </summary>
                 {f.membres.map((m) => (
                   <Choix

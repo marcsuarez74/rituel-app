@@ -644,6 +644,37 @@ button:active:not(:disabled) {
   margin-bottom: var(--sp-8);
 }
 
+/* Option B (§6) : bandeau des changements de la semaine type + badge kraft. */
+.bandeau-prochains {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-4) var(--sp-12);
+  margin-bottom: var(--sp-12);
+  padding: var(--sp-8) var(--sp-12);
+  border: 2px solid var(--encre);
+  border-radius: var(--r-orga-2);
+  background: var(--citron-surface);
+  font-size: var(--fs-sec);
+  font-weight: 600;
+}
+
+.bandeau-prochains .lien {
+  min-height: 48px;
+}
+
+.badge-prochains {
+  display: inline-block;
+  padding: var(--sp-2) var(--sp-8);
+  border: 1.5px solid var(--kraft-fonce);
+  border-radius: 999px;
+  background: var(--kraft);
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 /* Liens de bas d'écran Semaine : semaine type (secondaire) et, en semaine 4,
    l'action pleine vers l'assistant (§4.3, une seule action pleine par écran). */
 .semaine-liens {
@@ -1071,10 +1102,44 @@ button:active:not(:disabled) {
   font-weight: 600;
 }
 
+/* Cagettes par famille (§4.4) : la couleur du rayon teinte l'en-tête (rayures
+   de cagette) et les coches. La couleur n'est jamais seule : le libellé et le
+   compteur restent écrits. */
 .rayon-tete {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  margin: calc(-1 * var(--sp-16)) calc(-1 * var(--sp-16)) var(--sp-12);
+  padding: var(--sp-8) var(--sp-16);
+  border-bottom: 2px solid var(--encre);
+  background:
+    repeating-linear-gradient(0deg, transparent 0 11px, rgb(42 34 25 / 0.14) 11px 13px),
+    var(--fam-t, transparent);
+}
+
+.rayon .ligne-cochable[aria-pressed='true'] .case {
+  background: var(--fam, var(--accent));
+  border-color: var(--fam, var(--accent));
+}
+
+.fini-banniere {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  border: 2px solid var(--encre);
+  border-radius: var(--r-orga);
+  background: var(--leg-t);
+  font-weight: 700;
+}
+
+.fini-banniere span {
+  flex: 1;
+  min-width: 0;
+}
+
+.fini-banniere svg {
+  flex: none;
+  margin-left: var(--sp-12);
 }
 
 .rayon.keto {
@@ -3475,4 +3540,99 @@ progress {
 
 .pied-recette.sur-onglets {
   bottom: calc(72px + env(safe-area-inset-bottom));
+}
+
+/* ---------- Assistant « Prépare tes prochains menus » (§7, maquette ecranWiz) ---------- */
+
+.etape-wiz {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-12);
+  margin: var(--sp-4) 0 var(--sp-16);
+  font-weight: 700;
+  font-size: var(--fs-sec);
+}
+
+.progres {
+  display: flex;
+  flex: 1;
+  max-width: 140px;
+  gap: var(--sp-4);
+}
+
+.progres span {
+  flex: 1;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--papier-2);
+  border: 1px solid var(--kraft-fonce);
+}
+
+.progres .fait {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.progres .ici {
+  background: var(--accent-2);
+  border-color: var(--encre);
+}
+
+.prochains-menus .question {
+  margin-bottom: var(--sp-8);
+}
+
+.resume-sem {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-8);
+  margin: var(--sp-12) 0;
+}
+
+.resume-sem span {
+  padding: var(--sp-4) var(--sp-12);
+  border: 2px solid var(--encre);
+  border-radius: 12px;
+  background: var(--surface);
+  font-weight: 600;
+  font-size: var(--fs-sec);
+}
+
+.message {
+  margin: var(--sp-12) 0;
+  border: 2px solid var(--encre);
+  border-radius: 6px 18px 18px 18px;
+  background: var(--surface);
+  font-size: var(--fs-sec);
+}
+
+.message summary {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sp-12);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.message pre {
+  max-height: 220px;
+  margin: 0;
+  padding: var(--sp-12);
+  overflow-y: auto;
+  border-top: 1.5px dashed var(--kraft-fonce);
+  font-size: var(--fs-sec);
+  line-height: var(--lh-body);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.fete {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-8);
+  padding: var(--sp-16) var(--sp-4) var(--sp-8);
+  text-align: center;
 }

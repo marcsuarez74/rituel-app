@@ -36,8 +36,8 @@ async function assertStyleGuideline(page: import('@playwright/test').Page, label
 // « Plus tard » en sort vers l'app (cycle d'exemple).
 async function passerTaSemaineEtMonCycle(page: import('@playwright/test').Page) {
   await page.getByRole('button', { name: 'Passer' }).click();
-  await expect(page.getByRole('heading', { name: 'Mes menus', level: 1 })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Copier le prompt' })).toBeVisible();
+  // L'onboarding arrive sur l'assistant (spec PR 4) : « Plus tard » ramène à l'app.
+  await expect(page.getByRole('heading', { name: 'Ta semaine type est-elle toujours la bonne ?' })).toBeVisible();
   await page.getByRole('button', { name: 'Plus tard' }).click();
 }
 
@@ -374,12 +374,8 @@ for (const largeur of [320, 375]) {
     if (!(await taSemaine.isVisible())) await plusTard.click(); // étape sync optionnelle (build de prod)
     await page.getByRole('button', { name: 'Passer' }).click();
 
-    // Mon cycle : bouton copier visible d'emblée, 3 étapes claires, rien ne déborde.
-    await expect(page.getByRole('heading', { name: 'Mes menus', level: 1 })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Copier le prompt' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: '1 · Copie le prompt' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: '2 · Colle-le dans ton IA' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: '3 · Importe les 4 fichiers' })).toBeVisible();
+    // L'assistant (spec PR 4) : étape 1 de la semaine type, rien ne déborde.
+    await expect(page.getByRole('heading', { name: 'Ta semaine type est-elle toujours la bonne ?', level: 1 })).toBeVisible();
     await assertPasDeDebordement(page);
 
     const profil = await page.evaluate(() => JSON.parse(localStorage.getItem('sportapp:profile')!));

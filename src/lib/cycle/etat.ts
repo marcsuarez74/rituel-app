@@ -51,6 +51,9 @@ export interface CycleActif {
   pauses: number[]; // index de semaine (0-3) après lesquels une pause est insérée
   cycle: Cycle;
   relanceDe?: string;
+  /** Instantané de foyer.semaine au lancement des menus (option B, spec §6) :
+   *  référence du diff « dès les prochains menus ». Absent = aucun diff. */
+  semaineAuLancement?: Record<Jour, JourType>;
 }
 
 export interface Report {

@@ -1,87 +1,47 @@
 import { useState } from 'react';
-import type { ChangeEvent } from 'react';
-import { estimerSemaine } from '../../lib/cycle/budget';
-import { ajouterJours, jourDe, positionCycle, prochainCycle, prochainJour } from '../../lib/cycle/calendrier';
+import { ajouterJours, positionCycle, prochainCycle, prochainJour } from '../../lib/cycle/calendrier';
 import type { CycleActif, ReglagesFoyer } from '../../lib/cycle/etat';
-import { loadPrecedent, saveCycle, saveFoyer, savePrecedent } from '../../lib/cycle/etat';
-import { ajouterPause, changerDebut, demarrer, generationOuverte, messagePourClaude, relancer } from '../../lib/cycle/monCycle';
-import { type Jour, LETTRES } from '../../lib/cycle/types';
-import { importerCycle, type ResultatImport } from '../../lib/cycle/valider';
+import { saveCycle, saveFoyer } from '../../lib/cycle/etat';
+import { ajouterPause, changerDebut, generationOuverte, relancer } from '../../lib/cycle/monCycle';
+import { LETTRES } from '../../lib/cycle/types';
 import { formatJourMoisCourt, periodeCourte } from '../../lib/dates';
-import type { UserProfile } from '../../lib/model';
-import { assemblePromptIa } from '../../lib/promptIa';
-import { getWeights, loadProfilsFoyer } from '../../lib/storage';
 import { Icon } from '../Icon';
+import { ChampDebut } from './ChampDebut';
 
-type Vue = 'etat' | 'generer' | 'apercu' | 'pret';
+type Vue = 'etat' | 'pret';
 
-// Début du cycle : passé autorisé (« courses faites samedi dernier ») ; le
-// jour des courses du foyer suit la date choisie (changerDebut).
-function ChampDebut({ valeur, jourCourses, onChange }: { valeur: string; jourCourses: Jour; onChange: (v: string) => void }) {
-  return (
-    <label className="debut-cycle">
-      Début des menus (jour des courses de la semaine 1)
-      <input type="date" value={valeur} onChange={(e) => onChange(e.target.value)} />
-      {valeur && jourDe(valeur) !== jourCourses && (
-        <span className="muted">Le jour des courses passe au {jourDe(valeur)}.</span>
-      )}
-    </label>
-  );
-}
-
-const copier = async (texte: string) => {
-  try {
-    await navigator.clipboard.writeText(texte);
-  } catch {
-    const ta = document.createElement('textarea');
-    ta.value = texte;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    ta.remove();
-  }
-};
-
-// Écran Mon cycle (spec v2 §6-7, écran 8) : où en est le cycle, verrou tant
-// que les 4 semaines ne sont pas passées, pause d'une semaine, relance ;
-// génération en 3 étapes (prompt → Claude → import) avec aperçu et alertes.
+// Écran « Mes menus » (spec refonte §4.6/§7) : où en sont les menus (position,
+// pause, date de début) et la relance. La GÉNÉRATION vit dans l'assistant
+// (ProchainsMenus) : ce fichier n'a plus ni prompt, ni import, ni aperçu.
 export function MonCycle({
   stocke,
   foyer,
-  profil,
   aujourdhui,
-  vueInitiale,
   onRetour,
   onCycle,
   onFoyer,
   onVoirCourses,
+  onOuvrirAssistant,
 }: {
   stocke: CycleActif | null;
   foyer: ReglagesFoyer;
-  profil: UserProfile;
   aujourdhui: string;
-  // 'generer' : arrivée directe depuis l'onboarding (prompt prêt à copier).
-  vueInitiale?: 'generer';
   onRetour: () => void;
   onCycle: (c: CycleActif) => void;
   onFoyer: (f: ReglagesFoyer) => void;
   onVoirCourses: () => void;
+  onOuvrirAssistant: () => void;
 }) {
-  const [vue, setVue] = useState<Vue>(vueInitiale ?? 'etat');
-  const [direct, setDirect] = useState(vueInitiale === 'generer'); // tant qu'on n'a pas quitté l'arrivée directe
-  const [copie, setCopie] = useState<string | null>(null);
-  const [resultat, setResultat] = useState<ResultatImport | null>(null);
-  const [debut, setDebut] = useState(() => prochainJour(aujourdhui, foyer.jourCourses));
+  const [vue, setVue] = useState<Vue>('etat');
+  const [nouveauDebut, setNouveauDebut] = useState<string | null>(null); // édition en cours
   const ouverte = generationOuverte(stocke, aujourdhui);
   const position = stocke ? positionCycle(stocke, aujourdhui) : null;
-
-  const [nouveauDebut, setNouveauDebut] = useState<string | null>(null); // édition en cours
 
   const enregistrer = (c: CycleActif) => {
     saveCycle(c);
     onCycle(c);
   };
-  // Cycle + jour des courses du foyer alignés sur la date de début.
+  // Menus + jour des courses du foyer alignés sur la date de début.
   const enregistrerAvecDebut = (c: CycleActif, d: string) => {
     const { actif, foyer: f } = changerDebut(c, foyer, d);
     enregistrer(actif);
@@ -90,47 +50,11 @@ export function MonCycle({
       onFoyer(f);
     }
   };
-  const copierEt = async (texte: string, quoi: string) => {
-    await copier(texte);
-    setCopie(quoi);
-  };
-  const importer = async (e: ChangeEvent<HTMLInputElement>) => {
-    const fichiers = await Promise.all(
-      [...(e.target.files ?? [])].map(async (f) => ({ nom: f.name, contenu: await f.text() })),
-    );
-    e.target.value = '';
-    if (fichiers.length === 0) return;
-    setResultat(
-      importerCycle(fichiers, {
-        membres: foyer.membres.map((m) => ({ id: m.id, suivi: m.suivi, ...(m.regime ? { regime: m.regime } : {}) })),
-        budgetMax: foyer.budgetMax,
-        recettesPrecedentes: loadPrecedent(),
-      }),
-    );
-    setCopie(null);
-    setVue('apercu');
-  };
-  const lancer = () => {
-    if (!resultat?.cycle) return;
-    if (stocke) savePrecedent(stocke.cycle.recettes.map((r) => r.id));
-    enregistrerAvecDebut(demarrer(resultat.cycle, stocke, debut, crypto.randomUUID()), debut);
-    setVue('pret');
-  };
-
-  const estimes = resultat?.cycle ? LETTRES.map((l) => estimerSemaine(resultat.cycle!, l).total) : [];
-  const plusCher = Math.max(0, ...estimes);
-  const quitte = vue === 'etat' || (direct && vue === 'generer');
-  const retour = quitte
-    ? onRetour
-    : () => {
-        setVue('etat');
-        setDirect(false);
-      };
 
   return (
     <div className="mon-cycle">
-      <button type="button" className="profil-back" onClick={retour}>
-        <Icon name="chev-left" size={16} /> {vue === 'etat' ? 'Moi' : quitte ? 'Plus tard' : 'Mes menus'}
+      <button type="button" className="profil-back" onClick={onRetour}>
+        <Icon name="chev-left" size={16} /> Moi
       </button>
       <h1>Mes menus</h1>
 
@@ -139,8 +63,8 @@ export function MonCycle({
           {!stocke && (
             <section className="profile-section">
               <h2>Menus d'exemple</h2>
-              <p>Tu utilises les menus d'exemple. Crée les tiens avec Claude, à partir de vos profils et de votre semaine type.</p>
-              <button type="button" className="bouton-plein" onClick={() => setVue('generer')}>
+              <p>Tu utilises les menus d'exemple. Prépare les tiens avec une IA, à partir de vos profils et de votre semaine type.</p>
+              <button type="button" className="bouton-plein" onClick={onOuvrirAssistant}>
                 Créer mes premiers menus
               </button>
             </section>
@@ -246,7 +170,7 @@ export function MonCycle({
                   type="button"
                   className="bouton-plein"
                   onClick={() => {
-                    enregistrer(relancer(stocke, aujourdhui, foyer.jourCourses, crypto.randomUUID()));
+                    enregistrer(relancer(stocke, aujourdhui, foyer.jourCourses, crypto.randomUUID(), foyer.semaine));
                     setVue('pret');
                   }}
                 >
@@ -254,163 +178,14 @@ export function MonCycle({
                 </button>
               </section>
               <section className="profile-section">
-                <h2>Nouveaux menus avec Claude</h2>
-                <p>4 nouveaux menus selon vos profils, environ 5 minutes avec ton abonnement Claude.</p>
-                <button type="button" className="bouton-contour" onClick={() => setVue('generer')}>
-                  Créer de nouveaux menus
+                <h2>Nouveaux menus avec une IA</h2>
+                <p>4 nouveaux menus selon vos profils, environ 5 minutes avec ton abonnement.</p>
+                <button type="button" className="bouton-contour" onClick={onOuvrirAssistant}>
+                  Préparer de nouveaux menus
                 </button>
               </section>
             </>
           )}
-        </>
-      )}
-
-      {vue === 'generer' && (
-        <>
-          <p className="muted">
-            {direct
-              ? "Ton foyer est prêt : le prompt aussi. Copie-le, colle-le dans ton IA, puis importe les 4 fichiers qu'elle te rend."
-              : '3 étapes, une fois pour les 4 semaines.'}
-          </p>
-          <section className="profile-section">
-            <h2>1 · Copie le prompt</h2>
-            <p>Il contient votre foyer, votre semaine type, le budget et les règles des menus.</p>
-            <button
-              type="button"
-              className="bouton-plein"
-              onClick={() =>
-                void copierEt(
-                  assemblePromptIa({
-                    foyer,
-                    profil,
-                    dernierPoids: getWeights(profil.id).at(-1) ?? null,
-                    // Les autres membres suivis : leur profil et leur pesée, reçus par la sync.
-                    autres: Object.values(loadProfilsFoyer()).map((p) => ({
-                      profil: p,
-                      dernierPoids: getWeights(p.id).at(-1) ?? null,
-                    })),
-                    precedentes: loadPrecedent(),
-                  }),
-                  'prompt',
-                )
-              }
-            >
-              <Icon name="copy" size={18} /> {copie === 'prompt' ? 'Prompt copié' : 'Copier le prompt'}
-            </button>
-          </section>
-          <section className="profile-section">
-            <h2>2 · Colle-le dans ton IA</h2>
-            <p>Nouvelle conversation, colle, envoie. Ton IA (Claude de préférence) prépare 4 fichiers (menu-A.json … menu-D.json) : télécharge-les.</p>
-            <a className="bouton-contour" href="https://claude.ai/new" target="_blank" rel="noreferrer">
-              Ouvrir Claude
-            </a>
-          </section>
-          <section className="profile-section">
-            <h2>3 · Importe les 4 fichiers</h2>
-            <label className="bouton-plein import-fichiers">
-              Choisir les fichiers .json
-              <input type="file" multiple accept="application/json,.json" className="sr-only" onChange={(e) => void importer(e)} />
-            </label>
-          </section>
-        </>
-      )}
-
-      {vue === 'apercu' && resultat && (
-        <>
-          {resultat.erreurs.length > 0 && (
-            <section className="profile-section erreurs" aria-label="Erreurs">
-              <h2>À corriger avant de démarrer</h2>
-              <ul>
-                {resultat.erreurs.map((e) => (
-                  <li key={e}>{e}</li>
-                ))}
-              </ul>
-            </section>
-          )}
-          {resultat.cycle && resultat.classees.actions.length === 0 && (
-            <section className="profile-section apercu-pret" aria-label="Résumé de l'import">
-              <h2>Tes menus sont prêts</h2>
-              <p className="muted">
-                4 menus importés, courses estimées entre {Math.round(Math.min(...estimes))} et{' '}
-                {Math.round(Math.max(...estimes))} € par semaine.
-              </p>
-            </section>
-          )}
-          {resultat.classees.actions.length > 0 && (
-            <section className="profile-section variante" aria-label="Points à regarder">
-              <h2>Quelques points avant de démarrer</h2>
-              <ul>
-                {resultat.classees.actions.map((a) => (
-                  <li key={a}>{a}</li>
-                ))}
-              </ul>
-              {foyer.budgetMax != null && plusCher > foyer.budgetMax && (
-                <button
-                  type="button"
-                  className="bouton-contour"
-                  onClick={() => {
-                    const f = { ...foyer, budgetMax: Math.ceil(plusCher) };
-                    saveFoyer(f);
-                    onFoyer(f);
-                  }}
-                >
-                  Ajuster mon budget à {Math.ceil(plusCher)} €
-                </button>
-              )}
-            </section>
-          )}
-          {(resultat.classees.notes.length > 0 || resultat.classees.nbCorriges > 0) && (
-            <details className="notes-ia">
-              <summary>
-                {resultat.classees.notes.length > 0
-                  ? `Notes de ton IA (${resultat.classees.notes.length})`
-                  : "Détails de l'import"}
-              </summary>
-              {resultat.classees.notes.length > 0 && (
-                <ul>
-                  {resultat.classees.notes.map((n) => (
-                    <li key={n}>{n}</li>
-                  ))}
-                </ul>
-              )}
-              {resultat.classees.nbCorriges > 0 && (
-                <p className="muted">
-                  {resultat.classees.nbCorriges} ingrédient{resultat.classees.nbCorriges > 1 ? 's' : ''} rangé
-                  {resultat.classees.nbCorriges > 1 ? 's' : ''} automatiquement dans le bon rayon ou la bonne unité.
-                </p>
-              )}
-            </details>
-          )}
-          {(resultat.erreurs.length > 0 || resultat.classees.actions.length > 0) && (
-            <button
-              type="button"
-              className="bouton-contour"
-              onClick={() => void copierEt(messagePourClaude(resultat.erreurs, resultat.classees.actions), 'erreurs')}
-            >
-              <Icon name="copy" size={18} /> {copie === 'erreurs' ? 'Copié — colle-le à Claude' : 'Copier pour Claude'}
-            </button>
-          )}
-          {resultat.cycle && (
-            <>
-              <h2>Aperçu des 4 semaines</h2>
-              {resultat.cycle.menus.map((m, i) => (
-                <p key={m.lettre} className="ligne-reserve">
-                  <span className="pastille">{m.lettre}</span>
-                  <span className="ligne-nom">
-                    <b>{m.titre}</b>
-                    <span className="muted">≈ {Math.round(estimes[i])} € de courses</span>
-                  </span>
-                </p>
-              ))}
-              <ChampDebut valeur={debut} jourCourses={foyer.jourCourses} onChange={setDebut} />
-              <button type="button" className="bouton-plein" disabled={!ouverte || !debut} onClick={lancer}>
-                Démarrer les menus
-              </button>
-            </>
-          )}
-          <button type="button" className="lien" onClick={() => setVue('generer')}>
-            Importer d'autres fichiers
-          </button>
         </>
       )}
 

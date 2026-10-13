@@ -8,7 +8,8 @@ import { semaineCoches } from './lib/cycle/etat';
 import type { Jour } from './lib/cycle/types';
 
 import { chargerCycleExemple, semaineParDefaut } from './lib/cycle/courant';
-import { type CycleActif, type ReglagesFoyer, assurerMoi, foyerParDefaut, loadCycle, loadFoyer, saveFoyer } from './lib/cycle/etat';
+import { type CycleActif, type ReglagesFoyer, assurerMoi, foyerParDefaut, loadCycle, loadFoyer, saveCycle, saveFoyer } from './lib/cycle/etat';
+import { recaleJourCourses } from './lib/cycle/monCycle';
 import { todayISO } from './lib/dates';
 import { estSuivi, prenomProfil } from './lib/model';
 import { capitalize } from './lib/text';
@@ -28,6 +29,7 @@ const Guide = lazy(() => import('./components/ecrans/Guide').then((m) => ({ defa
 const SemaineType = lazy(() => import('./components/ecrans/SemaineType').then((m) => ({ default: m.SemaineType })));
 const SignalerBug = lazy(() => import('./components/ecrans/SignalerBug').then((m) => ({ default: m.SignalerBug })));
 const MonCycle = lazy(() => import('./components/ecrans/MonCycle').then((m) => ({ default: m.MonCycle })));
+const ProchainsMenus = lazy(() => import('./components/ecrans/ProchainsMenus').then((m) => ({ default: m.ProchainsMenus })));
 const Recette = lazy(() => import('./components/ecrans/Recette').then((m) => ({ default: m.Recette })));
 
 // Sous-titre de l'en-tête : la date du jour (la position dans les menus vit
@@ -60,14 +62,19 @@ function App() {
   const [jourVu, setJourVu] = useState<Jour | null>(null); // jour consulté dans Menu
   const [guide, setGuide] = useState<number | null>(null); // étape du mode guidé ouvert
   const [monCycle, setMonCycle] = useState(false);
-  // Fin d'onboarding : Mon cycle s'ouvre directement sur « générer » (prompt à copier).
+  // Assistant « Prépare tes prochains menus » (génération en 3 étapes).
+  const [assistant, setAssistant] = useState(false);
+  // Fin d'onboarding : l'assistant s'ouvre directement (« Plus tard » possible).
   const [cycleDirect, setCycleDirect] = useState(false);
-  // Semaine type : 'etape' = étape « Ta semaine » juste après l'onboarding.
-  const [semaineType, setSemaineType] = useState<'etape' | 'profil' | null>(null);
+  // Semaine type : 'etape' = étape « Ta semaine » après l'onboarding ;
+  // 'assistant' = ouverte depuis l'assistant (on y revient en sortant).
+  const [semaineType, setSemaineType] = useState<'etape' | 'profil' | 'assistant' | null>(null);
   const [profilOuvert, setProfilOuvert] = useState(false);
   const [signalerBug, setSignalerBug] = useState(false);
   // Suivi poids : écran poussé ouvert depuis la carte Suivi ou depuis Moi.
   const [suiviOuvert, setSuiviOuvert] = useState(false);
+  // Confirmation transitoire (ex. jour des courses recalcé — spec PR 4 tâche 5).
+  const [toast, setToast] = useState<string | null>(null);
   // Fiche recette poussée ; `coche` = le repas d'où on vient (« C'est fait »).
   const [recette, setRecette] = useState<{ id: string; coche?: { semaine: string; id: string } } | null>(null);
   // Sync optionnelle : état (point sur l'avatar) et version de re-rendu —
@@ -170,16 +177,38 @@ function App() {
   };
 
   const enregistrerFoyer = (f: ReglagesFoyer) => {
-    saveFoyer(f);
-    setFoyerStocke(f);
+    // Jour des courses changé avec des menus en cours → le début des menus se
+    // recale (fix PR 4) ; un message le confirme sur l'écran qui suit.
+    const { foyer: foyerFinal, actif: recale } = recaleJourCourses(f, foyer, cycleStocke, aujourdhui);
+    saveFoyer(foyerFinal);
+    setFoyerStocke(foyerFinal);
+    if (recale && recale !== cycleStocke) {
+      saveCycle(recale);
+      setCycleStocke(recale);
+      setToast(`Tes menus démarreront désormais le ${foyerFinal.jourCourses}.`);
+    }
   };
 
-  // Fin de l'étape « Ta semaine » de l'onboarding : sans cycle à soi, on
-  // enchaîne sur Mon cycle (génération) plutôt que sur le cycle d'exemple.
+  // Toast de confirmation : affiché sur l'écran courant après une action
+  // (jour des courses recalcé). L'utilisateur le referme ou change d'écran.
+  const toaster = toast ? (
+    <div className="toast" role="status">
+      <span>{toast}</span>
+      <button type="button" onClick={() => setToast(null)}>
+        OK
+      </button>
+    </div>
+  ) : null;
+
+  // Fin de l'étape « Ta semaine » de l'onboarding : sans menus à soi, on
+  // enchaîne sur l'assistant plutôt que sur les menus d'exemple. Ouverte depuis
+  // l'assistant, on y revient (le wizard reprend à l'étape 1).
   const finSemaineType = () => {
-    if (semaineType === 'etape' && !cycleStocke) {
+    if (semaineType === 'assistant') {
+      setAssistant(true);
+    } else if (semaineType === 'etape' && !cycleStocke) {
       setCycleDirect(true);
-      setMonCycle(true);
+      setAssistant(true);
     }
     setSemaineType(null);
   };
@@ -191,13 +220,58 @@ function App() {
           <SemaineType
             foyer={foyer}
             compact={semaineType === 'etape'}
+            instantane={cycleStocke?.semaineAuLancement}
+            retourLabel={semaineType === 'assistant' ? 'Retour' : undefined}
             onRetour={() => finSemaineType()}
+            onOuvrirAssistant={() => {
+              setSemaineType(null);
+              setAssistant(true);
+            }}
             onEnregistrer={(f) => {
               enregistrerFoyer(f);
               finSemaineType();
             }}
           />
         </Suspense>
+        {toaster}
+      </div>
+    );
+  }
+
+  if (assistant) {
+    return (
+      <div className="main-content">
+        <Suspense fallback={<Chargement />}>
+          <ProchainsMenus
+            stocke={cycleStocke}
+            foyer={foyer}
+            profil={profile}
+            aujourdhui={aujourdhui}
+            direct={cycleDirect}
+            onRetour={() => {
+              setAssistant(false);
+              setCycleDirect(false);
+            }}
+            onCycle={(c) => {
+              setCycleStocke(c);
+              setSemaineVue(null);
+              setJourVu(null);
+            }}
+            onFoyer={setFoyerStocke}
+            onModifierSemaine={() => {
+              setAssistant(false);
+              setSemaineType('assistant');
+            }}
+            onVoirSemaine={() => {
+              setAssistant(false);
+              setCycleDirect(false);
+              setMonCycle(false);
+              setProfilOuvert(false);
+              setOnglet('semaine');
+            }}
+          />
+        </Suspense>
+        {toaster}
       </div>
     );
   }
@@ -209,13 +283,9 @@ function App() {
           <MonCycle
             stocke={cycleStocke}
             foyer={foyer}
-            profil={profile}
             aujourdhui={aujourdhui}
-            vueInitiale={cycleDirect ? 'generer' : undefined}
-            onRetour={() => {
-              setMonCycle(false);
-              setCycleDirect(false);
-            }}
+            onRetour={() => setMonCycle(false)}
+            onOuvrirAssistant={() => setAssistant(true)}
             onCycle={(c) => {
               setCycleStocke(c);
               setSemaineVue(null);
@@ -229,6 +299,7 @@ function App() {
             }}
           />
         </Suspense>
+        {toaster}
       </div>
     );
   }
@@ -299,6 +370,7 @@ function App() {
             }}
           />
         </Suspense>
+        {toaster}
       </div>
     );
   }
@@ -322,6 +394,7 @@ function App() {
   const ecranPousse = (contenu: ReactNode) => (
     <div className="main-content">
       <Suspense fallback={<Chargement />}>{contenu}</Suspense>
+      {toaster}
     </div>
   );
 
@@ -398,8 +471,8 @@ function App() {
                     setJourVu(null);
                   }}
                   onSemaineType={() => setSemaineType('profil')}
-                  onProchainsMenus={() => setMonCycle(true)}
-                  onOuvrirRecette={ouvrirRecette(semaine)}
+                  onProchainsMenus={() => setAssistant(true)}
+                  instantane={actif.semaineAuLancement}                  onOuvrirRecette={ouvrirRecette(semaine)}
                 />
               )}
               {ecran === 'courses' && (
@@ -421,6 +494,7 @@ function App() {
         </main>
       </div>
       <BarreOnglets actif={ecran} onSelect={setOnglet} />
+      {toaster}
     </div>
   );
 }

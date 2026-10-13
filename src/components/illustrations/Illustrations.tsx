@@ -132,3 +132,16 @@ export function Legumes({ taille = 200 }: { taille?: number }) {
     </svg>
   );
 }
+
+// Sac de courses kraft (maquette §4.4) : bannière « tout est coché ».
+export function IlluSac({ taille = 44 }: { taille?: number }) {
+  return (
+    <svg width={taille} height={taille * 1.15} viewBox="0 0 48 55" aria-hidden="true" focusable="false">
+      <g fill="none" stroke="var(--encre)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M10 18h28l-3 32H13z" fill="#e2c08d" />
+        <path d="M17 18c0-6 3-10 7-10s7 4 7 10" />
+        <path d="M18 30h12M18 38h12" />
+      </g>
+    </svg>
+  );
+}

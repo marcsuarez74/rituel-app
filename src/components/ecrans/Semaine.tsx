@@ -3,9 +3,11 @@ import type { CycleActif, ReglagesFoyer } from '../../lib/cycle/etat';
 import { semaineCoches } from '../../lib/cycle/etat';
 import { microBatchDuJour } from '../../lib/cycle/menu';
 import { repasAvecReports } from '../../lib/cycle/reports';
+import { changementsEnAttente } from '../../lib/cycle/semaineType';
 import type { Jour, MembreId } from '../../lib/cycle/types';
 import { LETTRES } from '../../lib/cycle/types';
 import { capitalize } from '../../lib/text';
+import { BandeauProchainsMenus } from '../BandeauProchainsMenus';
 import { Icon } from '../Icon';
 import { RepasDuJour } from '../menu/RepasDuJour';
 import { LigneSemaine } from '../shell/LigneSemaine';
@@ -29,6 +31,7 @@ export function Semaine({
   onSemaineType,
   onProchainsMenus,
   onOuvrirRecette,
+  instantane,
 }: {
   actif: CycleActif;
   foyer: ReglagesFoyer;
@@ -37,6 +40,8 @@ export function Semaine({
   aujourdhui: string;
   syncVersion: number;
   jourVu: Jour | null; // null = aujourd'hui s'il est dans la semaine, sinon le 1er jour
+  /** Instantané de la semaine type au lancement des menus (option B §6). */
+  instantane?: unknown;
   onJour: (j: Jour) => void;
   onSemaine: (n: number) => void;
   onSemaineType: () => void;
@@ -59,6 +64,7 @@ export function Semaine({
   return (
     <>
       <LigneSemaine cal={actif} index={semaine} onChange={onSemaine} />
+      <BandeauProchainsMenus k={changementsEnAttente(foyer, instantane).length} onOuvrir={onProchainsMenus} />
       <div className="bande-jours" role="tablist" aria-label="Jours">
         {jours.map((j) => {
           const liste = repasAvecReports(actif.cycle, semaine, j.jour, moi, reports);
