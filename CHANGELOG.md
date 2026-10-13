@@ -6,6 +6,13 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 Ce fichier est **généré par [release-please](https://github.com/googleapis/release-please)** à partir des conventional commits (`feat` → mineur, `fix`/`perf` → correctif, `!` ou `BREAKING CHANGE:` → majeur) : ne pas l'éditer à la main. L'historique ci-dessous (jusqu'à 2.1.0) est conservé tel quel.
 
+## [2.9.0](https://github.com/marcsuarez74/rituel-app/compare/v2.8.0...v2.9.0) (2026-10-13)
+
+
+### Ajouté
+
+* journées de la semaine type — classique, sportive, sortie, repos ([de3d94b](https://github.com/marcsuarez74/rituel-app/commit/de3d94bf5f60e8a8aae8863d5c4a4691982d1b35))
+
 ## [2.8.0](https://github.com/marcsuarez74/rituel-app/compare/v2.7.0...v2.8.0) (2026-10-13)
 
 
