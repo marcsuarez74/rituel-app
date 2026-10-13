@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import {
   PROFIL_MARC,
   allerA,
+  ouvrirSuivi,
   attendrePolices,
   lirePrefixe,
   lireStockage,
@@ -18,7 +19,7 @@ test.describe('Parcours courses, pesée et profil', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await attendrePolices(page);
-    await expect(page.getByText(/Cycle d'exemple/)).toBeVisible();
+    await expect(page.getByText(/Menus d'exemple/)).toBeVisible();
   });
 
   test('Courses : mode magasin puis « J’ai payé » enregistre la dépense et met à jour le budget', async ({ page }) => {
@@ -59,7 +60,7 @@ test.describe('Parcours courses, pesée et profil', () => {
   });
 
   test('Suivi : une pesée apparaît dans le héro et l’historique, et est persistée', async ({ page }) => {
-    await allerA(page, 'Suivi');
+    await ouvrirSuivi(page);
     await verifierPasDeDebordement(page, 'Suivi');
     await page.getByLabel('Poids (kg)').fill('82.4');
     await page.getByRole('button', { name: 'Ajouter' }).click();
@@ -72,22 +73,22 @@ test.describe('Parcours courses, pesée et profil', () => {
     expect(pesees[0].kg).toBe(82.4);
 
     await page.reload();
-    await allerA(page, 'Suivi');
+    await ouvrirSuivi(page);
     await expect(page.locator('.weight-list li').first()).toContainText('82.4 kg');
     expect(Object.keys(await lirePrefixe(page, 'sportapp:weights:'))).toEqual(['sportapp:weights:marc']);
   });
 
   test('Suivi : un poids invalide est refusé', async ({ page }) => {
-    await allerA(page, 'Suivi');
+    await ouvrirSuivi(page);
     await page.getByRole('button', { name: 'Ajouter' }).click();
     await expect(page.getByRole('alert')).toHaveText('Poids invalide.');
     expect(await lireStockage(page, 'sportapp:weights:marc')).toBeNull();
   });
 
-  test('Profil › Objectif & régime : objectif et poids visé conservés après rechargement', async ({ page }) => {
-    await page.getByRole('button', { name: /Mon profil/ }).click();
-    await page.getByRole('button', { name: /Objectif & régime/ }).click();
-    await verifierPasDeDebordement(page, 'Objectif & régime');
+  test('Moi › Objectif : objectif et poids visé conservés après rechargement', async ({ page }) => {
+    await page.getByRole('button', { name: 'Moi : Marc' }).click();
+    await page.getByRole('button', { name: /Objectif/ }).click();
+    await verifierPasDeDebordement(page, 'Objectif');
 
     // Choisit un cap différent de l'actuel (« perte »).
     const nonCoches = page.locator('.rcards [role="radio"][aria-checked="false"]');
@@ -102,14 +103,14 @@ test.describe('Parcours courses, pesée et profil', () => {
     expect(profil.objectif.type).not.toBe('perte');
 
     await page.reload();
-    await page.getByRole('button', { name: /Mon profil/ }).click();
-    await page.getByRole('button', { name: /Objectif & régime/ }).click();
+    await page.getByRole('button', { name: 'Moi : Marc' }).click();
+    await page.getByRole('button', { name: /Objectif/ }).click();
     await expect(page.getByLabel('Poids visé (kg)')).toHaveValue('74.5');
     await expect(page.locator('.rcards [role="radio"][aria-checked="true"] .rcard-t')).toHaveText(nomChoisi);
   });
 
-  test('Profil › Mes infos : taille et prénom conservés après rechargement', async ({ page }) => {
-    await page.getByRole('button', { name: /Mon profil/ }).click();
+  test('Moi › Mes infos : taille et prénom conservés après rechargement', async ({ page }) => {
+    await page.getByRole('button', { name: 'Moi : Marc' }).click();
     await page.getByRole('button', { name: /Mes infos/ }).click();
     await verifierPasDeDebordement(page, 'Mes infos');
     await page.getByLabel('Prénom').fill('Marc');
@@ -121,7 +122,7 @@ test.describe('Parcours courses, pesée et profil', () => {
     expect(profil.prenom).toBe('Marc');
 
     await page.reload();
-    await page.getByRole('button', { name: /Mon profil/ }).click();
+    await page.getByRole('button', { name: 'Moi : Marc' }).click();
     await page.getByRole('button', { name: /Mes infos/ }).click();
     await expect(page.getByLabel('Taille (cm)')).toHaveValue('180');
   });

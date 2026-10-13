@@ -24,7 +24,7 @@ describe('App — suppression du profil de bout en bout (sans sync)', () => {
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(await screen.findByRole('button', { name: 'Mon profil' }));
+    await user.click(await screen.findByRole('button', { name: 'Moi : Marc' }));
     await user.click(await screen.findByRole('button', { name: /Supprimer mon profil/ }));
     await user.type(screen.getByLabelText(/Tape SUPPRIMER/), 'SUPPRIMER');
     await user.click(screen.getByRole('button', { name: 'Supprimer définitivement' }));
@@ -40,7 +40,7 @@ describe('App — suppression du profil de bout en bout (sans sync)', () => {
     saveProfile(profil);
     const user = userEvent.setup();
     render(<App />);
-    await user.click(await screen.findByRole('button', { name: 'Mon profil' }));
+    await user.click(await screen.findByRole('button', { name: 'Moi : Marc' }));
     await user.click(await screen.findByRole('button', { name: /Supprimer mon profil/ }));
     await user.click(screen.getByRole('button', { name: 'Annuler' }));
     expect(localStorage.getItem('sportapp:profile')).not.toBeNull();

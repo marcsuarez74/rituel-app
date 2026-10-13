@@ -80,7 +80,7 @@ export function ProfilMaison({
 
   return (
     <section className="detail-page">
-      <h2>Courses &amp; budget</h2>
+      <h2>Magasin et budget</h2>
       <ChampMagasins
         idPrefix="pf-magasin"
         valeur={magasins}
@@ -109,7 +109,7 @@ export function ProfilMaison({
           }}
         />
       </div>
-      <p className="onb-label">Préférences pour les prochains cycles</p>
+      <p className="onb-label">Préférences pour tes prochains menus</p>
       <div className="chips">
         {preferences.map((p) => (
           <button

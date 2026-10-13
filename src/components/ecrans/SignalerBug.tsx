@@ -17,7 +17,7 @@ const MESSAGES = {
   quota: 'Vous avez déjà envoyé 3 signalements aujourd’hui. Réessayez demain.',
   indisponible: 'Le signalement est indisponible pour le moment. Réessayez plus tard.',
   invalide: 'Le signalement a été refusé : vérifiez les champs et la capture.',
-  session: 'Votre foyer n’est plus connecté. Reconnectez-le dans Profil › Foyer.',
+  session: 'Votre foyer n’est plus connecté. Reconnectez-le dans Moi › Foyer et partage.',
   reseau: 'Pas de connexion : le signalement n’a pas été envoyé. Réessayez.',
 } as const;
 
@@ -58,7 +58,7 @@ export function SignalerBug({ onRetour, page }: { onRetour: () => void; page: st
 
   const retour = (
     <button type="button" className="profil-back" onClick={onRetour}>
-      <Icon name="chev-left" size={16} /> Profil
+      <Icon name="chev-left" size={16} /> Moi
     </button>
   );
 
@@ -77,7 +77,7 @@ export function SignalerBug({ onRetour, page }: { onRetour: () => void; page: st
         {retour}
         <h1>Signaler un bug</h1>
         <p>
-          Pour signaler un bug ou proposer une amélioration, connectez d’abord votre foyer dans Profil › Foyer.
+          Pour signaler un bug ou proposer une amélioration, connectez d’abord votre foyer dans Moi › Foyer et partage.
         </p>
       </div>
     );

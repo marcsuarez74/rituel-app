@@ -41,40 +41,81 @@ describe('App shell v2', () => {
     expect(screen.queryByRole('navigation', { name: 'Navigation principale' })).not.toBeInTheDocument();
   });
 
-  it('sans cycle importé : Aujourd’hui sur le cycle d’exemple, démarré au dernier jour des courses', async () => {
+  it('sans cycle importé : Aujourd’hui sur les menus d’exemple', async () => {
     initProfile('marc', 'Jean');
     render(<App />);
 
-    expect(screen.getByRole('heading', { level: 1, name: "Aujourd'hui" })).toBeInTheDocument();
-    expect(await screen.findByText(/Salut Jean/)).toBeInTheDocument();
-    expect(screen.getByText('mercredi 7 octobre')).toBeInTheDocument();
-    expect(await screen.findByText('Cycle 1 · semaine 1 sur 4 · Menu A')).toBeInTheDocument();
-    expect(screen.getByText(/Cycle d'exemple/)).toBeInTheDocument();
+    // L'en-tête porte la salutation (h1) et la date (sous-titre).
+    expect(screen.getByRole('heading', { level: 1, name: 'Bonjour Jean' })).toBeInTheDocument();
+    expect(screen.getByText('Mercredi 7 octobre')).toBeInTheDocument();
+    expect(await screen.findByText(/Menus d'exemple/)).toBeInTheDocument();
     // Le menu du jour (mercredi) de l'exemple, avec ses repas cochables.
     expect(screen.getByRole('heading', { name: "Au menu aujourd'hui" })).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /marquer comme fait/ }).length).toBeGreaterThan(0);
   });
 
-  it('barre du bas : 5 onglets libellés, l’actif en aria-current, titre de l’en-tête suivi', async () => {
+  it('ardoise « Maintenant » : Ce midi à 10 h, le bouton coche le repas (même coche qu’aujourd’hui)', async () => {
+    initProfile('marc', 'Jean'); // l'exemple : mercredi midi = une box pour Jean
+    const user = userEvent.setup();
+    render(<App />);
+
+    const ardoise = await screen.findByRole('region', { name: 'Maintenant' });
+    expect(within(ardoise).getByText('Ce midi')).toBeInTheDocument();
+    expect(within(ardoise).getByText(/Box poulet effiloché/)).toBeInTheDocument();
+    await user.click(within(ardoise).getByRole('button', { name: "J'ai pris ma box" }));
+    expect(await screen.findByRole('button', { name: /: fait, annuler/ })).toBeInTheDocument();
+    // La box prise, l'ardoise passe au repas suivant.
+    expect(within(ardoise).getByText('Ce soir')).toBeInTheDocument();
+  });
+
+  it('ardoise « Maintenant » : Ce soir à 19 h', async () => {
+    initProfile('marc', 'Jean');
+    vi.setSystemTime(new Date('2026-10-07T19:00:00'));
+    render(<App />);
+
+    const ardoise = await screen.findByRole('region', { name: 'Maintenant' });
+    expect(within(ardoise).getByText('Ce soir')).toBeInTheDocument();
+    expect(within(ardoise).getByRole('button', { name: "C'est mangé" })).toBeInTheDocument();
+  });
+
+  it('dimanche, jour de rituel : l’ardoise appelle à commencer le rituel', async () => {
+    initProfile('marc', 'Jean');
+    vi.setSystemTime(new Date('2026-10-11T10:00:00')); // dimanche
+    const user = userEvent.setup();
+    render(<App />);
+
+    const ardoise = await screen.findByRole('region', { name: 'Maintenant' });
+    expect(within(ardoise).getByRole('heading', { name: /jour de rituel/ })).toBeInTheDocument();
+    await user.click(within(ardoise).getByRole('button', { name: 'Commencer le rituel' }));
+    expect(screen.getByRole('heading', { level: 1, name: 'Rituel' })).toBeInTheDocument();
+  });
+
+  it('barre du bas : 4 onglets libellés, l’actif en aria-current, avatar « Moi »', async () => {
     initProfile();
     const user = userEvent.setup();
     render(<App />);
 
     const noms = within(nav()).getAllByRole('button').map((b) => b.textContent);
-    expect(noms).toEqual(["Aujourd'hui", 'Menu', 'Courses', 'Rituel', 'Suivi']);
+    expect(noms).toEqual(["Aujourd'hui", 'Semaine', 'Courses', 'Rituel']);
     expect(onglet("Aujourd'hui")).toHaveAttribute('aria-current', 'page');
 
     await user.click(onglet('Courses'));
     expect(onglet('Courses')).toHaveAttribute('aria-current', 'page');
     expect(onglet("Aujourd'hui")).not.toHaveAttribute('aria-current');
     expect(screen.getByRole('heading', { level: 1, name: 'Courses' })).toBeInTheDocument();
+
+    // L'avatar de l'en-tête ouvre « Moi » (écran poussé, la barre disparaît).
+    await user.click(screen.getByRole('button', { name: 'Moi : Marc' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Moi' })).toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: 'Navigation principale' })).not.toBeInTheDocument();
   });
 
-  it('juste la routine (suivi coupé) : 4 onglets, pas de Suivi', async () => {
+  it('juste la routine (suivi coupé) : mêmes 4 onglets, pas de carte Suivi', async () => {
     saveProfile({ ...loadProfileDe('marc'), suivi: false });
     render(<App />);
     const noms = within(nav()).getAllByRole('button').map((b) => b.textContent);
-    expect(noms).toEqual(["Aujourd'hui", 'Menu', 'Courses', 'Rituel']);
+    expect(noms).toEqual(["Aujourd'hui", 'Semaine', 'Courses', 'Rituel']);
+    expect(screen.queryByRole('button', { name: /Mon suivi/ })).not.toBeInTheDocument();
   });
 
   it('au démarrage, mon membre du foyer est marqué « sur ce téléphone » et suit mon profil', async () => {
@@ -91,41 +132,84 @@ describe('App shell v2', () => {
     saveProfile({ ...loadProfileDe('therese-3f9a'), prenom: 'Thérèse' });
     const user = userEvent.setup();
     render(<App />);
-    await screen.findByText(/Cycle d'exemple/);
-    await user.click(onglet('Menu'));
+    await screen.findByText(/Menus d'exemple/);
+    await user.click(onglet('Semaine'));
     expect(await screen.findAllByText(/Thérèse/)).not.toHaveLength(0);
     expect(document.body.textContent).not.toMatch(/Marc|Mélanie|Maëlle|Maxine|\bAlex\b/); // Alex = rôle anonyme non remplacé
   });
 
-  it('ligne semaine sur Menu / Courses / Rituel seulement, navigation dans les 4 semaines', async () => {
+  it('plus de ligne semaine dans la coque ; la navigation de semaine vit dans Semaine', async () => {
     initProfile();
     const user = userEvent.setup();
     render(<App />);
-    await screen.findByText(/Salut/);
+    await screen.findByText(/Menus d'exemple/);
     expect(screen.queryByText(/Sem\. 1/)).not.toBeInTheDocument();
 
-    await user.click(onglet('Menu'));
+    await user.click(onglet('Semaine'));
     expect(screen.getByText(/Sem\. 1 · 3 → 9 oct\./)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Semaine précédente' })).toBeDisabled();
     await user.click(screen.getByRole('button', { name: 'Semaine suivante' }));
     expect(screen.getByText(/Sem\. 2 · 10 → 16 oct\./)).toHaveTextContent('Menu B');
 
-    await user.click(onglet('Rituel'));
-    expect(screen.getByText(/Sem\. 2/)).toBeInTheDocument(); // la semaine consultée est gardée
-    await user.click(onglet('Suivi'));
+    // Les autres onglets n'affichent plus de ligne semaine ; la semaine
+    // consultée reste en mémoire et est reprise au retour sur Semaine.
+    await user.click(onglet('Courses'));
     expect(screen.queryByText(/Sem\. 2/)).not.toBeInTheDocument();
+    await user.click(onglet('Semaine'));
+    expect(screen.getByText(/Sem\. 2/)).toBeInTheDocument();
   });
 
-  it('Suivi : objectif et poids, sans séances (reportées)', async () => {
+  it('Semaine : en-tête « Menus · semaine N sur 4 », bande des jours, lien Ma semaine type', async () => {
+    initProfile();
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(onglet('Semaine'));
+    expect(screen.getByRole('heading', { level: 1, name: 'Menus' })).toBeInTheDocument();
+    expect(screen.getByText('Semaine 1 sur 4')).toBeInTheDocument();
+    expect(screen.getByRole('tablist', { name: 'Jours' })).toBeInTheDocument();
+    // Semaine 1 : l'assistant n'est pas proposé ; la semaine type est à portée.
+    expect(screen.queryByRole('button', { name: 'Prépare tes prochains menus' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Ma semaine type' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Ma semaine type' })).toBeInTheDocument();
+  });
+
+  it('Semaine : en semaine 4, l’action pleine propose de préparer les prochains menus', async () => {
+    initProfile();
+    const { importerCycle } = await import('../src/lib/cycle/valider');
+    const { saveCycle } = await import('../src/lib/cycle/etat');
+    const { enFichiers, quatreFichiers } = await import('./lib/cycle/fabrique');
+    // 2026-10-07 tombe dans la 4e semaine d'un cycle démarré le 12 septembre.
+    saveCycle({ id: 'c7', numero: 1, debut: '2026-09-12', pauses: [], cycle: importerCycle(enFichiers(quatreFichiers())).cycle! });
+    const user = userEvent.setup();
+    render(<App />);
+    await user.click(onglet('Semaine'));
+    expect(screen.getByText('Semaine 4 sur 4')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Prépare tes prochains menus' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Mes menus' })).toBeInTheDocument();
+  });
+
+  it('Moi › Suivi poids : objectif et pesées, sans séances (reportées)', async () => {
     initProfile();
     addWeight('marc', '2026-10-05', 82.4);
     const user = userEvent.setup();
     render(<App />);
 
-    await user.click(onglet('Suivi'));
+    await user.click(screen.getByRole('button', { name: 'Moi : Marc' }));
+    await user.click(screen.getByRole('button', { name: /Suivi poids/ }));
     expect(await screen.findByRole('heading', { name: 'Suivi poids' })).toBeInTheDocument();
     expect(screen.getByText('05/10 — 82.4 kg')).toBeInTheDocument();
     expect(screen.queryByText(/Séances/)).not.toBeInTheDocument();
+  });
+
+  it('Aujourd’hui : carte Suivi avec la dernière pesée, « Ajouter » ouvre Suivi poids', async () => {
+    initProfile();
+    addWeight('marc', '2026-10-05', 82.4);
+    const user = userEvent.setup();
+    render(<App />);
+
+    expect(await screen.findByText(/Mon suivi : 82,4 kg/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Ajouter une pesée' }));
+    expect(await screen.findByRole('heading', { name: 'Suivi poids' })).toBeInTheDocument();
   });
 
   it('un cycle importé remplace l’exemple', async () => {
@@ -134,11 +218,12 @@ describe('App shell v2', () => {
     const { saveCycle } = await import('../src/lib/cycle/etat');
     const { enFichiers, quatreFichiers } = await import('./lib/cycle/fabrique');
     const cycle = importerCycle(enFichiers(quatreFichiers())).cycle!;
+    // 2026-10-07 tombe dans la 2e semaine (menu B) d'un cycle démarré le 26 septembre.
     saveCycle({ id: 'c7', numero: 3, debut: '2026-09-26', pauses: [], cycle });
     render(<App />);
 
-    expect(await screen.findByText('Cycle 3 · semaine 2 sur 4 · Menu B')).toBeInTheDocument();
-    expect(screen.queryByText(/Cycle d'exemple/)).not.toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Recette diner-b-mercredi : marquer comme fait' })).toBeInTheDocument();
+    expect(screen.queryByText(/Menus d'exemple/)).not.toBeInTheDocument();
   });
 
   it('cocher un repas d’Aujourd’hui le compte dans la semaine et le retrouve dans Menu', async () => {
@@ -154,12 +239,10 @@ describe('App shell v2', () => {
     render(<App />);
 
     const repas = await screen.findByRole('button', { name: 'Recette diner-a-mercredi : marquer comme fait' });
-    expect(screen.getByRole('button', { name: /Repas/ })).toHaveTextContent('0/7');
     await user.click(repas);
-    expect(screen.getByRole('button', { name: /Repas/ })).toHaveTextContent('1/7');
     expect(getChecks('cycle:c7:0')).toEqual({ 'menu:A:mercredi:mercredi-diner-famille': true });
 
-    await user.click(onglet('Menu'));
+    await user.click(onglet('Semaine'));
     expect(await screen.findByRole('tab', { name: 'Mercredi', selected: true })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Recette diner-a-mercredi : fait, annuler' })).toHaveAttribute('aria-pressed', 'true');
   });
@@ -263,8 +346,8 @@ describe('Onboarding — persistance via App', () => {
     // Étape optionnelle « Ta semaine » (foyer né de cette inscription).
     expect(await screen.findByRole('heading', { name: 'Ta semaine' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Passer' }));
-    // Fin de l'onboarding : directement « Mon cycle », étape de génération, prompt à copier.
-    expect(await screen.findByRole('heading', { name: 'Mon cycle' })).toBeInTheDocument();
+    // Fin de l'onboarding : directement « Mes menus », étape de génération, prompt à copier.
+    expect(await screen.findByRole('heading', { name: 'Mes menus' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: '1 · Copie le prompt' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Copier le prompt' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: '2 · Colle-le dans ton IA' })).toBeInTheDocument();
@@ -312,7 +395,7 @@ describe('Migration profil v1 → v2', () => {
     // Étape optionnelle « Ta semaine » (foyer né de cette inscription).
     expect(await screen.findByRole('heading', { name: 'Ta semaine' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Passer' }));
-    // Pas encore de cycle à soi : même arrivée directe sur « Mon cycle ».
+    // Pas encore de cycle à soi : même arrivée directe sur « Mes menus ».
     expect(await screen.findByRole('button', { name: 'Copier le prompt' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Plus tard/ }));
     expect(screen.getByRole('navigation', { name: 'Navigation principale' })).toBeInTheDocument();

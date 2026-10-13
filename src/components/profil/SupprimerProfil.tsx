@@ -85,7 +85,7 @@ export function SupprimerProfil({ onSupprime }: { onSupprime: () => void }) {
             <div id="sp-desc" className="sp-desc">
               <p>
                 Tout sera effacé <b>définitivement</b> sur ce téléphone : ton profil, tes pesées, tes coches, tes
-                dépenses, ton cycle et les réglages du foyer. Tu reviendras à l’écran de bienvenue.
+                dépenses, tes menus et les réglages du foyer. Tu reviendras à l’écran de bienvenue.
               </p>
               {foyer && (
                 <p>

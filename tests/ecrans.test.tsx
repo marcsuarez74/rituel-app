@@ -288,30 +288,30 @@ describe('Mon cycle', () => {
   it('sans cycle : génération en 3 étapes, import des 4 fichiers, aperçu, démarrage', async () => {
     const user = userEvent.setup();
     render(<Ecran />);
-    await user.click(screen.getByRole('button', { name: 'Créer mon premier cycle' }));
+    await user.click(screen.getByRole('button', { name: 'Créer mes premiers menus' }));
     expect(screen.getByRole('link', { name: 'Ouvrir Claude' })).toHaveAttribute('href', 'https://claude.ai/new');
 
     deposer(quatreFichiers());
     expect(await screen.findByRole('heading', { name: 'Aperçu des 4 semaines' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'À corriger avant de démarrer' })).not.toBeInTheDocument();
-    expect(screen.getByLabelText(/Début du cycle/)).toHaveValue('2026-10-10'); // prochain samedi
+    expect(screen.getByLabelText(/Début des menus/)).toHaveValue('2026-10-10'); // prochain samedi
 
-    await user.click(screen.getByRole('button', { name: 'Démarrer le cycle' }));
-    expect(screen.getByRole('heading', { name: 'Cycle 1 prêt' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Démarrer les menus' }));
+    expect(screen.getByRole('heading', { name: 'Menus n° 1 prêts' })).toBeInTheDocument();
     expect(loadCycle()).toMatchObject({ numero: 1, debut: '2026-10-10', pauses: [] });
   });
 
   it('import : aperçu rassurant, sans liste exhaustive ; notes de l’IA dédoublonnées dans un repli', async () => {
     const user = userEvent.setup();
     render(<Ecran />);
-    await user.click(screen.getByRole('button', { name: 'Créer mon premier cycle' }));
+    await user.click(screen.getByRole('button', { name: 'Créer mes premiers menus' }));
     const fs = quatreFichiers();
     fs.forEach((f) => {
       f.remarques = ['Estimation à 118 € par semaine.', 'Menu varié.'];
       f.recettes[0].ingredients.push({ nom: 'Z', quantite: 25, unite: 'cl', rayon: 'fruits-legumes', prixEstime: 1 } as never);
     });
     deposer(fs);
-    expect(await screen.findByRole('heading', { name: 'Ton cycle est prêt' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Tes menus sont prêts' })).toBeInTheDocument();
     expect(screen.queryByText('À savoir')).not.toBeInTheDocument();
     expect(screen.queryByText(/corrigé en/)).not.toBeInTheDocument();
     const resume = screen.getByText(/Notes de ton IA \(2\)/);
@@ -324,12 +324,12 @@ describe('Mon cycle', () => {
   it('import : début dans le passé accepté, le jour des courses suit', async () => {
     const user = userEvent.setup();
     render(<Ecran />);
-    await user.click(screen.getByRole('button', { name: 'Créer mon premier cycle' }));
+    await user.click(screen.getByRole('button', { name: 'Créer mes premiers menus' }));
     deposer(quatreFichiers());
     // fireEvent.change : la saisie clavier d'un <input type="date"> n'est pas fiable sous happy-dom.
-    fireEvent.change(await screen.findByLabelText(/Début du cycle/), { target: { value: '2026-10-04' } }); // dimanche passé
+    fireEvent.change(await screen.findByLabelText(/Début des menus/), { target: { value: '2026-10-04' } }); // dimanche passé
     expect(screen.getByText('Le jour des courses passe au dimanche.')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Démarrer le cycle' }));
+    await user.click(screen.getByRole('button', { name: 'Démarrer les menus' }));
     expect(loadCycle()?.debut).toBe('2026-10-04');
     expect(loadFoyer()?.jourCourses).toBe('dimanche');
   });
@@ -340,10 +340,10 @@ describe('Mon cycle', () => {
     render(<Ecran stocke={c} />);
     await user.click(screen.getByRole('button', { name: 'Changer la date de début' }));
     await user.click(screen.getByRole('button', { name: 'Annuler' }));
-    expect(screen.queryByLabelText(/Début du cycle/)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Début des menus/)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Changer la date de début' }));
-    const champ = screen.getByLabelText(/Début du cycle/);
+    const champ = screen.getByLabelText(/Début des menus/);
     expect(champ).toHaveValue('2026-09-26');
     fireEvent.change(champ, { target: { value: '2026-09-23' } }); // un mercredi
     expect(screen.getByText('Le jour des courses passe au mercredi.')).toBeInTheDocument();
@@ -359,7 +359,7 @@ describe('Mon cycle', () => {
     garderProfilFoyer({ id: 'sam', prenom: 'Sam', objectif: { type: 'masse' }, complements: [], regime: 'keto', taille: 170 });
     render(<Ecran />);
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
-    await user.click(screen.getByRole('button', { name: 'Créer mon premier cycle' }));
+    await user.click(screen.getByRole('button', { name: 'Créer mes premiers menus' }));
     await user.click(screen.getByRole('button', { name: /Copier le prompt/ }));
     expect(writeText.mock.calls[0][0]).toContain('- sam (Sam) · adulte · suivi · régime keto · objectif : prendre de la masse · 170 cm');
     Reflect.deleteProperty(navigator, 'clipboard');
@@ -370,11 +370,11 @@ describe('Mon cycle', () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     render(<Ecran />);
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
-    await user.click(screen.getByRole('button', { name: 'Créer mon premier cycle' }));
+    await user.click(screen.getByRole('button', { name: 'Créer mes premiers menus' }));
     deposer(quatreFichiers().slice(0, 3));
     expect(await screen.findByRole('heading', { name: 'À corriger avant de démarrer' })).toBeInTheDocument();
     expect(screen.getByText('Menu D manquant.')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Démarrer le cycle' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Démarrer les menus' })).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Copier pour Claude/ }));
     expect(writeText.mock.calls[0][0]).toContain('- Menu D manquant.');
     Reflect.deleteProperty(navigator, 'clipboard');
@@ -385,20 +385,20 @@ describe('Mon cycle', () => {
     const c: CycleActif = { id: 'c1', numero: 2, debut: '2026-09-26', pauses: [], cycle: cycle() };
     render(<Ecran stocke={c} />);
     expect(screen.getByRole('heading', { name: 'Semaine 2 sur 4' })).toBeInTheDocument();
-    expect(screen.getByText(/Prochain cycle le 24 oct\./)).toBeInTheDocument();
+    expect(screen.getByText(/Prochains menus le 24 oct./)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Créer/ })).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Faire une pause après cette semaine' }));
     expect(loadCycle()?.pauses).toEqual([1]);
-    expect(screen.getByText(/Prochain cycle le 31 oct\./)).toBeInTheDocument();
+    expect(screen.getByText(/Prochains menus le 31 oct./)).toBeInTheDocument();
   });
 
-  it('cycle terminé : relancer le même cycle au prochain jour des courses', async () => {
+  it('menus terminés : relancer les mêmes menus au prochain jour des courses', async () => {
     const user = userEvent.setup();
     const c: CycleActif = { id: 'c1', numero: 2, debut: '2026-09-05', pauses: [], cycle: cycle() };
     render(<Ecran stocke={c} />);
-    expect(screen.getByText('Cycle 2 terminé')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Relancer le cycle' }));
-    expect(screen.getByRole('heading', { name: 'Cycle 3 prêt' })).toBeInTheDocument();
+    expect(screen.getByText('Menus n° 2 terminés')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Relancer les menus' }));
+    expect(screen.getByRole('heading', { name: 'Menus n° 3 prêts' })).toBeInTheDocument();
     expect(loadCycle()).toMatchObject({ numero: 3, debut: '2026-10-10', relanceDe: 'c1' });
   });
 });

@@ -11,8 +11,8 @@ Complète `design-system.md` (les tokens) avec les règles d'usage. Source de v�
 
 ## Structure d'écran
 
-- `App.tsx` choisit : `Onboarding` (pas de profil) → étape « Ta semaine » (foyer jamais enregistré) → shell, ou un écran poussé (Profil, Mon cycle, Ma semaine type, fiche recette, mode guidé). **Pas d'écran intermédiaire** : sans cycle importé, le cycle d'exemple se charge (chunk à la demande)
-- Shell : en-tête fin (`.en-tete` : seul `h1` = titre de l'écran, avatar 50 px + point de sync) → ligne semaine (`.ligne-semaine`, Menu/Courses/Rituel seulement) → contenu → barre du bas fixe (`.barre-onglets`, 5 onglets, icône + libellé toujours visibles, actif = `aria-current="page"` + pastille)
+- `App.tsx` choisit : `Onboarding` (pas de profil) → étape « Ta semaine » (foyer jamais enregistré) → shell, ou un écran poussé (Moi, Mes menus, Ma semaine type, Suivi poids, fiche recette, mode guidé). **Pas d'écran intermédiaire** : sans menus importés, les menus d'exemple se chargent (chunk à la demande)
+- Shell : en-tête fin (`.en-tete` : `h1` = titre de l'écran + sous-titre `p` (date longue ; ‹ Sem. N › dans Semaine), avatar 50 px + point de sync, avatar aria-label « Moi : {prénom} ») → ligne semaine (`.ligne-semaine`, Semaine/Courses/Rituel seulement) → contenu → barre du bas fixe (`.barre-onglets`, 4 onglets, icône + libellé toujours visibles, actif = `aria-current="page"` + pastille)
 - **Personnalisé** : repas, portions, macros et versions du membre actif ; les versions des autres membres en lignes secondaires
 - Sections = `h2` dans des cartes (`section.profile-section`). États vides systématiques (`.muted`)
 - Écran poussé : bouton retour en haut (`.profil-back`), pas de barre du bas ; actions principales dans un pied fixe (`.pied-recette`)
@@ -32,7 +32,7 @@ Complète `design-system.md` (les tokens) avec les règles d'usage. Source de v�
 ## Écran Profil
 
 - 5 sections éditables séparément : **Mes infos** (date de naissance/taille, âge calculé), **Objectif** (cartes radio + échéance + poids objectif), **Compléments** (chips presets + libre), **Régime** (radios), **Maison & courses** (magasin datalist, budget max, foyer `.onb-row2`, préférences — mêmes champs que l'onboarding, un champ vidé retire la donnée) — enregistrement **par section**, feedback « enregistrées ✓ » en `role="status"` ; une erreur est rendue **dans sa section**
-- **Génération IA** : dans Mon cycle (étape 1 « Copie le prompt ») — le prompt maître (`src/assets/prompt-cycle-template.md`) est assemblé par `src/lib/promptIa.ts` depuis le foyer, la semaine type et le profil, schéma recopié de `types.ts`
+- **Génération IA** : dans Mes menus (étape 1 « Copie le prompt ») — le prompt maître (`src/assets/prompt-cycle-template.md`) est assemblé par `src/lib/promptIa.ts` depuis le foyer, la semaine type et le profil, schéma recopié de `types.ts`
 - **changer de profil** (bordure `--danger`, `window.confirm` obligatoire — efface le choix, garde les données)
 - Après changement : retour à l'onboarding (le sous-arbre suivi est démonté, les données restent en storage)
 
@@ -42,7 +42,7 @@ Complète `design-system.md` (les tokens) avec les règles d'usage. Source de v�
 - **Menu** : bande des 7 jours (`.bande-jours`, `role="tablist"`, point = journée faite), repas du jour, « Pas ce soir : reporter », « Ce soir, j'anticipe » (`.anticipe`, pointillé)
 - **Courses** : carte budget (`.budget-chiffres`, `.alerte` en `--danger`), chariot, mode magasin, rayons, extras keto en encadré jaune fruit en dernier, placard replié (`details.placard`)
 - **Rituel** : segment 3 sections, déroulé en cartes dépliables ; mode guidé = une étape par écran, progression segmentée, minuteur (`.minuteur`)
-- **Mon cycle / Semaine type** : écrans poussés, choix en segments (`.segment` radio), listes de lignes `.hub-ligne` côté Profil
+- **Mes menus / Ma semaine type** : écrans poussés, choix en segments (`.segment` radio), listes de lignes `.hub-ligne` côté Moi
 
 ## Composants — conventions
 

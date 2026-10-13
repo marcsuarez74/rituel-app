@@ -41,7 +41,7 @@
 ## Vite & Bundle
 
 - **Zéro dépendance runtime** hors React + js-yaml — toute nouvelle lib doit se justifier face à ce budget
-- Code-splitting par écran (`React.lazy` + `Suspense`) : seul Aujourd'hui est dans le bundle initial ; Menu, Courses, Rituel, Suivi, Recette, mode guidé, Mon cycle, Semaine type, Profil, Onboarding et le cycle d'exemple sont des chunks précachés par le SW
+- Code-splitting par écran (`React.lazy` + `Suspense`) : seul Aujourd'hui est dans le bundle initial ; Semaine, Courses, Rituel, Recette, mode guidé, Suivi poids, Mes menus, Semaine type, Moi, Onboarding et les menus d'exemple sont des chunks précachés par le SW
 - Images : miniatures de rayons **160×120 JPEG optimisées** (~5-10 Ko chacune, ~55 Ko au total, `src/assets/rayons/`) — servies en **CacheFirst runtime caching**, jamais dans le précache. Optimiser toute nouvelle image (`sips -Z 160 -s format jpeg -s formatOptions 60`)
 - Pas de polyfill : cibles navigateurs modernes (Vite default), `esnext` OK
 

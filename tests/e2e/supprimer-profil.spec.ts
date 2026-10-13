@@ -8,7 +8,7 @@ const SYNC = !process.env.E2E_PREVIEW;
 const ouvrirDialogue = async (page: Page) => {
   await page.goto('/');
   await page.evaluate(() => document.fonts.ready);
-  await page.getByRole('button', { name: 'Mon profil' }).click();
+  await page.getByRole('button', { name: /Moi : / }).click();
   await page.getByRole('button', { name: /Supprimer mon profil/ }).click();
   await expect(page.getByRole('alertdialog', { name: /Supprimer mon profil/ })).toBeVisible();
 };

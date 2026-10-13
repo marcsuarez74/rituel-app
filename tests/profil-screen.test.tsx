@@ -53,7 +53,7 @@ describe('ProfilScreen (unité)', () => {
 
     expect(screen.getByRole('button', { name: /Retour/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Changer de profil/ })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Le foyer', level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Mon foyer', level: 2 })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Moi', level: 2 })).toBeInTheDocument();
 
     await user.click(ouvrirPage('Mes infos'));
@@ -252,18 +252,26 @@ describe('ProfilScreen (unité)', () => {
     vi.useRealTimers();
   });
 
-  it('hub : tuile Mes infos avec résumé, ouvre la page, « ‹ Profil » revient', async () => {
+  it('hub : tuile Mes infos avec résumé, tuile Mes menus avec sa position, « ‹ Moi » revient', async () => {
     vi.setSystemTime(new Date('2026-09-09T10:00:00'));
     const user = userEvent.setup();
     render(
-      <ProfilScreen profile={{ ...profileMarc, prenom: 'Marc' }} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} cycle={2} />,
+      <ProfilScreen
+        profile={{ ...profileMarc, prenom: 'Marc' }}
+        onBack={onBack}
+        onChangeProfile={onChangeProfile}
+        onProfileSaved={onProfileSaved}
+        resumeCycle="Menu B · semaine 2 sur 4"
+        onMonCycle={() => {}}
+      />,
     );
 
-    // En-tête compte : initiale + prénom + duo/cycle
+    // Carte d'identité : initiale + prénom
     expect(screen.getByText('M')).toBeInTheDocument(); // initiale avatar
     expect(screen.getByText('Marc')).toBeInTheDocument();
-    expect(screen.queryByText(/Duo/)).not.toBeInTheDocument(); // sync off : chip masquée
-    expect(screen.getByText('Cycle 2')).toBeInTheDocument();
+    expect(screen.queryByText(/Duo/)).not.toBeInTheDocument(); // sync off : pas de label sync
+    // Tuile Mes menus : reprend la position actuelle des menus
+    expect(ouvrirPage('Mes menus')).toHaveTextContent('Menu B · semaine 2 sur 4');
     // Tuile Mes infos : résumé âge/taille (41 ans au 09/09/2026)
     expect(ouvrirPage('Mes infos')).toHaveTextContent('41 ans · 178 cm');
 
@@ -271,30 +279,30 @@ describe('ProfilScreen (unité)', () => {
     expect(screen.getByRole('heading', { name: 'Mes infos', level: 2 })).toBeInTheDocument();
     expect(screen.getByLabelText('Prénom')).toHaveValue('Marc');
 
-    await user.click(screen.getByRole('button', { name: /Profil/ }));
+    await user.click(screen.getByRole('button', { name: /Moi/ }));
     expect(screen.queryByRole('heading', { name: 'Mes infos', level: 2 })).not.toBeInTheDocument();
     vi.useRealTimers();
   });
 
   it('hub : sous-ligne duo selon syncEtat', () => {
     const { rerender } = render(
-      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} syncEtat="sync" cycle={2} />,
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} syncEtat="sync" />,
     );
     expect(screen.getByText('Duo connecté')).toBeInTheDocument();
 
     rerender(
-      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} syncEtat="hors-foyer" cycle={2} />,
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} syncEtat="hors-foyer" />,
     );
     expect(screen.getByText('Local')).toBeInTheDocument();
 
     rerender(
-      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} syncEtat="off" cycle={2} />,
+      <ProfilScreen profile={profileMarc} onBack={onBack} onChangeProfile={onChangeProfile} onProfileSaved={onProfileSaved} syncEtat="off" />,
     );
     expect(screen.queryByText(/Duo|Local/)).not.toBeInTheDocument();
   });
 });
 
-describe('ProfilScreen — Courses & budget', () => {
+describe('ProfilScreen — Magasin et budget', () => {
   beforeEach(() => {
     localStorage.clear();
   });
@@ -316,9 +324,9 @@ describe('ProfilScreen — Courses & budget', () => {
        
       />,
     );
-    await user.click(ouvrirPage('Courses & budget'));
+    await user.click(ouvrirPage('Magasin et budget'));
 
-    const maison = page('Courses & budget');
+    const maison = page('Magasin et budget');
     expect(within(maison).getByRole('button', { name: 'Lidl' })).toHaveAttribute('aria-pressed', 'true');
     expect(within(maison).getByRole('button', { name: 'Aldi' })).toHaveAttribute('aria-pressed', 'false');
     // inputs texte (+ inputMode) : jest-dom renvoie la valeur sous forme de chaîne.
@@ -327,7 +335,7 @@ describe('ProfilScreen — Courses & budget', () => {
     expect(within(maison).getByRole('button', { name: /Retirer Healthy/ })).toBeInTheDocument();
     expect(within(maison).getByRole('button', { name: /Retirer Rapide/ })).toBeInTheDocument();
     // Mêmes champs que l'onboarding : le bloc de chips porte le même libellé.
-    expect(within(maison).getByText('Préférences pour les prochains cycles')).toBeInTheDocument();
+    expect(within(maison).getByText('Préférences pour tes prochains menus')).toBeInTheDocument();
   });
 
   it('enregistre la section (validation incluse)', async () => {
@@ -335,8 +343,8 @@ describe('ProfilScreen — Courses & budget', () => {
     render(
       <ProfilScreen profile={profileMarc} onBack={() => {}} onChangeProfile={() => {}} />,
     );
-    await user.click(ouvrirPage('Courses & budget'));
-    const maison = page('Courses & budget');
+    await user.click(ouvrirPage('Magasin et budget'));
+    const maison = page('Magasin et budget');
 
     await user.click(within(maison).getByRole('button', { name: 'Lidl' }));
     await user.click(within(maison).getByRole('button', { name: 'Aldi' }));
@@ -357,12 +365,12 @@ describe('ProfilScreen — Courses & budget', () => {
     render(
       <ProfilScreen profile={profileMarc} onBack={() => {}} onChangeProfile={() => {}} />,
     );
-    await user.click(ouvrirPage('Courses & budget'));
+    await user.click(ouvrirPage('Magasin et budget'));
 
     await user.type(screen.getByLabelText('Budget max courses / semaine (€)'), '0');
     await user.click(screen.getByRole('button', { name: 'Enregistrer maison & courses' }));
 
-    expect(within(page('Courses & budget')).getByRole('alert')).toHaveTextContent(/Budget max invalide/i);
+    expect(within(page('Magasin et budget')).getByRole('alert')).toHaveTextContent(/Budget max invalide/i);
     expect(loadProfile()).toBeNull();
   });
 
@@ -383,7 +391,7 @@ describe('ProfilScreen — Courses & budget', () => {
        
       />,
     );
-    await user.click(ouvrirPage('Courses & budget'));
+    await user.click(ouvrirPage('Magasin et budget'));
 
     await user.click(screen.getByRole('button', { name: 'Lidl' })); // décoche l'unique magasin
     await user.clear(screen.getByLabelText('Budget max courses / semaine (€)'));
@@ -403,7 +411,7 @@ describe('ProfilScreen (intégration via App)', () => {
   it('l’avatar de l’en-tête ouvre l’écran, le retour revient au shell', async () => {
     const user = monterApp();
 
-    await user.click(await screen.findByRole('button', { name: 'Mon profil' }));
+    await user.click(await screen.findByRole('button', { name: 'Moi : Marc' }));
     expect(await screen.findByRole('button', { name: /Mes infos/ })).toBeInTheDocument();
     expect(screen.queryByRole('navigation', { name: 'Navigation principale' })).not.toBeInTheDocument();
 
@@ -414,25 +422,25 @@ describe('ProfilScreen (intégration via App)', () => {
   it('« Signaler un bug » ouvre l’écran poussé, le retour revient au profil', async () => {
     const user = monterApp();
 
-    await user.click(await screen.findByRole('button', { name: 'Mon profil' }));
+    await user.click(await screen.findByRole('button', { name: 'Moi : Marc' }));
     await user.click(await screen.findByRole('button', { name: /Signaler un bug/ }));
     expect(await screen.findByRole('heading', { name: 'Signaler un bug' })).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /Profil/ }));
+    await user.click(screen.getByRole('button', { name: /Moi/ }));
     expect(await screen.findByRole('button', { name: /Mes infos/ })).toBeInTheDocument();
   });
 
   it('la réouverture de l’écran montre les infos enregistrées (pas d’état périmé)', async () => {
     const user = monterApp();
 
-    await user.click(await screen.findByRole('button', { name: 'Mon profil' }));
+    await user.click(await screen.findByRole('button', { name: 'Moi : Marc' }));
     await user.click(await screen.findByRole('button', { name: /Mes infos/ }));
     fireEvent.change(screen.getByLabelText('Date de naissance'), { target: { value: '1984-04-12' } });
     await user.click(screen.getByRole('button', { name: 'Enregistrer mes infos' }));
 
-    await user.click(screen.getByRole('button', { name: /Profil/ })); // page → hub
+    await user.click(screen.getByRole('button', { name: /Moi/ })); // page → hub
     await user.click(screen.getByRole('button', { name: /Retour/ })); // hub → shell
-    await user.click(screen.getByRole('button', { name: 'Mon profil' }));
+    await user.click(screen.getByRole('button', { name: 'Moi : Marc' }));
     await user.click(await screen.findByRole('button', { name: /Mes infos/ }));
 
     expect(screen.getByLabelText('Date de naissance')).toHaveValue('1984-04-12');
@@ -444,7 +452,7 @@ describe('ProfilScreen (intégration via App)', () => {
     vi.stubGlobal('confirm', spy);
     const user = monterApp();
 
-    await user.click(await screen.findByRole('button', { name: 'Mon profil' }));
+    await user.click(await screen.findByRole('button', { name: 'Moi : Marc' }));
     await user.click(await screen.findByRole('button', { name: /Changer de profil/ }));
 
     expect(loadProfile()).toBeNull();

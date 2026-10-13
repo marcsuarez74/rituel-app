@@ -9,7 +9,7 @@ const SYNC = !process.env.E2E_PREVIEW;
 const ouvrirSignalement = async (page: Page) => {
   await page.goto('/');
   await page.evaluate(() => document.fonts.ready);
-  await page.getByRole('button', { name: 'Mon profil' }).click();
+  await page.getByRole('button', { name: /Moi : / }).click();
   await page.getByRole('button', { name: /Signaler un bug/ }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Signaler un bug' })).toBeVisible();
 };
@@ -24,14 +24,14 @@ test.describe('Signaler un bug', () => {
     await ouvrirSignalement(page);
     await expect(page.getByText(/pas disponible dans cette version/)).toBeVisible();
     await verifierPasDeDebordement(page, 'Signaler un bug (sans sync)');
-    await page.getByRole('button', { name: /Profil/ }).click();
+    await page.getByRole('button', { name: /Moi/ }).click();
     await expect(page.getByRole('button', { name: /Mes infos/ })).toBeVisible();
   });
 
-  test('sans foyer connecté : explique Profil › Foyer', async ({ page }) => {
+  test('sans foyer connecté : explique Moi › Foyer et partage', async ({ page }) => {
     test.skip(!SYNC, 'nécessite la sync');
     await ouvrirSignalement(page);
-    await expect(page.getByText(/Profil › Foyer/)).toBeVisible();
+    await expect(page.getByText(/Moi › Foyer et partage/)).toBeVisible();
     await expect(page.getByLabel('Titre')).toHaveCount(0);
     await verifierPasDeDebordement(page, 'Signaler un bug (sans foyer)');
   });

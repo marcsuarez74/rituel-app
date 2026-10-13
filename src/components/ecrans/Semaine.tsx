@@ -8,12 +8,15 @@ import { LETTRES } from '../../lib/cycle/types';
 import { capitalize } from '../../lib/text';
 import { Icon } from '../Icon';
 import { RepasDuJour } from '../menu/RepasDuJour';
+import { LigneSemaine } from '../shell/LigneSemaine';
 import { useCoches } from '../useCoches';
 import { useReports } from '../useReports';
 
-// Onglet Menu (spec v2 §3, écran 2) : bande des 7 jours à partir du jour des
-// courses (point = journée faite), repas du jour du membre, micro-batch du soir.
-export function Menu({
+// Onglet Semaine (spec refonte §4.3) : navigation entre les 4 semaines
+// (reprise de LigneSemaine, seule ici), bande des 7 jours à partir du jour
+// des courses (point = journée faite), repas du jour du membre, micro-batch
+// du soir, liens vers la semaine type et l'assistant.
+export function Semaine({
   actif,
   foyer,
   semaine,
@@ -22,6 +25,9 @@ export function Menu({
   syncVersion,
   jourVu,
   onJour,
+  onSemaine,
+  onSemaineType,
+  onProchainsMenus,
   onOuvrirRecette,
 }: {
   actif: CycleActif;
@@ -32,6 +38,9 @@ export function Menu({
   syncVersion: number;
   jourVu: Jour | null; // null = aujourd'hui s'il est dans la semaine, sinon le 1er jour
   onJour: (j: Jour) => void;
+  onSemaine: (n: number) => void;
+  onSemaineType: () => void;
+  onProchainsMenus: () => void;
   onOuvrirRecette: (recetteId: string, coche: string) => void;
 }) {
   const lettre = LETTRES[semaine];
@@ -49,6 +58,7 @@ export function Menu({
 
   return (
     <>
+      <LigneSemaine cal={actif} index={semaine} onChange={onSemaine} />
       <div className="bande-jours" role="tablist" aria-label="Jours">
         {jours.map((j) => {
           const liste = repasAvecReports(actif.cycle, semaine, j.jour, moi, reports);
@@ -101,6 +111,17 @@ export function Menu({
           </div>
         </section>
       ))}
+      <div className="semaine-liens">
+        <button type="button" className="bouton-contour" onClick={onSemaineType}>
+          Ma semaine type
+        </button>
+        {/* Dernière semaine des menus : l'assistant prend le relais (spec §4.3). */}
+        {semaine === 3 && (
+          <button type="button" className="bouton-plein" onClick={onProchainsMenus}>
+            Prépare tes prochains menus
+          </button>
+        )}
+      </div>
     </>
   );
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { prenomProfil } from '../lib/model';
+import { estSuivi, prenomProfil } from '../lib/model';
 import type { UserProfile } from '../lib/model';
+import { fmtKg } from '../lib/text';
 import { getWeights } from '../lib/storage';
 import { deconnecterFoyer } from '../lib/sync/engine';
 import type { SyncEtat } from '../lib/sync/engine';
@@ -20,7 +21,7 @@ import { SupprimerProfil } from './profil/SupprimerProfil';
 // Navigation interne : hub (vue générale) ou page détail.
 type Vue = 'hub' | 'objectif' | 'infos' | 'maison' | 'foyer';
 
-// Ligne du hub (maquette v2, écran 11) : icône, titre, résumé, chevron.
+// Ligne du hub (maquette « Moi ») : icône, titre, résumé, chevron.
 function LigneHub({ icone, titre, resume, onClick }: { icone: IconName; titre: string; resume: string; onClick: () => void }) {
   return (
     <button type="button" className="hub-ligne" onClick={onClick}>
@@ -34,17 +35,20 @@ function LigneHub({ icone, titre, resume, onClick }: { icone: IconName; titre: s
   );
 }
 
+// Écran « Moi » (spec refonte §4.6) : carte d'identité puis listes Moi /
+// Mon foyer / Ce téléphone. Les sous-écrans profil/* sont réutilisés.
 export function ProfilScreen({
   profile,
   onBack,
   onChangeProfile,
   onProfileSaved,
   syncEtat = 'off',
-  cycle,
   resumeCycle,
   onMonCycle,
   resumeSemaine,
   onSemaineType,
+  onSuivi,
+  resumeFoyer,
   onIdentite,
   onSignalerBug,
   onProfilSupprime,
@@ -54,11 +58,12 @@ export function ProfilScreen({
   onChangeProfile: () => void;
   onProfileSaved?: (p: UserProfile) => void;
   syncEtat?: SyncEtat;
-  cycle?: number;
   resumeCycle?: string;
   onMonCycle?: () => void;
   resumeSemaine?: string;
   onSemaineType?: () => void;
+  onSuivi?: () => void;
+  resumeFoyer?: string;
   onIdentite?: (p: UserProfile) => void;
   onSignalerBug?: () => void;
   onProfilSupprime?: () => void;
@@ -75,6 +80,8 @@ export function ProfilScreen({
   };
 
   const duo = resumeDuo(syncEtat);
+  const moi = estSuivi(profile);
+  const derniere = getWeights(profile.id).at(-1) ?? null;
 
   return (
     <div className="profil-screen">
@@ -84,58 +91,61 @@ export function ProfilScreen({
             <Icon name="chev-left" size={16} />
             Retour
           </button>
-          <div className="profil-hub">
-            <div className="hub-compte">
-              <div className="hub-avatar">{(prenomProfil(profile.id, profile)[0] ?? '?').toUpperCase()}</div>
-              <div>
-                <h1 className="hub-nom">{prenomProfil(profile.id, profile)}</h1>
-                <div className="hub-sous">
-                  {duo && <span aria-hidden="true" className={`hub-pt${duo.ton !== 'basilic' ? ` ${duo.ton}` : ''}`} />}
-                  {duo && <b>{duo.label}</b>}
-                  {cycle != null && (
-                    <span className="hub-cycle">{duo ? `· Cycle ${cycle}` : `Cycle ${cycle}`}</span>
-                  )}
-                </div>
-              </div>
+          <h1 className="titre-pousse">Moi</h1>
+          <div className="hub-compte">
+            <div className="hub-avatar">{(prenomProfil(profile.id, profile)[0] ?? '?').toUpperCase()}</div>
+            <div>
+              <b className="hub-nom">{prenomProfil(profile.id, profile)}</b>
+              {resumeFoyer && <span className="hub-sous">{resumeFoyer}</span>}
             </div>
-            <h2 className="hub-section">Le foyer</h2>
-            {onMonCycle && (
-              <LigneHub icone="refresh" titre="Mon cycle" resume={resumeCycle ?? ''} onClick={onMonCycle} />
-            )}
-            {onSemaineType && (
-              <LigneHub icone="home" titre="Ma semaine type" resume={resumeSemaine ?? ''} onClick={onSemaineType} />
-            )}
-            <LigneHub icone="cart" titre="Courses & budget" resume={resumeMaison(profile)} onClick={() => setVue('maison')} />
-            <h2 className="hub-section">Moi</h2>
+          </div>
+          <h2 className="hub-section">Moi</h2>
+          <LigneHub icone="info" titre="Mes infos" resume={resumeInfos(profile)} onClick={() => setVue('infos')} />
+          {moi && (
             <LigneHub
               icone="target"
-              titre="Objectif & régime"
-              resume={resumeObjectif(profile, getWeights(profile.id).at(-1) ?? null)}
+              titre="Objectif"
+              resume={resumeObjectif(profile, derniere)}
               onClick={() => setVue('objectif')}
             />
-            <LigneHub icone="info" titre="Mes infos" resume={resumeInfos(profile)} onClick={() => setVue('infos')} />
-            <div className="hub-actions">
-              <button type="button" className="hub-action" onClick={changerProfil}>
-                <Icon name="refresh" size={16} /> Changer de profil <span aria-hidden="true" className="fleche">›</span>
+          )}
+          {moi && onSuivi && (
+            <LigneHub
+              icone="courbe"
+              titre="Suivi poids"
+              resume={derniere ? `Dernière pesée : ${fmtKg(derniere.kg)} kg` : 'Aucune pesée'}
+              onClick={onSuivi}
+            />
+          )}
+          <h2 className="hub-section">Mon foyer</h2>
+          {onMonCycle && <LigneHub icone="refresh" titre="Mes menus" resume={resumeCycle ?? ''} onClick={onMonCycle} />}
+          {onSemaineType && (
+            <LigneHub icone="home" titre="Ma semaine type" resume={resumeSemaine ?? ''} onClick={onSemaineType} />
+          )}
+          <LigneHub
+            icone="couverts"
+            titre="Foyer et partage"
+            resume={duo ? duo.label : 'Sur ce téléphone'}
+            onClick={() => setVue('foyer')}
+          />
+          <LigneHub icone="cart" titre="Magasin et budget" resume={resumeMaison(profile)} onClick={() => setVue('maison')} />
+          <h2 className="hub-section">Ce téléphone</h2>
+          <div className="hub-actions">
+            <button type="button" className="hub-action" onClick={changerProfil}>
+              <Icon name="refresh" size={16} /> Changer de profil <span aria-hidden="true" className="fleche">›</span>
+            </button>
+            {onSignalerBug && (
+              <button type="button" className="hub-action" onClick={onSignalerBug}>
+                <Icon name="info" size={16} /> Signaler un bug <span aria-hidden="true" className="fleche">›</span>
               </button>
-              {duo && (
-                <button type="button" className="hub-action" onClick={() => setVue('foyer')}>
-                  <span aria-hidden="true" className="hub-pt" /> {duo.label} — voir le foyer <span aria-hidden="true" className="fleche">›</span>
-                </button>
-              )}
-              {onSignalerBug && (
-                <button type="button" className="hub-action" onClick={onSignalerBug}>
-                  <Icon name="info" size={16} /> Signaler un bug <span aria-hidden="true" className="fleche">›</span>
-                </button>
-              )}
-              {syncEtat !== 'off' && (
-                <button type="button" className="hub-action danger" onClick={deconnecterFoyer}>
-                  Déconnecter le foyer <span aria-hidden="true" className="fleche">›</span>
-                </button>
-              )}
-            </div>
-            {onProfilSupprime && <SupprimerProfil onSupprime={onProfilSupprime} />}
+            )}
+            {syncEtat !== 'off' && (
+              <button type="button" className="hub-action danger" onClick={deconnecterFoyer}>
+                Déconnecter le foyer <span aria-hidden="true" className="fleche">›</span>
+              </button>
+            )}
           </div>
+          {onProfilSupprime && <SupprimerProfil onSupprime={onProfilSupprime} />}
           <p className="muted profil-about">
             Rituel v{__APP_VERSION__} — vos données restent sur votre téléphone.
           </p>
@@ -144,7 +154,7 @@ export function ProfilScreen({
         <>
           <button type="button" className="profil-back" onClick={() => setVue('hub')}>
             <Icon name="chev-left" size={16} />
-            Profil
+            Moi
           </button>
           {vue === 'infos' && <ProfilInfos profile={profile} onProfileSaved={onProfileSaved} />}
           {vue === 'objectif' && <ProfilObjectif profile={profile} onProfileSaved={onProfileSaved} />}

@@ -20,7 +20,7 @@ type Vue = 'etat' | 'generer' | 'apercu' | 'pret';
 function ChampDebut({ valeur, jourCourses, onChange }: { valeur: string; jourCourses: Jour; onChange: (v: string) => void }) {
   return (
     <label className="debut-cycle">
-      Début du cycle (jour des courses de la semaine 1)
+      Début des menus (jour des courses de la semaine 1)
       <input type="date" value={valeur} onChange={(e) => onChange(e.target.value)} />
       {valeur && jourDe(valeur) !== jourCourses && (
         <span className="muted">Le jour des courses passe au {jourDe(valeur)}.</span>
@@ -130,18 +130,18 @@ export function MonCycle({
   return (
     <div className="mon-cycle">
       <button type="button" className="profil-back" onClick={retour}>
-        <Icon name="chev-left" size={16} /> {vue === 'etat' ? 'Profil' : quitte ? 'Plus tard' : 'Mon cycle'}
+        <Icon name="chev-left" size={16} /> {vue === 'etat' ? 'Moi' : quitte ? 'Plus tard' : 'Mes menus'}
       </button>
-      <h1>Mon cycle</h1>
+      <h1>Mes menus</h1>
 
       {vue === 'etat' && (
         <>
           {!stocke && (
             <section className="profile-section">
-              <h2>Cycle d'exemple</h2>
-              <p>Tu utilises le cycle d'exemple. Crée le tien avec Claude, à partir de vos profils et de votre semaine type.</p>
+              <h2>Menus d'exemple</h2>
+              <p>Tu utilises les menus d'exemple. Crée les tiens avec Claude, à partir de vos profils et de votre semaine type.</p>
               <button type="button" className="bouton-plein" onClick={() => setVue('generer')}>
-                Créer mon premier cycle
+                Créer mes premiers menus
               </button>
             </section>
           )}
@@ -149,7 +149,7 @@ export function MonCycle({
             <>
               <section className="profile-section">
                 <p className="anticipe-titre">
-                  Cycle {stocke.numero} · {periodeCourte(stocke.debut, ajouterJours(prochainCycle(stocke), -1))}
+                  Menus n° {stocke.numero} · {periodeCourte(stocke.debut, ajouterJours(prochainCycle(stocke), -1))}
                 </p>
                 {nouveauDebut === null ? (
                   <button type="button" className="lien" onClick={() => setNouveauDebut(stocke.debut)}>
@@ -206,15 +206,15 @@ export function MonCycle({
               </section>
               <section className="lie-rituel">
                 <p className="anticipe-titre">
-                  <Icon name="lock" size={16} /> Prochain cycle le {formatJourMoisCourt(prochainCycle(stocke))}
+                  <Icon name="lock" size={16} /> Prochains menus le {formatJourMoisCourt(prochainCycle(stocke))}
                 </p>
-                <p>La routine d'abord : un nouveau cycle se débloque quand les 4 semaines sont passées.</p>
+                <p>La routine d'abord : de nouveaux menus se débloquent quand les 4 semaines sont passées.</p>
               </section>
               {position.etat === 'semaine' && position.index < 3 && (
                 <section className="profile-section">
                   <h2>Une semaine qui saute ?</h2>
                   <p>
-                    Vacances, déplacement : on met le cycle en pause une semaine après celle-ci. Le menu{' '}
+                    Vacances, déplacement : on met les menus en pause une semaine après celle-ci. Le menu{' '}
                     {LETTRES[position.index + 1]} reprend ensuite.
                   </p>
                   {stocke.pauses.includes(position.index) ? (
@@ -235,12 +235,12 @@ export function MonCycle({
           {stocke && ouverte && (
             <>
               <section className="profile-section">
-                <p className="anticipe-titre">Cycle {stocke.numero} terminé</p>
+                <p className="anticipe-titre">Menus n° {stocke.numero} terminés</p>
                 <h2>4 semaines bouclées, bravo.</h2>
               </section>
               <section className="action-du-jour">
                 <p className="anticipe-titre">Recommandé</p>
-                <h2>Relancer le même cycle</h2>
+                <h2>Relancer les mêmes menus</h2>
                 <p>Les 4 mêmes menus A → D, à partir du {formatJourMoisCourt(prochainJour(aujourdhui, foyer.jourCourses))}.</p>
                 <button
                   type="button"
@@ -250,14 +250,14 @@ export function MonCycle({
                     setVue('pret');
                   }}
                 >
-                  Relancer le cycle
+                  Relancer les menus
                 </button>
               </section>
               <section className="profile-section">
-                <h2>Nouveau cycle avec Claude</h2>
+                <h2>Nouveaux menus avec Claude</h2>
                 <p>4 nouveaux menus selon vos profils, environ 5 minutes avec ton abonnement Claude.</p>
                 <button type="button" className="bouton-contour" onClick={() => setVue('generer')}>
-                  Créer un nouveau cycle
+                  Créer de nouveaux menus
                 </button>
               </section>
             </>
@@ -270,11 +270,11 @@ export function MonCycle({
           <p className="muted">
             {direct
               ? "Ton foyer est prêt : le prompt aussi. Copie-le, colle-le dans ton IA, puis importe les 4 fichiers qu'elle te rend."
-              : '3 étapes, une fois par cycle.'}
+              : '3 étapes, une fois pour les 4 semaines.'}
           </p>
           <section className="profile-section">
             <h2>1 · Copie le prompt</h2>
-            <p>Il contient votre foyer, votre semaine type, le budget et les règles du cycle.</p>
+            <p>Il contient votre foyer, votre semaine type, le budget et les règles des menus.</p>
             <button
               type="button"
               className="bouton-plein"
@@ -329,7 +329,7 @@ export function MonCycle({
           )}
           {resultat.cycle && resultat.classees.actions.length === 0 && (
             <section className="profile-section apercu-pret" aria-label="Résumé de l'import">
-              <h2>Ton cycle est prêt</h2>
+              <h2>Tes menus sont prêts</h2>
               <p className="muted">
                 4 menus importés, courses estimées entre {Math.round(Math.min(...estimes))} et{' '}
                 {Math.round(Math.max(...estimes))} € par semaine.
@@ -404,7 +404,7 @@ export function MonCycle({
               ))}
               <ChampDebut valeur={debut} jourCourses={foyer.jourCourses} onChange={setDebut} />
               <button type="button" className="bouton-plein" disabled={!ouverte || !debut} onClick={lancer}>
-                Démarrer le cycle
+                Démarrer les menus
               </button>
             </>
           )}
@@ -416,7 +416,7 @@ export function MonCycle({
 
       {vue === 'pret' && stocke && (
         <section className="action-du-jour">
-          <h2>Cycle {stocke.numero} prêt</h2>
+          <h2>Menus n° {stocke.numero} prêts</h2>
           <p>Il démarre le {formatJourMoisCourt(stocke.debut)} avec le menu A.</p>
           <button type="button" className="bouton-plein" onClick={onVoirCourses}>
             Voir la liste de courses
