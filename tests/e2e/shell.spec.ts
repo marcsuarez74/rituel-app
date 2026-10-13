@@ -221,6 +221,7 @@ test.describe('Shell v2 — barre du bas', () => {
   // Spec refonte §9 : le mot « cycle » a disparu des textes visibles des écrans
   // livrés par cette refonte (les identifiants internes restent, eux).
   test('vocabulaire : le mot « cycle » n’apparaît sur aucun écran livré', async ({ page }) => {
+    await page.clock.install({ time: new Date('2026-10-11T10:00:00') }); // dimanche, jour du rituel
     await page.goto('/');
     const nav = page.getByRole('navigation', { name: 'Navigation principale' });
     for (const nom of ONGLETS) {
@@ -232,6 +233,70 @@ test.describe('Shell v2 — barre du bas', () => {
     await page.getByRole('button', { name: 'Moi : Marc' }).click();
     await expect(page.getByRole('button', { name: /Mes infos/ })).toBeVisible();
     await expect(page.locator('body')).not.toContainText(/cycle/i);
+
+    // L'assistant des prochains menus (Moi › Mes menus), les 3 étapes.
+    await page.getByRole('button', { name: /Mes menus/ }).click();
+    await page.getByRole('button', { name: /Créer mes premiers menus/ }).click();
+    await expect(page.getByRole('heading', { name: 'Ta semaine type est-elle toujours la bonne ?' })).toBeVisible();
+    await expect(page.locator('body')).not.toContainText(/cycle/i);
+    await page.getByRole('button', { name: 'Oui, continuer' }).click();
+    await page.getByRole('button', { name: /Copier la demande/ }).click();
+    await page.getByRole('button', { name: "J'ai la réponse, continuer" }).click();
+    await expect(page.getByRole('heading', { name: "Ajoute la réponse de l'IA" })).toBeVisible();
+    await expect(page.locator('body')).not.toContainText(/cycle/i);
+    await page.getByRole('button', { name: 'Retour' }).click();
+    await page.getByRole('button', { name: 'Moi' }).click();
+    await page.getByRole('button', { name: 'Retour' }).click(); // on ressort du hub vers le shell
+
+    // Le mode guidé (jour du rituel simulé), première étape.
+    await page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('button', { name: 'Rituel', exact: true }).click();
+    await page.getByRole('button', { name: 'Commencer' }).click();
+    await expect(page.getByText(/^Étape 1 sur \d+$/)).toBeVisible();
+    await expect(page.locator('body')).not.toContainText(/cycle/i);
+  });
+
+  // Spec refonte §9 : une seule action pleine visible par écran.
+  test('un seul bouton plein (.bouton-plein) visible par écran', async ({ page }) => {
+    await page.clock.install({ time: new Date('2026-10-11T10:00:00') }); // dimanche : le pied « Commencer » est là
+    await page.goto('/');
+    await page.evaluate(() => document.fonts.ready);
+    const pleins = page.locator('.bouton-plein:visible');
+    const unSeul = async (ecran: string) => {
+      const n = await pleins.count();
+      expect(n, `${ecran} : ${n} action(s) pleine(s) visible(s)`).toBeLessThanOrEqual(1);
+    };
+    const nav = page.getByRole('navigation', { name: 'Navigation principale' });
+    for (const nom of ONGLETS) {
+      await nav.getByRole('button', { name: nom, exact: true }).click();
+      if (nom === 'Rituel') {
+        // La feuille d'explication est une couche à part : on la referme d'abord.
+        await page.getByRole('button', { name: "J'ai compris" }).click();
+      }
+      await unSeul(nom);
+    }
+
+    await page.getByRole('button', { name: 'Moi : Marc' }).click();
+    await unSeul('Moi');
+    await page.getByRole('button', { name: /Ma semaine type/ }).click();
+    await unSeul('Ma semaine type');
+    await page.getByRole('button', { name: 'Moi' }).click();
+    await page.getByRole('button', { name: /Mes menus/ }).click();
+    await unSeul('Mes menus');
+    await page.getByRole('button', { name: /Créer mes premiers menus/ }).click();
+    await unSeul('Assistant (étape 1)');
+    await page.getByRole('button', { name: 'Oui, continuer' }).click();
+    await unSeul('Assistant (étape 2)');
+    await page.getByRole('button', { name: /Copier la demande/ }).click();
+    await page.getByRole('button', { name: "J'ai la réponse, continuer" }).click();
+    await unSeul('Assistant (étape 3)');
+    await page.getByRole('button', { name: 'Retour' }).click();
+    await page.getByRole('button', { name: 'Moi' }).click();
+    await page.getByRole('button', { name: 'Retour' }).click(); // on ressort du hub vers le shell
+
+    await nav.getByRole('button', { name: 'Rituel', exact: true }).click();
+    await page.getByRole('button', { name: 'Commencer' }).click();
+    await expect(page.getByText(/^Étape 1 sur \d+$/)).toBeVisible();
+    await unSeul('Mode guidé (étape 1)');
   });
 });
 
