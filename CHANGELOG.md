@@ -6,6 +6,16 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 Ce fichier est **généré par [release-please](https://github.com/googleapis/release-please)** à partir des conventional commits (`feat` → mineur, `fix`/`perf` → correctif, `!` ou `BREAKING CHANGE:` → majeur) : ne pas l'éditer à la main. L'historique ci-dessous (jusqu'à 2.1.0) est conservé tel quel.
 
+## [2.7.0](https://github.com/marcsuarez74/rituel-app/compare/v2.6.0...v2.7.0) (2026-10-13)
+
+
+### Ajouté
+
+* couleur par plat et provenance sur les cartes repas ([da1f55a](https://github.com/marcsuarez74/rituel-app/commit/da1f55ab883b61be2dd2737991d24737f6638954))
+* écran Aujourd'hui, l'ardoise dit quoi faire ([135066b](https://github.com/marcsuarez74/rituel-app/commit/135066be32218b47af4a120eec8426bcd869a02a))
+* navigation à 4 onglets, écrans Semaine et Moi ([60a55fd](https://github.com/marcsuarez74/rituel-app/commit/60a55fdbaf9876cb9de42526b92fde5aa61a8da7))
+* vocabulaire « menus » sur les écrans + test e2e aucun cycle visible ([90d39b4](https://github.com/marcsuarez74/rituel-app/commit/90d39b4577cabe48340d0c3ade673852d93dfc32))
+
 ## [2.6.0](https://github.com/marcsuarez74/rituel-app/compare/v2.5.0...v2.6.0) (2026-10-12)
 
 
