@@ -1,6 +1,7 @@
-import { jourDe, positionCycle, prochainJour } from './calendrier';
+import { ajouterJours, jourDe, positionCycle, prochainJour } from './calendrier';
 import type { CycleActif, JourType, ReglagesFoyer } from './etat';
 import type { Cycle, Jour } from './types';
+import { JOURS } from './types';
 
 // Écran Mon cycle (spec 2026-10-07 §7) : verrou, démarrage, relance, pause.
 // Les ids sont passés (crypto.randomUUID côté UI) : fonctions pures.
@@ -34,6 +35,21 @@ export const relancer = (
   ...demarrer(a.cycle, a, prochainJour(aujourdhui, jourCourses), id, semaine),
   relanceDe: a.id,
 });
+
+// Le jour des courses a changé alors que des menus sont en cours : le début
+// se recale au même rang de semaine (décalé en avant jusqu'au nouveau jour).
+// Un cycle terminé n'est pas touché (la relance choisira le bon jour).
+export const recaleJourCourses = (
+  nouveau: ReglagesFoyer,
+  ancien: ReglagesFoyer,
+  actif: CycleActif | null,
+  aujourdhui: string,
+): { foyer: ReglagesFoyer; actif: CycleActif | null } => {
+  if (!actif || nouveau.jourCourses === ancien.jourCourses) return { foyer: nouveau, actif };
+  if (positionCycle(actif, aujourdhui).etat === 'termine') return { foyer: nouveau, actif };
+  const delta = (JOURS.indexOf(nouveau.jourCourses) - JOURS.indexOf(jourDe(actif.debut)) + 7) % 7;
+  return changerDebut(actif, nouveau, ajouterJours(actif.debut, delta));
+};
 
 // Date de début corrigée à tout moment (passé autorisé : « courses faites
 // samedi dernier »). Le jour des courses du foyer suit, sinon les jours du

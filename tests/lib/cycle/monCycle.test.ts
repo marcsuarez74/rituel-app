@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { type CycleActif, foyerParDefaut } from '../../../src/lib/cycle/etat';
-import { ajouterPause, changerDebut, demarrer, generationOuverte, messagePourClaude, relancer } from '../../../src/lib/cycle/monCycle';
+import { type CycleActif, type ReglagesFoyer, foyerParDefaut } from '../../../src/lib/cycle/etat';
+import { ajouterPause, changerDebut, demarrer, generationOuverte, messagePourClaude, recaleJourCourses, relancer } from '../../../src/lib/cycle/monCycle';
 import { importerCycle } from '../../../src/lib/cycle/valider';
 import { enFichiers, quatreFichiers } from './fabrique';
 
@@ -31,6 +31,23 @@ describe('Mon cycle', () => {
     expect(demarrer(cycle(), actif(), '2026-10-31', 'n1', semaine).semaineAuLancement).toEqual(semaine);
     expect(demarrer(cycle(), actif(), '2026-10-31', 'n1').semaineAuLancement).toBeUndefined();
     expect(relancer(actif(), '2026-11-02', 'samedi', 'n2', semaine).semaineAuLancement).toEqual(semaine);
+  });
+
+  it('jour des courses changé avec des menus en cours : le début se recale au même rang de semaine', () => {
+    const samedi = foyerParDefaut(null); // courses le samedi ; cycle débuté le samedi 3 oct.
+    const mercredi: ReglagesFoyer = { ...samedi, jourCourses: 'mercredi' };
+
+    const r = recaleJourCourses(mercredi, samedi, actif(), '2026-10-13');
+    expect(r.foyer).toBe(mercredi);
+    expect(r.actif).toMatchObject({ id: 'c1', numero: 2, debut: '2026-10-07', pauses: [] }); // mercredi suivant
+
+    // jour inchangé, ou pas de menus : rien ne bouge
+    expect(recaleJourCourses(samedi, samedi, actif(), '2026-10-13').actif?.debut).toBe('2026-10-03');
+    expect(recaleJourCourses(mercredi, samedi, null, '2026-10-13').actif).toBeNull();
+
+    // cycle terminé : le début reste en place (la relance choisira le bon jour)
+    const fini = actif({ debut: '2026-08-01' });
+    expect(recaleJourCourses(mercredi, samedi, fini, '2026-10-13').actif?.debut).toBe('2026-08-01');
   });
 
   it('l’instantané est une copie : modifier la semaine du foyer ensuite ne le change pas', () => {

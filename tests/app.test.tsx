@@ -2,8 +2,12 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../src/App';
 import { addWeight, loadProfile, saveProfile } from '../src/lib/storage';
-import { foyerParDefaut, loadFoyer, saveFoyer } from '../src/lib/cycle/etat';
+import { foyerParDefaut, loadCycle, loadFoyer, saveCycle, saveFoyer } from '../src/lib/cycle/etat';
+import { importerCycle } from '../src/lib/cycle/valider';
+import { enFichiers, quatreFichiers } from './lib/cycle/fabrique';
 import type { ProfileKey } from '../src/lib/model';
+
+const cycleDuTest = () => importerCycle(enFichiers(quatreFichiers())).cycle!;
 
 // Toute vue shell suppose un profil choisi (onboarding passé).
 const initProfile = (id: ProfileKey = 'marc', prenom?: string) =>
@@ -88,6 +92,23 @@ describe('App shell v2', () => {
     expect(within(ardoise).getByRole('heading', { name: /jour de rituel/ })).toBeInTheDocument();
     await user.click(within(ardoise).getByRole('button', { name: 'Commencer le rituel' }));
     expect(screen.getByRole('heading', { level: 1, name: 'Rituel' })).toBeInTheDocument();
+  });
+
+  it('jour des courses changé dans Ma semaine type : début recalé et confirmation', async () => {
+    initProfile('marc', 'Jean');
+    saveFoyer(foyerParDefaut(loadProfile()!));
+    saveCycle({ id: 'c1', numero: 1, debut: '2026-10-03', pauses: [], cycle: cycleDuTest() });
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(await screen.findByRole('button', { name: 'Moi : Jean' }));
+    await user.click(await screen.findByRole('button', { name: /Ma semaine type/ }));
+    await user.selectOptions(await screen.findByLabelText(/Jour des courses/), 'mercredi');
+    await user.click(await screen.findByRole('button', { name: 'Enregistrer' }));
+
+    expect(await screen.findByText('Tes menus démarreront désormais le mercredi.')).toBeInTheDocument();
+    expect(loadCycle()?.debut).toBe('2026-10-07'); // mercredi suivant le samedi de départ
+    expect(loadFoyer()?.jourCourses).toBe('mercredi');
   });
 
   it('barre du bas : 4 onglets libellés, l’actif en aria-current, avatar « Moi »', async () => {

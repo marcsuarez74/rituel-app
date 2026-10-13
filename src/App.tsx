@@ -8,7 +8,8 @@ import { semaineCoches } from './lib/cycle/etat';
 import type { Jour } from './lib/cycle/types';
 
 import { chargerCycleExemple, semaineParDefaut } from './lib/cycle/courant';
-import { type CycleActif, type ReglagesFoyer, assurerMoi, foyerParDefaut, loadCycle, loadFoyer, saveFoyer } from './lib/cycle/etat';
+import { type CycleActif, type ReglagesFoyer, assurerMoi, foyerParDefaut, loadCycle, loadFoyer, saveCycle, saveFoyer } from './lib/cycle/etat';
+import { recaleJourCourses } from './lib/cycle/monCycle';
 import { todayISO } from './lib/dates';
 import { estSuivi, prenomProfil } from './lib/model';
 import { capitalize } from './lib/text';
@@ -68,6 +69,8 @@ function App() {
   const [signalerBug, setSignalerBug] = useState(false);
   // Suivi poids : écran poussé ouvert depuis la carte Suivi ou depuis Moi.
   const [suiviOuvert, setSuiviOuvert] = useState(false);
+  // Confirmation transitoire (ex. jour des courses recalcé — spec PR 4 tâche 5).
+  const [toast, setToast] = useState<string | null>(null);
   // Fiche recette poussée ; `coche` = le repas d'où on vient (« C'est fait »).
   const [recette, setRecette] = useState<{ id: string; coche?: { semaine: string; id: string } } | null>(null);
   // Sync optionnelle : état (point sur l'avatar) et version de re-rendu —
@@ -170,9 +173,28 @@ function App() {
   };
 
   const enregistrerFoyer = (f: ReglagesFoyer) => {
-    saveFoyer(f);
-    setFoyerStocke(f);
+    // Jour des courses changé avec des menus en cours → le début des menus se
+    // recale (fix PR 4) ; un message le confirme sur l'écran qui suit.
+    const { foyer: foyerFinal, actif: recale } = recaleJourCourses(f, foyer, cycleStocke, aujourdhui);
+    saveFoyer(foyerFinal);
+    setFoyerStocke(foyerFinal);
+    if (recale && recale !== cycleStocke) {
+      saveCycle(recale);
+      setCycleStocke(recale);
+      setToast(`Tes menus démarreront désormais le ${foyerFinal.jourCourses}.`);
+    }
   };
+
+  // Toast de confirmation : affiché sur l'écran courant après une action
+  // (jour des courses recalcé). L'utilisateur le referme ou change d'écran.
+  const toaster = toast ? (
+    <div className="toast" role="status">
+      <span>{toast}</span>
+      <button type="button" onClick={() => setToast(null)}>
+        OK
+      </button>
+    </div>
+  ) : null;
 
   // Fin de l'étape « Ta semaine » de l'onboarding : sans cycle à soi, on
   // enchaîne sur Mon cycle (génération) plutôt que sur le cycle d'exemple.
@@ -203,6 +225,7 @@ function App() {
             }}
           />
         </Suspense>
+        {toaster}
       </div>
     );
   }
@@ -234,6 +257,7 @@ function App() {
             }}
           />
         </Suspense>
+        {toaster}
       </div>
     );
   }
@@ -304,6 +328,7 @@ function App() {
             }}
           />
         </Suspense>
+        {toaster}
       </div>
     );
   }
@@ -327,6 +352,7 @@ function App() {
   const ecranPousse = (contenu: ReactNode) => (
     <div className="main-content">
       <Suspense fallback={<Chargement />}>{contenu}</Suspense>
+      {toaster}
     </div>
   );
 
@@ -426,6 +452,7 @@ function App() {
         </main>
       </div>
       <BarreOnglets actif={ecran} onSelect={setOnglet} />
+      {toaster}
     </div>
   );
 }
