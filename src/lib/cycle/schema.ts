@@ -91,6 +91,8 @@ const RITUEL = objet({
       sousEtapes: opt(textes),
       enParallele: opt('texte'),
       minuteurMin: opt('nombre'),
+      plats: opt(textes),
+      minuteurs: opt(liste(objet({ nom: 'texte', minutes: 'nombre', recette: opt('texte') }))),
     }),
   ),
   termine: 'texte',

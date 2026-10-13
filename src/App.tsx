@@ -6,7 +6,7 @@ import { EnTete } from './components/shell/EnTete';
 import { positionCycle } from './lib/cycle/calendrier';
 import { semaineCoches } from './lib/cycle/etat';
 import type { Jour } from './lib/cycle/types';
-import type { VueRituel } from './components/ecrans/Rituel';
+
 import { chargerCycleExemple, semaineParDefaut } from './lib/cycle/courant';
 import { type CycleActif, type ReglagesFoyer, assurerMoi, foyerParDefaut, loadCycle, loadFoyer, saveFoyer } from './lib/cycle/etat';
 import { todayISO } from './lib/dates';
@@ -14,6 +14,7 @@ import { estSuivi, prenomProfil } from './lib/model';
 import { capitalize } from './lib/text';
 import type { UserProfile } from './lib/model';
 import { loadProfile, loadProfilLegacy, removeProfile } from './lib/storage';
+import { useMinuteurs } from './components/useMinuteurs';
 import { initSync, type SyncEtat } from './lib/sync/engine';
 
 // Chargés à la demande (spec v2 §10) : seul Aujourd'hui est dans le bundle initial.
@@ -57,7 +58,6 @@ function App() {
   // Semaine consultée dans Menu / Courses / Rituel (null = celle du jour).
   const [semaineVue, setSemaineVue] = useState<number | null>(null);
   const [jourVu, setJourVu] = useState<Jour | null>(null); // jour consulté dans Menu
-  const [vueRituel, setVueRituel] = useState<VueRituel>('jour');
   const [guide, setGuide] = useState<number | null>(null); // étape du mode guidé ouvert
   const [monCycle, setMonCycle] = useState(false);
   // Fin d'onboarding : Mon cycle s'ouvre directement sur « générer » (prompt à copier).
@@ -77,6 +77,9 @@ function App() {
 
   const aujourdhui = todayISO();
   const foyer = foyerStocke ?? foyerParDefaut(profile);
+  // Les minuteurs vivent dans App : ils continuent entre les étapes du mode
+  // guidé et survivent au changement d'écran (spec refonte §5.2).
+  const minuteurs = useMinuteurs();
 
   // Effets posés avant les early returns — règle des hooks.
   useEffect(() => {
@@ -344,16 +347,14 @@ function App() {
     return ecranPousse(
       <Guide
         actif={actif}
+        foyer={foyer}
+        aujourdhui={aujourdhui}
         semaine={semaine}
         etape={guide}
         syncVersion={syncVersion}
+        minuteurs={minuteurs}
         onEtape={setGuide}
         onQuitter={() => setGuide(null)}
-        onReserve={() => {
-          setGuide(null);
-          setVueRituel('reserve');
-        }}
-        onOuvrirRecette={(id) => setRecette({ id })}
       />,
     );
   }
@@ -410,9 +411,8 @@ function App() {
                   foyer={foyer}
                   semaine={semaine}
                   syncVersion={syncVersion}
-                  vue={vueRituel}
-                  onVue={setVueRituel}
-                  onGuide={() => setGuide(0)}
+                  aujourdhui={aujourdhui}
+                  onGuide={setGuide}
                   onOuvrirRecette={(id) => setRecette({ id })}
                 />
               )}

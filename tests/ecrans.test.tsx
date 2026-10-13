@@ -4,11 +4,12 @@ import { useState } from 'react';
 import { Guide } from '../src/components/ecrans/Guide';
 import { MonCycle } from '../src/components/ecrans/MonCycle';
 import { SemaineType } from '../src/components/ecrans/SemaineType';
-import { Rituel, type VueRituel } from '../src/components/ecrans/Rituel';
+import { Rituel } from '../src/components/ecrans/Rituel';
+import { useMinuteurs } from '../src/components/useMinuteurs';
 import { Courses } from '../src/components/ecrans/Courses';
 import { Recette } from '../src/components/ecrans/Recette';
 import { type CycleActif, type Membre, type ReglagesFoyer, foyerParDefaut, loadCycle, loadFoyer } from '../src/lib/cycle/etat';
-import { garderProfilFoyer, getChecks, getDepenses } from '../src/lib/storage';
+import { garderProfilFoyer, getChecks, getDepenses, loadExplique, saveExplique, setCheck } from '../src/lib/storage';
 import { importerCycle } from '../src/lib/cycle/valider';
 import { enFichiers, foyerDuo, quatreFichiers } from './lib/cycle/fabrique';
 
@@ -176,18 +177,142 @@ describe('Courses', () => {
   });
 });
 
-describe('Rituel', () => {
+describe('Rituel (écran v2 : vignettes, grille, plats, pied)', () => {
+  const DIMANCHE = '2026-10-11'; // dimanche, jour du rituel par défaut
   const actifRituel = (): CycleActif => {
     const fs = quatreFichiers();
     fs[0].rituel!.etapes.push({ id: 'rituel-sauce', creneau: '20-40 min', label: 'Sauce', detail: 'Mijoter.', enParallele: 'Les muffins cuisent.' });
     fs[0].menus[0].reserve = [{ pour: 'jeudi', plat: '½ sauce tomate', conservation: 'Congélateur' }];
     fs[0].menus[0].rappelsRituel = ['Colin : congélateur → frigo'];
+    // Mardi soir vient d'une boîte du rituel : grille « préparée dimanche » + reste au frigo.
+    fs[0].menus[0].jours[1].repas[0].boite = { produitePar: 'rituel-muffins', frigoJours: 2 };
     return { id: 'c1', numero: 1, debut: '2026-10-03', pauses: [], cycle: importerCycle(enFichiers(fs)).cycle! };
   };
-  const RituelEtat = ({ onGuide = () => {} }: { onGuide?: () => void }) => {
-    const [vue, setVue] = useState<VueRituel>('jour');
+  const RituelEtat = ({
+    aujourdhui = DIMANCHE,
+    onGuide = () => {},
+    onRecette = () => {},
+  }: {
+    aujourdhui?: string;
+    onGuide?: (n: number) => void;
+    onRecette?: (id: string) => void;
+  }) => (
+    <Rituel
+      actif={actifRituel()}
+      foyer={foyerParDefaut(null)}
+      semaine={0}
+      syncVersion={0}
+      aujourdhui={aujourdhui}
+      onGuide={onGuide}
+      onOuvrirRecette={onRecette}
+    />
+  );
+
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it("première visite : la feuille d'explication en 3 vignettes, « J'ai compris » la referme pour toujours", async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<RituelEtat />);
+    const feuille = screen.getByRole('dialog');
+    expect(within(feuille).getByRole('heading', { name: /Le rituel, c.est quoi/ })).toBeInTheDocument();
+    expect(within(feuille).getByText(/Tu cuisines environ 50 min/)).toBeInTheDocument();
+    expect(within(feuille).getByText(/Au frigo, au congélateur et dans les box/)).toBeInTheDocument();
+    expect(within(feuille).getByText(/plus qu.à réchauffer/)).toBeInTheDocument();
+    await user.click(within(feuille).getByRole('button', { name: "J'ai compris" }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(loadExplique()).toBe(true);
+    unmount();
+    render(<RituelEtat />);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByText('Ce dimanche, tu prépares')).toBeInTheDocument();
+  });
+
+  it('relisible via « C\'est quoi le rituel ? »', async () => {
+    const user = userEvent.setup();
+    saveExplique(true);
+    render(<RituelEtat />);
+    await user.click(screen.getByRole('button', { name: /C.est quoi le rituel/ }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: "J'ai compris" }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('jour du rituel : résumé chiffré, grille libellée, légende et plats à cuisiner', async () => {
+    const user = userEvent.setup();
+    saveExplique(true);
+    const onRecette = vi.fn();
+    render(<RituelEtat onRecette={onRecette} />);
+    expect(screen.getByText('Ce dimanche, tu prépares')).toBeInTheDocument();
+    expect(screen.getByText(/1 plat en 50 min environ, pour 1 repas de la semaine/)).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Mardi soir : Recette diner-a-mardi, préparée dimanche' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Lundi soir : Recette diner-a-lundi, fait le jour même' })).toBeInTheDocument();
+    expect(screen.getByText('Cuisiné dimanche')).toBeInTheDocument();
+    expect(screen.getByText('Fait le jour même')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'À cuisiner dimanche' })).toBeInTheDocument();
+    const carte = screen.getByRole('button', { name: /Recette muffins/ });
+    expect(carte).toHaveTextContent('Pour mardi soir');
+    await user.click(carte);
+    expect(onRecette).toHaveBeenCalledWith('muffins');
+    expect(screen.getByRole('button', { name: /C.est quoi le rituel/ })).toBeInTheDocument();
+  });
+
+  it('pas encore commencé : le pied propose « Commencer » qui ouvre le mode guidé à l\'étape 1', async () => {
+    saveExplique(true);
+    const user = userEvent.setup();
+    const onGuide = vi.fn();
+    render(<RituelEtat onGuide={onGuide} />);
+    await user.click(screen.getByRole('button', { name: 'Commencer' }));
+    expect(onGuide).toHaveBeenCalledWith(0);
+  });
+
+  it('déjà commencé : le pied propose « Reprendre, étape 2 »', async () => {
+    saveExplique(true);
+    setCheck('cycle:c1:0', 'rituel:A:rituel-muffins', true);
+    render(<RituelEtat />);
+    expect(screen.getByRole('button', { name: 'Reprendre, étape 2' })).toBeInTheDocument();
+  });
+
+  it('en semaine : « Au frigo cette semaine » d\'abord, puis l\'aperçu du prochain dimanche', () => {
+    saveExplique(true);
+    render(<RituelEtat aujourdhui="2026-10-13" />);
+    const frigo = screen.getByRole('heading', { name: 'Au frigo cette semaine' });
+    const apercu = screen.getByText('Ce dimanche, tu prépares');
+    expect(frigo.compareDocumentPosition(apercu) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getByText('Tout ce que tu as préparé dimanche. Ça se vide au fil des repas.')).toBeInTheDocument();
+    expect(screen.getByText('Recette diner-a-mardi')).toBeInTheDocument();
+    expect(screen.getByText('À manger avant mardi 13 octobre')).toBeInTheDocument();
+  });
+});
+
+describe('mode guidé v2 (barre minuteurs, gestes, On range, fin)', () => {
+  const DIMANCHE = '2026-10-11';
+  const actifGuide = (): CycleActif => {
+    const fs = quatreFichiers();
+    fs[0].rituel!.etapes[0].sousEtapes = ['Battre les œufs', 'Remplir les moules'];
+    fs[0].rituel!.etapes[0].minuteurs = [{ nom: 'Four', minutes: 18, recette: 'muffins' }];
+    fs[0].rituel!.etapes.push({ id: 'rituel-sauce', creneau: '20-40 min', label: 'Sauce', detail: 'Mijoter.', enParallele: 'Les muffins cuisent.' });
+    fs[0].menus[0].reserve = [{ pour: 'jeudi', plat: '½ sauce tomate', conservation: 'Congélateur' }];
+    fs[0].menus[0].rappelsRituel = ['Colin : congélateur → frigo'];
+    fs[0].menus[0].jours[1].repas[0].boite = { produitePar: 'rituel-muffins', frigoJours: 2 };
+    return { id: 'c1', numero: 1, debut: '2026-10-03', pauses: [], cycle: importerCycle(enFichiers(fs)).cycle! };
+  };
+  const GuideEtat = ({ aujourdhui = DIMANCHE, onQuitter = () => {} }: { aujourdhui?: string; onQuitter?: () => void }) => {
+    const [etape, setEtape] = useState(0);
+    const minuteurs = useMinuteurs();
     return (
-      <Rituel actif={actifRituel()} foyer={foyerParDefaut(null)} semaine={0} syncVersion={0} vue={vue} onVue={setVue} onGuide={onGuide} onOuvrirRecette={() => {}} />
+      <Guide
+        actif={actifGuide()}
+        foyer={foyerParDefaut(null)}
+        aujourdhui={aujourdhui}
+        semaine={0}
+        etape={etape}
+        syncVersion={0}
+        minuteurs={minuteurs}
+        onEtape={setEtape}
+        onQuitter={onQuitter}
+      />
     );
   };
 
@@ -195,58 +320,101 @@ describe('Rituel', () => {
     localStorage.clear();
   });
 
-  it('jour du rituel : résumé, rappels de la semaine, avant de commencer, déroulé dépliable et cochable', async () => {
+  it("étape 1 : plats concernés → feuille ingrédients intégrée, gestes persistés, rappels", async () => {
     const user = userEvent.setup();
-    const onGuide = vi.fn();
-    render(<RituelEtat onGuide={onGuide} />);
-    expect(screen.getByRole('tab', { name: 'Dimanche', selected: true })).toBeInTheDocument();
-    expect(screen.getByText('Dimanche · 50 min · 2 étapes')).toBeInTheDocument();
-    expect(screen.getByText('Cette semaine aussi')).toBeInTheDocument(); // replié
-
-    await user.click(screen.getByRole('button', { name: /Sauce$/ }));
-    expect(screen.getByText('Mijoter.')).toBeInTheDocument();
-    expect(screen.getByText('Les muffins cuisent.')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Sauce : marquer comme fait' }));
-    expect(getChecks('cycle:c1:0')).toEqual({ 'rituel:A:rituel-sauce': true });
-
-    await user.click(screen.getByRole('button', { name: /Lancer le mode guidé/ }));
-    expect(onGuide).toHaveBeenCalledOnce();
-  });
-
-  it('en semaine (micro-batch) et réserve « au frigo » → « mangé »', async () => {
-    const user = userEvent.setup();
-    render(<RituelEtat />);
-    await user.click(screen.getByRole('tab', { name: 'En semaine' }));
-    expect(screen.getByText('Doubler le plat')).toBeInTheDocument();
-    await user.click(screen.getByRole('tab', { name: 'Réserve' }));
-    const sauce = screen.getByRole('button', { name: /½ sauce tomate/ });
-    expect(sauce).toHaveTextContent('Jeudi');
-    expect(sauce).toHaveTextContent('Au frigo');
-    await user.click(sauce);
-    expect(sauce).toHaveTextContent('Mangé');
-    expect(getChecks('cycle:c1:0')).toEqual({ 'reserve:A:sauce-tomate': true });
-  });
-
-  it('mode guidé : une étape par écran, « Suivant » coche, écran de fin', async () => {
-    const user = userEvent.setup();
-    const GuideEtat = () => {
-      const [etape, setEtape] = useState(0);
-      return (
-        <Guide actif={actifRituel()} semaine={0} etape={etape} syncVersion={0} onEtape={setEtape} onQuitter={() => {}} onReserve={() => {}} onOuvrirRecette={() => {}} />
-      );
-    };
     render(<GuideEtat />);
-    expect(screen.getByText('Étape 1 sur 2')).toBeInTheDocument();
+    expect(screen.getByText(/Étape 1 sur 3/)).toBeInTheDocument();
     expect(screen.getByText('Colin : congélateur → frigo')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1, name: 'Muffins' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Précédent' })).toBeDisabled();
+    await user.click(screen.getByRole('button', { name: /Recette muffins : voir les ingrédients/ }));
+    const feuille = screen.getByRole('dialog');
+    expect(within(feuille).getByText('Œufs')).toBeInTheDocument();
+    expect(within(feuille).getByText('×6')).toBeInTheDocument();
+    await user.click(within(feuille).getByRole('button', { name: 'Fermer' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
 
-    await user.click(screen.getByRole('button', { name: 'Suivant' }));
-    expect(screen.getByRole('heading', { level: 1, name: 'Sauce' })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Terminer' }));
-    expect(screen.getByRole('heading', { level: 1, name: 'Rituel terminé !' })).toBeInTheDocument();
-    expect(screen.getByText('Fini.')).toBeInTheDocument();
-    expect(getChecks('cycle:c1:0')).toEqual({ 'rituel:A:rituel-muffins': true, 'rituel:A:rituel-sauce': true });
+    await user.click(screen.getByRole('button', { name: 'Battre les œufs' }));
+    expect(getChecks('cycle:c1:0')['geste:A:rituel-muffins:0']).toBe(true);
+  });
+
+  it("bouton minuteur : lance, la barre décompte, alerte à l'échéance, OK la retire", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date('2026-10-11T10:00:00'));
+    try {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      render(<GuideEtat />);
+      await user.click(screen.getByRole('button', { name: /Four · 18 min/ }));
+      expect(screen.getAllByText('18:00')).toHaveLength(2); // puce de la barre + bouton de l'étape
+      act(() => {
+        vi.advanceTimersByTime(18 * 60_000 + 1_000);
+      });
+      expect(screen.getByText(/Four : prêt !/)).toBeInTheDocument();
+      const alerte = screen.getByRole('alert');
+      expect(alerte).toHaveTextContent("Four : c'est prêt !");
+      await user.click(within(alerte).getByRole('button', { name: 'OK' }));
+      expect(screen.queryByRole('alert')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("« Étape suivante » coche l'étape, « Précédente » revient sans décocher", async () => {
+    const user = userEvent.setup();
+    render(<GuideEtat />);
+    await user.click(screen.getByRole('button', { name: 'Étape suivante' }));
+    expect(getChecks('cycle:c1:0')['rituel:A:rituel-muffins']).toBe(true);
+    expect(screen.getByText(/Étape 2 sur 3/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Précédente/ }));
+    expect(screen.getByText(/Étape 1 sur 3/)).toBeInTheDocument();
+    expect(getChecks('cycle:c1:0')['rituel:A:rituel-muffins']).toBe(true);
+  });
+
+  it("On range : zones, « Encore 2 à ranger » désactivé, coches range:, puis « Tout est rangé »", async () => {
+    const user = userEvent.setup();
+    render(<GuideEtat />);
+    await user.click(screen.getByRole('button', { name: 'Étape suivante' }));
+    await user.click(screen.getByRole('button', { name: 'Étape suivante' }));
+    expect(screen.getByRole('heading', { name: 'On range' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Encore 2 à ranger' })).toBeDisabled();
+    expect(screen.getByText('Recette diner-a-mardi')).toBeInTheDocument();
+    expect(screen.getByText('Sors-le la veille')).toBeInTheDocument();
+    const frigoBtn = screen.getByRole('button', { name: /Recette diner-a-mardi/ });
+    await user.click(frigoBtn);
+    await user.click(screen.getByRole('button', { name: /½ sauce tomate/ }));
+    const coches = getChecks('cycle:c1:0');
+    expect(coches['range:A:mardi-diner-famille']).toBe(true);
+    expect(coches['range:A:sauce-tomate']).toBe(true);
+    // L'état coché s'affiche (case pleine + libellé), pas seulement le stockage.
+    expect(screen.getByRole('button', { name: /Recette diner-a-mardi/ })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Tout est rangé' })).toBeEnabled();
+  });
+
+  it("fin : « Ta semaine est prête ! », récap chiffré, confettis, « Voir ce qu'il y a au frigo »", async () => {
+    const user = userEvent.setup();
+    const onQuitter = vi.fn();
+    render(<GuideEtat onQuitter={onQuitter} />);
+    await user.click(screen.getByRole('button', { name: 'Étape suivante' }));
+    await user.click(screen.getByRole('button', { name: 'Étape suivante' }));
+    await user.click(screen.getByRole('button', { name: /Recette diner-a-mardi/ }));
+    await user.click(screen.getByRole('button', { name: /½ sauce tomate/ }));
+    await user.click(screen.getByRole('button', { name: 'Tout est rangé' }));
+    expect(screen.getByRole('heading', { name: 'Ta semaine est prête !' })).toBeInTheDocument();
+    expect(screen.getByText(/1 repas prêt/)).toBeInTheDocument();
+    expect(document.querySelectorAll('.confetti').length).toBeGreaterThan(0);
+    await user.click(screen.getByRole('button', { name: /Voir ce qu.il y a au frigo/ }));
+    expect(onQuitter).toHaveBeenCalledOnce();
+  });
+
+  it('prefers-reduced-motion : pas de confettis', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: true } as MediaQueryList);
+    render(<GuideEtat />);
+    await user.click(screen.getByRole('button', { name: 'Étape suivante' }));
+    await user.click(screen.getByRole('button', { name: 'Étape suivante' }));
+    await user.click(screen.getByRole('button', { name: /Recette diner-a-mardi/ }));
+    await user.click(screen.getByRole('button', { name: /½ sauce tomate/ }));
+    await user.click(screen.getByRole('button', { name: 'Tout est rangé' }));
+    expect(screen.getByRole('heading', { name: 'Ta semaine est prête !' })).toBeInTheDocument();
+    expect(document.querySelectorAll('.confetti')).toHaveLength(0);
   });
 });
 

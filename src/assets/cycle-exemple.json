@@ -55,7 +55,14 @@
         "id": "rituel-prep",
         "creneau": "0-5 min",
         "label": "Four et casseroles",
-        "detail": "Four à 180° chaleur tournante. Une grande casserole d'eau (œufs durs), une casserole d'eau froide (lentilles), la cocotte (sauce)."
+        "detail": "Four à 180° chaleur tournante. Une grande casserole d'eau (œufs durs), une casserole d'eau froide (lentilles), la cocotte (sauce).",
+        "plats": [],
+        "minuteurs": [
+          {
+            "nom": "Préchauffage du four",
+            "minutes": 5
+          }
+        ]
       },
       {
         "id": "rituel-poulet",
@@ -64,7 +71,17 @@
         "detail": "10 cuisses frottées huile, ail, paprika, herbes, sel ; four 180°, 50 min.",
         "recette": "poulet-du-dimanche",
         "enParallele": "Le poulet cuit pendant tout le reste du rituel.",
-        "minuteurMin": 50
+        "minuteurMin": 50,
+        "plats": [
+          "poulet-du-dimanche"
+        ],
+        "minuteurs": [
+          {
+            "nom": "Cuisses au four",
+            "minutes": 50,
+            "recette": "poulet-du-dimanche"
+          }
+        ]
       },
       {
         "id": "rituel-muffins",
@@ -73,7 +90,17 @@
         "detail": "Garniture à la poêle, 10 œufs battus + emmental, moules au four à côté du poulet.",
         "recette": "egg-muffins-boostes",
         "enParallele": "Poulet au four.",
-        "minuteurMin": 22
+        "minuteurMin": 22,
+        "plats": [
+          "egg-muffins-boostes"
+        ],
+        "minuteurs": [
+          {
+            "nom": "Muffins au four",
+            "minutes": 22,
+            "recette": "egg-muffins-boostes"
+          }
+        ]
       },
       {
         "id": "rituel-sauce",
@@ -82,7 +109,17 @@
         "detail": "Oignons, carottes râpées, ail 5 min ; tomates, coulis, herbes ; mijoter 25 min à couvert.",
         "recette": "sauce-tomate-maison",
         "enParallele": "Lentilles et œufs durs sur les deux autres feux.",
-        "minuteurMin": 25
+        "minuteurMin": 25,
+        "plats": [
+          "sauce-tomate-maison"
+        ],
+        "minuteurs": [
+          {
+            "nom": "Mijotage de la sauce",
+            "minutes": 25,
+            "recette": "sauce-tomate-maison"
+          }
+        ]
       },
       {
         "id": "rituel-lentilles-oeufs",
@@ -95,22 +132,20 @@
           "8 œufs dans l'eau bouillante 10 min, bain froid 5 min, marqués « D »"
         ],
         "enParallele": "Sauce qui mijote, poulet et muffins au four.",
-        "minuteurMin": 25
-      },
-      {
-        "id": "rituel-boites",
-        "creneau": "45-60 min",
-        "label": "Répartition & boîtes",
-        "detail": "Tout refroidit avant de fermer. Le poulet sort vers 57 min.",
-        "recette": "box-poulet-lentilles-alex",
-        "sousEtapes": [
-          "Muffins → 6 au frigo, 4 au congélateur",
-          "Sauce mixée → 2 boîtes : frigo (mardi) et congélateur (jeudi)",
-          "Lentilles égouttées → 250 g (mardi) et 200 g (box de mercredi)",
-          "Poulet : 5 cuisses pour le dîner, 2 pour la box de Alex lundi (mise de côté au dîner), 1 pour le déjeuner de Sam lundi, 1 effilochée pour sa box César, 1 ½ effilochée pour la box de Alex",
-          "Box de Alex mercredi : poulet + lentilles + crudités",
-          "Box César de Sam mardi : poulet + œuf dur + romaine + parmesan",
-          "Œufs durs → frigo, boîte « Sam »"
+        "minuteurMin": 25,
+        "plats": [
+          "lentilles-vertes-batch"
+        ],
+        "minuteurs": [
+          {
+            "nom": "Lentilles",
+            "minutes": 25,
+            "recette": "lentilles-vertes-batch"
+          },
+          {
+            "nom": "Œufs durs",
+            "minutes": 10
+          }
         ]
       }
     ],
@@ -213,7 +248,7 @@
               ],
               "recette": "box-cesar-keto",
               "boite": {
-                "produitePar": "rituel-boites",
+                "produitePar": "rituel-poulet",
                 "frigoJours": 2
               }
             },
@@ -248,7 +283,7 @@
               ],
               "recette": "box-poulet-lentilles-alex",
               "boite": {
-                "produitePar": "rituel-boites",
+                "produitePar": "rituel-poulet",
                 "frigoJours": 3
               }
             },
@@ -504,7 +539,7 @@
               ],
               "recette": "box-cesar-keto",
               "boite": {
-                "produitePar": "rituel-boites",
+                "produitePar": "rituel-poulet",
                 "frigoJours": 2
               }
             },
@@ -539,7 +574,7 @@
               ],
               "recette": "box-poulet-lentilles-alex",
               "boite": {
-                "produitePar": "rituel-boites",
+                "produitePar": "rituel-poulet",
                 "frigoJours": 3
               }
             },
@@ -797,7 +832,7 @@
               ],
               "recette": "box-cesar-keto",
               "boite": {
-                "produitePar": "rituel-boites",
+                "produitePar": "rituel-poulet",
                 "frigoJours": 2
               }
             },
@@ -832,7 +867,7 @@
               ],
               "recette": "box-poulet-lentilles-alex",
               "boite": {
-                "produitePar": "rituel-boites",
+                "produitePar": "rituel-poulet",
                 "frigoJours": 3
               }
             },
@@ -1088,7 +1123,7 @@
               ],
               "recette": "box-cesar-keto",
               "boite": {
-                "produitePar": "rituel-boites",
+                "produitePar": "rituel-poulet",
                 "frigoJours": 2
               }
             },
@@ -1123,7 +1158,7 @@
               ],
               "recette": "box-poulet-lentilles-alex",
               "boite": {
-                "produitePar": "rituel-boites",
+                "produitePar": "rituel-poulet",
                 "frigoJours": 3
               }
             },

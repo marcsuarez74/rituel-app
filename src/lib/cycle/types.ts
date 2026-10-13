@@ -114,6 +114,10 @@ export interface EtapeRituel {
   sousEtapes?: string[];
   enParallele?: string;
   minuteurMin?: number;
+  /** Ids des recettes que cette étape fait avancer (couleurs et ingrédients du mode guidé). */
+  plats?: string[];
+  /** Minuteurs lancés à cette étape ; ils tournent en parallèle des étapes suivantes. */
+  minuteurs?: { nom: string; minutes: number; recette?: string }[];
 }
 
 export interface Rituel {

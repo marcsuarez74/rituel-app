@@ -18,32 +18,38 @@ test.describe('Parcours rituel guidé et import de cycle', () => {
   });
 
   test('Rituel › mode guidé : le minuteur démarre et décompte', async ({ page }) => {
-    await page.clock.install();
-    await page.reload();
+    await page.clock.install({ time: new Date('2026-10-11T10:00:00') }); // dimanche, jour du rituel
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto('/');
+    await attendrePolices(page);
+    await expect(page.getByText(/Menus d'exemple/)).toBeVisible();
     await allerA(page, 'Rituel');
-    await verifierPasDeDebordement(page, 'Rituel');
-    await page.getByRole('button', { name: /Lancer le mode guidé/ }).click();
+
+    // Première visite : la feuille des 3 vignettes, puis le pied « Commencer ».
+    await page.getByRole('button', { name: "J'ai compris" }).click();
+    await verifierPasDeDebordement(page, 'Rituel (jour du rituel)');
+    await page.getByRole('button', { name: 'Commencer' }).click();
     await expect(page.getByText(/^Étape 1 sur \d+$/)).toBeVisible();
     await verifierPasDeDebordement(page, 'Mode guidé');
+    await expect(page.getByRole('main')).not.toContainText(/cycle/i);
 
-    // Avance d'étape en étape jusqu'à la première qui porte un minuteur.
-    const minuteur = page.locator('button.minuteur');
-    for (let i = 0; i < 30 && !(await minuteur.isVisible()); i += 1) {
-      await page.getByRole('button', { name: 'Suivant', exact: true }).click();
-    }
-    await expect(minuteur).toBeVisible();
-    await expect(minuteur).toHaveText(/Minuteur \d+ min/);
-
-    await minuteur.click();
-    await expect(minuteur).toHaveText(/\d{2}:\d{2} · Arrêter/);
-    const avant = await minuteur.innerText();
+    // Le minuteur de l'étape 1 : lancer → puce qui décompte dans la barre collée.
+    await page.getByRole('button', { name: /Préchauffage du four · 5 min/ }).click();
+    const puce = page.locator('.puce-min');
+    await expect(puce).toContainText('Préchauffage du four');
+    await expect(puce).toContainText(/\d{2}:\d{2}/);
+    const avant = await puce.innerText();
     await page.clock.runFor(3000);
-    const apres = await minuteur.innerText();
+    const apres = await puce.innerText();
     expect(apres, 'le décompte avance').not.toBe(avant);
     await verifierPasDeDebordement(page, 'Mode guidé (minuteur lancé)');
 
-    await minuteur.click(); // Arrêter
-    await expect(minuteur).toHaveText(/Minuteur \d+ min/);
+    // À l'échéance : puce « prêt ! » + alerte avec OK.
+    await page.clock.runFor(5 * 60_000);
+    const alerte = page.getByRole('alert');
+    await expect(alerte).toContainText("Préchauffage du four : c'est prêt !");
+    await alerte.getByRole('button', { name: 'OK' }).click();
+    await expect(page.getByRole('alert')).toHaveCount(0);
   });
 
   test('Mes menus : import avec alias et remarques → aperçu apaisé, notes repliées', async ({ page }) => {

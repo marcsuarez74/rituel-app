@@ -150,6 +150,12 @@ describe('assemblePromptIa (cycle v2)', () => {
     expect(prompt()).toContain(s);
   });
 
+  it('le schéma embarqué décrit plats et minuteurs (rituel en parallèle)', () => {
+    const s = schemaContrat();
+    expect(s).toContain('plats?:');
+    expect(s).toContain('minuteurs?:');
+  });
+
   it('un seul magasin : formulation inchangée', () => {
     expect(prompt()).toContain('Magasin : Lidl ·');
   });
