@@ -1,4 +1,4 @@
-import type { JourType, ReglagesFoyer } from './etat';
+import { normaliserJournee, type JourType, type ReglagesFoyer } from './etat';
 import { JOURS, type Jour } from './types';
 
 // Option B (spec refonte §6) : diff entre la semaine type ACTUELLE du foyer et
@@ -35,8 +35,19 @@ const instantaneFiable = (v: unknown): Record<Jour, JourType> | null => {
 const trie = (o: Record<string, unknown>): [string, unknown][] =>
   Object.entries(o).sort(([a], [b]) => (a < b ? -1 : 1));
 
+// Journées normalisées : un instantané d'avant le renommage (« standard »,
+// « alternee ») ne doit pas créer de faux changement.
+const journeeCanon = (m: unknown): [string, unknown][] => {
+  const propre: Record<string, string> = {};
+  for (const [id, v] of Object.entries((m ?? {}) as Record<string, string>)) {
+    const n = normaliserJournee(v);
+    if (n) propre[id] = n;
+  }
+  return trie(propre);
+};
+
 const canon = (t: JourType): string =>
-  JSON.stringify([trie(t.dejeuner ?? {}), t.diner, [...(t.plusTard ?? [])].sort(), trie(t.journee ?? {}), t.note ?? '']);
+  JSON.stringify([trie(t.dejeuner ?? {}), t.diner, [...(t.plusTard ?? [])].sort(), journeeCanon(t.journee), t.note ?? '']);
 
 export const changementsEnAttente = (foyer: ReglagesFoyer, instantane: unknown): Jour[] => {
   const ref = instantaneFiable(instantane);

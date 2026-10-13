@@ -1,7 +1,7 @@
 import template from '../assets/prompt-cycle-template.md?raw';
 import typesSource from './cycle/types.ts?raw';
 import { ordreJours } from './cycle/calendrier';
-import type { ReglagesFoyer } from './cycle/etat';
+import { normaliserJournee, type ReglagesFoyer } from './cycle/etat';
 import { prenomMembre } from './cycle/menu';
 import { ageDepuis } from './dates';
 import { magasinsDe, type ObjectifType, type UserProfile } from './model';
@@ -73,8 +73,10 @@ const semaineType = (foyer: ReglagesFoyer): string =>
       const parties = [`- ${jour} : déjeuner ${dej || '—'} · dîner ${j.diner}`];
       if (j.plusTard.length)
         parties.push(`${j.plusTard.map((id) => prenomMembre(foyer.membres, id)).join(', ')} dîne plus tard`);
-      for (const [id, v] of Object.entries(j.journee ?? {}))
-        if (v !== 'standard') parties.push(`journée ${prenomMembre(foyer.membres, id)} : ${v}`);
+      for (const [id, v] of Object.entries(j.journee ?? {})) {
+        const n = normaliserJournee(v);
+        if (n && n !== 'classique') parties.push(`journée ${prenomMembre(foyer.membres, id)} : ${n}`);
+      }
       if (j.note) parties.push(j.note);
       return parties.join(' · ');
     })

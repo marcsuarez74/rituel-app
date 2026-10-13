@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { foyerDuo } from './fabrique';
 import { ajouterAdulte, ajouterEnfant, changerJour, rattacher, retirerMembre, resumeJour } from '../../../src/lib/cycle/foyer';
-import { foyerParDefaut } from '../../../src/lib/cycle/etat';
+import { foyerParDefaut, loadFoyer } from '../../../src/lib/cycle/etat';
 import type { UserProfile } from '../../../src/lib/model';
 
 describe('réglages du foyer', () => {
@@ -19,6 +19,19 @@ describe('réglages du foyer', () => {
     f = retirerMembre(f, 'maxine');
     expect(f.membres.map((m) => m.id)).toEqual(['marc', 'melanie']);
     expect(f.semaine.lundi).toEqual({ dejeuner: { marc: 'maison', melanie: 'maison' }, diner: 'famille', plusTard: [], journee: {} });
+  });
+
+  it('anciennes valeurs de journée : foyer jamais réinitialisé, normalisé à la lecture', () => {
+    localStorage.clear();
+    const ancien = foyerParDefaut(null);
+    // forme stockée par l’app avant le renommage (standard / alternee) — cast volontaire
+    (ancien.semaine.lundi as unknown as { journee?: Record<string, string> }).journee = { marc: 'standard', melanie: 'alternee' };
+    (ancien.semaine.mardi as unknown as { journee?: Record<string, string> }).journee = { marc: 'sortie' };
+    localStorage.setItem('sportapp:foyer', JSON.stringify(ancien));
+    const f = loadFoyer();
+    expect(f).not.toBeNull(); // la garde tolère les anciennes valeurs : pas de reset du foyer
+    expect(f!.semaine.lundi.journee).toEqual({ marc: 'classique' }); // standard → classique, alternee → retiré
+    expect(f!.semaine.mardi.journee).toEqual({ marc: 'sortie' }); // sortie conservée telle quelle
   });
 
   it('résumé d’un jour pour la ligne repliée', () => {
