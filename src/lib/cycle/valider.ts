@@ -1,7 +1,7 @@
 import { normaliserFichier } from './alias';
 import { estimerSemaine } from './budget';
 import { FICHIER, verifierForme } from './schema';
-import type { Cycle, CycleFichier, MenuSemaine, MembreId, Recette, Repas } from './types';
+import type { Cycle, CycleFichier, Jour, MenuSemaine, MembreId, Recette, Repas } from './types';
 import { JOURS, LETTRES } from './types';
 
 // Import d'un cycle généré par Claude (spec 2026-10-07 §6) : lecture des
@@ -19,6 +19,7 @@ export interface ContexteValidation {
   budgetMax?: number;
   seuilKetoG?: number; // glucides nets / jour, défaut 30
   recettesPrecedentes?: string[];
+  jourRituel?: Jour; // sans foyer : pas de contrôle de conservation frigo
 }
 
 /** Alertes classées par ce que l'utilisateur a à en faire. */
@@ -142,6 +143,19 @@ const regles = (cycle: Cycle, ctx: ContexteValidation): string[] => {
     if (e.recette && !recettes.has(e.recette))
       erreurs.add(`Rituel, étape « ${e.id} » : la recette « ${e.recette} » n'existe pas.`);
 
+  // Étapes qui déclarent plusieurs plats et minuteurs (rituel en parallèle,
+  // spec §5.5) : mêmes exigences que pour `recette`.
+  for (const e of cycle.rituel.etapes) {
+    for (const p of e.plats ?? [])
+      if (!recettes.has(p)) erreurs.add(`Rituel, étape « ${e.id} » : la recette « ${p} » n'existe pas.`);
+    for (const m of e.minuteurs ?? []) {
+      if (m.recette && !recettes.has(m.recette))
+        erreurs.add(`Rituel, étape « ${e.id} » : la recette « ${m.recette} » n'existe pas.`);
+      if (m.minutes < 1)
+        erreurs.add(`Rituel, étape « ${e.id} » : le minuteur « ${m.nom} » doit durer au moins 1 minute.`);
+    }
+  }
+
   for (const menu of cycle.menus) {
     const m = `Menu ${menu.lettre}`;
     const producteurs = new Set([...idsRituel, ...menu.microBatch.map((x) => x.id), ...recettes.keys()]);
@@ -221,6 +235,33 @@ const alertes = (cycle: Cycle, ctx: ContexteValidation): string[] => {
           .reduce((s, r) => s + (recettes.get(r.recette!)?.macros[mb.id]?.glucides ?? 0), 0);
         if (g > seuil) a.push(`Menu ${menu.lettre}, ${jour} : ≈ ${g} g de glucides pour ${mb.id} (seuil ${seuil} g).`);
       }
+
+  // Plat non congelable servi au-delà de sa conservation frigo (spec §5.5) :
+  // alerte, jamais bloquant. Sans jourRituel (pas de foyer) : pas de calcul.
+  if (ctx.jourRituel) {
+    const produitParRituel = new Set<string>();
+    for (const e of cycle.rituel.etapes) {
+      produitParRituel.add(e.id);
+      if (e.recette) produitParRituel.add(e.recette);
+      for (const p of e.plats ?? []) produitParRituel.add(p);
+    }
+    const iRituel = JOURS.indexOf(ctx.jourRituel);
+    for (const menu of cycle.menus)
+      for (const { jour, repas } of menu.jours) {
+        const ecoule = (JOURS.indexOf(jour) - iRituel + 7) % 7;
+        if (ecoule <= 0) continue;
+        for (const r of repas) {
+          if (!r.boite || !r.recette || !produitParRituel.has(r.boite.produitePar)) continue;
+          const rec = recettes.get(r.recette);
+          if (!rec) continue;
+          const frigoJours = r.boite.frigoJours ?? rec.conservation.frigoJours;
+          if (rec.conservation.congelable || frigoJours >= ecoule) continue;
+          a.push(
+            `« ${rec.nom} » du ${jour} : ne se garde que ${frigoJours} jours au frigo sans congélation — décale-la dans la semaine ou congele des portions.`,
+          );
+        }
+      }
+  }
 
   const diners = cycle.menus.map((menu) => ({
     lettre: menu.lettre,

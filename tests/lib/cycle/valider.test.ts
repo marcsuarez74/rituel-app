@@ -160,6 +160,82 @@ describe('importerCycle — alertes', () => {
   });
 });
 
+describe('importerCycle — rituel avec plats et minuteurs', () => {
+  it('accepte une étape qui déclare plats et minuteurs multiples', () => {
+    const fs = quatreFichiers();
+    fs[0].rituel!.etapes[0] = {
+      id: 'rituel-muffins',
+      creneau: '0-20 min',
+      label: 'Muffins',
+      detail: 'Au four.',
+      plats: ['muffins'],
+      minuteurs: [
+        { nom: 'Four', minutes: 18, recette: 'muffins' },
+        { nom: 'Œufs durs', minutes: 9 },
+      ],
+    };
+    const r = importer(fs);
+    expect(r.erreurs).toEqual([]);
+    expect(r.cycle?.rituel.etapes[0].plats).toEqual(['muffins']);
+    expect(r.cycle?.rituel.etapes[0].minuteurs).toHaveLength(2);
+  });
+
+  it('un ancien fichier (minuteurMin/enParallele seulement) reste valide', () => {
+    const fs = quatreFichiers();
+    fs[0].rituel!.etapes[0] = {
+      id: 'rituel-muffins',
+      creneau: '0-20 min',
+      label: 'Muffins',
+      detail: 'Au four.',
+      recette: 'muffins',
+      enParallele: 'Pendant ce temps : les œufs durs.',
+      minuteurMin: 20,
+    };
+    expect(importer(fs).erreurs).toEqual([]);
+  });
+
+  it('refuse un id inconnu dans plats (bloquant, même message qu’une recette cassée)', () => {
+    const fs = quatreFichiers();
+    fs[0].rituel!.etapes[0].plats = ['fantome'];
+    expect(importer(fs).erreurs).toContainEqual(
+      expect.stringMatching(/Rituel, étape « rituel-muffins » : la recette « fantome » n'existe pas\./),
+    );
+  });
+
+  it('refuse un id inconnu dans minuteurs[].recette', () => {
+    const fs = quatreFichiers();
+    fs[0].rituel!.etapes[0].minuteurs = [{ nom: 'Four', minutes: 18, recette: 'fantome' }];
+    expect(importer(fs).erreurs).toContainEqual(
+      expect.stringMatching(/Rituel, étape « rituel-muffins » : la recette « fantome » n'existe pas\./),
+    );
+  });
+
+  it('refuse un minuteur de moins d’une minute', () => {
+    const fs = quatreFichiers();
+    fs[0].rituel!.etapes[0].minuteurs = [{ nom: 'Four', minutes: -5 }];
+    const r = importer(fs);
+    expect(r.cycle).toBeNull();
+    expect(r.erreurs).toContainEqual(expect.stringMatching(/minuteurs\[0\]\.minutes : nombre positif attendu \(-5\)/));
+  });
+
+  it('alerte : plat non congelable servi au-delà de sa conservation frigo', () => {
+    const fs = quatreFichiers();
+    fs[0].menus[0].jours[2].repas[0].boite = { produitePar: 'rituel-muffins', frigoJours: 2 };
+    const r = importer(fs, { jourRituel: 'dimanche' });
+    expect(r.alertes).toContainEqual(expect.stringMatching(/« Recette diner-a-mercredi ».*ne se garde que 2 jours au frigo/));
+  });
+
+  it('pas d’alerte si la recette est congelable', () => {
+    const fs = quatreFichiers();
+    fs[0].menus[0].jours[2].repas[0].boite = { produitePar: 'rituel-muffins', frigoJours: 2 };
+    fs[0].recettes = fs[0].recettes.map((x) =>
+      x.id === 'diner-a-mercredi' ? { ...x, conservation: { ...x.conservation, congelable: true } } : x,
+    );
+    const r = importer(fs, { jourRituel: 'dimanche' });
+    expect(r.alertes).not.toContainEqual(expect.stringMatching(/ne se garde que 2 jours au frigo/));
+  });
+});
+
 describe('cycle d’exemple (src/assets/cycle-exemple.json)', () => {
   it('est valide pour le foyer anonymisé et sans alerte au plafond de 125 €', () => {
     const r = importerCycle([{ nom: 'cycle-exemple.json', contenu: exempleRaw }], {
