@@ -1,5 +1,5 @@
 import type { DepenseEntry, UserProfile } from '../src/lib/model';
-import { addWeight, deleteDepense, getChecks, getDepenses, getWeights, loadProfile, loadProfilLegacy, profilsAvecPesees, removeProfile, renommerPesees, saveDepense, saveProfile, setCheck, type WeightEntry } from '../src/lib/storage';
+import { addWeight, deleteDepense, getChecks, getDepenses, getWeights, loadExplique, loadMinuteurs, loadProfile, loadProfilLegacy, profilsAvecPesees, removeProfile, renommerPesees, saveDepense, saveExplique, saveMinuteurs, saveProfile, setCheck, type MinuteurStocke, type WeightEntry } from '../src/lib/storage';
 
 describe('storage: checks', () => {
   beforeEach(() => {
@@ -567,5 +567,44 @@ describe('Profil v2.2 — prenom et champs optionnels', () => {
     });
     expect(loadProfile()?.prenom).toBeUndefined();
     expect(loadProfile()?.id).toBe('marc');
+  });
+});
+
+describe('storage: rituel — expliqué et minuteurs (clés locales, jamais synchronisées)', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('loadExplique : false par défaut, true après save', () => {
+    expect(loadExplique()).toBe(false);
+    saveExplique(true);
+    expect(loadExplique()).toBe(true);
+    saveExplique(false);
+    expect(loadExplique()).toBe(false);
+  });
+
+  it('valeur corrompue → valeur par défaut, jamais un crash', () => {
+    localStorage.setItem('sportapp:rituel:explique', '{pas du json');
+    expect(loadExplique()).toBe(false);
+    localStorage.setItem('sportapp:rituel:minuteurs', '[{"fin":');
+    expect(loadMinuteurs()).toEqual([]);
+  });
+
+  it('minuteurs : save puis load rond-trip, entrées illégales filtrées', () => {
+    expect(loadMinuteurs()).toEqual([]);
+    saveMinuteurs([
+      { id: 'm1', nom: 'Lentilles', recette: 'lentilles-vertes-batch', fin: 1_762_400_000_000 },
+      { id: 'm2', nom: 'Four', fin: 1_762_400_600_000 },
+    ]);
+    expect(loadMinuteurs()).toEqual([
+      { id: 'm1', nom: 'Lentilles', recette: 'lentilles-vertes-batch', fin: 1_762_400_000_000 },
+      { id: 'm2', nom: 'Four', fin: 1_762_400_600_000 },
+    ]);
+    saveMinuteurs([
+      { id: 'm3', nom: 'Riz', fin: 99 },
+      { id: 'x', nom: '', fin: 'oops' } as unknown as MinuteurStocke,
+      { id: 'y', nom: 'Sans fin' } as unknown as MinuteurStocke,
+    ]);
+    expect(loadMinuteurs()).toEqual([{ id: 'm3', nom: 'Riz', fin: 99 }]);
   });
 });

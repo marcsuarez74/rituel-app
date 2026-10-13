@@ -328,3 +328,59 @@ export const deleteDepense = (date: string, magasin: string): DepenseEntry[] => 
   });
   return list;
 };
+
+// ——— Rituel : feuille d'explication vue + minuteurs en cours. Clés locales à
+// l'appareil, jamais synchronisées (hors liste blanche de l'outbox, §8).
+
+const EXPLIQUE_KEY = 'sportapp:rituel:explique';
+const MINUTEURS_KEY = 'sportapp:rituel:minuteurs';
+
+export interface MinuteurStocke {
+  id: string;
+  nom: string;
+  recette?: string;
+  /** Heure de fin en epoch ms : on persiste la fin, jamais un décompte. */
+  fin: number;
+}
+
+export const loadExplique = (): boolean => {
+  const raw = localStorage.getItem(EXPLIQUE_KEY);
+  if (raw === null) return false;
+  const parsed = safeParse<unknown>(EXPLIQUE_KEY, raw, null);
+  if (typeof parsed !== 'boolean') {
+    console.warn(`Expliqué corrompu ignoré : ${EXPLIQUE_KEY}`);
+    localStorage.removeItem(EXPLIQUE_KEY);
+    return false;
+  }
+  return parsed;
+};
+
+export const saveExplique = (vu: boolean): void => {
+  localStorage.setItem(EXPLIQUE_KEY, JSON.stringify(vu));
+};
+
+const estMinuteurValide = (v: unknown): v is MinuteurStocke =>
+  isPlainObject(v) &&
+  typeof v.id === 'string' &&
+  v.id.length > 0 &&
+  typeof v.nom === 'string' &&
+  v.nom.trim().length > 0 &&
+  typeof v.fin === 'number' &&
+  Number.isFinite(v.fin) &&
+  (v.recette === undefined || typeof v.recette === 'string');
+
+export const loadMinuteurs = (): MinuteurStocke[] => {
+  const raw = localStorage.getItem(MINUTEURS_KEY);
+  if (raw === null) return [];
+  const parsed = safeParse<unknown>(MINUTEURS_KEY, raw, null);
+  if (!Array.isArray(parsed)) {
+    console.warn(`Minuteurs corrompus ignorés : ${MINUTEURS_KEY}`);
+    localStorage.removeItem(MINUTEURS_KEY);
+    return [];
+  }
+  return parsed.filter(estMinuteurValide);
+};
+
+export const saveMinuteurs = (liste: MinuteurStocke[]): void => {
+  localStorage.setItem(MINUTEURS_KEY, JSON.stringify(liste));
+};
