@@ -6,6 +6,23 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 Ce fichier est **généré par [release-please](https://github.com/googleapis/release-please)** à partir des conventional commits (`feat` → mineur, `fix`/`perf` → correctif, `!` ou `BREAKING CHANGE:` → majeur) : ne pas l'éditer à la main. L'historique ci-dessous (jusqu'à 2.1.0) est conservé tel quel.
 
+## [2.8.0](https://github.com/marcsuarez74/rituel-app/compare/v2.7.0...v2.8.0) (2026-10-13)
+
+
+### Ajouté
+
+* assistant « Prépare tes prochains menus » (3 étapes) ([1595d7f](https://github.com/marcsuarez74/rituel-app/commit/1595d7fefb67ce7e6ec392e81f63c4288cc29103))
+* badges « dès les prochains menus » et bandeau des changements ([ae5b107](https://github.com/marcsuarez74/rituel-app/commit/ae5b1073048ba8453eea73b90c7b20fd4b06238a))
+* courses par famille de couleur, « J'ai payé » quand tout est coché ([8b457f3](https://github.com/marcsuarez74/rituel-app/commit/8b457f3650594abb1e62e2581ed26c7f392d8da6))
+* diff de la semaine type depuis l'instantané de lancement ([bb08f98](https://github.com/marcsuarez74/rituel-app/commit/bb08f98388562fd334d32b516c9c78c12f211fee))
+* instantané de la semaine type au lancement des menus ([f18482e](https://github.com/marcsuarez74/rituel-app/commit/f18482e5d964ff86fd4feca6b7b03535b465640d))
+
+
+### Corrigé
+
+* « Voir ma semaine » rouvre bien le shell ; vitest ignore .claude/ ([b97ca2c](https://github.com/marcsuarez74/rituel-app/commit/b97ca2cefc50f66a049c9b6e4b23b2fb149cac0e))
+* le jour des courses recalcé recale le début des menus en cours ([2e2dcb1](https://github.com/marcsuarez74/rituel-app/commit/2e2dcb1b5c66b89fefd56c61b164b4208342aadb))
+
 ## [2.7.0](https://github.com/marcsuarez74/rituel-app/compare/v2.6.0...v2.7.0) (2026-10-13)
 
 
