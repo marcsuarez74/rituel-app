@@ -826,6 +826,16 @@ describe('Semaine type', () => {
     expect(f.exceptions).toEqual([{ regle: '1er et 3e vendredis', effet: 'resto à deux', actif: true }]);
   });
 
+  it('journée : options classique, sportive, sortie, repos (alternée retirée)', async () => {
+    const user = userEvent.setup();
+    render(<SemaineType foyer={foyerDuo()} onEnregistrer={() => {}} onRetour={() => {}} />);
+    const titreLundi = screen.getByText('Lundi', { selector: 'summary b' });
+    const lundi = titreLundi.closest('details')!;
+    await user.click(titreLundi);
+    const groupe = within(lundi).getByRole('radiogroup', { name: 'Journée de Marc' });
+    expect(within(groupe).getAllByRole('radio').map((r) => r.textContent)).toEqual(['classique', 'sportive', 'sortie', 'repos']);
+  });
+
   it('étape « Ta semaine » : compacte, Passer garde les valeurs par défaut', async () => {
     const user = userEvent.setup();
     const onEnregistrer = vi.fn();

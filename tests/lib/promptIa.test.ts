@@ -20,7 +20,7 @@ const foyer = (): ReglagesFoyer => {
   const f: ReglagesFoyer = { ...foyerDuo(), magasin: 'Lidl', budgetMax: 110 };
   f.membres[1].regime = 'keto';
   f.membres.push({ id: 'maelle', prenom: 'Maëlle', type: 'enfant', suivi: false });
-  f.semaine.lundi = { dejeuner: { marc: 'box', melanie: 'maison', maelle: 'dehors' }, diner: 'rapide', plusTard: ['melanie'], journee: { marc: 'sortie' }, note: 'Piscine' };
+  f.semaine.lundi = { dejeuner: { marc: 'box', melanie: 'maison', maelle: 'dehors' }, diner: 'rapide', plusTard: ['melanie'], journee: { marc: 'sportive' }, note: 'Piscine' };
   f.exceptions = [
     { regle: '1er et 3e vendredis', effet: 'resto à deux', actif: true },
     { regle: 'Mardi', effet: 'inactif', actif: false },
@@ -122,9 +122,20 @@ describe('assemblePromptIa (cycle v2)', () => {
     expect(t).toContain('Courses le samedi · rituel batch le dimanche');
     expect(t.indexOf('- samedi :')).toBeLessThan(t.indexOf('- lundi :'));
     expect(t).toContain(
-      '- lundi : déjeuner Marc=box, Mélanie=maison, Maëlle=dehors · dîner rapide · Mélanie dîne plus tard · journée Marc : sortie · Piscine',
+      '- lundi : déjeuner Marc=box, Mélanie=maison, Maëlle=dehors · dîner rapide · Mélanie dîne plus tard · journée Marc : sportive · Piscine',
     );
     expect(t).toContain('Exceptions : 1er et 3e vendredis → resto à deux\n');
+  });
+
+  it('journées : sportive/repos écrites (avec la règle du prompt), classique jamais', () => {
+    const f = foyer();
+    f.semaine.lundi.journee = { marc: 'classique', melanie: 'repos' };
+    f.semaine.mardi.journee = { marc: 'sportive' };
+    const t = prompt(f);
+    expect(t).toContain('Journée « sportive »'); // règle du prompt maître
+    expect(t).toContain('journée Mélanie : repos');
+    expect(t).toContain('journée Marc : sportive');
+    expect(t).not.toContain('journée Marc : classique');
   });
 
   it('courses et budget du foyer, règle de budget souple', () => {

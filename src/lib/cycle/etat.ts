@@ -18,13 +18,25 @@ export interface Membre {
   telephone?: boolean; // a son profil sur un téléphone (sinon : saisi par un autre)
 }
 
+// Type de journée d'un membre suivi (semaine type) — « classique » est le
+// défaut, jamais écrite dans le prompt.
+export type JourneeMembre = 'classique' | 'sportive' | 'sortie' | 'repos';
+
 export interface JourType {
   dejeuner: Record<MembreId, 'box' | 'maison' | 'dehors'>;
   diner: 'famille' | 'rapide' | 'leger';
   plusTard: MembreId[]; // dînent décalé (portion réchauffée)
-  journee?: Record<MembreId, 'standard' | 'sortie' | 'repos' | 'alternee'>;
+  journee?: Record<MembreId, JourneeMembre>;
   note?: string;
 }
+
+// Anciennes valeurs (avant renommage) : tolérées par la garde puis normalisées
+// à la lecture — une donnée réelle n'est jamais réinitialisée pour ça.
+export const normaliserJournee = (v: string): JourneeMembre | undefined => {
+  if (v === 'standard') return 'classique';
+  if (v === 'alternee') return undefined;
+  return v === 'classique' || v === 'sportive' || v === 'sortie' || v === 'repos' ? v : undefined;
+};
 
 export interface ExceptionFoyer {
   regle: string; // « 1er et 3e vendredis »
@@ -95,7 +107,8 @@ const JOUR_TYPE = objet({
   dejeuner: { dico: { parmi: ['box', 'maison', 'dehors'] } },
   diner: { parmi: ['famille', 'rapide', 'leger'] },
   plusTard: liste('texte'),
-  journee: opt({ dico: { parmi: ['standard', 'sortie', 'repos', 'alternee'] } }),
+  // 'standard' et 'alternee' : anciennes valeurs, tolérées (normalisées à la lecture).
+  journee: opt({ dico: { parmi: ['classique', 'sportive', 'sortie', 'repos', 'standard', 'alternee'] } }),
   note: opt('texte'),
 });
 
@@ -169,7 +182,21 @@ const ecrire = (cle: string, cleSync: string, valeur: unknown): void => {
   empilerMutation({ op: 'upsert', table: 'etat', key: { cle: cleSync }, payload: { valeur } });
 };
 
-export const loadFoyer = (): ReglagesFoyer | null => lire(FOYER_KEY, estFoyerValide, 'Foyer');
+export const loadFoyer = (): ReglagesFoyer | null => {
+  const f = lire(FOYER_KEY, estFoyerValide, 'Foyer');
+  if (!f) return null;
+  for (const j of JOURS) {
+    const jour = f.semaine[j];
+    if (!jour?.journee) continue;
+    const propre: Record<string, JourneeMembre> = {};
+    for (const [id, v] of Object.entries(jour.journee)) {
+      const n = normaliserJournee(v);
+      if (n) propre[id] = n;
+    }
+    jour.journee = propre;
+  }
+  return f;
+};
 export const saveFoyer = (f: ReglagesFoyer): void => ecrire(FOYER_KEY, CLE_FOYER, f);
 
 // Le membre du foyer qui correspond au profil de ce téléphone.

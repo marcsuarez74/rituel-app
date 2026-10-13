@@ -9,7 +9,7 @@ import { capitalize } from '../../lib/text';
 import { BandeauProchainsMenus } from '../BandeauProchainsMenus';
 import { Icon } from '../Icon';
 
-const JOURNEES = ['standard', 'sortie', 'repos', 'alternee'] as const;
+const JOURNEES = ['classique', 'sportive', 'sortie', 'repos'] as const;
 
 function Choix<T extends string>({
   label,
@@ -28,7 +28,7 @@ function Choix<T extends string>({
       <div className="segment" role="radiogroup" aria-label={label}>
         {options.map((o) => (
           <button key={o} type="button" role="radio" aria-checked={o === valeur} onClick={() => onChange(o)}>
-            {o === 'alternee' ? 'alternée' : o === 'leger' ? 'léger' : o}
+            {o === 'leger' ? 'léger' : o}
           </button>
         ))}
       </div>
@@ -180,7 +180,7 @@ export function SemaineType({
                     <Choix
                       key={m.id}
                       label={`Journée de ${m.prenom}`}
-                      valeur={t.journee?.[m.id] ?? 'standard'}
+                      valeur={t.journee?.[m.id] ?? 'classique'}
                       options={JOURNEES}
                       onChange={(v) => jour(j, { journee: { ...t.journee, [m.id]: v } })}
                     />

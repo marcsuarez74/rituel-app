@@ -41,4 +41,10 @@ describe('changementsEnAttente', () => {
     };
     expect(changementsEnAttente(f, foyer.semaine)).toEqual(['lundi', 'jeudi']);
   });
+
+  it('journée renommée : « standard » dans l’instantané égale « classique » du foyer (pas de faux changement)', () => {
+    const instantane: unknown = { ...foyer.semaine, lundi: { ...foyer.semaine.lundi, journee: { marc: 'standard' } } };
+    const f: ReglagesFoyer = { ...foyer, semaine: { ...foyer.semaine, lundi: { ...foyer.semaine.lundi, journee: { marc: 'classique' } } } };
+    expect(changementsEnAttente(f, instantane)).toEqual([]);
+  });
 });
