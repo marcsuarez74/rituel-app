@@ -265,6 +265,7 @@ function App() {
             onVoirSemaine={() => {
               setAssistant(false);
               setCycleDirect(false);
+              setMonCycle(false);
               setProfilOuvert(false);
               setOnglet('semaine');
             }}

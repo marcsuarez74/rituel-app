@@ -111,6 +111,10 @@ test.describe('Parcours rituel guidé et import de cycle', () => {
     await expect(page.getByRole('heading', { name: 'Tes menus sont prêts' })).toBeVisible();
     await verifierPasDeDebordement(page, 'Assistant (fin)');
 
+    // « Voir ma semaine » : retour au shell (pas « Mes menus »).
+    await page.getByRole('button', { name: 'Voir ma semaine' }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Menus' })).toBeVisible();
+
     const cycle = (await lireStockage(page, 'sportapp:cycle')) as { cycle: { titre: string; menus: unknown[] } };
     expect(cycle.cycle.titre).toBe('Cycle importé e2e');
     expect(cycle.cycle.menus).toHaveLength(4);
