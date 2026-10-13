@@ -377,11 +377,14 @@ describe('mode guidé v2 (barre minuteurs, gestes, On range, fin)', () => {
     expect(screen.getByRole('button', { name: 'Encore 2 à ranger' })).toBeDisabled();
     expect(screen.getByText('Recette diner-a-mardi')).toBeInTheDocument();
     expect(screen.getByText('Sors-le la veille')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /Recette diner-a-mardi/ }));
+    const frigoBtn = screen.getByRole('button', { name: /Recette diner-a-mardi/ });
+    await user.click(frigoBtn);
     await user.click(screen.getByRole('button', { name: /½ sauce tomate/ }));
     const coches = getChecks('cycle:c1:0');
     expect(coches['range:A:mardi-diner-famille']).toBe(true);
     expect(coches['range:A:sauce-tomate']).toBe(true);
+    // L'état coché s'affiche (case pleine + libellé), pas seulement le stockage.
+    expect(screen.getByRole('button', { name: /Recette diner-a-mardi/ })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: 'Tout est rangé' })).toBeEnabled();
   });
 

@@ -3466,3 +3466,13 @@ progress {
     animation: none;
   }
 }
+
+/* L'écran Rituel réserve la place du pied fixe au-dessus de la barre
+   d'onglets (72 px = 6 + 56 + 8 + filet de 2). */
+.rituel-ecran {
+  padding-bottom: calc(160px + env(safe-area-inset-bottom));
+}
+
+.pied-recette.sur-onglets {
+  bottom: calc(72px + env(safe-area-inset-bottom));
+}

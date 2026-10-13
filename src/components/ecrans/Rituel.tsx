@@ -116,7 +116,7 @@ export function Rituel({
   );
 
   return (
-    <>
+    <div className="rituel-ecran">
       {cEstLeJour ? (
         dimanche
       ) : (
@@ -128,13 +128,17 @@ export function Rituel({
         </>
       )}
       {cEstLeJour && (
-        <div className="pied-recette">
+        <div className="pied-recette sur-onglets">
           <button
             type="button"
             className="bouton-plein"
             onClick={() => onGuide(Math.max(0, premiereNonFait))}
           >
-            {premiereNonFait <= 0 ? 'Commencer' : `Reprendre, étape ${premiereNonFait + 1}`}
+            {premiereNonFait < 0
+              ? 'Revoir le mode guidé'
+              : premiereNonFait === 0
+                ? 'Commencer'
+                : `Reprendre, étape ${premiereNonFait + 1}`}
           </button>
         </div>
       )}
@@ -183,7 +187,7 @@ export function Rituel({
           </section>
         </div>
       )}
-    </>
+    </div>
   );
 }
 

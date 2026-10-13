@@ -219,6 +219,8 @@ test.describe('Shell v2 — barre du bas', () => {
     const nav = page.getByRole('navigation', { name: 'Navigation principale' });
     for (const nom of ONGLETS) {
       await nav.getByRole('button', { name: nom, exact: true }).click();
+      // Première visite de l'onglet Rituel : la feuille des vignettes s'ouvre.
+      if (nom === 'Rituel') await page.getByRole('button', { name: "J'ai compris" }).click();
       await expect(page.getByRole('main')).not.toContainText(/cycle/i);
     }
     await page.getByRole('button', { name: 'Moi : Marc' }).click();

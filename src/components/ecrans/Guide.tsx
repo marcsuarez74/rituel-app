@@ -29,7 +29,8 @@ import { useCoches } from '../useCoches';
 // prefers-reduced-motion). Les minuteurs continuent entre les étapes : le
 // hook vit dans App et est passé en prop.
 
-const mmss = (s: number): string => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+const mmss = (s: number): string =>
+  `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
 export function Guide({
   actif,
@@ -115,7 +116,10 @@ export function Guide({
 
   const dimanche = dernierJourRituel(new Date(`${aujourdhui}T12:00:00`), foyer.jourRituel);
   const lignes = rangement(cycle, semaine, dimanche);
-  const resteARanger = lignes.filter((l) => !coches[idCocheRange(lettre, l.id)]).length;
+  // Zones cherche les coches par id de ligne : on lui donne une vue préfixée.
+  const cochesRange: Record<string, boolean> = {};
+  for (const l of lignes) cochesRange[l.id] = !!coches[idCocheRange(lettre, l.id)];
+  const resteARanger = lignes.filter((l) => !cochesRange[l.id]).length;
   const prets = platsDuDimanche(cycle, semaine).reduce((s, p) => s + p.repas.length, 0);
 
   // La barre des minuteurs (puces) + les alertes « c'est prêt ! » vivent au
@@ -167,7 +171,11 @@ export function Guide({
           type="button"
           className="bouton-plein"
           disabled={resteARanger > 0}
-          onClick={() => onEtape(etape + 1)}
+          onClick={() => {
+            const cle = idCocheRituel(lettre, e.id);
+            if (!coches[cle]) basculer(cle);
+            onEtape(etape + 1);
+          }}
         >
           {resteARanger > 0 ? `Encore ${resteARanger} à ranger` : 'Tout est rangé'}
         </button>
@@ -218,7 +226,7 @@ export function Guide({
               lignes={lignes}
               rituel={cycle.rituel}
               ranger
-              coches={coches}
+              coches={cochesRange}
               onBasculer={(cle) => basculer(idCocheRange(lettre, cle))}
             />
           </main>
