@@ -1,5 +1,5 @@
 import { jourDe, positionCycle, prochainJour } from './calendrier';
-import type { CycleActif, ReglagesFoyer } from './etat';
+import type { CycleActif, JourType, ReglagesFoyer } from './etat';
 import type { Cycle, Jour } from './types';
 
 // Écran Mon cycle (spec 2026-10-07 §7) : verrou, démarrage, relance, pause.
@@ -9,16 +9,29 @@ import type { Cycle, Jour } from './types';
 export const generationOuverte = (stocke: CycleActif | null, aujourdhui: string): boolean =>
   !stocke || positionCycle(stocke, aujourdhui).etat === 'termine';
 
-export const demarrer = (cycle: Cycle, precedent: CycleActif | null, debut: string, id: string): CycleActif => ({
+export const demarrer = (
+  cycle: Cycle,
+  precedent: CycleActif | null,
+  debut: string,
+  id: string,
+  semaine?: Record<Jour, JourType>,
+): CycleActif => ({
   id,
   numero: (precedent?.numero ?? 0) + 1,
   debut,
   pauses: [],
   cycle,
+  ...(semaine ? { semaineAuLancement: { ...semaine } } : {}),
 });
 
-export const relancer = (a: CycleActif, aujourdhui: string, jourCourses: Jour, id: string): CycleActif => ({
-  ...demarrer(a.cycle, a, prochainJour(aujourdhui, jourCourses), id),
+export const relancer = (
+  a: CycleActif,
+  aujourdhui: string,
+  jourCourses: Jour,
+  id: string,
+  semaine?: Record<Jour, JourType>,
+): CycleActif => ({
+  ...demarrer(a.cycle, a, prochainJour(aujourdhui, jourCourses), id, semaine),
   relanceDe: a.id,
 });
 

@@ -26,6 +26,21 @@ describe('Mon cycle', () => {
     expect(r.cycle).toEqual(actif().cycle);
   });
 
+  it('instantané de la semaine type au lancement (option B §6) : posé par demarrer et relancer', () => {
+    const semaine = foyerParDefaut(null).semaine;
+    expect(demarrer(cycle(), actif(), '2026-10-31', 'n1', semaine).semaineAuLancement).toEqual(semaine);
+    expect(demarrer(cycle(), actif(), '2026-10-31', 'n1').semaineAuLancement).toBeUndefined();
+    expect(relancer(actif(), '2026-11-02', 'samedi', 'n2', semaine).semaineAuLancement).toEqual(semaine);
+  });
+
+  it('l’instantané est une copie : modifier la semaine du foyer ensuite ne le change pas', () => {
+    const semaine = foyerParDefaut(null).semaine;
+    const r = relancer(actif(), '2026-11-02', 'samedi', 'n2', semaine);
+    const premier = Object.keys(semaine.lundi.dejeuner)[0];
+    semaine.lundi = { ...semaine.lundi, dejeuner: { ...semaine.lundi.dejeuner, [premier]: 'dehors' } };
+    expect(r.semaineAuLancement?.lundi.dejeuner[premier]).not.toBe('dehors');
+  });
+
   it('changer la date de début : passé autorisé, le jour des courses du foyer suit, ids inchangés', () => {
     const foyer = foyerParDefaut(null); // courses le samedi
     const { actif: a, foyer: f } = changerDebut(actif(), foyer, '2026-09-30'); // un mercredi

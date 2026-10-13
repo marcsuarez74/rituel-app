@@ -135,6 +135,19 @@ describe('cycle en cours', () => {
     expect(localStorage.getItem('sportapp:cycle')).toBeNull();
   });
 
+  it('semaineAuLancement : accepté avec le champ, sans le champ, ou corrompu (ignoré, jamais bloquant)', () => {
+    const c = cycleActif();
+    const avec = { ...c, semaineAuLancement: foyerParDefaut(null).semaine };
+    saveCycle(avec);
+    expect(loadCycle()).toEqual(avec);
+    saveCycle(c);
+    expect(loadCycle()).toEqual(c);
+    saveCycle({ ...c, semaineAuLancement: 'corrompu' } as unknown as CycleActif);
+    expect(loadCycle()).toEqual({ ...c, semaineAuLancement: 'corrompu' } as unknown as CycleActif);
+    saveCycle({ ...c, semaineAuLancement: { lundi: 42 } } as unknown as CycleActif);
+    expect(loadCycle()).toEqual({ ...c, semaineAuLancement: { lundi: 42 } } as unknown as CycleActif);
+  });
+
   it('garde les recettes du cycle précédent (pour le prompt)', () => {
     expect(loadPrecedent()).toEqual([]);
     savePrecedent(['Poulet rôti', 'Curry']);

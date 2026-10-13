@@ -113,7 +113,7 @@ export function MonCycle({
   const lancer = () => {
     if (!resultat?.cycle) return;
     if (stocke) savePrecedent(stocke.cycle.recettes.map((r) => r.id));
-    enregistrerAvecDebut(demarrer(resultat.cycle, stocke, debut, crypto.randomUUID()), debut);
+    enregistrerAvecDebut(demarrer(resultat.cycle, stocke, debut, crypto.randomUUID(), foyer.semaine), debut);
     setVue('pret');
   };
 
@@ -246,7 +246,7 @@ export function MonCycle({
                   type="button"
                   className="bouton-plein"
                   onClick={() => {
-                    enregistrer(relancer(stocke, aujourdhui, foyer.jourCourses, crypto.randomUUID()));
+                    enregistrer(relancer(stocke, aujourdhui, foyer.jourCourses, crypto.randomUUID(), foyer.semaine));
                     setVue('pret');
                   }}
                 >
