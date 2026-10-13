@@ -1071,10 +1071,44 @@ button:active:not(:disabled) {
   font-weight: 600;
 }
 
+/* Cagettes par famille (§4.4) : la couleur du rayon teinte l'en-tête (rayures
+   de cagette) et les coches. La couleur n'est jamais seule : le libellé et le
+   compteur restent écrits. */
 .rayon-tete {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
+  margin: calc(-1 * var(--sp-16)) calc(-1 * var(--sp-16)) var(--sp-12);
+  padding: var(--sp-8) var(--sp-16);
+  border-bottom: 2px solid var(--encre);
+  background:
+    repeating-linear-gradient(0deg, transparent 0 11px, rgb(42 34 25 / 0.14) 11px 13px),
+    var(--fam-t, transparent);
+}
+
+.rayon .ligne-cochable[aria-pressed='true'] .case {
+  background: var(--fam, var(--accent));
+  border-color: var(--fam, var(--accent));
+}
+
+.fini-banniere {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  border: 2px solid var(--encre);
+  border-radius: var(--r-orga);
+  background: var(--leg-t);
+  font-weight: 700;
+}
+
+.fini-banniere span {
+  flex: 1;
+  min-width: 0;
+}
+
+.fini-banniere svg {
+  flex: none;
+  margin-left: var(--sp-12);
 }
 
 .rayon.keto {

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { estimerSemaine, payeEntre } from '../../lib/cycle/budget';
 import { ajouterJours, debutSemaine } from '../../lib/cycle/calendrier';
-import { LIBELLES_RAYON, cleIngredient, formatQuantite, listeCourses, type LigneCourse } from '../../lib/cycle/courses';
+import { LIBELLES_RAYON, cleIngredient, couleurRayon, formatQuantite, listeCourses, type LigneCourse } from '../../lib/cycle/courses';
 import { ingredientsAuFrigo } from '../../lib/cycle/reports';
 import type { CycleActif, ReglagesFoyer } from '../../lib/cycle/etat';
 import { semaineCoches } from '../../lib/cycle/etat';
@@ -10,7 +10,9 @@ import { LETTRES, RAYONS } from '../../lib/cycle/types';
 import { formatEuro, parseEuro } from '../../lib/prix';
 import { getDepenses, saveDepense } from '../../lib/storage';
 import { Icon } from '../Icon';
+import { IlluSac } from '../illustrations/Illustrations';
 import { useCoches } from '../useCoches';
+import { useConfettis } from '../useConfettis';
 import { useReports } from '../useReports';
 
 const environ = (n: number) => `≈ ${Math.round(n)} €`;
@@ -53,6 +55,8 @@ export function Courses({
   const max = foyer.budgetMax;
   const depasse = (n: number) => max != null && n > max;
   const faits = lignes.filter((l) => coches[l.id]).length;
+  const toutFait = lignes.length > 0 && faits === lignes.length;
+  useConfettis(toutFait);
   const visibles = (r: (typeof RAYONS)[number]): LigneCourse[] =>
     lignes.filter((l) => l.rayon === r && !(magasin && coches[l.id]));
 
@@ -102,9 +106,11 @@ export function Courses({
           <button type="button" className="bouton-contour" aria-pressed={magasin} onClick={() => setMagasin(!magasin)}>
             <Icon name="cart" size={18} /> {magasin ? 'Tout revoir' : 'Mode magasin'}
           </button>
-          <button type="button" className="bouton-plein" onClick={() => setSaisie(saisie == null ? '' : null)}>
-            J'ai payé…
-          </button>
+          {toutFait && (
+            <button type="button" className="bouton-plein" onClick={() => setSaisie(saisie == null ? '' : null)}>
+              J'ai payé…
+            </button>
+          )}
         </div>
         {saisie != null && (
           <form className="ticket" onSubmit={payer}>
@@ -132,18 +138,25 @@ export function Courses({
         )}
       </section>
 
-      {magasin && faits === lignes.length && lignes.length > 0 && (
-        <p className="muted" role="status">
-          Tout est dans le chariot.
-        </p>
+      {toutFait && (
+        <div className="fini-banniere" role="status">
+          <IlluSac />
+          <span>{paye > 0 ? 'Courses finies, ticket noté.' : 'Tout est dans le panier !'}</span>
+        </div>
       )}
 
       {RAYONS.map((r) => {
         const liste = visibles(r);
         if (liste.length === 0) return null;
         const duRayon = lignes.filter((l) => l.rayon === r);
+        const fam = couleurRayon(r);
         return (
-          <section key={r} className={r === 'keto' ? 'profile-section rayon keto' : 'profile-section rayon'} aria-labelledby={`rayon-${r}`}>
+          <section
+            key={r}
+            className={r === 'keto' ? 'profile-section rayon keto' : 'profile-section rayon'}
+            aria-labelledby={`rayon-${r}`}
+            style={{ ['--fam' as string]: `var(--${fam})`, ['--fam-t' as string]: `var(--${fam}-t)` }}
+          >
             <div className="rayon-tete">
               <h2 id={`rayon-${r}`}>{LIBELLES_RAYON[r]}</h2>
               <span className="muted">

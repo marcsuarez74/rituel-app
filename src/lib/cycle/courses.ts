@@ -17,6 +17,29 @@ export const LIBELLES_RAYON: Record<Rayon, string> = {
   keto: 'Extras keto',
 };
 
+// Famille de couleur de la maquette (§4.4) : chaque rayon en a une, la couleur
+// n'est jamais seule (le libellé du rayon reste écrit). Tokens : --leg, --fru,
+// --fra, --via, --epi (+ variantes -t).
+export type FamilleRayon = 'leg' | 'fru' | 'fra' | 'via' | 'epi';
+
+export const couleurRayon = (rayon: Rayon): FamilleRayon => {
+  switch (rayon) {
+    case 'legumes':
+      return 'leg';
+    case 'fruits':
+      return 'fru';
+    case 'laitiers':
+    case 'surgeles':
+      return 'fra';
+    case 'proteines':
+      return 'via';
+    case 'feculents':
+    case 'epicerie':
+    case 'keto':
+      return 'epi';
+  }
+};
+
 export interface LigneCourse {
   id: string; // id de coche stable : courses:{lettre}:{rayon}:{clé}
   cle: string;

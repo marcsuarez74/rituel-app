@@ -165,15 +165,58 @@ describe('Courses', () => {
     const user = userEvent.setup();
     render(ecran());
     await user.click(screen.getByRole('button', { name: /Œufs/ }));
+    await user.click(screen.getByRole('button', { name: /Skyr/ }));
+    await user.click(screen.getByRole('button', { name: /Whey/ }));
     await user.click(screen.getByRole('button', { name: /Mode magasin/ }));
     expect(screen.queryByRole('button', { name: /Œufs/ })).not.toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Protéines' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /J'ai payé/ })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /J'ai payé/ }));
     await user.type(screen.getByLabelText('Total du ticket (€)'), '54,30');
     fireEvent.submit(document.querySelector('.ticket')!);
     expect(getDepenses()).toEqual([{ date: '2026-10-03', magasin: 'Courses', total: 54.3 }]);
     expect(screen.getByText('Payé').nextSibling).toHaveTextContent('54,30');
+  });
+
+  it('chaque rayon porte sa famille de couleur (--fam / --fam-t)', () => {
+    const { container } = render(ecran());
+    const cagettes = [...container.querySelectorAll<HTMLElement>('.rayon')];
+    expect(
+      cagettes.map((c) => [c.querySelector('h2')!.textContent, c.style.getPropertyValue('--fam'), c.style.getPropertyValue('--fam-t')]),
+    ).toEqual([
+      ['Protéines', 'var(--via)', 'var(--via-t)'],
+      ['Laitiers', 'var(--fra)', 'var(--fra-t)'],
+      ['Épicerie', 'var(--epi)', 'var(--epi-t)'],
+    ]);
+  });
+
+  it('« J’ai payé » seulement quand tout est coché : confettis, bannière, saisie du ticket', async () => {
+    const user = userEvent.setup();
+    render(ecran());
+    expect(screen.queryByRole('button', { name: /J'ai payé/ })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Œufs/ }));
+    await user.click(screen.getByRole('button', { name: /Skyr/ }));
+    await user.click(screen.getByRole('button', { name: /Whey/ }));
+    expect(screen.getByText('Tout est dans le panier !')).toBeInTheDocument();
+    expect(document.querySelectorAll('.confetti').length).toBeGreaterThan(0);
+    await user.click(screen.getByRole('button', { name: /J'ai payé/ }));
+    await user.type(screen.getByLabelText('Total du ticket (€)'), '54,30');
+    fireEvent.submit(document.querySelector('.ticket')!);
+    expect(getDepenses()).toEqual([{ date: '2026-10-03', magasin: 'Courses', total: 54.3 }]);
+    expect(screen.getByText('Payé').nextSibling).toHaveTextContent('54,30');
+  });
+
+  it('cocher puis décocher retire les confettis', async () => {
+    const user = userEvent.setup();
+    render(ecran());
+    await user.click(screen.getByRole('button', { name: /Œufs/ }));
+    await user.click(screen.getByRole('button', { name: /Skyr/ }));
+    await user.click(screen.getByRole('button', { name: /Whey/ }));
+    expect(document.querySelectorAll('.confetti').length).toBeGreaterThan(0);
+    await user.click(screen.getByRole('button', { name: /Œufs/ }));
+    expect(document.querySelectorAll('.confetti')).toHaveLength(0);
   });
 });
 
