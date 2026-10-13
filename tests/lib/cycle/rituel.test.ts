@@ -136,7 +136,8 @@ describe('platsDuDimanche (recettes cuisinées + repas couverts)', () => {
     fs[0].menus[0].jours[2].repas[0].boite = { produitePar: 'rituel-muffins', frigoJours: 2 };
     const p = platsDuDimanche(cycleDe(fs), 0);
     const muffins = p.find((x) => x.recette.id === 'muffins')!;
-    expect(muffins.repas.map((r) => r.id)).toContain('mercredi-diner-famille');
+    expect(muffins.repas.map((c) => c.repas.id)).toContain('mercredi-diner-famille');
+    expect(muffins.repas.map((c) => c.jour)).toContain('mercredi');
   });
 
   it('le repas mangé le jour même (recette = plat du rituel) est couvert aussi', () => {
@@ -144,7 +145,7 @@ describe('platsDuDimanche (recettes cuisinées + repas couverts)', () => {
     fs[0].menus[0].jours[6].repas[0].recette = 'muffins'; // dîner du dimanche
     const p = platsDuDimanche(cycleDe(fs), 0);
     const muffins = p.find((x) => x.recette.id === 'muffins')!;
-    expect(muffins.repas.map((r) => r.id)).toContain('dimanche-diner-famille');
+    expect(muffins.repas.map((c) => c.repas.id)).toContain('dimanche-diner-famille');
   });
 
   it('un plat de la semaine non cuisiné au rituel n’apparaît pas', () => {

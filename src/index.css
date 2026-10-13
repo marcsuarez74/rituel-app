@@ -2941,3 +2941,279 @@ progress {
   cursor: pointer;
   font-weight: 600;
 }
+
+/* ---------- Écran Rituel (§5.1, maquette) ---------- */
+
+/* La grille de la semaine : 7 jours × midi/soir, cases couleur du plat. */
+.grille {
+  display: grid;
+  grid-template-columns: 3.1em repeat(7, minmax(0, 1fr));
+  gap: var(--sp-6);
+  margin-top: var(--sp-6);
+}
+
+.grille .gl {
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  color: var(--encre-2);
+  text-align: center;
+}
+
+.grille .gr {
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+}
+
+.cel {
+  aspect-ratio: 1 / 1.15;
+  border-radius: 9px 11px 8px 12px;
+  border: 2.5px solid var(--c);
+  background: var(--t);
+}
+
+.cel.rit {
+  border-color: var(--encre);
+  box-shadow: inset 0 0 0 3px var(--c);
+}
+
+.cel.surplace {
+  border-style: dashed;
+  background: var(--papier);
+}
+
+.cel.dehors {
+  border: 2px dotted var(--kraft-fonce);
+  background: transparent;
+}
+
+.legende {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-6) var(--sp-16);
+  margin: var(--sp-10) 0 0;
+  font-size: var(--fs-micro);
+  color: var(--encre-2);
+}
+
+.legende span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+}
+
+.legende i {
+  width: var(--sp-16);
+  height: var(--sp-16);
+  border-radius: var(--sp-4);
+  border: 2px solid var(--encre);
+  background: var(--fru-t);
+}
+
+.legende i.p {
+  border-style: dashed;
+  background: var(--papier);
+}
+
+/* Plats cuisinés dimanche : pastille couleur + repas couverts. */
+.plats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-10);
+  margin-top: var(--sp-8);
+}
+
+.plat {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  padding: var(--sp-10) var(--sp-14) var(--sp-10) var(--sp-10);
+  border: 2px solid var(--encre);
+  border-radius: var(--r-orga);
+  background: var(--t);
+  text-align: left;
+}
+
+.plat:nth-child(2n) {
+  border-radius: var(--r-orga-2);
+}
+
+.plat .pastille {
+  flex: none;
+  width: var(--sp-24);
+  height: var(--sp-24);
+  padding: 0;
+  border: 2px solid var(--encre);
+  border-radius: 58% 42% 55% 45% / 48% 58% 42% 52%;
+  background: var(--c);
+}
+
+.plat-txt {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: var(--lh-tight);
+}
+
+.plat-nom {
+  font-weight: 700;
+}
+
+.plat-quand {
+  font-size: var(--fs-sec);
+}
+
+.c-quoi {
+  margin-top: var(--sp-16);
+}
+
+/* Feuille d'explication : 3 vignettes (première visite). */
+.vignettes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-10);
+  margin-top: var(--sp-10);
+}
+
+.vignette {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-14);
+  padding: var(--sp-10) var(--sp-12);
+  border: 2px solid var(--encre);
+  border-radius: var(--r-orga);
+  background: var(--blanc);
+}
+
+.vignette:nth-child(1) {
+  background: var(--fru-t);
+}
+
+.vignette:nth-child(2) {
+  border-radius: var(--r-orga-2);
+  background: var(--fra-t);
+}
+
+.vignette:nth-child(3) {
+  background: var(--leg-t);
+}
+
+.vignette p {
+  margin: 0;
+  flex: 1;
+  font-weight: 600;
+  line-height: var(--lh-body);
+}
+
+.vignette b {
+  display: block;
+  font-size: var(--fs-h3);
+  font-weight: 800;
+}
+
+/* Zones de rangement : frigo, congélateur, box. */
+.zone {
+  margin-top: var(--sp-16);
+  border: 2px solid var(--encre);
+  border-radius: 22px 22px 14px 14px;
+  overflow: hidden;
+  background: var(--blanc);
+}
+
+.zone-tete {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  padding: var(--sp-10) var(--sp-14);
+  border-bottom: 2px solid var(--encre);
+}
+
+.zone-tete h3 {
+  font-size: var(--fs-h2);
+  flex: 1;
+}
+
+.zone-tete p {
+  margin: 0;
+  font-size: var(--fs-meta);
+  font-weight: 600;
+}
+
+.zone.frigo .zone-tete {
+  background: var(--fra-t);
+}
+
+.zone.congel .zone-tete {
+  background: var(--givre);
+}
+
+.zone.box .zone-tete {
+  background: var(--kraft);
+}
+
+.contenant {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  width: 100%;
+  min-height: 72px;
+  padding: var(--sp-10) var(--sp-14);
+  border: 0;
+  border-top: 1.5px dashed var(--kraft-fonce);
+  background: none;
+  text-align: left;
+}
+
+.zone-tete + .contenant {
+  border-top: 0;
+}
+
+.contenant-txt {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: var(--lh-tight);
+}
+
+.contenant-txt b {
+  font-weight: 700;
+}
+
+.contenant-txt span {
+  font-size: var(--fs-sec);
+}
+
+.boxes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-10);
+  padding: var(--sp-12);
+}
+
+.boite {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-4);
+  min-height: 120px;
+  padding: var(--sp-8) var(--sp-6);
+  border: 2px solid var(--encre);
+  border-radius: 16px;
+  background: var(--t);
+  text-align: center;
+  line-height: var(--lh-tight);
+  position: relative;
+}
+
+.boite b {
+  font-weight: 800;
+  font-size: var(--fs-h3);
+}
+
+.boite span {
+  font-size: var(--fs-meta);
+  font-weight: 600;
+}

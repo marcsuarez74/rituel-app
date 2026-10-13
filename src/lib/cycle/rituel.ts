@@ -93,9 +93,15 @@ export function grilleDimanche(cycle: Cycle, semaine: number): CelluleGrille[] {
 
 // ——— Plats cuisinés dimanche + repas qu'ils couvrent
 
+/** Un repas couvert par un plat du rituel, avec son jour (Repas ne le porte pas). */
+export interface Couvert {
+  jour: Jour;
+  repas: Repas;
+}
+
 export interface PlatDuDimanche {
   recette: Recette;
-  repas: Repas[];
+  repas: Couvert[];
 }
 
 export function platsDuDimanche(cycle: Cycle, semaine: number): PlatDuDimanche[] {
@@ -109,9 +115,12 @@ export function platsDuDimanche(cycle: Cycle, semaine: number): PlatDuDimanche[]
       cycle.rituel.etapes.filter((e) => e.recette === id || (e.plats ?? []).includes(id)).map((e) => e.id),
     );
     const couverts = menu.jours
-      .flatMap((j) => j.repas)
-      .filter((r) => r.recette === id || (r.boite && etapes.has(r.boite.produitePar)));
-    sorties.push({ recette, repas: [...new Map(couverts.map((r) => [r.id, r])).values()] });
+      .flatMap(({ jour, repas }) => repas.map((r) => ({ jour, repas: r })))
+      .filter((c) => c.repas.recette === id || (c.repas.boite && etapes.has(c.repas.boite.produitePar)));
+    sorties.push({
+      recette,
+      repas: [...new Map(couverts.map((c) => [c.repas.id, c])).values()],
+    });
   }
   return sorties;
 }
@@ -127,8 +136,9 @@ export interface RangeLigne {
   recetteId: string | null;
   nom: string;
   portions: number;
-  /** Les repas que cette boîte couvre (une réserve n'en couvre aucun). */
-  pour: Repas[];
+  /** Le repas rangé (une réserve n'en a pas) et son jour. */
+  repas?: Repas;
+  jour?: Jour;
   aMangerAvant: Date | null;
 }
 
@@ -164,7 +174,8 @@ export function rangement(cycle: Cycle, semaine: number, dimanche: Date): RangeL
         recetteId: r.recette ?? null,
         nom: rec?.nom ?? r.texte ?? r.id,
         portions: 1,
-        pour: [r],
+        repas: r,
+        jour,
         aMangerAvant: zone === 'congel' ? null : plusJours(dimanche, frigoJours),
       });
     }
@@ -176,7 +187,6 @@ export function rangement(cycle: Cycle, semaine: number, dimanche: Date): RangeL
       recetteId: null,
       nom: res.plat,
       portions: 1,
-      pour: [],
       aMangerAvant: null,
     });
   }
@@ -198,7 +208,7 @@ export function auFrigo(
     ),
   );
   return rangement(cycle, semaine, dimanche)
-    .filter((l) => l.zone !== 'congel' && !l.pour.some((r) => mangees.has(r.id)))
+    .filter((l) => !(l.repas && mangees.has(l.repas.id)))
     .sort((a, b) => (a.aMangerAvant?.getTime() ?? Infinity) - (b.aMangerAvant?.getTime() ?? Infinity));
 }
 

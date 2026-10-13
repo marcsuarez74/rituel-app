@@ -1,25 +1,42 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import type { CycleActif, ReglagesFoyer } from '../../lib/cycle/etat';
 import { semaineCoches } from '../../lib/cycle/etat';
-import { prenomMembre, trouverRecette } from '../../lib/cycle/menu';
-import { idCocheMicro, idCocheMise, idCocheReserve, idCocheRituel } from '../../lib/cycle/rituel';
+import { couleurPlat } from '../../lib/cycle/couleurs';
+import { titreRepas } from '../../lib/cycle/menu';
+import {
+  auFrigo,
+  etapesGuidees,
+  grilleDimanche,
+  idCocheRituel,
+  platsDuDimanche,
+} from '../../lib/cycle/rituel';
+import type { CelluleGrille, PlatDuDimanche, RangeLigne } from '../../lib/cycle/rituel';
+import type { Cycle, Rituel as RituelJson } from '../../lib/cycle/types';
 import { JOURS, LETTRES } from '../../lib/cycle/types';
-import type { Jour } from '../../lib/cycle/types';
 import { capitalize } from '../../lib/text';
-import { Icon } from '../Icon';
+import { loadExplique, saveExplique } from '../../lib/storage';
+import { FrigoGrand, IlluCasserole, MicroOndes } from '../illustrations/Illustrations';
+import { Zones } from '../rituel/Zones';
 import { useCoches } from '../useCoches';
 
-export type VueRituel = 'jour' | 'semaine' | 'reserve';
+// Onglet Rituel (spec refonte §5.1) : page unique. Le jour du rituel : ce
+// que tu prépares (résumé, grille, plats) et le pied « Commencer ». Les
+// autres jours : « Au frigo cette semaine », puis l'aperçu du prochain
+// dimanche. À la première visite, une feuille de 3 vignettes explique le
+// principe (relisible via « C'est quoi le rituel ? »).
 
-// Onglet Rituel (spec v2 §3, écran 5) : le rituel du jour (résumé, avant de
-// commencer, déroulé dépliable), le micro-batch de la semaine, la réserve.
+const MOMENTS_FR: Record<string, string> = { dejeuner: 'midi', diner: 'soir', collation: 'collation' };
+const JOURS_COURTS = ['lun', 'mar', 'mer', 'jeu', 'ven', 'sam', 'dim'];
+
+const formatDuree = (min: number): string =>
+  min >= 60 ? `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, '0')}` : `${min} min`;
+
 export function Rituel({
   actif,
   foyer,
   semaine,
   syncVersion,
-  vue,
-  onVue,
+  aujourdhui,
   onGuide,
   onOuvrirRecette,
 }: {
@@ -27,209 +44,205 @@ export function Rituel({
   foyer: ReglagesFoyer;
   semaine: number;
   syncVersion: number;
-  vue: VueRituel;
-  onVue: (v: VueRituel) => void;
-  onGuide: () => void;
-  onOuvrirRecette: (recetteId: string) => void;
+  aujourdhui: string;
+  onGuide: (etape: number) => void;
+  onOuvrirRecette: (id: string) => void;
 }) {
   const lettre = LETTRES[semaine];
-  const { rituel } = actif.cycle;
-  const menu = actif.cycle.menus.find((m) => m.lettre === lettre)!;
-  const { coches, basculer } = useCoches(semaineCoches(actif.id, semaine), syncVersion);
-  const [ouverte, setOuverte] = useState<string | null>(null);
-  const onglets: Array<[VueRituel, string]> = [
-    ['jour', capitalize(foyer.jourRituel)],
-    ['semaine', 'En semaine'],
-    ['reserve', 'Réserve'],
-  ];
-  const lienRecette = (id?: string) => {
-    const r = trouverRecette(actif.cycle, id);
-    return (
-      r && (
-        <button type="button" className="lien" onClick={() => onOuvrirRecette(r.id)}>
-          Fiche : {r.nom} ›
-        </button>
-      )
-    );
-  };
-  const faites = rituel.etapes.filter((e) => coches[idCocheRituel(lettre, e.id)]).length;
-  const prets = rituel.avantDeCommencer.filter((_, i) => coches[idCocheMise(lettre, i)]).length;
+  const cycle = actif.cycle;
+  const { coches } = useCoches(semaineCoches(actif.id, semaine), syncVersion);
+  const [vu, setVu] = useState(loadExplique);
+  const [feuille, setFeuille] = useState(false);
+
+  const dateJour = new Date(`${aujourdhui}T12:00:00`); // midi local : évite les bords de DST
+  const jourRituel = JOURS.indexOf(foyer.jourRituel);
+  const iAuj = (dateJour.getDay() + 6) % 7; // getDay() : dimanche = 0
+  const cEstLeJour = iAuj === jourRituel;
+  // Le rituel le plus récent (aujourd'hui ou avant) : base des dates de rangement.
+  const dernierRituel = new Date(dateJour);
+  dernierRituel.setDate(dernierRituel.getDate() - ((iAuj - jourRituel + 7) % 7));
+
+  const grille = grilleDimanche(cycle, semaine);
+  const plats = platsDuDimanche(cycle, semaine);
+  const lignes = auFrigo(cycle, semaine, dernierRituel, coches);
+  const etapes = etapesGuidees(cycle.rituel);
+  const premiereNonFait = etapes.findIndex((e) => !coches[idCocheRituel(lettre, e.id)]);
+  const prets = grille.filter((c) => c.prepareDimanche).length;
+
+  const dimanche = (
+    <>
+      <h2 className="titre-pousse">Ce dimanche, tu prépares</h2>
+      <p>
+        {plats.length} plat{plats.length > 1 ? 's' : ''} en {formatDuree(cycle.rituel.dureeMin)} environ, pour{' '}
+        {prets} repas de la semaine.
+      </p>
+      <div className="grille" role="group" aria-label="La semaine des repas">
+        <span />
+        {JOURS_COURTS.map((j) => (
+          <span key={j} className="gl">
+            {j}
+          </span>
+        ))}
+        {(['dejeuner', 'diner'] as const).map((moment) => (
+          <Fragment key={moment}>
+            <span className="gr">{moment === 'dejeuner' ? 'Midi' : 'Soir'}</span>
+            {grille
+              .filter((c) => c.moment === moment)
+              .map((c) => (
+                <Cellule key={`${c.jour}-${moment}`} cellule={c} cycle={cycle} rituel={cycle.rituel} />
+              ))}
+          </Fragment>
+        ))}
+      </div>
+      <p className="legende">
+        <span>
+          <i />
+          Cuisiné dimanche
+        </span>
+        <span>
+          <i className="p" />
+          Fait le jour même
+        </span>
+      </p>
+      <h2 className="titre-section">À cuisiner dimanche</h2>
+      <div className="plats">
+        {plats.map((p) => (
+          <CartePlat key={p.recette.id} plat={p} cycle={cycle} lignes={lignes} onOuvrir={onOuvrirRecette} />
+        ))}
+      </div>
+      <button type="button" className="lien c-quoi" onClick={() => setFeuille(true)}>
+        C'est quoi le rituel ?
+      </button>
+    </>
+  );
 
   return (
     <>
-      <div className="segment" role="tablist" aria-label="Sections du rituel">
-        {onglets.map(([id, label]) => (
-          <button key={id} type="button" role="tab" aria-selected={vue === id} onClick={() => onVue(id)}>
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {vue === 'jour' && (
+      {cEstLeJour ? (
+        dimanche
+      ) : (
         <>
-          <section className="action-du-jour" aria-label="Résumé du rituel">
-            <p className="anticipe-titre">
-              {capitalize(foyer.jourRituel)} · {rituel.dureeMin} min · {rituel.etapes.length} étapes
-            </p>
-            <ul className="production">
-              {rituel.production.map((p) => (
-                <li key={p}>{p}</li>
-              ))}
-            </ul>
-            <button type="button" className="bouton-plein" onClick={onGuide}>
-              <Icon name="play" size={18} /> Lancer le mode guidé
+          <h2 className="titre-pousse">Au frigo cette semaine</h2>
+          <p>Tout ce que tu as préparé dimanche. Ça se vide au fil des repas.</p>
+          <Zones lignes={lignes} rituel={cycle.rituel} />
+          {dimanche}
+        </>
+      )}
+      {cEstLeJour && (
+        <div className="pied-recette">
+          <button
+            type="button"
+            className="bouton-plein"
+            onClick={() => onGuide(Math.max(0, premiereNonFait))}
+          >
+            {premiereNonFait <= 0 ? 'Commencer' : `Reprendre, étape ${premiereNonFait + 1}`}
+          </button>
+        </div>
+      )}
+      {(feuille || !vu) && (
+        <div className="voile" onClick={() => setFeuille(false)}>
+          <section
+            className="feuille"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="titre-explic"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 id="titre-explic">Le rituel, c'est quoi ?</h2>
+            <div className="vignettes">
+              <div className="vignette">
+                <IlluCasserole taille={76} />
+                <p>
+                  <b>1. Le dimanche</b>Tu cuisines environ {formatDuree(cycle.rituel.dureeMin)}, plusieurs plats à
+                  la fois.
+                </p>
+              </div>
+              <div className="vignette">
+                <FrigoGrand taille={76} />
+                <p>
+                  <b>2. Tu ranges</b>Au frigo, au congélateur et dans les box.
+                </p>
+              </div>
+              <div className="vignette">
+                <MicroOndes taille={76} />
+                <p>
+                  <b>3. La semaine</b>Tu n'as plus qu'à réchauffer.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="bouton-plein large"
+              onClick={() => {
+                saveExplique(true);
+                setVu(true);
+                setFeuille(false);
+              }}
+            >
+              J'ai compris
             </button>
           </section>
-
-          {menu.rappelsRituel && menu.rappelsRituel.length > 0 && (
-            <details className="profile-section placard">
-              <summary>
-                Cette semaine aussi <span className="muted">· {menu.rappelsRituel.length}</span>
-              </summary>
-              <ul>
-                {menu.rappelsRituel.map((r) => (
-                  <li key={r}>{r}</li>
-                ))}
-              </ul>
-            </details>
-          )}
-
-          <details className="profile-section placard">
-            <summary>
-              Avant de commencer
-              <span className="muted">
-                · {prets}/{rituel.avantDeCommencer.length}
-              </span>
-            </summary>
-            {rituel.avantDeCommencer.map((m, i) => (
-              <button
-                key={m.nom}
-                type="button"
-                className="ligne-cochable"
-                aria-pressed={!!coches[idCocheMise(lettre, i)]}
-                onClick={() => basculer(idCocheMise(lettre, i))}
-              >
-                <span className="case" aria-hidden="true">
-                  <Icon name="check" size={16} />
-                </span>
-                <span className="ligne-nom">{m.nom}</span>
-                <span className="ligne-qte">{m.quantite}</span>
-              </button>
-            ))}
-          </details>
-
-          <div className="menu-jour-tete">
-            <h2>Le déroulé</h2>
-            <p className="muted">
-              {faites}/{rituel.etapes.length}
-            </p>
-          </div>
-          {rituel.etapes.map((e) => {
-            const id = idCocheRituel(lettre, e.id);
-            const ouvert = ouverte === e.id;
-            return (
-              <article key={e.id} className={coches[id] ? 'carte-repas fait' : 'carte-repas'}>
-                <div className="carte-repas-tete">
-                  <button
-                    type="button"
-                    className="coche"
-                    aria-pressed={!!coches[id]}
-                    aria-label={`${e.label} : ${coches[id] ? 'fait, annuler' : 'marquer comme fait'}`}
-                    onClick={() => basculer(id)}
-                  >
-                    <Icon name="check" size={20} />
-                  </button>
-                  <button
-                    type="button"
-                    className="carte-repas-corps"
-                    aria-expanded={ouvert}
-                    onClick={() => setOuverte(ouvert ? null : e.id)}
-                  >
-                    <span className="carte-repas-moment">{e.creneau}</span>
-                    <span className="carte-repas-titre">{e.label}</span>
-                  </button>
-                  <Icon name="chev" size={18} />
-                </div>
-                {ouvert && (
-                  <div className="etape-detail">
-                    <p>{e.detail}</p>
-                    {e.enParallele && (
-                      <p className="muted">
-                        <b>En parallèle :</b> {e.enParallele}
-                      </p>
-                    )}
-                    {lienRecette(e.recette)}
-                  </div>
-                )}
-              </article>
-            );
-          })}
-        </>
-      )}
-
-      {vue === 'semaine' && (
-        <>
-          <p className="muted">Quelques minutes le soir pour alléger les jours suivants.</p>
-          {menu.microBatch.length === 0 && <p className="muted">Rien à anticiper cette semaine.</p>}
-          {[...menu.microBatch]
-            .sort((a, b) => JOURS.indexOf(a.jour) - JOURS.indexOf(b.jour))
-            .map((m) => {
-              const id = idCocheMicro(lettre, m.id);
-              return (
-                <article key={m.id} className={coches[id] ? 'carte-repas fait' : 'carte-repas'}>
-                  <div className="carte-repas-tete">
-                    <div className="carte-repas-corps">
-                      <span className="carte-repas-moment">
-                        {capitalize(m.jour)} · {m.dureeMin} min{m.quantite && ` · ${m.quantite}`}
-                      </span>
-                      <span className="carte-repas-titre">{m.quoi}</span>
-                      {m.detail && <span className="carte-repas-meta">{m.detail}</span>}
-                    </div>
-                    <button
-                      type="button"
-                      className="coche"
-                      aria-pressed={!!coches[id]}
-                      aria-label={`${m.quoi} : ${coches[id] ? 'fait, annuler' : 'marquer comme fait'}`}
-                      onClick={() => basculer(id)}
-                    >
-                      <Icon name="check" size={20} />
-                    </button>
-                  </div>
-                  {lienRecette(m.recette)}
-                </article>
-              );
-            })}
-        </>
-      )}
-
-      {vue === 'reserve' && (
-        <>
-          <p className="muted">Les plats d'avance et le jour où ils servent. Touche pour marquer « mangé ».</p>
-          {menu.reserve.length === 0 && <p className="muted">Pas de réserve cette semaine.</p>}
-          {menu.reserve.map((r) => {
-            const id = idCocheReserve(lettre, r.plat);
-            const pour = (JOURS as readonly string[]).includes(r.pour)
-              ? capitalize(r.pour as Jour)
-              : prenomMembre(foyer.membres, r.pour);
-            return (
-              <button
-                key={id}
-                type="button"
-                className="ligne-reserve"
-                aria-pressed={!!coches[id]}
-                onClick={() => basculer(id)}
-              >
-                <span className="pastille">{pour}</span>
-                <span className="ligne-nom">
-                  <b>{r.plat}</b>
-                  <span className="muted">{r.conservation}</span>
-                </span>
-                <span className="ligne-qte">{coches[id] ? 'Mangé' : 'Au frigo'}</span>
-              </button>
-            );
-          })}
-        </>
+        </div>
       )}
     </>
+  );
+}
+
+// Une case de la grille : pleine (préparée dimanche), pointillés (fait le
+// jour même), vide (pas de repas). La couleur du plat n'est jamais la seule
+// information : libellé accessible + légende.
+function Cellule({ cellule, cycle, rituel }: { cellule: CelluleGrille; cycle: Cycle; rituel: RituelJson }) {
+  const momentFr = MOMENTS_FR[cellule.moment];
+  const quand = `${capitalize(cellule.jour)} ${momentFr}`;
+  if (!cellule.repas || cellule.repas.exception) {
+    return <span className="cel dehors" role="img" aria-label={`${quand} : dehors`} />;
+  }
+  const couleur = couleurPlat(cellule.recetteId, rituel);
+  const etat = cellule.prepareDimanche ? 'rit' : 'surplace';
+  const label = `${quand} : ${titreRepas(cycle, cellule.repas)}, ${
+    cellule.prepareDimanche ? 'préparée dimanche' : 'fait le jour même'
+  }`;
+  return (
+    <span
+      className={`cel ${etat}`}
+      role="img"
+      aria-label={label}
+      style={{ ['--c' as string]: couleur.vive ?? 'var(--papier-2)', ['--t' as string]: couleur.claire ?? 'var(--papier-2)' }}
+    />
+  );
+}
+
+// Carte « À cuisiner dimanche » : pastille couleur, nom, repas couverts
+// (« Pour mardi soir ») + portions congelées le cas échéant.
+function CartePlat({
+  plat,
+  cycle,
+  lignes,
+  onOuvrir,
+}: {
+  plat: PlatDuDimanche;
+  cycle: Cycle;
+  lignes: RangeLigne[];
+  onOuvrir: (id: string) => void;
+}) {
+  const couleur = couleurPlat(plat.recette.id, cycle.rituel);
+  const quand = plat.repas
+    .map((c) => `${c.jour} ${MOMENTS_FR[c.repas.moment] ?? c.repas.moment}`)
+    .join(', ');
+  const congel = lignes.filter((l) => l.zone === 'congel' && l.recetteId === plat.recette.id).length;
+  const libelle = `Pour ${quand}${congel > 0 ? ` + ${congel} portion${congel > 1 ? 's' : ''} au congélateur` : ''}`;
+  return (
+    <button
+      type="button"
+      className="plat"
+      style={{ ['--c' as string]: couleur.vive ?? 'var(--accent)', ['--t' as string]: couleur.claire ?? 'var(--accent-clair)' }}
+      onClick={() => onOuvrir(plat.recette.id)}
+    >
+      <span className="pastille" />
+      <span className="plat-txt">
+        <span className="plat-nom">{plat.recette.nom}</span>
+        <span className="plat-quand">{plat.repas.length > 0 ? libelle : 'Pour la semaine'}</span>
+      </span>
+    </button>
   );
 }

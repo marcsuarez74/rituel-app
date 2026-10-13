@@ -123,7 +123,8 @@ test.describe('Shell v2 — barre du bas', () => {
   }
 
   for (const largeur of [320, 375]) {
-    test(`rituel : 3 onglets, mode guidé jusqu'à la fin, sans débordement à ${largeur}px`, async ({ page }) => {
+    test(`rituel : feuille d'explication, ce qui reste en semaine, sans débordement à ${largeur}px`, async ({ page }) => {
+      await page.clock.install({ time: new Date('2026-10-13T10:00:00') }); // un mardi, pas jour de rituel
       await page.setViewportSize({ width: largeur, height: 667 });
       await page.goto('/');
       await page.evaluate(() => document.fonts.ready);
@@ -131,22 +132,21 @@ test.describe('Shell v2 — barre du bas', () => {
         .getByRole('navigation', { name: 'Navigation principale' })
         .getByRole('button', { name: 'Rituel', exact: true })
         .click();
+      // Première visite : la feuille des 3 vignettes s'ouvre, « J'ai compris » la referme.
       const debord = () =>
         page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-      for (const onglet of ['En semaine', 'Réserve']) {
-        await page.getByRole('tab', { name: onglet }).click();
-        expect(await debord()).toBeLessThanOrEqual(OVERFLOW_TOLERANCE);
-      }
-      await page.getByRole('tab', { name: 'Dimanche' }).click();
-      await page.getByRole('button', { name: /Lancer le mode guidé/ }).click();
-      await expect(page.getByText(/Étape 1 sur/)).toBeVisible();
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await expect(page.getByText(/Le rituel, c'est quoi/)).toBeVisible();
+      await page.getByRole('button', { name: "J'ai compris" }).click();
+      await expect(page.getByRole('dialog')).toBeHidden();
       expect(await debord()).toBeLessThanOrEqual(OVERFLOW_TOLERANCE);
-      const terminer = page.getByRole('button', { name: 'Terminer' });
-      while (!(await terminer.isVisible())) await page.getByRole('button', { name: 'Suivant' }).click();
-      await terminer.click();
-      await expect(page.getByRole('heading', { name: 'Rituel terminé !' })).toBeVisible();
-      await page.getByRole('button', { name: 'Voir la réserve' }).click();
-      await expect(page.getByRole('tab', { name: 'Réserve', selected: true })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Au frigo cette semaine' })).toBeVisible();
+      // Relisible à tout moment via le lien.
+      await page.getByRole('button', { name: /C'est quoi le rituel/ }).click();
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await page.getByRole('button', { name: "J'ai compris" }).click();
+      await expect(page.getByRole('dialog')).toBeHidden();
+      expect(await debord()).toBeLessThanOrEqual(OVERFLOW_TOLERANCE);
     });
   }
 

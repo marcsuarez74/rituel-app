@@ -6,7 +6,7 @@ import { EnTete } from './components/shell/EnTete';
 import { positionCycle } from './lib/cycle/calendrier';
 import { semaineCoches } from './lib/cycle/etat';
 import type { Jour } from './lib/cycle/types';
-import type { VueRituel } from './components/ecrans/Rituel';
+
 import { chargerCycleExemple, semaineParDefaut } from './lib/cycle/courant';
 import { type CycleActif, type ReglagesFoyer, assurerMoi, foyerParDefaut, loadCycle, loadFoyer, saveFoyer } from './lib/cycle/etat';
 import { todayISO } from './lib/dates';
@@ -57,7 +57,6 @@ function App() {
   // Semaine consultée dans Menu / Courses / Rituel (null = celle du jour).
   const [semaineVue, setSemaineVue] = useState<number | null>(null);
   const [jourVu, setJourVu] = useState<Jour | null>(null); // jour consulté dans Menu
-  const [vueRituel, setVueRituel] = useState<VueRituel>('jour');
   const [guide, setGuide] = useState<number | null>(null); // étape du mode guidé ouvert
   const [monCycle, setMonCycle] = useState(false);
   // Fin d'onboarding : Mon cycle s'ouvre directement sur « générer » (prompt à copier).
@@ -349,10 +348,7 @@ function App() {
         syncVersion={syncVersion}
         onEtape={setGuide}
         onQuitter={() => setGuide(null)}
-        onReserve={() => {
-          setGuide(null);
-          setVueRituel('reserve');
-        }}
+        onReserve={() => setGuide(null)}
         onOuvrirRecette={(id) => setRecette({ id })}
       />,
     );
@@ -410,9 +406,8 @@ function App() {
                   foyer={foyer}
                   semaine={semaine}
                   syncVersion={syncVersion}
-                  vue={vueRituel}
-                  onVue={setVueRituel}
-                  onGuide={() => setGuide(0)}
+                  aujourdhui={aujourdhui}
+                  onGuide={setGuide}
                   onOuvrirRecette={(id) => setRecette({ id })}
                 />
               )}
