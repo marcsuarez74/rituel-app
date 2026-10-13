@@ -14,6 +14,7 @@ import { estSuivi, prenomProfil } from './lib/model';
 import { capitalize } from './lib/text';
 import type { UserProfile } from './lib/model';
 import { loadProfile, loadProfilLegacy, removeProfile } from './lib/storage';
+import { useMinuteurs } from './components/useMinuteurs';
 import { initSync, type SyncEtat } from './lib/sync/engine';
 
 // Chargés à la demande (spec v2 §10) : seul Aujourd'hui est dans le bundle initial.
@@ -76,6 +77,9 @@ function App() {
 
   const aujourdhui = todayISO();
   const foyer = foyerStocke ?? foyerParDefaut(profile);
+  // Les minuteurs vivent dans App : ils continuent entre les étapes du mode
+  // guidé et survivent au changement d'écran (spec refonte §5.2).
+  const minuteurs = useMinuteurs();
 
   // Effets posés avant les early returns — règle des hooks.
   useEffect(() => {
@@ -343,13 +347,14 @@ function App() {
     return ecranPousse(
       <Guide
         actif={actif}
+        foyer={foyer}
+        aujourdhui={aujourdhui}
         semaine={semaine}
         etape={guide}
         syncVersion={syncVersion}
+        minuteurs={minuteurs}
         onEtape={setGuide}
         onQuitter={() => setGuide(null)}
-        onReserve={() => setGuide(null)}
-        onOuvrirRecette={(id) => setRecette({ id })}
       />,
     );
   }

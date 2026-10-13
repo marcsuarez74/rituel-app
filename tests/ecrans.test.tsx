@@ -5,6 +5,7 @@ import { Guide } from '../src/components/ecrans/Guide';
 import { MonCycle } from '../src/components/ecrans/MonCycle';
 import { SemaineType } from '../src/components/ecrans/SemaineType';
 import { Rituel } from '../src/components/ecrans/Rituel';
+import { useMinuteurs } from '../src/components/useMinuteurs';
 import { Courses } from '../src/components/ecrans/Courses';
 import { Recette } from '../src/components/ecrans/Recette';
 import { type CycleActif, type Membre, type ReglagesFoyer, foyerParDefaut, loadCycle, loadFoyer } from '../src/lib/cycle/etat';
@@ -285,38 +286,132 @@ describe('Rituel (écran v2 : vignettes, grille, plats, pied)', () => {
   });
 });
 
-describe('mode guidé (ancien écran, remplacé dans le commit suivant)', () => {
-  const actifRituel = (): CycleActif => {
+describe('mode guidé v2 (barre minuteurs, gestes, On range, fin)', () => {
+  const DIMANCHE = '2026-10-11';
+  const actifGuide = (): CycleActif => {
     const fs = quatreFichiers();
+    fs[0].rituel!.etapes[0].sousEtapes = ['Battre les œufs', 'Remplir les moules'];
+    fs[0].rituel!.etapes[0].minuteurs = [{ nom: 'Four', minutes: 18, recette: 'muffins' }];
     fs[0].rituel!.etapes.push({ id: 'rituel-sauce', creneau: '20-40 min', label: 'Sauce', detail: 'Mijoter.', enParallele: 'Les muffins cuisent.' });
+    fs[0].menus[0].reserve = [{ pour: 'jeudi', plat: '½ sauce tomate', conservation: 'Congélateur' }];
     fs[0].menus[0].rappelsRituel = ['Colin : congélateur → frigo'];
+    fs[0].menus[0].jours[1].repas[0].boite = { produitePar: 'rituel-muffins', frigoJours: 2 };
     return { id: 'c1', numero: 1, debut: '2026-10-03', pauses: [], cycle: importerCycle(enFichiers(fs)).cycle! };
+  };
+  const GuideEtat = ({ aujourdhui = DIMANCHE, onQuitter = () => {} }: { aujourdhui?: string; onQuitter?: () => void }) => {
+    const [etape, setEtape] = useState(0);
+    const minuteurs = useMinuteurs();
+    return (
+      <Guide
+        actif={actifGuide()}
+        foyer={foyerParDefaut(null)}
+        aujourdhui={aujourdhui}
+        semaine={0}
+        etape={etape}
+        syncVersion={0}
+        minuteurs={minuteurs}
+        onEtape={setEtape}
+        onQuitter={onQuitter}
+      />
+    );
   };
 
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it('une étape par écran, « Suivant » coche, écran de fin', async () => {
+  it("étape 1 : plats concernés → feuille ingrédients intégrée, gestes persistés, rappels", async () => {
     const user = userEvent.setup();
-    const GuideEtat = () => {
-      const [etape, setEtape] = useState(0);
-      return (
-        <Guide actif={actifRituel()} semaine={0} etape={etape} syncVersion={0} onEtape={setEtape} onQuitter={() => {}} onReserve={() => {}} onOuvrirRecette={() => {}} />
-      );
-    };
     render(<GuideEtat />);
-    expect(screen.getByText('Étape 1 sur 2')).toBeInTheDocument();
+    expect(screen.getByText(/Étape 1 sur 3/)).toBeInTheDocument();
     expect(screen.getByText('Colin : congélateur → frigo')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1, name: 'Muffins' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Précédent' })).toBeDisabled();
+    await user.click(screen.getByRole('button', { name: /Recette muffins : voir les ingrédients/ }));
+    const feuille = screen.getByRole('dialog');
+    expect(within(feuille).getByText('Œufs')).toBeInTheDocument();
+    expect(within(feuille).getByText('×6')).toBeInTheDocument();
+    await user.click(within(feuille).getByRole('button', { name: 'Fermer' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
 
-    await user.click(screen.getByRole('button', { name: 'Suivant' }));
-    expect(screen.getByRole('heading', { level: 1, name: 'Sauce' })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Terminer' }));
-    expect(screen.getByRole('heading', { level: 1, name: 'Rituel terminé !' })).toBeInTheDocument();
-    expect(screen.getByText('Fini.')).toBeInTheDocument();
-    expect(getChecks('cycle:c1:0')).toEqual({ 'rituel:A:rituel-muffins': true, 'rituel:A:rituel-sauce': true });
+    await user.click(screen.getByRole('button', { name: 'Battre les œufs' }));
+    expect(getChecks('cycle:c1:0')['geste:A:rituel-muffins:0']).toBe(true);
+  });
+
+  it("bouton minuteur : lance, la barre décompte, alerte à l'échéance, OK la retire", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(new Date('2026-10-11T10:00:00'));
+    try {
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+      render(<GuideEtat />);
+      await user.click(screen.getByRole('button', { name: /Four · 18 min/ }));
+      expect(screen.getAllByText('18:00')).toHaveLength(2); // puce de la barre + bouton de l'étape
+      act(() => {
+        vi.advanceTimersByTime(18 * 60_000 + 1_000);
+      });
+      expect(screen.getByText(/Four : prêt !/)).toBeInTheDocument();
+      const alerte = screen.getByRole('alert');
+      expect(alerte).toHaveTextContent("Four : c'est prêt !");
+      await user.click(within(alerte).getByRole('button', { name: 'OK' }));
+      expect(screen.queryByRole('alert')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("« Étape suivante » coche l'étape, « Précédente » revient sans décocher", async () => {
+    const user = userEvent.setup();
+    render(<GuideEtat />);
+    await user.click(screen.getByRole('button', { name: 'Étape suivante' }));
+    expect(getChecks('cycle:c1:0')['rituel:A:rituel-muffins']).toBe(true);
+    expect(screen.getByText(/Étape 2 sur 3/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Précédente/ }));
+    expect(screen.getByText(/Étape 1 sur 3/)).toBeInTheDocument();
+    expect(getChecks('cycle:c1:0')['rituel:A:rituel-muffins']).toBe(true);
+  });
+
+  it("On range : zones, « Encore 2 à ranger » désactivé, coches range:, puis « Tout est rangé »", async () => {
+    const user = userEvent.setup();
+    render(<GuideEtat />);
+    await user.click(screen.getByRole('button', { name: 'Étape suivante' }));
+    await user.click(screen.getByRole('button', { name: 'Étape suivante' }));
+    expect(screen.getByRole('heading', { name: 'On range' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Encore 2 à ranger' })).toBeDisabled();
+    expect(screen.getByText('Recette diner-a-mardi')).toBeInTheDocument();
+    expect(screen.getByText('Sors-le la veille')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Recette diner-a-mardi/ }));
+    await user.click(screen.getByRole('button', { name: /½ sauce tomate/ }));
+    const coches = getChecks('cycle:c1:0');
+    expect(coches['range:A:mardi-diner-famille']).toBe(true);
+    expect(coches['range:A:sauce-tomate']).toBe(true);
+    expect(screen.getByRole('button', { name: 'Tout est rangé' })).toBeEnabled();
+  });
+
+  it("fin : « Ta semaine est prête ! », récap chiffré, confettis, « Voir ce qu'il y a au frigo »", async () => {
+    const user = userEvent.setup();
+    const onQuitter = vi.fn();
+    render(<GuideEtat onQuitter={onQuitter} />);
+    await user.click(screen.getByRole('button', { name: 'Étape suivante' }));
+    await user.click(screen.getByRole('button', { name: 'Étape suivante' }));
+    await user.click(screen.getByRole('button', { name: /Recette diner-a-mardi/ }));
+    await user.click(screen.getByRole('button', { name: /½ sauce tomate/ }));
+    await user.click(screen.getByRole('button', { name: 'Tout est rangé' }));
+    expect(screen.getByRole('heading', { name: 'Ta semaine est prête !' })).toBeInTheDocument();
+    expect(screen.getByText(/1 repas prêt/)).toBeInTheDocument();
+    expect(document.querySelectorAll('.confetti').length).toBeGreaterThan(0);
+    await user.click(screen.getByRole('button', { name: /Voir ce qu.il y a au frigo/ }));
+    expect(onQuitter).toHaveBeenCalledOnce();
+  });
+
+  it('prefers-reduced-motion : pas de confettis', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: true } as MediaQueryList);
+    render(<GuideEtat />);
+    await user.click(screen.getByRole('button', { name: 'Étape suivante' }));
+    await user.click(screen.getByRole('button', { name: 'Étape suivante' }));
+    await user.click(screen.getByRole('button', { name: /Recette diner-a-mardi/ }));
+    await user.click(screen.getByRole('button', { name: /½ sauce tomate/ }));
+    await user.click(screen.getByRole('button', { name: 'Tout est rangé' }));
+    expect(screen.getByRole('heading', { name: 'Ta semaine est prête !' })).toBeInTheDocument();
+    expect(document.querySelectorAll('.confetti')).toHaveLength(0);
   });
 });
 

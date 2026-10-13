@@ -28,13 +28,22 @@ export interface MinuteurEtape {
 export interface EtapeGuidee {
   id: string;
   titre: string;
+  detail?: string;
   plats: string[];
   gestes: string[];
   minuteurs: MinuteurEtape[];
 }
 
-/** L'étape finale est ajoutée par l'app : l'IA ne décrit jamais le rangement. */
+// L'étape finale est ajoutée par l'app : l'IA ne décrit jamais le rangement.
 export const ID_ETAPE_RANGE = 'on-range';
+
+/** La date du jour du rituel le plus récent (aujourd'hui ou avant). */
+export function dernierJourRituel(aujourdhui: Date, jourRituel: Jour): Date {
+  const iRituel = JOURS.indexOf(jourRituel);
+  const d = new Date(aujourdhui);
+  d.setDate(d.getDate() - (((aujourdhui.getDay() + 6) % 7 - iRituel + 7) % 7));
+  return d;
+}
 
 // Replis §5.5 : plats absent → [recette] si présent ; minuteurs absent →
 // minuteurMin ; enParallele devient le dernier geste.
@@ -42,6 +51,7 @@ export function etapesGuidees(rituel: Rituel): EtapeGuidee[] {
   const normales = rituel.etapes.map((e): EtapeGuidee => ({
     id: e.id,
     titre: e.label,
+    detail: e.detail,
     plats: e.plats ?? (e.recette ? [e.recette] : []),
     gestes: [...(e.sousEtapes ?? []), ...(e.enParallele ? [e.enParallele] : [])],
     minuteurs:

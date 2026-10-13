@@ -5,6 +5,7 @@ import { couleurPlat } from '../../lib/cycle/couleurs';
 import { titreRepas } from '../../lib/cycle/menu';
 import {
   auFrigo,
+  dernierJourRituel,
   etapesGuidees,
   grilleDimanche,
   idCocheRituel,
@@ -56,11 +57,9 @@ export function Rituel({
 
   const dateJour = new Date(`${aujourdhui}T12:00:00`); // midi local : évite les bords de DST
   const jourRituel = JOURS.indexOf(foyer.jourRituel);
-  const iAuj = (dateJour.getDay() + 6) % 7; // getDay() : dimanche = 0
-  const cEstLeJour = iAuj === jourRituel;
+  const cEstLeJour = (dateJour.getDay() + 6) % 7 === jourRituel;
   // Le rituel le plus récent (aujourd'hui ou avant) : base des dates de rangement.
-  const dernierRituel = new Date(dateJour);
-  dernierRituel.setDate(dernierRituel.getDate() - ((iAuj - jourRituel + 7) % 7));
+  const dernierRituel = dernierJourRituel(dateJour, foyer.jourRituel);
 
   const grille = grilleDimanche(cycle, semaine);
   const plats = platsDuDimanche(cycle, semaine);

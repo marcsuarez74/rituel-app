@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   auFrigo,
+  dernierJourRituel,
   etapesGuidees,
   grilleDimanche,
   idCocheGeste,
@@ -71,6 +72,7 @@ describe('etapesGuidees (replis §5.5 + étape « On range »)', () => {
     expect(g[0]).toEqual({
       id: 'e1',
       titre: 'Muffins',
+      detail: 'Au four.',
       plats: ['muffins'],
       gestes: ['Pendant ce temps : la sauce.'],
       minuteurs: [{ nom: 'Muffins', minutes: 20, recette: 'muffins' }],
@@ -78,6 +80,7 @@ describe('etapesGuidees (replis §5.5 + étape « On range »)', () => {
     expect(g[1]).toEqual({
       id: 'e2',
       titre: 'Sur le feu',
+      detail: 'Lentilles et riz.',
       plats: ['lentilles', 'riz'],
       gestes: ['Rincer les lentilles'],
       minuteurs: [{ nom: 'Lentilles', minutes: 25 }],
@@ -241,5 +244,13 @@ describe('ids de coches des gestes et du rangement (stables, §8)', () => {
     expect(idCocheGeste('A', 'rituel-muffins', 2)).toBe('geste:A:rituel-muffins:2');
     expect(idCocheRange('A', 'mercredi-dejeuner-alex')).toBe('range:A:mercredi-dejeuner-alex');
     expect(idCocheRange('B', 'sauce-tomate')).toBe('range:B:sauce-tomate');
+  });
+});
+
+describe('dernierJourRituel (base des dates de rangement)', () => {
+  it('le rituel le plus récent : même jour si on y est, sinon en arrière', () => {
+    expect(dernierJourRituel(new Date('2026-10-11T12:00:00'), 'dimanche').getDate()).toBe(11);
+    expect(dernierJourRituel(new Date('2026-10-13T12:00:00'), 'dimanche').getDate()).toBe(11);
+    expect(dernierJourRituel(new Date('2026-10-11T12:00:00'), 'samedi').getDate()).toBe(10);
   });
 });
