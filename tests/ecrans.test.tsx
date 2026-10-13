@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { Guide } from '../src/components/ecrans/Guide';
 import { MonCycle } from '../src/components/ecrans/MonCycle';
+import { Semaine } from '../src/components/ecrans/Semaine';
 import { SemaineType } from '../src/components/ecrans/SemaineType';
 import { Rituel } from '../src/components/ecrans/Rituel';
 import { useMinuteurs } from '../src/components/useMinuteurs';
@@ -614,7 +615,85 @@ describe('Mon cycle', () => {
   });
 });
 
+describe('Semaine (bandeau prochains menus)', () => {
+  const actif = (): CycleActif => ({ id: 'c1', numero: 1, debut: '2026-10-03', pauses: [], cycle: cycle() });
+  const ecran = (instantane?: unknown, onProchainsMenus = (): void => {}) => (
+    <Semaine
+      actif={actif()}
+      foyer={foyerDuo()}
+      semaine={0}
+      moi="marc"
+      aujourdhui="2026-10-03"
+      syncVersion={0}
+      jourVu={null}
+      onJour={() => {}}
+      onSemaine={() => {}}
+      onSemaineType={() => {}}
+      onProchainsMenus={onProchainsMenus}
+      onOuvrirRecette={() => {}}
+      instantane={instantane}
+    />
+  );
+
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('k > 0 : bandeau (sans détail) + lien vers l’assistant', async () => {
+    const user = userEvent.setup();
+    const f = foyerDuo();
+    const instantane = { ...f.semaine, lundi: { ...f.semaine.lundi, diner: 'rapide' as const } };
+    const onProchainsMenus = vi.fn();
+    render(ecran(instantane, onProchainsMenus));
+    expect(screen.getByText('1 changement pour tes prochains menus')).toBeInTheDocument();
+    expect(screen.queryByText('dès les prochains menus')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Prépare tes prochains menus' }));
+    expect(onProchainsMenus).toHaveBeenCalledTimes(1);
+  });
+
+  it('k = 0 ou instantané absent : pas de bandeau', () => {
+    render(ecran());
+    expect(screen.queryByText(/changement/)).not.toBeInTheDocument();
+    render(ecran(foyerDuo().semaine));
+    expect(screen.queryByText(/changement/)).not.toBeInTheDocument();
+  });
+});
+
 describe('Semaine type', () => {
+  it('changements depuis le lancement : bandeau, lien assistant, badges « dès les prochains menus »', async () => {
+    const user = userEvent.setup();
+    const f = foyerDuo();
+    const instantane = {
+      ...f.semaine,
+      lundi: { ...f.semaine.lundi, diner: 'rapide' as const },
+      jeudi: { ...f.semaine.jeudi, plusTard: ['nouveau'] },
+    };
+    const onOuvrirAssistant = vi.fn();
+    render(
+      <SemaineType
+        foyer={f}
+        instantane={instantane}
+        onOuvrirAssistant={onOuvrirAssistant}
+        onEnregistrer={() => {}}
+        onRetour={() => {}}
+      />,
+    );
+    expect(screen.getByText('2 changements pour tes prochains menus')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Prépare tes prochains menus' }));
+    expect(onOuvrirAssistant).toHaveBeenCalledTimes(1);
+    const lundi = screen.getByText('Lundi', { selector: 'summary b' }).closest('summary')!;
+    expect(lundi.textContent).toContain('dès les prochains menus');
+    const mardi = screen.getByText('Mardi', { selector: 'summary b' }).closest('summary')!;
+    expect(mardi.textContent).not.toContain('dès les prochains menus');
+    const jeudi = screen.getByText('Jeudi', { selector: 'summary b' }).closest('summary')!;
+    expect(jeudi.textContent).toContain('dès les prochains menus');
+  });
+
+  it('sans instantané (menus d’exemple ou ancien cycle) : ni bandeau ni badge', () => {
+    render(<SemaineType foyer={foyerDuo()} onEnregistrer={() => {}} onRetour={() => {}} />);
+    expect(screen.queryByText(/changement/)).not.toBeInTheDocument();
+  });
+
   it('un adulte sans téléphone (doublon) se retire ; un membre avec téléphone jamais', async () => {
     const user = userEvent.setup();
     const onEnregistrer = vi.fn();

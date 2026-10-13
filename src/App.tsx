@@ -191,7 +191,12 @@ function App() {
           <SemaineType
             foyer={foyer}
             compact={semaineType === 'etape'}
+            instantane={cycleStocke?.semaineAuLancement}
             onRetour={() => finSemaineType()}
+            onOuvrirAssistant={() => {
+              setSemaineType(null);
+              setMonCycle(true);
+            }}
             onEnregistrer={(f) => {
               enregistrerFoyer(f);
               finSemaineType();
@@ -399,7 +404,7 @@ function App() {
                   }}
                   onSemaineType={() => setSemaineType('profil')}
                   onProchainsMenus={() => setMonCycle(true)}
-                  onOuvrirRecette={ouvrirRecette(semaine)}
+                  instantane={actif.semaineAuLancement}                  onOuvrirRecette={ouvrirRecette(semaine)}
                 />
               )}
               {ecran === 'courses' && (

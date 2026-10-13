@@ -644,6 +644,37 @@ button:active:not(:disabled) {
   margin-bottom: var(--sp-8);
 }
 
+/* Option B (§6) : bandeau des changements de la semaine type + badge kraft. */
+.bandeau-prochains {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-4) var(--sp-12);
+  margin-bottom: var(--sp-12);
+  padding: var(--sp-8) var(--sp-12);
+  border: 2px solid var(--encre);
+  border-radius: var(--r-orga-2);
+  background: var(--citron-surface);
+  font-size: var(--fs-sec);
+  font-weight: 600;
+}
+
+.bandeau-prochains .lien {
+  min-height: 48px;
+}
+
+.badge-prochains {
+  display: inline-block;
+  padding: var(--sp-2) var(--sp-8);
+  border: 1.5px solid var(--kraft-fonce);
+  border-radius: 999px;
+  background: var(--kraft);
+  font-size: var(--fs-meta);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 /* Liens de bas d'écran Semaine : semaine type (secondaire) et, en semaine 4,
    l'action pleine vers l'assistant (§4.3, une seule action pleine par écran). */
 .semaine-liens {
