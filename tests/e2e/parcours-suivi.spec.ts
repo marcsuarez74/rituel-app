@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import {
   PROFIL_MARC,
   allerA,
+  cocherTout,
   ouvrirSuivi,
   attendrePolices,
   lirePrefixe,
@@ -26,6 +27,9 @@ test.describe('Parcours courses, pesée et profil', () => {
     await allerA(page, 'Courses');
     const budget = page.getByRole('region', { name: 'Budget et progression' });
     await expect(budget.getByText('Payé').locator('xpath=following-sibling::b')).toHaveText('—');
+
+    // « J'ai payé » n'apparaît que quand tout est coché (spec PR 4).
+    await cocherTout(page);
 
     await page.getByRole('button', { name: /Mode magasin/ }).click();
     await expect(page.getByRole('button', { name: /Tout revoir/ })).toBeVisible();
@@ -52,6 +56,7 @@ test.describe('Parcours courses, pesée et profil', () => {
 
   test('Courses : un total invalide est refusé sans rien écrire', async ({ page }) => {
     await allerA(page, 'Courses');
+    await cocherTout(page);
     await page.getByRole('button', { name: /J'ai payé/ }).click();
     await page.getByLabel('Total du ticket (€)').fill('abc');
     await page.getByRole('button', { name: 'Enregistrer' }).click();

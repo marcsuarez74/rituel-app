@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { cocherTout } from './fixtures';
 
 const OVERFLOW_TOLERANCE = 1; // arrondis de sous-pixel
 const ORIGIN = process.env.E2E_PREVIEW ? 'http://localhost:4173' : 'http://localhost:5173';
@@ -110,10 +111,7 @@ test.describe('Shell v2 — barre du bas', () => {
         .click();
       await expect(page.getByText('Estimé')).toBeVisible();
       // « J'ai payé » n'apparaît que quand TOUT est coché (spec PR 4).
-      const coches = page.locator('.rayon .ligne-cochable');
-      const total = await coches.count();
-      for (let i = 0; i < total; i++) await coches.nth(i).click();
-      await expect(page.getByText('Tout est dans le panier !')).toBeVisible();
+      await cocherTout(page);
       await page.getByRole('button', { name: /Mode magasin/ }).click();
       await page.getByRole('button', { name: /J'ai payé/ }).click();
       await expect(page.getByLabel('Total du ticket (€)')).toBeVisible();

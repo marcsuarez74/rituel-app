@@ -62,6 +62,17 @@ export const allerA = async (page: Page, onglet: string) => {
   await expect(page.getByRole('heading', { level: 1, name: TITRES[onglet] ?? onglet })).toBeVisible();
 };
 
+// Coche toutes les lignes de courses (spec PR 4 : « J'ai payé » quand tout est
+// coché). dispatchEvent plutôt qu'un vrai clic : 55 lignes à la souris dépassent
+// le timeout du test, et un batch evaluate ferme sur des états périmés (React).
+export const cocherTout = async (page: Page): Promise<void> => {
+  const coches = page.locator('.rayon .ligne-cochable');
+  await coches.first().waitFor();
+  const total = await coches.count();
+  for (let i = 0; i < total; i++) await coches.nth(i).dispatchEvent('click');
+  await expect(page.getByText('Tout est dans le panier !')).toBeVisible();
+};
+
 // L'écran Suivi poids, poussé depuis la carte Suivi d'Aujourd'hui (§4.6).
 export const ouvrirSuivi = async (page: Page) => {
   await nav(page).getByRole('button', { name: "Aujourd'hui", exact: true }).click();
