@@ -1,8 +1,8 @@
 # Refonte from scratch : application native (APK)
 
 Date : 2026-10-14
-Statut : **maquettes validées** (2026-10-15), reste à trancher la génération des menus avant le
-plan d'implémentation.
+Statut : **maquettes validées** (2026-10-15) ; génération des menus tranchée (2026-10-16, §10) ;
+images des recettes tranchées (§10.4) ; prochaine étape : le plan d'implémentation.
 
 ## 1. Intention
 
@@ -48,7 +48,8 @@ Tout le reste est mis de côté pour l'instant.
 
 - Refonte « Marché coloré » : abandonnée.
 - Suivi sport, diététique détaillée, poids, etc. : retirés de la v1.
-- Assistant IA, import/export de JSON externe, sauf décision explicite ultérieure.
+- Import/export de JSON externe (l'utilisateur ne colle plus de JSON produit ailleurs : la
+  génération des menus est intégrée, voir §10).
 - Version iOS.
 
 ## 3. Principes
@@ -126,7 +127,8 @@ nouvelle app, il suffit de :
 - créer un foyer et obtenir son code (6 caractères) ;
 - rejoindre un foyer avec son code ;
 - lire et écrire l'état partagé du foyer (menus, courses, budget, routine) ;
-- réinitialiser le code.
+- réinitialiser le code ;
+- générer les menus (§10) : la clé de l'API d'IA ne quitte jamais le serveur, quota par foyer.
 
 Je propose donc un **backend minimal** (Hono + SQLite, repris à zéro dans `server/` ou dans un
 nouveau dossier) avec ces quelques routes, plutôt qu'un service tiers. Cela garde le contrôle des
@@ -134,10 +136,76 @@ données et évite une dépendance supplémentaire.
 
 ## 9. Prochaines étapes
 
-1. Trancher la **génération des menus** : catalogue + algorithme, ou IA côté serveur. Dans les
-   deux cas, la conservation reste une règle de code (`docs/conservation.md`).
-2. Maquetter l'écran d'acceptation des CGU à la création du foyer.
-3. Rédiger le plan d'implémentation dans `docs/superpowers/plans/`.
-4. Exécuter le plan en TDD, par étapes (une étape = un écran fonctionnel).
-5. Avant la sortie : relecture juridique de `docs/cgu.md`, politique de confidentialité, relecture
+1. Maquetter l'écran d'acceptation des CGU à la création du foyer.
+2. Rédiger le plan d'implémentation dans `docs/superpowers/plans/`.
+3. Exécuter le plan en TDD, par étapes (une étape = un écran fonctionnel).
+4. Avant la sortie : relecture juridique de `docs/cgu.md`, politique de confidentialité, relecture
    de `docs/conservation.md` par un professionnel.
+
+## 10. Génération des menus (décidé le 2026-10-16)
+
+**L'IA écrit les recettes, le code les vérifie.** Un catalogue fixe a été écarté : filtré par
+les préférences (keto + sans gluten, par exemple), il tombe à une vingtaine de recettes et les
+menus se répètent chaque mois. L'IA, appelée **côté serveur**, compose les 4 semaines et écrit
+les recettes pour chaque foyer.
+
+### 10.1 Principe : le prompt guide, le code garantit
+
+Le prompt est soigné, mais **aucune règle de sécurité ne repose sur lui**. Tout ce qui compte
+(conservation, régime, allergènes, temps, budget) est recalculé par le code à partir de données
+qu'il maîtrise ; ce que l'IA affirme sur ces points est ignoré.
+
+### 10.2 Les verrous, dans l'ordre
+
+1. **Forme garantie** : sortie structurée de l'API (schéma JSON imposé par décodage contraint) :
+   un JSON invalide ou un champ manquant est impossible.
+2. **Vocabulaire fermé** : chaque ingrédient est un identifiant d'une **table d'ingrédients** du
+   projet (allergènes, régimes compatibles, catégorie de conservation, prix moyen, rayon). Un
+   ingrédient hors table = recette rejetée. C'est ce qui permet au code de tout vérifier.
+3. **Contrôles du code** sur chaque menu :
+   - conservation : table de `docs/conservation.md` (frigo, congélation, sinon erreur bloquante) ;
+   - régime et allergènes : déduits des ingrédients, jamais des étiquettes données par l'IA ;
+   - temps du Rituel : somme des étapes ≤ temps choisi au guide ;
+   - budget : estimation à partir des prix moyens, dans la cible du foyer ;
+   - quantités par personne dans des fourchettes plausibles ;
+   - variété : pas deux fois la même recette sur 4 semaines ;
+   - structure : les Box aux midis prévus, les jours « dehors » et « libre » respectés.
+4. **Boucle de correction** : les erreurs sont renvoyées à l'IA (2 essais au plus), puis seul le
+   plat fautif est regénéré ; en dernier recours, un plat déjà validé de la bibliothèque le remplace.
+   Un menu non conforme n'est **jamais** montré.
+5. **Bibliothèque partagée** : chaque recette validée y entre ; les générations suivantes y piochent
+   d'abord (coût réduit, recettes éprouvées), l'IA n'écrit que ce qui manque.
+6. **Entrées utilisateur** : les champs libres (envies, aliments refusés) sont bornés en longueur et
+   passés comme données, pas comme instructions.
+7. **Tests** : une batterie de profils difficiles (keto + sans gluten, végétarien, allergie à
+   l'arachide, Rituel de 10 min, petit budget) ; le validateur est testé en TDD sur des sorties
+   figées, et la batterie tourne contre l'API réelle avant tout changement de prompt ou de modèle.
+8. **Dans l'app** : bouton « Remplacer ce plat » (regénère un plat, mêmes contrôles) et
+   signalement d'une recette ratée.
+
+### 10.3 Ce que ça coûte
+
+- Un appel d'IA par génération de 4 semaines (quelques centimes, à mesurer), payé par l'éditeur ;
+  quota par foyer.
+- Connexion nécessaire pour générer ; les menus générés restent consultables hors ligne.
+
+### 10.4 Images des recettes (décidé le 2026-10-16)
+
+**Une photo de banque d'images libre de droits par recette**, choisie une fois et gardée avec la
+recette dans la bibliothèque. Image générée par IA et illustrations par famille écartées.
+
+- **Source : Pexels** (API gratuite, photos utilisables sans frais, y compris commercialement).
+  Unsplash écarté : son API impose d'afficher les images depuis ses serveurs, ce qui casse le
+  hors ligne. Limites de l'API Pexels (200 requêtes/h, 20 000/mois) : sans enjeu grâce au cache
+  de la bibliothèque. Conditions à relire sur pexels.com/license avant la sortie.
+- **Crédit** : « Photo : <photographe> · Pexels » avec lien, sous l'image dans la fiche recette.
+- **Recherche** : l'IA fournit, avec la recette, une requête courte en anglais centrée sur les
+  ingrédients visibles (« chickpea curry rice bowl ») ; le serveur cherche, la photo est copiée
+  et stockée côté serveur avec son crédit.
+- **Le piège : une photo qui ne montre pas la recette** (un curry au poulet pour un curry de pois
+  chiches, chez un foyer végétarien). Verrou : avant d'être retenue, chaque photo candidate est
+  vérifiée par un modèle de vision contre la recette (pas de viande ni de poisson pour un plat
+  végétarien, ingrédient principal reconnaissable) ; la première conforme est gardée ; aucune
+  conforme → image neutre de la famille du plat, jamais une photo trompeuse.
+- **Dans l'app** : mention « Photo d'illustration » ; « Signaler la photo » renvoie la recette en
+  vérification.
