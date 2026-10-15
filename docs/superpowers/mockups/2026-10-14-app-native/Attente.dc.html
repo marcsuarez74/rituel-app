@@ -172,8 +172,7 @@ button:focus-visible,a:focus-visible{outline:3px solid #2E6B4E;outline-offset:2p
         {{ fiche.retour }}
       </button>
       <div class="th th-{{ fiche.ph }}" role="img" aria-label="Photo : {{ fiche.titre }}" style="flex: none; height: 200px; border-radius: 24px"></div>
-      <div style="flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px">
-        <span style="font-size: 12px; line-height: 1.4; color: #59605B">Photo d'illustration · <span style="text-decoration: underline">Nom du photographe</span> · Pexels</span>
+      <div style="flex: none; display: flex; align-items: center; justify-content: flex-end">
         <button onClick="{{ signalerPhoto }}" style="flex: none; height: 32px; padding: 0 4px; border: none; background: transparent; color: #59605B; font-size: 12px; font-weight: 700; text-decoration: underline">{{ photoLabel }}</button>
       </div>
       <sc-if value="{{ photoSignalee }}" hint-placeholder-val="{{ false }}">

@@ -35,8 +35,9 @@ L'utilisation de l'app vaut acceptation des présentes conditions, présentées 
 Rituel n'est ni un service médical, ni un service de diététique. Les menus, les quantités et les
 régimes proposés sont des suggestions d'organisation, pas des prescriptions. Les recettes sont écrites par
 une intelligence artificielle puis vérifiées par des règles automatiques (conservation, régime,
-allergènes) ; leurs photos sont des illustrations issues d'une banque d'images (Pexels), créditées,
-et ne montrent pas forcément le plat tel qu'il sortira de ta cuisine.
+allergènes) ; leurs photos sont des illustrations libres de droits fournies par
+[Pexels](https://www.pexels.com) : elles ne sont pas contractuelles et ne montrent pas forcément
+le plat tel qu'il sortira de ta cuisine.
 
 ## 3. Conservation des plats
 

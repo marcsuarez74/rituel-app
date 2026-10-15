@@ -198,7 +198,9 @@ recette dans la bibliothèque. Image générée par IA et illustrations par fami
   Unsplash écarté : son API impose d'afficher les images depuis ses serveurs, ce qui casse le
   hors ligne. Limites de l'API Pexels (200 requêtes/h, 20 000/mois) : sans enjeu grâce au cache
   de la bibliothèque. Conditions à relire sur pexels.com/license avant la sortie.
-- **Crédit** : « Photo : <photographe> · Pexels » avec lien, sous l'image dans la fiche recette.
+- **Crédit** : aucun sous l'image (décidé le 2026-10-16 : la licence Pexels ne l'impose pas). Le
+  lien visible vers Pexels exigé par les règles de l'API est dans les CGU (article 2 et résumé,
+  Foyer › À propos). Le nom du photographe reste stocké avec la photo, pour pouvoir le réafficher.
 - **Recherche** : l'IA fournit, avec la recette, une requête courte en anglais centrée sur les
   ingrédients visibles (« chickpea curry rice bowl ») ; le serveur cherche, la photo est copiée
   et stockée côté serveur avec son crédit.
@@ -207,5 +209,5 @@ recette dans la bibliothèque. Image générée par IA et illustrations par fami
   vérifiée par un modèle de vision contre la recette (pas de viande ni de poisson pour un plat
   végétarien, ingrédient principal reconnaissable) ; la première conforme est gardée ; aucune
   conforme → image neutre de la famille du plat, jamais une photo trompeuse.
-- **Dans l'app** : mention « Photo d'illustration » ; « Signaler la photo » renvoie la recette en
+- **Dans l'app** : « Signaler la photo », sous l'image, renvoie la recette en
   vérification.
