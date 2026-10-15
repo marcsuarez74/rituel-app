@@ -138,6 +138,13 @@ button:focus-visible,a:focus-visible{outline:3px solid #2E6B4E;outline-offset:2p
         {{ fiche.retour }}
       </button>
       <div class="th th-{{ fiche.ph }}" role="img" aria-label="Photo : {{ fiche.titre }}" style="flex: none; height: 200px; border-radius: 24px"></div>
+      <div style="flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px">
+        <span style="font-size: 12px; line-height: 1.4; color: #59605B">Photo d'illustration · <span style="text-decoration: underline">Nom du photographe</span> · Pexels</span>
+        <button onClick="{{ signalerPhoto }}" style="flex: none; height: 32px; padding: 0 4px; border: none; background: transparent; color: #59605B; font-size: 12px; font-weight: 700; text-decoration: underline">{{ photoLabel }}</button>
+      </div>
+      <sc-if value="{{ photoSignalee }}" hint-placeholder-val="{{ false }}">
+        <span role="status" style="flex: none; font-size: 13px; line-height: 1.45; color: #1F4D37">Merci : on cherche une photo plus fidèle à cette recette.</span>
+      </sc-if>
       <div style="flex: none; display: flex; flex-direction: column; gap: 8px">
         <p style="margin: 0; font-size: 15px; font-weight: 600; color: #59605B">{{ fiche.quand }}</p>
         <h1 style="margin: 0; font-size: 28px; line-height: 1.2; font-weight: 800">{{ fiche.titre }}</h1>
@@ -351,7 +358,10 @@ class Component extends DCLogic {
     return {
       enFiche: !!f,
       fiche: fiche || { congele: false, congeleTexte: "", retour: "", ph: "libre", titre: "", quand: "", temps: "", tag: "", tagBg: "", tagFg: "", jourTitre: "", jourJ: "", aGarde: false, garde: "", ingredients: [], etapesTitre: "", origine: "", etapes: [] },
-      fermerFiche: () => this.setState({ fiche: null }),
+      fermerFiche: () => this.setState({ fiche: null, photoSignalee: false }),
+      photoSignalee: !!this.state.photoSignalee,
+      photoLabel: this.state.photoSignalee ? "Photo signalée" : "Signaler la photo",
+      signalerPhoto: () => this.setState({ photoSignalee: true }),
       ensemble: !f && s.vue < 0,
       detail: !f && s.vue >= 0,
       semaines: SEMAINES.map((sem, k) => Object.assign({
