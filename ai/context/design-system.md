@@ -16,7 +16,7 @@ Source de vérité : `src/index.css` (section `:root`). Toute valeur ici doit y 
 ## Tokens — Couleurs
 
 Valeurs réelles sur `:root` (`src/index.css` — source de vérité) ; valeurs d'origine : annexe A de la
-spec 2026-10-12. Les noms historiques (`--bg`, `--surface`, `--text`…) restent définis en alias.
+spec 2026-10-12 (supprimée du dépôt, dans l'historique git). Les noms historiques (`--bg`, `--surface`, `--text`…) restent définis en alias.
 
 | Token | Valeur | Usage |
 |---|---|---|

@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Accueil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#2E6B4E}a:hover{color:#1F4D37}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid #2E6B4E;outline-offset:2px}
+.photo-chili{background:linear-gradient(180deg,rgba(255,255,255,0) 50%,rgba(255,255,255,0.7) 80%,#FFFFFF 100%),url(/_blob/af38fe1821e9a8b0a7f8410caa0b338e) center 50%/cover no-repeat,#D8CDBB}
+.ph{background-color:#D8CDBB;background-size:cover;background-position:center;background-repeat:no-repeat}
+.ph-quinoa{background-image:linear-gradient(180deg,rgba(255,255,255,0) 55%,#FFFFFF 100%),url(/_blob/90e2e4dd98db337c7a6195f3f8d1f7ef)}
+.ph-curry{background-image:linear-gradient(180deg,rgba(255,255,255,0) 55%,#FFFFFF 100%),url(/_blob/ecf78911b4aefd9c01eb28b40d620a17)}
+.ph-gratin{background-image:linear-gradient(180deg,rgba(255,255,255,0) 55%,#FFFFFF 100%),url(/_blob/4422b0e576c70f5ab47b99aa07ea5481)}
+.ph-lentilles{background-image:linear-gradient(180deg,rgba(255,255,255,0) 55%,#FFFFFF 100%),url(/_blob/6af1422c00c748952338871477145d8e)}
+.ph-chili{background-image:linear-gradient(180deg,rgba(255,255,255,0) 55%,#FFFFFF 100%),url(/_blob/af38fe1821e9a8b0a7f8410caa0b338e)}
+.ph-omelette{background-image:linear-gradient(180deg,rgba(255,255,255,0) 55%,#FFFFFF 100%),url(/_blob/3672a5ec1405c58025f97e28417e1f98)}
+.ph-wrap{background-image:linear-gradient(180deg,rgba(255,255,255,0) 55%,#FFFFFF 100%),url(/_blob/73c555fd678538c1ca14edded3d271fc)}
+.ph-poulet{background-image:linear-gradient(180deg,rgba(255,255,255,0) 55%,#FFFFFF 100%),url(/_blob/8d5a59b8888bd983b0b0815e11a7cc1f)}
+.ph-pesto{background-image:linear-gradient(180deg,rgba(255,255,255,0) 55%,#FFFFFF 100%),url(/_blob/9e8157ad07139d6a1b9556edd00bee65)}
+.ph-minestrone{background-image:linear-gradient(180deg,rgba(255,255,255,0) 55%,#FFFFFF 100%),url(/_blob/a6b2a67242ec77e84e993ed8f453e344)}
+.ph-rituel{background-image:linear-gradient(180deg,rgba(255,255,255,0) 55%,#FFFFFF 100%),url(/_blob/e094661e54bb31f25754b03fbe28ecf6)}
+.ph-libre{background-image:linear-gradient(180deg,#EDEAE3 0%,#FFFFFF 100%)}
+.ph-dehors{background-color:#EDEAE3;background-image:linear-gradient(180deg,rgba(255,255,255,0) 55%,#FFFFFF 100%),url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'><defs><filter id='w' x='-20%' y='-20%' width='140%' height='140%'><feTurbulence type='fractalNoise' baseFrequency='0.05' numOctaves='3' seed='7'/><feDisplacementMap in='SourceGraphic' scale='4'/><feGaussianBlur stdDeviation='0.45'/></filter><filter id='p' x='-10%' y='-10%' width='120%' height='120%'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='1' seed='2'/><feDisplacementMap in='SourceGraphic' scale='1.2'/></filter></defs><g filter='url(%23w)'><ellipse cx='80' cy='91' rx='76' ry='6' fill='%23E8DCC4' opacity='.7'/><rect x='34' y='26' width='92' height='64' fill='%23F3E3CC' opacity='.95'/><rect x='30' y='22' width='100' height='6' fill='%23C9A27E' opacity='.55'/><rect x='56' y='8' width='48' height='12' rx='2' fill='%232E6B4E' opacity='.7'/><rect x='34' y='30' width='92' height='10' fill='%23FFFFFF' opacity='.95'/><rect x='34' y='30' width='8' height='10' fill='%23E5866A' opacity='.65'/><circle cx='38' cy='40' r='4' fill='%23E5866A' opacity='.65'/><circle cx='46' cy='40' r='4' fill='%23FFFFFF' opacity='.95'/><rect x='50' y='30' width='8' height='10' fill='%23E5866A' opacity='.65'/><circle cx='54' cy='40' r='4' fill='%23E5866A' opacity='.65'/><circle cx='62' cy='40' r='4' fill='%23FFFFFF' opacity='.95'/><rect x='66' y='30' width='8' height='10' fill='%23E5866A' opacity='.65'/><circle cx='70' cy='40' r='4' fill='%23E5866A' opacity='.65'/><circle cx='78' cy='40' r='4' fill='%23FFFFFF' opacity='.95'/><rect x='82' y='30' width='8' height='10' fill='%23E5866A' opacity='.65'/><circle cx='86' cy='40' r='4' fill='%23E5866A' opacity='.65'/><circle cx='94' cy='40' r='4' fill='%23FFFFFF' opacity='.95'/><rect x='98' y='30' width='8' height='10' fill='%23E5866A' opacity='.65'/><circle cx='102' cy='40' r='4' fill='%23E5866A' opacity='.65'/><circle cx='110' cy='40' r='4' fill='%23FFFFFF' opacity='.95'/><rect x='114' y='30' width='8' height='10' fill='%23E5866A' opacity='.65'/><circle cx='118' cy='40' r='4' fill='%23E5866A' opacity='.65'/><circle cx='126' cy='40' r='4' fill='%23FFFFFF' opacity='.95'/><rect x='40' y='50' width='34' height='24' rx='2' fill='%23F6D58E' opacity='.6'/><rect x='106' y='50' width='16' height='24' rx='2' fill='%23F6D58E' opacity='.55'/><ellipse cx='57' cy='68' rx='9' ry='2' fill='%23C98F4E' opacity='.45'/><circle cx='57' cy='56' r='3' fill='%23E5866A' opacity='.5'/><rect x='84' y='50' width='16' height='40' rx='1' fill='%235E9A73' opacity='.6'/><rect x='87' y='54' width='10' height='13' rx='1' fill='%23F6D58E' opacity='.55'/><rect x='40' y='75' width='34' height='5' fill='%23C98F4E' opacity='.55'/><circle cx='43' cy='74' r='3.4' fill='%237FB28E' opacity='.65'/><circle cx='49' cy='74' r='3.4' fill='%237FB28E' opacity='.65'/><circle cx='55' cy='74' r='3.4' fill='%237FB28E' opacity='.65'/><circle cx='61' cy='74' r='3.4' fill='%237FB28E' opacity='.65'/><circle cx='67' cy='74' r='3.4' fill='%237FB28E' opacity='.65'/><circle cx='71' cy='74' r='3.4' fill='%237FB28E' opacity='.65'/><circle cx='47' cy='72' r='1.6' fill='%23E5866A' opacity='.8'/><circle cx='59' cy='72' r='1.6' fill='%23E5866A' opacity='.8'/><circle cx='69' cy='72' r='1.6' fill='%23E5866A' opacity='.8'/><path d='M2 56 Q16 44 30 56 Z' fill='%23E5866A' opacity='.55'/><ellipse cx='16' cy='76' rx='10' ry='2.6' fill='%23FFFFFF' opacity='.95'/><circle cx='13' cy='74' r='1.8' fill='%23BFDCE3' opacity='.8'/><circle cx='19' cy='74.5' r='1.6' fill='%23E5866A' opacity='.6'/><rect x='136' y='64' width='16' height='18' rx='1' fill='%234A524D' opacity='.6'/><circle cx='131' cy='83' r='6' fill='%237FB28E' opacity='.5'/><circle cx='156' cy='82' r='6' fill='%23A9CC8A' opacity='.55'/></g><g filter='url(%23p)' fill='none' stroke='%2355705E' stroke-width='1' stroke-linecap='round' stroke-linejoin='round' opacity='.8'><path d='M34 26v64h92V26M30 22h100v6H30z'/><path d='M34 30h92'/><path d='M34 40a4 4 0 0 0 8 0M42 40a4 4 0 0 0 8 0M50 40a4 4 0 0 0 8 0M58 40a4 4 0 0 0 8 0M66 40a4 4 0 0 0 8 0M74 40a4 4 0 0 0 8 0M82 40a4 4 0 0 0 8 0M90 40a4 4 0 0 0 8 0M98 40a4 4 0 0 0 8 0M106 40a4 4 0 0 0 8 0M114 40a4 4 0 0 0 8 0M122 40a4 4 0 0 0 8 0'/><rect x='56' y='8' width='48' height='12' rx='2'/><rect x='40' y='50' width='34' height='24' rx='2'/><path d='M57 50v24M40 62h34'/><rect x='106' y='50' width='16' height='24' rx='2'/><path d='M114 50v24M106 62h16'/><rect x='84' y='50' width='16' height='40' rx='1'/><path d='M97 72v3'/><path d='M16 50v28M10 86l3-10M22 86l-3-10'/><path d='M4 86v-9h5v9M28 86v-9h-5v9M4 80h5M23 80h5'/><path d='M136 64h16v18h-16zM138 90l2-8M150 90l-2-8'/><path d='M139 69h10M139 73h8M139 77h9' stroke='%23FFFFFF' opacity='.8'/><path d='M2 90h156'/></g><text x='80' y='17' text-anchor='middle' font-family='Georgia,serif' font-style='italic' font-size='8.5' fill='%23FFFFFF'>Bistrot</text><g fill='%23F6C64E' opacity='.9'><circle cx='38' cy='45' r='1.3'/><circle cx='50' cy='46.6' r='1.3'/><circle cx='62' cy='47.3' r='1.3'/><circle cx='74' cy='47.3' r='1.3'/><circle cx='86' cy='46.8' r='1.3'/><circle cx='98' cy='47.3' r='1.3'/><circle cx='110' cy='47.3' r='1.3'/><circle cx='122' cy='46.4' r='1.3'/></g><path d='M34 44Q80 52 126 44' fill='none' stroke='%2355705E' stroke-width='.6' opacity='.6'/></svg>");background-size:cover,auto 86%;background-position:center,center 30%}
+.ph-choix{background-color:#EDEAE3;background-image:linear-gradient(180deg,rgba(255,255,255,0) 55%,#FFFFFF 100%),url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'><defs><filter id='w' x='-20%' y='-20%' width='140%' height='140%'><feTurbulence type='fractalNoise' baseFrequency='0.05' numOctaves='3' seed='4'/><feDisplacementMap in='SourceGraphic' scale='4'/><feGaussianBlur stdDeviation='0.45'/></filter><filter id='p' x='-10%' y='-10%' width='120%' height='120%'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='1' seed='2'/><feDisplacementMap in='SourceGraphic' scale='1.2'/></filter></defs><g filter='url(%23w)'><path d='M8 52 Q80 40 152 52 L156 92 Q80 98 4 92 Z' fill='%23F7F1E6' opacity='.95'/><path d='M12 50 L8 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M24 50 L20 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M36 50 L32 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M48 50 L44 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M60 50 L56 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M72 50 L68 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M84 50 L80 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M96 50 L92 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M108 50 L104 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M120 50 L116 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M132 50 L128 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M144 50 L140 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M6 58 Q80 52 154 58' stroke='%23E5866A' stroke-width='5' fill='none' opacity='.18'/><path d='M6 70 Q80 64 154 70' stroke='%23E5866A' stroke-width='5' fill='none' opacity='.18'/><path d='M6 82 Q80 76 154 82' stroke='%23E5866A' stroke-width='5' fill='none' opacity='.18'/><ellipse cx='72' cy='70' rx='30' ry='16' fill='%23FFFFFF'/><ellipse cx='72' cy='70' rx='30' ry='16' fill='none' stroke='%23B9CFC0' stroke-width='3' opacity='.7'/><ellipse cx='66' cy='67' rx='12' ry='7' fill='%237FB28E' opacity='.65'/><ellipse cx='77' cy='65' rx='9' ry='6' fill='%235E9A73' opacity='.55'/><ellipse cx='80' cy='72' rx='9' ry='5' fill='%23A9CC8A' opacity='.65'/><circle cx='68' cy='72' r='3.4' fill='%23E5866A' opacity='.75'/><circle cx='84' cy='66' r='3.4' fill='%23E5866A' opacity='.75'/><circle cx='62' cy='64' r='3.4' fill='%23E5866A' opacity='.75'/><ellipse cx='60' cy='70' rx='3.5' ry='2.6' fill='%23F2E3A6' opacity='.95'/><ellipse cx='74' cy='74' rx='3.5' ry='2.6' fill='%23F2E3A6' opacity='.95'/><ellipse cx='72' cy='62' rx='4' ry='2.4' fill='%23FFFFFF' opacity='.9'/><circle cx='72' cy='62' r='1.5' fill='%23F6C64E'/><path d='M24 60 l14 -2 l4 26 l-14 2z' fill='%23BFDCE3' opacity='.6'/><ellipse cx='122' cy='76' rx='17' ry='8' fill='%23C98F4E' opacity='.5'/><ellipse cx='117' cy='70' rx='9' ry='4.5' fill='%23E2B57A' opacity='.85' transform='rotate(-15 117 70)'/><ellipse cx='128' cy='70' rx='8' ry='4' fill='%23D9A562' opacity='.8' transform='rotate(12 128 70)'/><path d='M100 26 h10 l-1 6 q8 6 8 16 v12 q0 4 -4 4 h-16 q-4 0 -4 -4 v-12 q0 -10 8 -16z' fill='%23BFDCE3' opacity='.5'/><path d='M94 46 h22 v14 q0 4 -4 4 h-14 q-4 0 -4 -4z' fill='%239CC7D2' opacity='.35'/><rect x='132' y='38' width='11' height='18' rx='3' fill='%23BFDCE3' opacity='.55'/><rect x='133' y='46' width='9' height='9' rx='2' fill='%239CC7D2' opacity='.4'/><rect x='40' y='38' width='9' height='14' rx='4' fill='%23E8DCC4' opacity='.95'/><circle cx='40' cy='26' r='4' fill='%23E5866A' opacity='.7'/><circle cx='49' cy='24' r='3.6' fill='%23F6C64E' opacity='.8'/><circle cx='45' cy='18' r='3.4' fill='%23E5866A' opacity='.6'/><ellipse cx='37' cy='33' rx='4' ry='2' fill='%237FB28E' opacity='.7' transform='rotate(-30 37 33)'/></g><g filter='url(%23p)' fill='none' stroke='%2355705E' stroke-width='1' stroke-linecap='round' stroke-linejoin='round' opacity='.8'><path d='M8 52 Q80 40 152 52 L156 92 Q80 98 4 92 Z'/><path d='M42 70 a30 16 0 0 0 60 0'/><path d='M30 58v26M27 58v6a3 3 0 0 0 6 0v-6'/><path d='M106 66c-2 2-3 6-3 9h3M106 66v20'/><path d='M100 26 h10 l-1 6 q8 6 8 16 v12 q0 4 -4 4 h-16 q-4 0 -4 -4 v-12 q0 -10 8 -16z'/><rect x='132' y='38' width='11' height='18' rx='3'/><path d='M106 78 q16 10 32 0'/><rect x='40' y='38' width='9' height='14' rx='4'/><path d='M42 38 L40 29M45 38 L45 21M47 38 L49 27'/></g></svg>");background-size:cover,auto 86%;background-position:center,center 30%}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #F5F3EE; color: #1B201D; font-family: Figtree, system-ui, sans-serif; overflow: hidden">
+
+  <main style="flex: 1; overflow-y: auto; padding: 28px 20px 20px; display: flex; flex-direction: column; gap: 16px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <p style="margin: 0; font-size: 15px; font-weight: 600; color: #59605B">Mercredi 14 octobre</p>
+      <h1 style="margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800">Ce soir, c'est prêt.</h1>
+    </div>
+
+    <section aria-label="Ce soir" style="flex: none; display: flex; flex-direction: column">
+      <div class="photo-chili" role="img" aria-label="Photo du plat : chili sin carne" style="flex: none; height: 170px; border-radius: 24px 24px 0 0"></div>
+      <div style="display: flex; flex-direction: column; gap: 14px; padding: 0 18px 18px; background: #FFFFFF; border-radius: 0 0 24px 24px">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #2E6B4E">Dîner</span>
+          <span style="font-size: 20px; font-weight: 800">Chili sin carne, riz</span>
+          <span style="font-size: 15px; color: #59605B">Préparé dimanche · 5 min à réchauffer, 10 min pour le riz</span>
+          <span style="font-size: 14px; font-weight: 600; color: #2E6B4E">Dernier jour au frigo : c'est le bon soir.</span>
+        </div>
+      <button aria-pressed="{{ mangePressed }}" onClick="{{ toggleMange }}" style="height: 52px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 26px; border: 2px solid #2E6B4E; background: {{ mangeBg }}; color: {{ mangeFg }}; font-size: 16px; font-weight: 700">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+        {{ mangeLabel }}
+      </button>
+      </div>
+    </section>
+
+    <section aria-label="Rappel" style="flex: none; display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: 20px; background: #E3EEE7; color: #1F4D37">
+      <span style="flex: none; width: 36px; height: 36px; border-radius: 18px; background: #FFFFFF; display: flex; align-items: center; justify-content: center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 2v20M3.3 7l17.4 10M3.3 17 20.7 7M9 4l3 2.5L15 4M9 20l3-2.5 3 2.5"/></svg>
+      </span>
+      <span style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase">Demain soir, 19 h</span>
+        <span style="font-size: 15px; line-height: 1.45">Sors la Box et le gratin de vendredi du congélateur, et mets-les au frigo. On te le rappellera.</span>
+      </span>
+    </section>
+
+    <section aria-label="Prochain Rituel" style="flex: none; display: flex; flex-direction: column; gap: 14px; padding: 20px; background: #1F4D37; color: #FFFFFF; border-radius: 24px">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #BFE0CC">Prochain Rituel</span>
+          <span style="font-size: 22px; font-weight: 800">Dimanche 18 octobre</span>
+          <span style="font-size: 15px; color: #D6EADD">Dans 4 jours · 1 h 30 · 3 Box, 3 dîners</span>
+        </div>      </div>
+      <a href="Courses.dc.html" style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 16px; background: #2A5C43; color: #FFFFFF; text-decoration: none">
+        <span style="display: flex; justify-content: space-between; font-size: 15px">
+          <span style="font-weight: 700">Courses d'abord</span>
+          <span style="font-variant-numeric: tabular-nums">≈ 70 à 85 € sur 120 €</span>
+        </span>
+        <span style="height: 8px; border-radius: 4px; background: #1A4130; overflow: hidden" aria-hidden="true"><span style="display: block; width: 71%; height: 100%; border-radius: 4px; background: #9FD3B3"></span></span>
+        <span style="font-size: 14px; color: #D6EADD">31 articles · estimation selon ton magasin</span>
+      </a>
+      <a href="Rituel.dc.html" style="height: 52px; display: flex; align-items: center; justify-content: center; border-radius: 26px; background: #FFFFFF; color: #1F4D37; font-size: 17px; font-weight: 700; text-decoration: none">Voir le déroulé du Rituel</a>
+    </section>
+
+    <section aria-label="Cette semaine" style="flex: none; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 800">Cette semaine</h2>
+        <a href="Menus.dc.html" style="font-size: 15px; font-weight: 700; text-decoration: none">Tous les menus</a>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px">
+        <sc-for list="{{ jours }}" as="j" hint-placeholder-count="7">
+          <button aria-pressed="{{ j.pressed }}" aria-label="{{ j.nom }}" onClick="{{ j.choisir }}" style="height: 60px; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 16px; border: 2px solid {{ j.bc }}; background: {{ j.bg }}; color: {{ j.fg }}">
+            <span style="font-size: 12px; font-weight: 600">{{ j.court }}</span>
+            <span style="font-size: 17px; font-weight: 800">{{ j.num }}</span>
+          </button>
+        </sc-for>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <sc-for list="{{ repas }}" as="r" hint-placeholder-count="2">
+          <article style="display: flex; flex-direction: column">
+            <div class="ph ph-{{ r.ph }}" role="img" aria-label="Photo du plat : {{ r.nom }}" style="flex: none; height: 112px; border-radius: 20px 20px 0 0"></div>
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 4px 12px 14px; background: #FFFFFF; border-radius: 0 0 20px 20px">
+              <span style="font-size: 13px; font-weight: 700; color: #59605B">{{ r.moment }}</span>
+              <span style="font-size: 15px; font-weight: 700; line-height: 1.3">{{ r.nom }}</span>
+              <span style="padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; background: {{ r.tagBg }}; color: {{ r.tagFg }}">{{ r.tag }}</span>
+              <sc-if value="{{ r.congele }}" hint-placeholder-val="{{ false }}">
+                <span style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; line-height: 1.3; color: #2E6B4E"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" style="flex: none"><path d="M12 2v20M3.3 7l17.4 10M3.3 17 20.7 7M9 4l3 2.5L15 4M9 20l3-2.5 3 2.5"/></svg>Au congélateur · à sortir jeudi soir</span>
+              </sc-if>
+            </div>
+          </article>
+        </sc-for>
+      </div>
+    </section>
+  </main>
+
+  <nav aria-label="Navigation principale" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 8px 8px 14px; background: #FFFFFF; border-top: 1px solid #E2DED5">
+    <a href="Accueil.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; text-decoration: none; color: #1F4D37; font-size: 12px; font-weight: 700">
+      <span style="width: 60px; height: 32px; border-radius: 16px; background: #E3EEE7; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span>Accueil</a>
+    <a href="Menus.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; text-decoration: none; color: #59605B; font-size: 12px; font-weight: 600">
+      <span style="width: 60px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg></span>Menus</a>
+    <a href="Courses.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; text-decoration: none; color: #59605B; font-size: 12px; font-weight: 600">
+      <span style="width: 60px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h18l-1.5 10.5a1.5 1.5 0 0 1-1.5 1.5H6a1.5 1.5 0 0 1-1.5-1.5z"/><path d="m8 9 4-6 4 6"/></svg></span>Courses</a>
+    <a href="Foyer.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; text-decoration: none; color: #59605B; font-size: 12px; font-weight: 600">
+      <span style="width: 60px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14.5c1.9.8 3 2.7 3 5.5"/></svg></span>Foyer</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { jour: 2, mange: false };
+  }
+  renderVals() {
+    const s = this.state;
+    const TAG = {
+      box: { tag: "Box", tagBg: "#2E6B4E", tagFg: "#FFFFFF" },
+      pret: { tag: "Prêt", tagBg: "#E3EEE7", tagFg: "#1F4D37" },
+      dehors: { tag: "Dehors", tagBg: "#EDEAE3", tagFg: "#3D443F" },
+      frais: { tag: "Frais", tagBg: "#EDEAE3", tagFg: "#3D443F" },
+      rituel: { tag: "Rituel", tagBg: "#F3DFC4", tagFg: "#6E3F00" },
+      libre: { tag: "Libre", tagBg: "#EDEAE3", tagFg: "#3D443F" }
+    };
+    const SEMAINE = [
+      { nom: "Lundi 12", dej: ["Taboulé de quinoa, feta", "box", "quinoa"], din: ["Curry de lentilles corail", "pret", "curry"] },
+      { nom: "Mardi 13", dej: ["Tu manges dehors", "dehors", "dehors"], din: ["Omelette aux herbes · 15 min", "frais", "omelette"] },
+      { nom: "Mercredi 14", dej: ["Salade de lentilles, œuf", "box", "lentilles"], din: ["Chili sin carne, riz", "pret", "chili"] },
+      { nom: "Jeudi 15", dej: ["Tu manges dehors", "dehors", "dehors"], din: ["Pâtes au pesto de roquette · 20 min", "frais", "pesto"] },
+      { nom: "Vendredi 16", dej: ["Poulet rôti, légumes d'automne", "box", "poulet", true], din: ["Gratin de courge, pois chiches", "pret", "gratin", true] },
+      { nom: "Samedi 17", dej: ["Au choix", "libre", "choix"], din: ["Soupe minestrone · 20 min", "frais", "minestrone"] },
+      { nom: "Dimanche 18", dej: ["Au choix", "libre", "choix"], din: ["Assiette du Rituel", "rituel", "rituel"] }
+    ];
+    const j = SEMAINE[s.jour];
+    return {
+      jours: SEMAINE.map((d, i) => {
+        const on = s.jour === i;
+        const today = i === 2;
+        return {
+          nom: d.nom + (today ? ", aujourd'hui" : ""),
+          court: d.nom.slice(0, 3),
+          num: d.nom.split(" ")[1],
+          pressed: on ? "true" : "false",
+          bc: on ? "#2E6B4E" : today ? "#9AA39C" : "#FFFFFF",
+          bg: on ? "#2E6B4E" : "#FFFFFF",
+          fg: on ? "#FFFFFF" : "#1B201D",
+          choisir: () => this.setState({ jour: i })
+        };
+      }),
+      repas: [
+        Object.assign({ moment: "Déjeuner", nom: j.dej[0], ph: j.dej[2], congele: !!j.dej[3] }, TAG[j.dej[1]]),
+        Object.assign({ moment: "Dîner", nom: j.din[0], ph: j.din[2], congele: !!j.din[3] }, TAG[j.din[1]])
+      ],
+      mangePressed: s.mange ? "true" : "false",
+      mangeBg: s.mange ? "#2E6B4E" : "#FFFFFF",
+      mangeFg: s.mange ? "#FFFFFF" : "#1F4D37",
+      mangeLabel: s.mange ? "Mangé, bon appétit" : "C'est mangé",
+      toggleMange: () => this.setState({ mange: !s.mange })
+    };
+  }
+}
+</script>
+</body>
+</html>

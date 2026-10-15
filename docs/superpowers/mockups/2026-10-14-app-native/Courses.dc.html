@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Courses</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#2E6B4E}a:hover{color:#1F4D37}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid #2E6B4E;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #F5F3EE; color: #1B201D; font-family: Figtree, system-ui, sans-serif; overflow: hidden">
+
+  <sc-if value="{{ magasin }}" hint-placeholder-val="{{ false }}">
+  <div style="flex: none; display: flex; flex-direction: column; gap: 12px; padding: 24px 20px 16px; background: #1F4D37; color: #FFFFFF">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+      <span style="display: flex; flex-direction: column; gap: 2px">
+        <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #BFE0CC">Mode magasin</span>
+        <span style="font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums" aria-live="polite">{{ resteMagasin }}</span>
+      </span>
+      <button onClick="{{ quitterMagasin }}" style="flex: none; height: 44px; padding: 0 18px; border: 2px solid #4F8A6C; border-radius: 22px; background: transparent; color: #FFFFFF; font-size: 15px; font-weight: 700">Quitter</button>
+    </div>
+    <div style="height: 10px; border-radius: 5px; background: #1A4130; overflow: hidden" aria-hidden="true">
+      <div style="width: {{ progression }}; height: 100%; border-radius: 5px; background: #9FD3B3"></div>
+    </div>
+    <span style="font-size: 14px; color: #D6EADD">Touche un article pour le mettre dans le panier. L'écran reste allumé.</span>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ normal }}" hint-placeholder-val="{{ true }}">
+  <div style="flex: none; display: flex; flex-direction: column; gap: 12px; padding: 28px 20px 14px; background: #F5F3EE; border-bottom: 1px solid #E2DED5">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <p style="margin: 0; font-size: 15px; font-weight: 600; color: #59605B">Pour le Rituel du dimanche 18 octobre</p>
+        <h1 style="margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800">Courses</h1>
+      </div>
+      <button onClick="{{ entrerMagasin }}" style="flex: none; height: 44px; display: flex; align-items: center; gap: 8px; padding: 0 16px; border: none; border-radius: 22px; background: #2E6B4E; color: #FFFFFF; font-size: 15px; font-weight: 700">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2.5l2.2 11h10.6L21 7H7"/><circle cx="9.5" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/></svg>
+        Mode magasin
+      </button>
+    </div>
+    <section aria-label="Budget" style="display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: 20px; background: {{ budgetBg }}; color: {{ budgetFg }}">
+      <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px">
+        <span style="display: flex; flex-direction: column">
+          <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; opacity: 0.85">{{ resteLabel }}</span>
+          <span style="font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums" aria-live="polite">{{ resteTexte }}</span>
+        </span>
+        <span style="font-size: 14px; text-align: right; font-variant-numeric: tabular-nums">{{ coteTexte }}<br>Budget 120 € / sem.</span>
+      </div>
+      <div style="height: 8px; border-radius: 4px; background: {{ barreFond }}; overflow: hidden" aria-hidden="true">
+        <div style="width: {{ barre }}; height: 100%; border-radius: 4px; background: {{ barreCouleur }}"></div>
+      </div>
+      <span style="font-size: 14px; line-height: 1.4; font-variant-numeric: tabular-nums">{{ noteBudget }}</span>
+    </section>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ magasin }}" hint-placeholder-val="{{ false }}">
+  <main style="flex: 1; overflow-y: auto; padding: 16px 16px 24px; display: flex; flex-direction: column; gap: 18px">
+    <sc-for list="{{ aPrendre }}" as="r" hint-placeholder-count="3">
+      <section aria-label="{{ r.nom }}" style="flex: none; display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0 4px; font-size: 15px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: #3D443F">{{ r.nom }}</h2>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <sc-for list="{{ r.articles }}" as="a" hint-placeholder-count="4">
+            <button role="checkbox" aria-checked="false" aria-label="{{ a.nom }}, {{ a.qte }}" onClick="{{ a.cocher }}" style="display: flex; align-items: center; gap: 16px; min-height: 72px; padding: 10px 18px; border: none; border-radius: 20px; background: #FFFFFF; color: #1B201D; text-align: left">
+              <span style="flex: none; width: 34px; height: 34px; box-sizing: border-box; border-radius: 10px; border: 2.5px solid #B9B3A8; background: #FFFFFF"></span>
+              <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: 20px; font-weight: 700; line-height: 1.2">{{ a.nom }}</span>
+                <span style="font-size: 16px; color: #59605B">{{ a.qte }}</span>
+              </span>
+            </button>
+          </sc-for>
+        </div>
+      </section>
+    </sc-for>
+
+    <sc-if value="{{ toutPris }}" hint-placeholder-val="{{ false }}">
+      <section style="flex: none; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 24px 20px; border-radius: 24px; background: #E3EEE7; color: #1F4D37; text-align: center">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+        <span style="font-size: 22px; font-weight: 800">Tout est dans le panier</span>
+        <span style="font-size: 16px; line-height: 1.45">Direction la caisse. Garde ton ticket : tu en auras besoin juste après.</span>
+      </section>
+    </sc-if>
+
+    <button onClick="{{ finirMagasin }}" style="flex: none; height: 56px; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 28px; background: {{ finBg }}; color: {{ finFg }}; font-size: 17px; font-weight: 700">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2.5h12v19l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5-2 1.5z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>
+      J'ai fini : saisir mon ticket
+    </button>
+
+    <sc-if value="{{ aPanier }}" hint-placeholder-val="{{ true }}">
+      <section aria-label="Dans le panier" style="flex: none; display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0 4px; font-size: 15px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: #59605B">Dans le panier · {{ nPanier }}</h2>
+        <div style="display: flex; flex-direction: column; border-radius: 20px; background: #FFFFFF; overflow: hidden">
+          <sc-for list="{{ panier }}" as="a" hint-placeholder-count="3">
+            <button role="checkbox" aria-checked="true" aria-label="{{ a.nom }}, dans le panier. Toucher pour le retirer." onClick="{{ a.cocher }}" style="display: flex; align-items: center; gap: 14px; min-height: 52px; padding: 6px 18px; border: none; border-bottom: 1px solid #EEEAE2; background: transparent; color: #59605B; text-align: left">
+              <span style="flex: none; width: 26px; height: 26px; border-radius: 8px; background: #2E6B4E; color: #FFFFFF; display: flex; align-items: center; justify-content: center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+              </span>
+              <span style="flex: 1; font-size: 16px; text-decoration: line-through">{{ a.nom }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </section>
+    </sc-if>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ normal }}" hint-placeholder-val="{{ true }}">
+  <main style="flex: 1; overflow-y: auto; padding: 16px 20px 20px; display: flex; flex-direction: column; gap: 18px">
+
+    <sc-for list="{{ rayons }}" as="r" hint-placeholder-count="3">
+      <section aria-label="{{ r.nom }}" style="flex: none; display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; display: flex; justify-content: space-between; font-size: 16px; font-weight: 800">{{ r.nom }}<span style="font-size: 14px; font-weight: 600; color: #59605B; font-variant-numeric: tabular-nums">{{ r.compte }}</span></h2>
+        <div style="display: flex; flex-direction: column; background: #FFFFFF; border-radius: 20px; overflow: hidden">
+          <sc-for list="{{ r.articles }}" as="a" hint-placeholder-count="4">
+            <div style="display: flex; align-items: center; gap: 4px; min-height: 60px; padding: 0 8px 0 4px; border-bottom: 1px solid #EEEAE2; opacity: {{ a.opacite }}">
+              <button role="checkbox" aria-checked="{{ a.coche }}" aria-label="{{ a.aria }}" onClick="{{ a.cocher }}" style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 6px 4px 6px 10px; border: none; background: transparent; color: #1B201D; text-align: left">
+                <span style="flex: none; width: 26px; height: 26px; box-sizing: border-box; border-radius: 8px; border: 2px solid {{ a.caseBc }}; background: {{ a.caseBg }}; color: #FFFFFF; display: flex; align-items: center; justify-content: center">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+                </span>
+                <span style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+                  <span style="font-size: 15px; font-weight: 600; text-decoration: {{ a.barre }}">{{ a.nom }}</span>
+                  <span style="font-size: 13px; color: #59605B">{{ a.detail }}</span>
+                </span>
+              </button>
+              <button onClick="{{ a.basculerMaison }}" aria-pressed="{{ a.maison }}" style="flex: none; height: 36px; padding: 0 10px; border-radius: 18px; border: 1.5px solid #E2DED5; background: {{ a.maisonBg }}; color: #3D443F; font-size: 12px; font-weight: 700">{{ a.maisonLabel }}</button>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </sc-for>
+
+    <section aria-label="En plus des menus" style="flex: none; display: flex; flex-direction: column; gap: 10px">
+      <h2 style="margin: 0; font-size: 16px; font-weight: 800">En plus des menus</h2>
+      <p style="margin: 0; font-size: 14px; line-height: 1.45; color: #59605B">Le reste de tes courses compte aussi dans le budget. Ajoute ce dont tu as besoin, l'estimation en tient compte :</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <sc-for list="{{ extras }}" as="x" hint-placeholder-count="5">
+          <button aria-pressed="{{ x.pressed }}" onClick="{{ x.basculer }}" style="height: 40px; padding: 0 14px; border-radius: 20px; border: 2px solid {{ x.bc }}; background: {{ x.bg }}; color: {{ x.fg }}; font-size: 14px; font-weight: 700">{{ x.label }}</button>
+        </sc-for>
+      </div>
+    </section>
+
+    <section aria-label="Ton ticket" style="flex: none; display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 20px; background: #FFFFFF">
+      <h2 style="margin: 0; font-size: 16px; font-weight: 800">Après les courses</h2>
+      <sc-if value="{{ ticketAttente }}" hint-placeholder-val="{{ true }}">
+        <p style="margin: 0; font-size: 14px; line-height: 1.45; color: #59605B">Les prix changent d'un magasin à l'autre. Une fois en caisse, saisis le montant de ton ticket : c'est lui qui compte pour ton budget.</p>
+        <button onClick="{{ ouvrirTicket }}" style="height: 52px; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 26px; background: #2E6B4E; color: #FFFFFF; font-size: 17px; font-weight: 700">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2.5h12v19l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5-2 1.5z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>
+          J'ai fini : saisir mon ticket
+        </button>
+      </sc-if>
+      <sc-if value="{{ ticketSaisie }}" hint-placeholder-val="{{ false }}">
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 700; color: #3D443F">
+          Montant du ticket, en euros
+          <input type="text" inputmode="decimal" autocomplete="off" maxlength="8" placeholder="Ex. 81,40" value="{{ ticketValeur }}" onInput="{{ saisirTicket }}" style="height: 52px; box-sizing: border-box; padding: 0 14px; border-radius: 14px; border: 2px solid #E2DED5; background: #FAF8F4; font-family: inherit; font-size: 20px; font-weight: 700; color: #1B201D; font-variant-numeric: tabular-nums">
+        </label>
+        <sc-if value="{{ ticketErreur }}" hint-placeholder-val="{{ false }}">
+          <span role="alert" style="font-size: 14px; color: #8A3B12">Écris un montant, par exemple 81,40.</span>
+        </sc-if>
+        <div style="display: flex; gap: 8px">
+          <button onClick="{{ annulerTicket }}" style="flex: 1; height: 48px; border: 2px solid #E2DED5; border-radius: 24px; background: #FFFFFF; color: #1B201D; font-size: 16px; font-weight: 700">Annuler</button>
+          <button onClick="{{ validerTicket }}" style="flex: 1; height: 48px; border: none; border-radius: 24px; background: #2E6B4E; color: #FFFFFF; font-size: 16px; font-weight: 700">Valider</button>
+        </div>
+      </sc-if>
+      <sc-if value="{{ ticketFait }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+          <span style="display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 14px; color: #59605B">Ton ticket</span>
+            <span style="font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums">{{ ticketTexte }}</span>
+          </span>
+          <button onClick="{{ ouvrirTicket }}" style="flex: none; height: 40px; padding: 0 16px; border: 2px solid #E2DED5; border-radius: 20px; background: #FFFFFF; color: #2E6B4E; font-size: 14px; font-weight: 700">Modifier</button>
+        </div>
+      </sc-if>
+    </section>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ normal }}" hint-placeholder-val="{{ true }}">
+  <nav aria-label="Navigation principale" style="flex: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 8px 8px 14px; background: #FFFFFF; border-top: 1px solid #E2DED5">
+    <a href="Accueil.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; text-decoration: none; color: #59605B; font-size: 12px; font-weight: 600">
+      <span style="width: 60px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span>Accueil</a>
+    <a href="Menus.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; text-decoration: none; color: #59605B; font-size: 12px; font-weight: 600">
+      <span style="width: 60px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg></span>Menus</a>
+    <a href="Courses.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; text-decoration: none; color: #1F4D37; font-size: 12px; font-weight: 700">
+      <span style="width: 60px; height: 32px; border-radius: 16px; background: #E3EEE7; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h18l-1.5 10.5a1.5 1.5 0 0 1-1.5 1.5H6a1.5 1.5 0 0 1-1.5-1.5z"/><path d="m8 9 4-6 4 6"/></svg></span>Courses</a>
+    <a href="Foyer.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; text-decoration: none; color: #59605B; font-size: 12px; font-weight: 600">
+      <span style="width: 60px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14.5c1.9.8 3 2.7 3 5.5"/></svg></span>Foyer</a>
+  </nav>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // ticket : montant saisi après les courses (null tant qu'il n'est pas validé)
+    this.state = { coches: {}, maison: {}, extras: {}, saisie: false, valeur: "", erreur: false, ticket: null, magasin: false };
+  }
+  renderVals() {
+    const s = this.state;
+    const BUDGET = 120;
+    // [nom, quantité · pour quoi, prix moyen] : le prix ne s'affiche jamais, il sert à l'estimation
+    const RAYONS = [
+      ["Fruits et légumes", [
+        ["Pommes de terre", "2 kg · poulet, minestrone", 2.90],
+        ["Carottes", "1 kg · poulet, minestrone", 1.40],
+        ["Oignons", "1 kg · chili, curry", 1.90],
+        ["Ail", "1 tête", 0.90],
+        ["Courge butternut", "1 · gratin", 2.80],
+        ["Poivrons", "2 · chili", 2.40],
+        ["Concombre", "1 · taboulé", 0.99],
+        ["Tomates", "1 kg · taboulé, minestrone", 3.20],
+        ["Courgettes", "2 · minestrone", 1.80],
+        ["Roquette", "125 g · pesto, salade", 1.99],
+        ["Menthe et persil", "2 bouquets · taboulé", 1.80],
+        ["Citrons", "2 · taboulé", 1.00]
+      ]],
+      ["Épicerie", [
+        ["Quinoa", "500 g · taboulé", 3.49],
+        ["Lentilles corail", "500 g · curry", 2.19],
+        ["Lentilles vertes", "500 g · salade", 2.09],
+        ["Haricots rouges", "2 conserves · chili", 1.98],
+        ["Pois chiches", "1 conserve · gratin", 0.99],
+        ["Tomates concassées", "2 conserves · chili", 1.78],
+        ["Lait de coco", "40 cl · curry", 1.59],
+        ["Pâte de curry", "1 pot · curry", 2.30],
+        ["Riz basmati", "1 kg · chili", 2.49],
+        ["Pâtes", "500 g · pesto", 1.15],
+        ["Pignons de pin", "60 g · pesto", 2.90],
+        ["Huile d'olive", "50 cl", 4.90],
+        ["Cumin et paprika", "2 pots · chili", 2.60]
+      ]],
+      ["Frais", [
+        ["Poulet entier", "1,6 kg · poulet rôti", 10.90],
+        ["Œufs", "12 · salade, omelette", 3.49],
+        ["Feta", "200 g · taboulé", 2.49],
+        ["Parmesan", "100 g · pesto, minestrone", 3.20],
+        ["Crème fraîche", "20 cl · gratin", 1.35],
+        ["Emmental râpé", "200 g · gratin", 2.20]
+      ]]
+    ];
+    const EXTRAS = [
+      ["Fruits de la semaine", 9.80],
+      ["Petit-déjeuner", 11.40],
+      ["Café", 6.50],
+      ["Produits ménagers", 14.90],
+      ["Apéro du samedi", 12.60]
+    ];
+    const eur = (v) => v.toFixed(2).replace(".", ",") + " €";
+    let total = 0, panier = 0, nCoches = 0, nArticles = 0;
+    const rayons = RAYONS.map(([nom, articles], ri) => {
+      let sous = 0;
+      const lignes = articles.map(([n, detail, prix], ai) => {
+        const id = ri + "-" + ai;
+        const maison = !!s.maison[id];
+        const coche = !!s.coches[id];
+        if (!maison) { total += prix; sous += prix; nArticles++; if (coche) { panier += prix; nCoches++; } }
+        return {
+          id, qte: detail.split(" · ")[0],
+          nom: n,
+          detail: maison ? "Déjà à la maison · retiré du total" : detail,
+          coche: coche && !maison ? "true" : "false",
+          aria: n + (maison ? ", déjà à la maison" : ""),
+          caseBc: coche && !maison ? "#2E6B4E" : "#B9B3A8",
+          caseBg: coche && !maison ? "#2E6B4E" : "#FFFFFF",
+          barre: maison || coche ? "line-through" : "none",
+          opacite: maison ? "0.55" : coche ? "0.75" : "1",
+          maison: maison ? "true" : "false",
+          maisonLabel: maison ? "Remettre" : "J'en ai",
+          maisonBg: maison ? "#EDEAE3" : "#FFFFFF",
+          cocher: () => { if (maison) return; this.setState({ coches: Object.assign({}, s.coches, { [id]: !coche }) }); },
+          basculerMaison: () => this.setState({ maison: Object.assign({}, s.maison, { [id]: !maison }) })
+        };
+      });
+      const n = lignes.filter((l) => l.maison === "false").length;
+      return { nom, compte: n + (n > 1 ? " articles" : " article"), articles: lignes };
+    });
+    const extras = EXTRAS.map(([label, prix], k) => {
+      const on = !!s.extras[k];
+      if (on) total += prix;
+      return {
+        label: (on ? "✓ " : "+ ") + label,
+        pressed: on ? "true" : "false",
+        bc: on ? "#2E6B4E" : "#E2DED5",
+        bg: on ? "#E3EEE7" : "#FFFFFF",
+        fg: on ? "#1F4D37" : "#1B201D",
+        basculer: () => this.setState({ extras: Object.assign({}, s.extras, { [k]: !on }) })
+      };
+    });
+    // Estimation : fourchette arrondie à 5 €, d'après des prix moyens
+    const bas = Math.max(5, Math.round((total * 0.9) / 5) * 5);
+    const haut = Math.round((total * 1.1) / 5) * 5;
+    const t = s.ticket;
+    const aTicket = t !== null;
+    const reste = aTicket ? BUDGET - t : BUDGET - haut;
+    const depasse = aTicket ? t > BUDGET : haut > BUDGET;
+    const lire = (v) => {
+      const n = parseFloat(String(v || "").replace(/\s|€/g, "").replace(",", "."));
+      return isFinite(n) && n > 0 && n < 10000 ? Math.round(n * 100) / 100 : null;
+    };
+    // Mode magasin : à prendre (par rayon) en haut, déjà dans le panier en bas
+    const aPrendre = rayons.map((ry) => ({
+      nom: ry.nom,
+      articles: ry.articles.filter((l) => l.maison === "false" && l.coche === "false")
+    })).filter((ry) => ry.articles.length > 0);
+    const dansPanier = [];
+    rayons.forEach((ry) => ry.articles.forEach((l) => { if (l.coche === "true") dansPanier.push(l); }));
+    const restant = nArticles - nCoches;
+    return {
+      magasin: s.magasin,
+      normal: !s.magasin,
+      entrerMagasin: () => this.setState({ magasin: true }),
+      quitterMagasin: () => this.setState({ magasin: false }),
+      finirMagasin: () => this.setState({ magasin: false, saisie: true, erreur: false, valeur: "" }),
+      aPrendre,
+      panier: dansPanier,
+      aPanier: dansPanier.length > 0,
+      nPanier: String(dansPanier.length),
+      toutPris: restant === 0,
+      resteMagasin: restant === 0 ? "Tout est pris" : restant + (restant > 1 ? " articles à prendre" : " article à prendre"),
+      progression: (nArticles ? Math.round((nCoches / nArticles) * 100) : 0) + "%",
+      finBg: restant === 0 ? "#2E6B4E" : "#FFFFFF",
+      finFg: restant === 0 ? "#FFFFFF" : "#2E6B4E",
+      rayons, extras, depasse,
+      resteLabel: aTicket ? (depasse ? "Au-dessus du budget" : "Reste sur ton budget") : "Estimation de ta liste",
+      resteTexte: aTicket ? (depasse ? "+ " + eur(t - BUDGET) : eur(reste)) : bas + " à " + haut + " €",
+      coteTexte: aTicket ? "Ticket " + eur(t) : nCoches + " / " + nArticles + " dans le panier",
+      noteBudget: aTicket ? "D'après ton ticket de caisse." : "Prix moyens : le vrai montant dépend de ton magasin.",
+      barre: Math.min(100, Math.round(((aTicket ? t : haut) / BUDGET) * 100)) + "%",
+      budgetBg: depasse ? "#FBEEDC" : "#1F4D37",
+      budgetFg: depasse ? "#6E3F00" : "#FFFFFF",
+      barreFond: depasse ? "#F3DFC4" : "#1A4130",
+      barreCouleur: depasse ? "#C9772A" : "#9FD3B3",
+      ticketAttente: !aTicket && !s.saisie,
+      ticketSaisie: s.saisie,
+      ticketFait: aTicket && !s.saisie,
+      ticketValeur: s.valeur,
+      ticketErreur: s.erreur,
+      ticketTexte: aTicket ? eur(t) : "",
+      ouvrirTicket: () => this.setState({ saisie: true, erreur: false, valeur: aTicket ? eur(t).replace(" €", "") : "" }),
+      saisirTicket: (e) => this.setState({ valeur: e && e.target ? e.target.value : "", erreur: false }),
+      annulerTicket: () => this.setState({ saisie: false, erreur: false }),
+      validerTicket: () => {
+        const v = lire(s.valeur);
+        if (v === null) this.setState({ erreur: true });
+        else this.setState({ ticket: v, saisie: false, erreur: false });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

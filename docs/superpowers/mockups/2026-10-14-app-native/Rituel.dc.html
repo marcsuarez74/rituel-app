@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Rituel</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#2E6B4E}a:hover{color:#1F4D37}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid #2E6B4E;outline-offset:2px}
+.photo-rituel{background:linear-gradient(180deg,rgba(245,243,238,0) 45%,rgba(245,243,238,0.75) 78%,#F5F3EE 100%),url(/_blob/e094661e54bb31f25754b03fbe28ecf6) center 55%/cover no-repeat,#D8CDBB}
+.th{background-color:#D8CDBB;background-size:cover;background-position:center;background-repeat:no-repeat}
+.th-quinoa{background-image:url(/_blob/90e2e4dd98db337c7a6195f3f8d1f7ef)}
+.th-curry{background-image:url(/_blob/ecf78911b4aefd9c01eb28b40d620a17)}
+.th-gratin{background-image:url(/_blob/4422b0e576c70f5ab47b99aa07ea5481)}
+.th-lentilles{background-image:url(/_blob/6af1422c00c748952338871477145d8e)}
+.th-chili{background-image:url(/_blob/af38fe1821e9a8b0a7f8410caa0b338e)}
+.th-poulet{background-image:url(/_blob/8d5a59b8888bd983b0b0815e11a7cc1f)}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #F5F3EE; color: #1B201D; font-family: Figtree, system-ui, sans-serif; overflow: hidden">
+
+  <header style="flex: none; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 12px 6px 8px">
+    <a href="Accueil.dc.html" aria-label="Quitter le Rituel" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 22px; color: #1B201D">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </a>
+    <span style="font-size: 15px; font-weight: 700; color: #59605B">{{ entete }}</span>
+    <span style="width: 44px"></span>
+  </header>
+
+  <sc-if value="{{ enIntro }}" hint-placeholder-val="{{ true }}">
+    <main style="flex: 1; overflow-y: auto; display: flex; flex-direction: column">
+      <div class="photo-rituel" role="img" aria-label="Photo : des Box remplies, prêtes pour la semaine" style="flex: none; height: 180px; margin: 0 20px; border-radius: 24px"></div>
+      <div style="flex: none; display: flex; flex-direction: column; gap: 6px; padding: 16px 20px 0">
+        <p style="margin: 0; font-size: 15px; font-weight: 600; color: #59605B">Dimanche 18 octobre</p>
+        <h1 style="margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800">Ton Rituel, pas à pas</h1>
+        <p style="margin: 0; font-size: 16px; line-height: 1.45; color: #59605B">1 h 30 pour ta semaine du 19 au 25 octobre. Plusieurs plats cuisent en même temps : suis juste les étapes, l'app te dit quoi lancer et quand.</p>
+      </div>
+
+      <section aria-label="Ce que tu vas préparer" style="flex: none; display: flex; flex-direction: column; gap: 10px; padding: 18px 20px 0">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 800">Ce que tu vas préparer</h2>
+        <div style="display: flex; flex-direction: column; background: #FFFFFF; border-radius: 20px; padding: 6px 14px">
+          <sc-for list="{{ plats }}" as="p" hint-placeholder-count="6">
+            <div style="display: flex; align-items: center; gap: 12px; min-height: 60px; border-bottom: 1px solid {{ p.trait }}">
+              <span class="th th-{{ p.ph }}" style="flex: none; width: 44px; height: 44px; border-radius: 12px"></span>
+              <span style="flex: 1; display: flex; flex-direction: column">
+                <span style="font-size: 15px; font-weight: 700">{{ p.nom }}</span>
+                <span style="font-size: 13px; color: #59605B">{{ p.pour }}</span>
+              </span>
+              <span style="flex: none; padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; background: {{ p.tagBg }}; color: {{ p.tagFg }}">{{ p.tag }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+
+      <section aria-label="Les minuteurs du Rituel" style="flex: none; display: flex; flex-direction: column; gap: 10px; padding: 18px 20px 0">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 800">Les minuteurs du Rituel</h2>
+        <p style="margin: 0; font-size: 14px; line-height: 1.45; color: #59605B">Tout se chevauche : pendant que le poulet cuit, tu lances le reste. L'app garde chaque minuteur en route d'une étape à l'autre.</p>
+        <div style="display: flex; flex-direction: column; gap: 10px; background: #FFFFFF; border-radius: 20px; padding: 14px">
+          <sc-for list="{{ deroule }}" as="d" hint-placeholder-count="7">
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <span style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px">
+                <span style="font-weight: 700">{{ d.nom }}</span>
+                <span style="color: #59605B; font-variant-numeric: tabular-nums">{{ d.duree }}</span>
+              </span>
+              <span style="display: flex; height: 10px; border-radius: 5px; background: #F0EDE6; overflow: hidden">
+                <span style="flex: none; width: {{ d.debut }}"></span>
+                <span style="flex: none; width: {{ d.largeur }}; border-radius: 5px; background: {{ d.couleur }}"></span>
+              </span>
+            </div>
+          </sc-for>
+          <span style="display: flex; justify-content: space-between; font-size: 12px; color: #59605B; font-variant-numeric: tabular-nums">
+            <span>0</span><span>30 min</span><span>1 h</span><span>1 h 30</span>
+          </span>
+        </div>
+      </section>
+
+      <section aria-label="Avant de commencer" style="flex: none; display: flex; flex-direction: column; gap: 8px; margin: 16px 20px 0; padding: 16px; border-radius: 20px; background: #E3EEE7; color: #1F4D37">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 800">Avant de commencer</h2>
+        <span style="font-size: 15px; line-height: 1.45">Sors 6 Box (3 midis × 2 personnes), 3 casseroles, 2 plats à four. Vide le lave-vaisselle : tu rangeras au fur et à mesure.</span>
+      </section>
+
+      <div style="flex: none; padding: 20px">
+        <button onClick="{{ commencer }}" style="width: 100%; height: 56px; border: none; border-radius: 28px; background: #2E6B4E; color: #FFFFFF; font-size: 18px; font-weight: 800">C'est parti</button>
+      </div>
+    </main>
+  </sc-if>
+
+  <sc-if value="{{ enEtape }}" hint-placeholder-val="{{ false }}">
+    <div style="flex: none; padding: 0 20px 8px; display: flex; flex-direction: column; gap: 8px">
+      <div style="height: 8px; border-radius: 4px; background: #E2DED5; overflow: hidden" role="progressbar" aria-valuemin="1" aria-valuemax="{{ total }}" aria-valuenow="{{ numero }}" aria-label="Avancement du Rituel">
+        <div style="width: {{ progres }}; height: 100%; border-radius: 4px; background: #2E6B4E"></div>
+      </div>
+      <span style="font-size: 14px; color: #59605B">{{ repere }}</span>
+      <sc-if value="{{ aRecap }}" hint-placeholder-val="{{ true }}">
+        <div aria-label="Minuteurs en cours" style="display: flex; flex-wrap: wrap; gap: 6px">
+          <sc-for list="{{ recap }}" as="r" hint-placeholder-count="2">
+            <button onClick="{{ r.ouvrir }}" aria-label="{{ r.aria }}" style="height: 36px; padding: 0 12px; border-radius: 18px; border: 2px solid {{ r.bc }}; background: {{ r.bg }}; color: {{ r.fg }}; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums">{{ r.nom }} · {{ r.temps }}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+    <main style="flex: 1; overflow-y: auto; padding: 8px 20px 20px; display: flex; flex-direction: column; gap: 16px">
+      <h1 style="flex: none; margin: 0; font-size: 28px; line-height: 1.2; font-weight: 800">{{ etape.titre }}</h1>
+      <div style="flex: none; display: flex; flex-wrap: wrap; gap: 8px">
+        <sc-for list="{{ etape.pour }}" as="p" hint-placeholder-count="1">
+          <span style="display: flex; align-items: center; gap: 8px; padding: 4px 12px 4px 4px; border-radius: 22px; background: #FFFFFF; font-size: 14px; font-weight: 700">
+            <span class="th th-{{ p.ph }}" style="width: 32px; height: 32px; border-radius: 16px"></span>{{ p.nom }}
+          </span>
+        </sc-for>
+      </div>
+      <p style="flex: none; margin: 0; font-size: 19px; line-height: 1.5">{{ etape.texte }}</p>
+
+      <sc-if value="{{ aBox }}" hint-placeholder-val="{{ false }}">
+        <section aria-label="Ce qui va dans les Box" style="flex: none; display: flex; flex-direction: column; gap: 10px">
+          <h2 style="margin: 0; font-size: 18px; font-weight: 800">Ce qui va dans les Box</h2>
+          <sc-for list="{{ box }}" as="b" hint-placeholder-count="2">
+            <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 20px; background: #FFFFFF">
+              <div style="display: flex; align-items: center; gap: 12px">
+                <span class="th th-{{ b.ph }}" style="flex: none; width: 48px; height: 48px; border-radius: 12px"></span>
+                <span style="flex: 1; display: flex; flex-direction: column">
+                  <span style="font-size: 16px; font-weight: 800">{{ b.titre }}</span>
+                  <span style="font-size: 13px; color: #59605B">{{ b.nom }}</span>
+                </span>
+                <span style="flex: none; padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; background: {{ b.ouBg }}; color: {{ b.ouFg }}">{{ b.ou }}</span>
+              </div>
+              <ul style="margin: 0; padding: 0 0 0 18px; display: flex; flex-direction: column; gap: 4px; font-size: 15px; line-height: 1.4">
+                <sc-for list="{{ b.contenu }}" as="c" hint-placeholder-count="4">
+                  <li>{{ c.t }}</li>
+                </sc-for>
+              </ul>
+            </div>
+          </sc-for>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ aMinuteur }}" hint-placeholder-val="{{ true }}">
+        <section aria-label="Minuteur" style="flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 16px 16px 20px; border-radius: 24px; background: {{ minBg }}; color: {{ minFg }}">
+          <span style="display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase">{{ minLabel }}</span>
+            <span style="font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums" aria-live="polite">{{ minTexte }}</span>
+          </span>
+          <button onClick="{{ basculerMinuteur }}" style="height: 48px; padding: 0 20px; border-radius: 24px; border: 2px solid {{ minFg }}; background: transparent; color: {{ minFg }}; font-size: 16px; font-weight: 700">{{ minBouton }}</button>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ aAstuce }}" hint-placeholder-val="{{ true }}">
+        <p style="flex: none; margin: 0; padding: 14px 16px; border-radius: 18px; background: #FBEEDC; color: #6E3F00; font-size: 15px; line-height: 1.45"><strong>Astuce · </strong>{{ etape.astuce }}</p>
+      </sc-if>
+    </main>
+    <div style="flex: none; display: flex; gap: 10px; padding: 12px 20px 20px; background: #F5F3EE; border-top: 1px solid #E2DED5">
+      <button onClick="{{ precedent }}" aria-label="Étape précédente" style="flex: none; width: 56px; height: 56px; border-radius: 28px; border: 2px solid #E2DED5; background: #FFFFFF; color: #1B201D; display: flex; align-items: center; justify-content: center">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+      </button>
+      <button onClick="{{ suivant }}" style="flex: 1; height: 56px; border: none; border-radius: 28px; background: #2E6B4E; color: #FFFFFF; font-size: 18px; font-weight: 800">{{ suivantLabel }}</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ enFin }}" hint-placeholder-val="{{ false }}">
+    <main style="flex: 1; overflow-y: auto; padding: 12px 20px 20px; display: flex; flex-direction: column; gap: 16px">
+      <div style="flex: none; width: 72px; height: 72px; border-radius: 36px; background: #2E6B4E; color: #FFFFFF; display: flex; align-items: center; justify-content: center">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+      </div>
+      <div style="flex: none; display: flex; flex-direction: column; gap: 6px">
+        <h1 style="margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800">Ta semaine est prête.</h1>
+        <p style="margin: 0; font-size: 16px; line-height: 1.45; color: #59605B">Du 19 au 25 octobre, 3 midis et 3 dîners sont déjà faits.</p>
+      </div>
+      <section aria-label="Où est quoi" style="flex: none; display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 20px; background: #FFFFFF">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #2E6B4E">Au frigo</span>
+          <span style="font-size: 15px; line-height: 1.45">Box de lundi et mercredi · poulet rôti et chili</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #2E6B4E">Au congélateur</span>
+          <span style="font-size: 15px; line-height: 1.45">Box de vendredi · gratin de vendredi. On te rappellera de les sortir jeudi soir à 19 h.</span>
+        </div>
+      </section>
+      <section aria-label="Ton avis" style="flex: none; display: flex; flex-direction: column; gap: 10px">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 800">C'était comment ?</h2>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <sc-for list="{{ avis }}" as="a" hint-placeholder-count="3">
+            <button aria-pressed="{{ a.pressed }}" onClick="{{ a.choisir }}" style="height: 52px; padding: 0 16px; border-radius: 16px; border: 2px solid {{ a.bc }}; background: {{ a.bg }}; color: #1B201D; font-size: 16px; font-weight: 600; text-align: left">{{ a.label }}</button>
+          </sc-for>
+        </div>
+        <sc-if value="{{ aAvis }}" hint-placeholder-val="{{ false }}">
+          <p style="margin: 0; font-size: 15px; line-height: 1.45; color: #1F4D37">{{ reponseAvis }}</p>
+        </sc-if>
+      </section>
+      <a href="Accueil.dc.html" style="flex: none; height: 56px; display: flex; align-items: center; justify-content: center; border-radius: 28px; background: #2E6B4E; color: #FFFFFF; font-size: 18px; font-weight: 800; text-decoration: none">Retour à l'accueil</a>
+    </main>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // etape : -1 = intro, 0..n-1 = étapes, n = fin
+    // minuteurs : un par étape, ils continuent de tourner quand on change d'étape
+    this.state = { etape: -1, minuteurs: {}, avis: -1 };
+    this.horloge = null;
+  }
+  arreter() {
+    if (this.horloge) { clearInterval(this.horloge); this.horloge = null; }
+  }
+  tic() {
+    const M = Object.assign({}, this.state.minuteurs);
+    let actif = false;
+    for (const k in M) {
+      const m = M[k];
+      if (!m.enCours) continue;
+      const r = m.reste - 1;
+      M[k] = r <= 0 ? { reste: 0, enCours: false, fini: true } : { reste: r, enCours: true, fini: false };
+      if (r > 0) actif = true;
+    }
+    if (!actif) this.arreter();
+    this.setState({ minuteurs: M });
+  }
+  basculer(k, min) {
+    const m = this.state.minuteurs[k] || { reste: min * 60, enCours: false, fini: false };
+    const n = m.enCours ? { reste: m.reste, enCours: false, fini: false }
+      : m.fini ? { reste: min * 60, enCours: true, fini: false }
+      : { reste: m.reste, enCours: true, fini: false };
+    this.setState({ minuteurs: Object.assign({}, this.state.minuteurs, { [k]: n }) });
+    if (n.enCours && !this.horloge) this.horloge = setInterval(() => this.tic(), 1000);
+  }
+  renderVals() {
+    const s = this.state;
+    const P = {
+      poulet: { ph: "poulet", nom: "Poulet rôti" },
+      gratin: { ph: "gratin", nom: "Gratin de courge" },
+      chili: { ph: "chili", nom: "Chili sin carne" },
+      curry: { ph: "curry", nom: "Curry de lentilles" },
+      quinoa: { ph: "quinoa", nom: "Taboulé de quinoa" },
+      lentilles: { ph: "lentilles", nom: "Salade de lentilles" }
+    };
+    const ETAPES = [
+      { titre: "Le four chauffe", pour: [], texte: "Allume le four à 200 °C. Mets une grande casserole d'eau à chauffer, et une petite pour les œufs.", astuce: "Lis l'étape suivante pendant que ça chauffe : c'est la plus longue." },
+      { titre: "Le poulet part au four", pour: ["poulet"], court: "Poulet", texte: "Coupe les pommes de terre et les carottes en gros morceaux dans un plat. Pose le poulet dessus, un filet d'huile, sel, poivre. Au four, et on n'y touche plus.", min: 60, astuce: "Il cuit tout seul pendant que tu avances sur le reste." },
+      { titre: "Le gratin rejoint le poulet", pour: ["gratin"], court: "Gratin", texte: "Épluche la courge, coupe-la en dés. Dans le 2e plat : courge, pois chiches égouttés, crème, emmental. Au four à côté du poulet.", min: 40 },
+      { titre: "Le chili mijote", pour: ["chili"], court: "Chili", texte: "Fais revenir 2 oignons et l'ail 5 min. Ajoute les poivrons en dés, les haricots rouges égouttés, les tomates concassées, le cumin et le paprika. Couvre, feu doux.", min: 25 },
+      { titre: "Le curry de lentilles", pour: ["curry"], court: "Curry", box: ["curry"], texte: "Dans une autre casserole : 1 oignon, 2 cuillères de pâte de curry, les lentilles corail rincées, le lait de coco et 50 cl d'eau. Feu doux, remue de temps en temps.", min: 20 },
+      { titre: "Quinoa, lentilles et œufs", pour: ["quinoa", "lentilles"], court: "Quinoa et lentilles", texte: "Quinoa et lentilles vertes dans l'eau bouillante, 4 œufs dans la petite casserole. Sors les œufs et le quinoa au bout de 10 min, laisse les lentilles 10 min de plus.", min: 20, astuce: "Passe les œufs sous l'eau froide : ils s'écalent tout seuls." },
+      { titre: "Les Box du midi", pour: ["quinoa", "lentilles"], box: ["quinoa", "lentilles"], texte: "Taboulé : quinoa, concombre et tomates en dés, feta, menthe, jus de citron. Salade : lentilles, œufs en quartiers, un peu d'huile. La roquette reste à part.", astuce: "La roquette dans un petit sachet à côté : elle reste croquante jusqu'au mercredi." },
+      { titre: "On remplit et on range", pour: [], box: ["quinoa", "lentilles", "curry"], texte: "Laisse tiédir 15 min, puis remplis les Box et les plats. Au frigo : lundi et mercredi. Au congélateur : tout ce qui est pour vendredi. Tout doit être rangé dans les 2 h après la cuisson.", astuce: "Note le jour sur chaque Box au marqueur. Au frigo, rien ne dépasse 3 jours : c'est pour ça que vendredi passe par le congélateur." }
+    ];
+    const N = ETAPES.length;
+    const i = s.etape;
+    const e = ETAPES[Math.max(0, Math.min(i, N - 1))];
+    const mm = (t) => Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0");
+    const TAG = {
+      box: { tag: "Box", tagBg: "#2E6B4E", tagFg: "#FFFFFF" },
+      diner: { tag: "Dîner", tagBg: "#E3EEE7", tagFg: "#1F4D37" }
+    };
+    const PLATS = [
+      ["quinoa", "Midi de lundi · 2 Box", "box"],
+      ["lentilles", "Midi de mercredi · 2 Box", "box"],
+      ["curry", "Midi de vendredi · 2 Box", "box"],
+      ["poulet", "Dîner de lundi", "diner"],
+      ["chili", "Dîner de mercredi", "diner"],
+      ["gratin", "Dîner de vendredi", "diner"]
+    ];
+    const AVIS = [
+      ["C'était trop long", "Noté : tes prochains menus auront un Rituel plus court."],
+      ["C'était bien comme ça", "Parfait, on garde ce rythme."],
+      ["J'aurais pu en faire plus", "Noté : on te proposera plus de Box la prochaine fois."]
+    ];
+    // contenu d'une Box (une portion)
+    const BOX = {
+      quinoa: { titre: "Lundi midi · 2 Box", ou: "Frigo", contenu: ["150 g de taboulé de quinoa", "½ concombre et 1 tomate en dés", "40 g de feta émiettée", "Menthe et jus de citron, déjà mélangés"] },
+      lentilles: { titre: "Mercredi midi · 2 Box", ou: "Frigo", contenu: ["150 g de lentilles vertes", "2 œufs durs en quartiers", "1 filet d'huile d'olive", "Roquette dans un petit sachet à part"] },
+      curry: { titre: "Vendredi midi · 2 Box", ou: "Congélateur", contenu: ["Environ 350 g de curry de lentilles corail", "Laisse 1 cm de vide : ça gonfle en gelant", "À sortir jeudi soir, 3 min au micro-ondes"] }
+    };
+    const OU = { "Frigo": ["#E3EEE7", "#1F4D37"], "Congélateur": ["#F0EDE6", "#59605B"] };
+    // déroulé des cuissons, en minutes sur 1 h 30
+    const DEROULE = [
+      ["Four et eau", 0, 5, "5 min", "#C9C3B8"],
+      ["Poulet rôti", 5, 60, "1 h", "#2E6B4E"],
+      ["Gratin de courge", 12, 40, "40 min", "#2E6B4E"],
+      ["Chili sin carne", 20, 30, "30 min", "#2E6B4E"],
+      ["Curry de lentilles", 28, 20, "20 min", "#2E6B4E"],
+      ["Quinoa, lentilles, œufs", 36, 20, "20 min", "#2E6B4E"],
+      ["Box, puis on range", 65, 25, "25 min", "#E0A660"]
+    ];
+    const M = s.minuteurs || {};
+    const m = (e.min && M[i]) || { reste: e.min ? e.min * 60 : 0, enCours: false, fini: false };
+    let minLabel = "Minuteur", minBouton = "Lancer", minBg = "#FFFFFF", minFg = "#1B201D";
+    if (m.fini) { minLabel = "C'est cuit"; minBouton = "Relancer"; minBg = "#F3DFC4"; minFg = "#6E3F00"; }
+    else if (m.enCours) { minLabel = "En cours"; minBouton = "Pause"; minBg = "#1F4D37"; minFg = "#FFFFFF"; }
+    else if (e.min && m.reste < e.min * 60) { minLabel = "En pause"; minBouton = "Reprendre"; }
+    // récap : les minuteurs lancés sur les autres étapes
+    const recap = ETAPES.map((et, k) => ({ et, k, m: M[k] }))
+      .filter((x) => x.m && x.k !== i)
+      .map(({ et, k, m: x }) => {
+        const etat = x.fini ? "cuit" : x.enCours ? "en cours" : "en pause";
+        return {
+          nom: et.court,
+          temps: x.fini ? "Cuit" : mm(x.reste),
+          aria: et.court + " : " + etat + (x.fini ? "" : ", " + mm(x.reste)) + ". Aller à l'étape " + (k + 1),
+          bg: x.fini ? "#F3DFC4" : x.enCours ? "#1F4D37" : "#FFFFFF",
+          fg: x.fini ? "#6E3F00" : x.enCours ? "#FFFFFF" : "#1B201D",
+          bc: x.fini ? "#F3DFC4" : x.enCours ? "#1F4D37" : "#E2DED5",
+          ouvrir: () => this.setState({ etape: k })
+        };
+      });
+    return {
+      enIntro: i < 0,
+      enEtape: i >= 0 && i < N,
+      enFin: i >= N,
+      entete: i < 0 ? "Rituel" : i >= N ? "Rituel terminé" : "Étape " + (i + 1) + " sur " + N,
+      plats: PLATS.map(([k, pour, t], j) => Object.assign({ ph: k, nom: P[k].nom, pour, trait: j === PLATS.length - 1 ? "transparent" : "#EEEAE2" }, TAG[t])),
+      deroule: DEROULE.map(([nom, debut, duree, texte, couleur]) => ({
+        nom, duree: texte, couleur,
+        debut: ((debut / 90) * 100).toFixed(1) + "%",
+        largeur: ((duree / 90) * 100).toFixed(1) + "%"
+      })),
+      commencer: () => this.setState({ etape: 0 }),
+      aRecap: recap.length > 0,
+      recap,
+      aBox: !!(e.box && i >= 0 && i < N),
+      box: (e.box || []).map((k) => ({
+        ph: k, nom: P[k].nom, titre: BOX[k].titre, ou: BOX[k].ou,
+        ouBg: OU[BOX[k].ou][0], ouFg: OU[BOX[k].ou][1],
+        contenu: BOX[k].contenu.map((t) => ({ t }))
+      })),
+      total: String(N),
+      numero: String(i + 1),
+      progres: Math.round(((i + 1) / N) * 100) + "%",
+      repere: i < 2 ? "Environ 1 h 30 en tout" : i < 5 ? "Tout cuit en même temps : tu es au milieu" : "Dernière ligne droite",
+      etape: { titre: e.titre, texte: e.texte, astuce: e.astuce || "", pour: e.pour.map((k) => P[k]) },
+      aMinuteur: !!e.min,
+      aAstuce: !!e.astuce,
+      minTexte: m.fini ? "0:00" : mm(m.reste),
+      minLabel, minBouton, minBg, minFg,
+      basculerMinuteur: () => this.basculer(i, e.min),
+      precedent: () => this.setState({ etape: i <= 0 ? -1 : i - 1 }),
+      suivant: () => (i >= N - 1 ? (this.arreter(), this.setState({ etape: N })) : this.setState({ etape: i + 1 })),
+      suivantLabel: i >= N - 1 ? "J'ai fini" : "Étape suivante",
+      avis: AVIS.map(([label], k) => ({
+        label,
+        pressed: s.avis === k ? "true" : "false",
+        bc: s.avis === k ? "#2E6B4E" : "#E2DED5",
+        bg: s.avis === k ? "#E3EEE7" : "#FFFFFF",
+        choisir: () => this.setState({ avis: k })
+      })),
+      aAvis: s.avis >= 0,
+      reponseAvis: s.avis >= 0 ? AVIS[s.avis][1] : ""
+    };
+  }
+}
+</script>
+</body>
+</html>

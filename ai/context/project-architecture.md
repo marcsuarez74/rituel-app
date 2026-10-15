@@ -63,7 +63,7 @@ tests/e2e/                # Playwright mobile 320 / 375 (zéro débordement hori
 public/                   # Icônes PWA (générées via npm run icons)
 .github/workflows/ci.yml      # CI des PR : lint → types → tests → build → serveur → e2e preview → image Docker
 .github/workflows/publier.yml # main : tag + Release ; le VPS se déploie seul (deploy/deploy.sh)
-docs/superpowers/         # Specs + plans (refonte v2 : specs/2026-10-07-refonte-v2-design.md)
+docs/superpowers/         # Specs + plans en cours (app native : specs/2026-10-14-refonte-native-from-scratch.md) et de l'infra en service
 ai/                       # Contexte et configs pour agents IA
 ```
 

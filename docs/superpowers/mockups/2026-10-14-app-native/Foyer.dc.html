@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Foyer</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#2E6B4E}a:hover{color:#1F4D37}
+button{font-family:inherit;cursor:pointer}
+button:disabled{cursor:default}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid #2E6B4E;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #F5F3EE; color: #1B201D; font-family: Figtree, system-ui, sans-serif; overflow: hidden">
+
+  <sc-if value="{{ enCgu }}" hint-placeholder-val="{{ false }}">
+  <main style="flex: 1; overflow-y: auto; padding: 16px 20px 24px; display: flex; flex-direction: column; gap: 16px">
+    <button onClick="{{ fermerCgu }}" style="flex: none; align-self: flex-start; height: 44px; display: flex; align-items: center; gap: 4px; padding: 0 12px 0 4px; border: none; border-radius: 22px; background: transparent; color: #1F4D37; font-size: 16px; font-weight: 700">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+      Foyer
+    </button>
+    <div style="flex: none; display: flex; flex-direction: column; gap: 6px">
+      <h1 style="margin: 0; font-size: 28px; line-height: 1.2; font-weight: 800">{{ doc.titre }}</h1>
+      <sc-if value="{{ complet }}" hint-placeholder-val="{{ false }}">
+        <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #2E6B4E">Texte complet · version du 15 octobre</span>
+      </sc-if>
+      <p style="margin: 0; font-size: 15px; line-height: 1.45; color: #59605B">{{ doc.intro }}</p>
+    </div>
+    <sc-for list="{{ cgu }}" as="c" hint-placeholder-count="7">
+      <section aria-label="{{ c.titre }}" style="flex: none; display: flex; flex-direction: column; gap: 6px; padding: 16px; border-radius: 20px; background: #FFFFFF">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 800">{{ c.titre }}</h2>
+        <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #3D443F">{{ c.texte }}</p>
+      </section>
+    </sc-for>
+    <sc-if value="{{ peutComplet }}" hint-placeholder-val="{{ true }}">
+      <button onClick="{{ basculerComplet }}" aria-expanded="{{ complet }}" style="flex: none; height: 52px; border-radius: 26px; border: 2px solid #E2DED5; background: #FFFFFF; color: #1B201D; font-size: 16px; font-weight: 700">{{ completLabel }}</button>
+    </sc-if>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ pasCgu }}" hint-placeholder-val="{{ true }}">
+  <main style="flex: 1; overflow-y: auto; padding: 28px 20px 20px; display: flex; flex-direction: column; gap: 16px">
+    <div style="flex: none; display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800">Foyer</h1>
+      <p style="margin: 0; font-size: 16px; line-height: 1.45; color: #59605B">Tout le foyer partage les mêmes menus, la même liste de courses et le même budget.</p>
+    </div>
+
+    <section aria-label="Code du foyer" style="flex: none; display: flex; flex-direction: column; gap: 14px; padding: 20px; border-radius: 24px; background: #1F4D37; color: #FFFFFF">
+      <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #BFE0CC">Code du foyer</span>
+      <span style="font-size: 38px; font-weight: 800; letter-spacing: 0.18em; font-variant-numeric: tabular-nums" aria-label="{{ codeEpele }}">{{ code }}</span>
+      <span style="font-size: 15px; line-height: 1.45; color: #D6EADD">Pour inviter quelqu'un : donne-lui ce code, il le saisit dans l'app sur son téléphone.</span>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <button onClick="{{ copier }}" style="height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 24px; border: 2px solid #FFFFFF; background: {{ copierBg }}; color: {{ copierFg }}; font-size: 16px; font-weight: 700">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/></svg>
+          {{ copierLabel }}
+        </button>
+        <button style="height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 24px; border: 2px solid #FFFFFF; background: #FFFFFF; color: #1F4D37; font-size: 16px; font-weight: 700">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 10.8 7.6-4.4M8.2 13.2l7.6 4.4"/></svg>
+          Partager
+        </button>
+      </div>
+      <sc-if value="{{ codeChange }}" hint-placeholder-val="{{ false }}">
+        <span role="status" style="font-size: 14px; line-height: 1.45; color: #D6EADD">Nouveau code créé. L'ancien ne marche plus ; Mélanie reste dans le foyer.</span>
+      </sc-if>
+    </section>
+
+    <section aria-label="Membres" style="flex: none; display: flex; flex-direction: column; gap: 10px">
+      <h2 style="margin: 0; font-size: 18px; font-weight: 800">Membres</h2>
+      <div style="display: flex; flex-direction: column; background: #FFFFFF; border-radius: 20px; padding: 4px 16px">
+        <div style="display: flex; align-items: center; gap: 12px; min-height: 64px; border-bottom: 1px solid #EEEAE2">
+          <span style="flex: none; width: 40px; height: 40px; border-radius: 20px; background: #2E6B4E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 800" aria-hidden="true">M</span>
+          <span style="flex: 1; display: flex; flex-direction: column">
+            <span style="font-size: 16px; font-weight: 700">Marc <span style="font-weight: 500; color: #59605B">(toi)</span></span>
+            <span style="font-size: 13px; color: #59605B">Ce téléphone</span>
+          </span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; min-height: 64px">
+          <span style="flex: none; width: 40px; height: 40px; border-radius: 20px; background: #F3DFC4; color: #6E3F00; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 800" aria-hidden="true">M</span>
+          <span style="flex: 1; display: flex; flex-direction: column">
+            <span style="font-size: 16px; font-weight: 700">Mélanie</span>
+            <span style="font-size: 13px; color: #59605B">A rejoint le 2 octobre · active aujourd'hui</span>
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <section aria-label="Réglages du foyer" style="flex: none; display: flex; flex-direction: column; gap: 10px">
+      <h2 style="margin: 0; font-size: 18px; font-weight: 800">Réglages du foyer</h2>
+      <div style="display: flex; flex-direction: column; background: #FFFFFF; border-radius: 20px; padding: 4px 16px">
+        <a href="Main.dc.html" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; border-bottom: 1px solid #EEEAE2; color: #1B201D; text-decoration: none">
+          <span style="display: flex; flex-direction: column"><span style="font-size: 13px; color: #59605B">À table</span><span style="font-size: 16px; font-weight: 600">2 adultes</span></span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#59605B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+        </a>
+        <a href="Main.dc.html" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; border-bottom: 1px solid #EEEAE2; color: #1B201D; text-decoration: none">
+          <span style="display: flex; flex-direction: column"><span style="font-size: 13px; color: #59605B">Budget courses</span><span style="font-size: 16px; font-weight: 600">120 € par semaine</span></span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#59605B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+        </a>
+        <a href="Resultat.dc.html" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; color: #1B201D; text-decoration: none">
+          <span style="display: flex; flex-direction: column"><span style="font-size: 13px; color: #59605B">Rituel</span><span style="font-size: 16px; font-weight: 600">Le dimanche · 1 h 30 · 3 midis en Box</span></span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#59605B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+        </a>
+      </div>
+      <span style="font-size: 14px; line-height: 1.45; color: #59605B">Un changement s'applique à tes prochains menus, pas à ceux en cours.</span>
+    </section>
+
+    <section aria-label="Rappels" style="flex: none; display: flex; flex-direction: column; gap: 10px">
+      <h2 style="margin: 0; font-size: 18px; font-weight: 800">Rappels</h2>
+      <div style="display: flex; flex-direction: column; background: #FFFFFF; border-radius: 20px; padding: 4px 16px">
+        <sc-for list="{{ rappels }}" as="rp" hint-placeholder-count="3">
+          <button role="switch" aria-checked="{{ rp.on }}" onClick="{{ rp.basculer }}" style="display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 10px 0; border: none; border-bottom: 1px solid {{ rp.trait }}; background: transparent; color: #1B201D; text-align: left">
+            <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 16px; font-weight: 600">{{ rp.titre }}</span>
+              <span style="font-size: 14px; line-height: 1.4; color: #59605B">{{ rp.detail }}</span>
+            </span>
+            <span aria-hidden="true" style="flex: none; width: 48px; height: 28px; box-sizing: border-box; padding: 3px; border-radius: 14px; background: {{ rp.fond }}; display: flex; justify-content: {{ rp.cote }}">
+              <span style="width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF"></span>
+            </span>
+          </button>
+        </sc-for>
+      </div>
+      <sc-if value="{{ aConfirmer }}" hint-placeholder-val="{{ false }}">
+        <div role="alertdialog" aria-label="{{ conf.titre }}" style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 20px; background: #FBEEDC; color: #6E3F00">
+          <span style="font-size: 17px; font-weight: 800">{{ conf.titre }}</span>
+          <span style="font-size: 15px; line-height: 1.45">{{ conf.texte }}</span>
+          <span style="font-size: 14px; line-height: 1.45; font-weight: 600">Rituel ne pourra plus te prévenir : tu en prends la responsabilité.</span>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+            <button onClick="{{ garderRappel }}" style="height: 48px; border-radius: 24px; border: none; background: #2E6B4E; color: #FFFFFF; font-size: 15px; font-weight: 700">Garder le rappel</button>
+            <button onClick="{{ desactiverRappel }}" style="height: 48px; border-radius: 24px; border: 2px solid #E0C9A6; background: #FFFFFF; color: #6E3F00; font-size: 15px; font-weight: 700">Désactiver</button>
+          </div>
+        </div>
+      </sc-if>
+      <sc-for list="{{ desactives }}" as="dz" hint-placeholder-count="0">
+        <span style="padding: 12px 14px; border-radius: 16px; background: #FBEEDC; color: #6E3F00; font-size: 14px; line-height: 1.45; font-weight: 600">{{ dz.texte }}</span>
+      </sc-for>
+      <span style="font-size: 14px; line-height: 1.45; color: #59605B">Sur ce téléphone seulement. Chaque membre du foyer choisit les siens.</span>
+    </section>
+
+    <section aria-label="À propos" style="flex: none; display: flex; flex-direction: column; gap: 10px">
+      <h2 style="margin: 0; font-size: 18px; font-weight: 800">À propos</h2>
+      <div style="display: flex; flex-direction: column; background: #FFFFFF; border-radius: 20px; padding: 4px 16px">
+        <button onClick="{{ ouvrirCgu }}" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 0; border: none; border-bottom: 1px solid #EEEAE2; background: transparent; color: #1B201D; text-align: left">
+          <span style="display: flex; flex-direction: column"><span style="font-size: 16px; font-weight: 600">Conditions d'utilisation</span><span style="font-size: 13px; color: #59605B">Conservation, rappels, régimes, budget, responsabilité</span></span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#59605B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+        </button>
+        <button onClick="{{ ouvrirConfid }}" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 0; border: none; background: transparent; color: #1B201D; text-align: left">
+          <span style="display: flex; flex-direction: column"><span style="font-size: 16px; font-weight: 600">Confidentialité</span><span style="font-size: 13px; color: #59605B">Ce qui est enregistré, et où</span></span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#59605B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+        </button>
+      </div>
+    </section>
+
+    <section aria-label="Gérer le foyer" style="flex: none; display: flex; flex-direction: column; gap: 10px">
+      <h2 style="margin: 0; font-size: 18px; font-weight: 800">Gérer le foyer</h2>
+
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 20px; background: #FFFFFF">
+        <span style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 16px; font-weight: 700">Changer le code</span>
+          <span style="font-size: 14px; line-height: 1.45; color: #59605B">Si le code a circulé trop loin. Les membres actuels restent dans le foyer.</span>
+        </span>
+        <sc-if value="{{ pasConfirmation }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ demanderReset }}" style="height: 48px; border-radius: 24px; border: 2px solid #E2DED5; background: #FFFFFF; color: #1B201D; font-size: 16px; font-weight: 700">Changer le code</button>
+        </sc-if>
+        <sc-if value="{{ confirmation }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 16px; background: #FBEEDC; color: #6E3F00">
+            <span style="font-size: 15px; line-height: 1.45; font-weight: 600">L'ancien code {{ code }} ne marchera plus. Sûr ?</span>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+              <button onClick="{{ annulerReset }}" style="height: 44px; border-radius: 22px; border: 2px solid #E0C9A6; background: #FFFFFF; color: #6E3F00; font-size: 15px; font-weight: 700">Annuler</button>
+              <button onClick="{{ confirmerReset }}" style="height: 44px; border-radius: 22px; border: none; background: #6E3F00; color: #FFFFFF; font-size: 15px; font-weight: 700">Changer</button>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 20px; background: #FFFFFF">
+        <span style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 16px; font-weight: 700">Rejoindre un autre foyer</span>
+          <span style="font-size: 14px; line-height: 1.45; color: #59605B">Tu quittes ce foyer : tes menus et ta liste seront remplacés par ceux du foyer rejoint.</span>
+        </span>
+        <label style="display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 14px; font-weight: 700">Code à 6 caractères</span>
+          <input type="text" inputmode="text" autocapitalize="characters" autocomplete="off" maxlength="6" placeholder="Ex. B4TR9W" value="{{ saisie }}" onInput="{{ saisir }}" style="height: 52px; box-sizing: border-box; padding: 0 14px; border-radius: 14px; border: 2px solid #E2DED5; background: #FAF8F4; font-family: inherit; font-size: 20px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #1B201D">
+        </label>
+        <button onClick="{{ rejoindre }}" aria-disabled="{{ rejoindreOff }}" style="height: 48px; border-radius: 24px; border: none; background: {{ rejoindreBg }}; color: {{ rejoindreFg }}; font-size: 16px; font-weight: 700">{{ rejoindreLabel }}</button>
+        <sc-if value="{{ envoye }}" hint-placeholder-val="{{ false }}">
+          <span role="status" style="font-size: 14px; line-height: 1.45; color: #1F4D37">Foyer {{ saisie }} trouvé. Dans l'app, une dernière confirmation s'affiche ici avant de changer de foyer.</span>
+        </sc-if>
+      </div>
+    </section>
+  </main>
+  </sc-if>
+
+  <nav aria-label="Navigation principale" style="flex: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 8px 8px 14px; background: #FFFFFF; border-top: 1px solid #E2DED5">
+    <a href="Accueil.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; text-decoration: none; color: #59605B; font-size: 12px; font-weight: 600">
+      <span style="width: 60px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span>Accueil</a>
+    <a href="Menus.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; text-decoration: none; color: #59605B; font-size: 12px; font-weight: 600">
+      <span style="width: 60px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg></span>Menus</a>
+    <a href="Courses.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; text-decoration: none; color: #59605B; font-size: 12px; font-weight: 600">
+      <span style="width: 60px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h18l-1.5 10.5a1.5 1.5 0 0 1-1.5 1.5H6a1.5 1.5 0 0 1-1.5-1.5z"/><path d="m8 9 4-6 4 6"/></svg></span>Courses</a>
+    <a href="Foyer.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; text-decoration: none; color: #1F4D37; font-size: 12px; font-weight: 700">
+      <span style="width: 60px; height: 32px; border-radius: 16px; background: #E3EEE7; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14.5c1.9.8 3 2.7 3 5.5"/></svg></span>Foyer</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { code: "K7M2QX", copie: false, confirmation: false, change: false, saisie: "", envoye: false, rappels: { ranger: true, congel: true, dernier: true }, confirmer: null, cgu: null, complet: false };
+  }
+  renderVals() {
+    const s = this.state;
+    const ALPHA = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+    const nouveauCode = () => Array.from({ length: 6 }, () => ALPHA[Math.floor(Math.random() * ALPHA.length)]).join("");
+    const pret = s.saisie.length === 6;
+    const RAPPELS = [
+      ["ranger", "Ranger après le Rituel", "Tout au frigo ou au congélateur, au plus tard 2 h après la cuisson."],
+      ["congel", "Sortir du congélateur", "La veille au soir à 19 h, pour les plats de vendredi."],
+      ["dernier", "Dernier jour d'un plat", "Le matin, quand un plat du frigo doit être mangé le jour même."]
+    ];
+    const CONFIRM = {
+      ranger: { titre: "Tu ranges sans rappel ?", texte: "Après le Rituel, tout doit être au frigo ou au congélateur dans les 2 h après la cuisson. Sans ce rappel, c'est à toi d'y penser." },
+      congel: { titre: "Tu sors les plats sans rappel ?", texte: "Les plats de vendredi sont au congélateur : il faut les mettre au frigo jeudi soir. Sans ce rappel, c'est à toi d'y penser." },
+      dernier: { titre: "Tu surveilles les dates sans rappel ?", texte: "Un plat du frigo se mange au plus tard 3 jours après le Rituel. Sans ce rappel, c'est à toi de vérifier." }
+    };
+    const CGU = [
+      ["Ce qu'est Rituel", "Un outil pour organiser tes repas, tes courses et ton Rituel. Ce n'est ni un avis médical, ni un avis de diététicien."],
+      ["Conservation des plats", "Les menus suivent la règle de la restauration collective : au frigo, 3 jours au plus après le Rituel (arrêté du 21 décembre 2009). Au-delà, le plat passe par le congélateur. Rituel organise ; la chaîne du froid reste entre tes mains : frigo à 4 °C au plus, rangement dans les 2 h, et au moindre doute (odeur, aspect), on jette."],
+      ["Rappels", "Ils sont activés par défaut. Si tu en désactives un, tu prends le relais : Rituel ne peut plus te prévenir."],
+      ["Régimes et allergies", "Les régimes proposés (végétarien, sans gluten, keto…) adaptent les recettes, sans suivi médical. En cas d'allergie ou de maladie, vérifie toujours les étiquettes et demande l'avis d'un professionnel de santé."],
+      ["Budget", "Les montants sont des estimations à partir de prix moyens : le vrai prix dépend de ton magasin. C'est le ticket que tu saisis qui compte."],
+      ["Tes données", "Les réponses du guide, les menus, la liste et le budget sont partagés avec les membres de ton foyer, grâce au code. Rien n'est vendu, rien ne sert à de la publicité."],
+      ["Responsabilité", "Rituel répond de ce qu'il fait : des menus et des rappels conformes à ces règles. Il ne peut pas répondre de ce qui se passe dans ta cuisine ou ton frigo."]
+    ];
+    const CGU_COMPLET = [
+      ["1. Objet", "Rituel aide un foyer à organiser ses repas : un guide de routine, des menus sur 4 semaines, une session de cuisine en lot (le Rituel), une liste de courses avec budget et des rappels. Utiliser l'app vaut acceptation de ces conditions, présentées à la création ou à l'arrivée dans un foyer."],
+      ["2. Ce que Rituel n'est pas", "Rituel n'est ni un service médical, ni un service de diététique. Les menus, les quantités et les régimes proposés sont des suggestions d'organisation, pas des prescriptions."],
+      ["3. Conservation des plats", "Les menus sont construits pour qu'aucun plat du Rituel gardé au frigo ne soit mangé plus de 3 jours après sa préparation, 2 jours pour le riz, les pâtes, le poisson et les crudités. Cette règle s'inspire de la restauration collective (arrêté du 21 décembre 2009, annexe IV). Au-delà, le plat est prévu au congélateur dès le Rituel, puis décongelé au frigo la veille. Ces règles supposent une chaîne du froid que toi seul maîtrises : frigo à 4 °C au plus, plats rangés dans les 2 h après la cuisson, un seul réchauffage, pas de recongélation. Au moindre doute (odeur, aspect, frigo en panne, plat oublié dehors), le plat se jette, quelle que soit la date affichée."],
+      ["4. Rappels", "Trois rappels sont activés par défaut : ranger après le Rituel, sortir du congélateur la veille, dernier jour d'un plat. Ils passent par les notifications du téléphone : Rituel ne peut pas garantir leur réception (notifications refusées, téléphone éteint, économie d'énergie). Désactiver un rappel demande une confirmation qui rappelle la règle ; elle est enregistrée avec sa date, et tu t'engages alors à appliquer la règle toi-même. Chaque rappel se réactive à tout moment, et chaque membre du foyer règle les siens."],
+      ["5. Régimes, allergies, santé", "Les régimes proposés (végétarien, sans gluten, sans lactose, keto…) adaptent les recettes sans suivi médical. Rituel ne garantit pas l'absence d'un allergène : tout dépend des produits achetés. En cas d'allergie, d'intolérance, de grossesse ou de maladie, vérifie les étiquettes et demande l'avis d'un professionnel de santé. Certains régimes, comme le keto, sont déconseillés à certaines personnes sans avis médical."],
+      ["6. Budget et prix", "Les montants affichés avant les courses sont des estimations en fourchette, à partir de prix moyens. Le prix réel dépend du magasin. Seul le ticket que tu saisis compte dans le budget. Rituel ne bloque jamais une dépense."],
+      ["7. Foyer et données", "Le foyer est identifié par un code de 6 caractères : toute personne qui l'a peut rejoindre le foyer et voir ses menus, sa liste et son budget. Partage-le avec soin ; tu peux le réinitialiser. Le détail des données est dans la page Confidentialité."],
+      ["8. Responsabilité", "Rituel s'engage à ce que les menus et les rappels respectent les articles 3 et 4. Il ne peut pas répondre de ce qui lui échappe : température du frigo, délais de rangement, état des produits achetés, rappels désactivés ou bloqués par le téléphone, choix alimentaires faits sans avis médical. Rien dans ces conditions ne limite les droits que la loi t'accorde."],
+      ["9. Modification", "Ces conditions peuvent évoluer. Toute modification importante est signalée dans l'app et doit être acceptée à nouveau."]
+    ];
+    const CONFID = [
+      ["Ce qui est enregistré", "Les réponses du guide, les menus, la liste de courses, le budget et les tickets saisis. Rien d'autre : ni nom, ni e-mail, ni position."],
+      ["Où", "Sur ton téléphone, et sur le serveur de Rituel pour que tout le foyer voie la même chose. Les réglages des rappels restent sur ton téléphone."],
+      ["Qui le voit", "Les membres de ton foyer, c'est-à-dire ceux qui ont le code. Partage-le avec soin ; tu peux le changer à tout moment."],
+      ["Ce qui n'est jamais fait", "Aucune donnée vendue, aucune publicité, aucun suivi pour des tiers."],
+      ["Tes droits", "Tu peux demander une copie de tes données ou leur suppression. Quitter le foyer efface ses données de ton téléphone."]
+    ];
+    return {
+      rappels: RAPPELS.map(([k, titre, detail], i) => {
+        const on = s.rappels[k];
+        return {
+          titre, detail,
+          on: on ? "true" : "false",
+          fond: on ? "#2E6B4E" : "#D3CEC4",
+          cote: on ? "flex-end" : "flex-start",
+          trait: i === RAPPELS.length - 1 ? "transparent" : "#EEEAE2",
+          // désactiver passe par une confirmation ; réactiver est immédiat
+          basculer: () => on
+            ? this.setState({ confirmer: k })
+            : this.setState({ rappels: Object.assign({}, s.rappels, { [k]: true }), confirmer: s.confirmer === k ? null : s.confirmer })
+        };
+      }),
+      aConfirmer: !!s.confirmer,
+      conf: s.confirmer ? CONFIRM[s.confirmer] : { titre: "", texte: "" },
+      garderRappel: () => this.setState({ confirmer: null }),
+      desactiverRappel: () => { if (s.confirmer) this.setState({ rappels: Object.assign({}, s.rappels, { [s.confirmer]: false }), confirmer: null }); },
+      desactives: RAPPELS.filter(([k]) => !s.rappels[k]).map(([k, titre]) => ({ texte: "« " + titre + " » désactivé le 15 octobre : tu t'en occupes toi-même. Tu peux le réactiver à tout moment." })),
+      enCgu: !!s.cgu,
+      pasCgu: !s.cgu,
+      ouvrirCgu: () => this.setState({ cgu: "cgu", complet: false }),
+      ouvrirConfid: () => this.setState({ cgu: "confid", complet: false }),
+      fermerCgu: () => this.setState({ cgu: null, complet: false }),
+      // le texte complet n'existe que pour les CGU ; la politique de confidentialité reste à rédiger
+      peutComplet: s.cgu === "cgu",
+      complet: s.complet,
+      completLabel: s.complet ? "Revenir à l'essentiel" : "Lire le texte complet",
+      basculerComplet: () => this.setState({ complet: !s.complet }),
+      doc: s.cgu === "confid"
+        ? { titre: "Confidentialité", intro: "Ce que Rituel enregistre, où, et ce que tu peux en faire." }
+        : { titre: "Conditions d'utilisation", intro: "L'essentiel en clair. Acceptées le 12 octobre, à la création du foyer." },
+      cgu: (s.cgu === "confid" ? CONFID : s.complet ? CGU_COMPLET : CGU).map(([titre, texte]) => ({ titre, texte })),
+      code: s.code,
+      codeEpele: "Code du foyer : " + s.code.split("").join(" "),
+      copierLabel: s.copie ? "Copié" : "Copier",
+      copierBg: s.copie ? "#FFFFFF" : "transparent",
+      copierFg: s.copie ? "#1F4D37" : "#FFFFFF",
+      copier: () => this.setState({ copie: true }),
+      codeChange: s.change,
+      pasConfirmation: !s.confirmation,
+      confirmation: s.confirmation,
+      demanderReset: () => this.setState({ confirmation: true }),
+      annulerReset: () => this.setState({ confirmation: false }),
+      confirmerReset: () => this.setState({ code: nouveauCode(), confirmation: false, change: true, copie: false }),
+      saisie: s.saisie,
+      saisir: (e) => this.setState({ saisie: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6), envoye: false }),
+      rejoindreOff: pret ? "false" : "true",
+      rejoindreBg: pret ? "#2E6B4E" : "#E2DED5",
+      rejoindreFg: pret ? "#FFFFFF" : "#8A8F8B",
+      rejoindreLabel: "Rejoindre ce foyer",
+      envoye: s.envoye,
+      rejoindre: () => { if (pret) this.setState({ envoye: true }); }
+    };
+  }
+}
+</script>
+</body>
+</html>
