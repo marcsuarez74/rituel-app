@@ -209,5 +209,5 @@ recette dans la bibliothèque. Image générée par IA et illustrations par fami
   vérifiée par un modèle de vision contre la recette (pas de viande ni de poisson pour un plat
   végétarien, ingrédient principal reconnaissable) ; la première conforme est gardée ; aucune
   conforme → image neutre de la famille du plat, jamais une photo trompeuse.
-- **Dans l'app** : « Signaler la photo », sous l'image, renvoie la recette en
-  vérification.
+- **Dans l'app** : rien sous l'image (ni crédit, ni bouton de signalement : décidé le 2026-10-16) ;
+  la vérification par le modèle de vision est le seul garde-fou.
