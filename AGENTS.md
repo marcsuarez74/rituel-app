@@ -63,7 +63,7 @@ CHANGELOG.md      # historique des versions, généré par release-please (ne pa
 release-please-config.json · .release-please-manifest.json  # config release-please (sections du CHANGELOG en français)
 Dockerfile, docker-compose.yml # image unique PWA + API (prod), deploy/ = scripts VPS (déploiement auto, backup, installation)
 docs/ameliorations.md # axes d'amélioration futurs (mémoire d'idées, pas une spec)
-docs/superpowers/ # specs + plans (refonte v2 : specs/2026-10-07-refonte-v2-design.md)
+docs/superpowers/ # specs + plans en cours (app native : specs/2026-10-14-refonte-native-from-scratch.md) et de l'infra en service
 ai/               # configs d'agents IA (cf. section « Dossier ai/ »)
 ```
 
@@ -74,7 +74,7 @@ Règle de répartition : la logique va dans `src/lib/` (testable sans React), le
 - TypeScript strict. Fonctions nommées, exports nommés (pas de default export).
 - React 18 : composants fonctionnels, hooks uniquement. Pas de lib d'état ni de contexte — `useState` + props suffisent.
 - Si un composant doit re-synchroniser son état quand une prop change (semaine, profil, version de sync), utiliser le pattern **render-phase reset** déjà en place (`useCoches`, `useReports`, `Pesees.tsx`) — ne pas inventer un autre pattern.
-- CSS : un seul fichier `src/index.css`, classes **sémantiques** (`.menu-card`, `.checklist`, `.done`…), variables du design system sur `:root` (tokens « Marché coloré » : `--accent` basilic #2d6a37 — texte blanc dessus, `--accent-2` jaune fruit #f2c230 — jamais une couleur de texte, fond `--papier` #fbf1dc, texte `--encre` #2a2219, typo **Poppins + Bricolage Grotesque** auto-hébergées ; valeurs = annexe A de la spec 2026-10-12, garde-fou `tests/contraste.test.ts`). **Thème clair unique** — pas de dark mode, pas de `prefers-color-scheme`, pas de framework CSS. Icônes SVG via `src/components/Icon.tsx` (pas d'émoji dans l'UI, sauf onboarding/salutations). Typo, espacement (échelle 2 px) et interlignage sont tokenisés (`--fs-*`, `--sp-*`, `--lh-*`) — garde-fou : `tests/css-tokens.test.ts`.
+- CSS : un seul fichier `src/index.css`, classes **sémantiques** (`.menu-card`, `.checklist`, `.done`…), variables du design system sur `:root` (tokens « Marché coloré » : `--accent` basilic #2d6a37 — texte blanc dessus, `--accent-2` jaune fruit #f2c230 — jamais une couleur de texte, fond `--papier` #fbf1dc, texte `--encre` #2a2219, typo **Poppins + Bricolage Grotesque** auto-hébergées ; valeurs = celles de `src/index.css`, garde-fou `tests/contraste.test.ts`). **Thème clair unique** — pas de dark mode, pas de `prefers-color-scheme`, pas de framework CSS. Icônes SVG via `src/components/Icon.tsx` (pas d'émoji dans l'UI, sauf onboarding/salutations). Typo, espacement (échelle 2 px) et interlignage sont tokenisés (`--fs-*`, `--sp-*`, `--lh-*`) — garde-fou : `tests/css-tokens.test.ts`.
 - Cibles tactiles ≥ 48 px, contraste ≥ 4.5:1, transitions sur les éléments interactifs seulement. « Ultra visible » est une exigence produit, pas une préférence.
 - Textes utilisateur en **français**, accents compris.
 - YAGNI : pas de nouvelle dépendance sans discussion, pas d'abstraction avant le 2e cas d'usage réel.

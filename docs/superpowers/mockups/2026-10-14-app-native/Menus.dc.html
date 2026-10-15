@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Menus</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#2E6B4E}a:hover{color:#1F4D37}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid #2E6B4E;outline-offset:2px}
+.th{background-color:#D8CDBB;background-size:cover;background-position:center;background-repeat:no-repeat}
+.th-quinoa{background-image:url(/_blob/90e2e4dd98db337c7a6195f3f8d1f7ef)}
+.th-curry{background-image:url(/_blob/ecf78911b4aefd9c01eb28b40d620a17)}
+.th-gratin{background-image:url(/_blob/4422b0e576c70f5ab47b99aa07ea5481)}
+.th-lentilles{background-image:url(/_blob/6af1422c00c748952338871477145d8e)}
+.th-chili{background-image:url(/_blob/af38fe1821e9a8b0a7f8410caa0b338e)}
+.th-omelette{background-image:url(/_blob/3672a5ec1405c58025f97e28417e1f98)}
+.th-wrap{background-image:url(/_blob/73c555fd678538c1ca14edded3d271fc)}
+.th-poulet{background-image:url(/_blob/8d5a59b8888bd983b0b0815e11a7cc1f)}
+.th-pesto{background-image:url(/_blob/9e8157ad07139d6a1b9556edd00bee65)}
+.th-minestrone{background-image:url(/_blob/a6b2a67242ec77e84e993ed8f453e344)}
+.th-rituel{background-image:url(/_blob/e094661e54bb31f25754b03fbe28ecf6)}
+.th-libre{background-image:none;background-color:#EDEAE3}
+.th-dehors{background-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'><defs><filter id='w' x='-20%' y='-20%' width='140%' height='140%'><feTurbulence type='fractalNoise' baseFrequency='0.05' numOctaves='3' seed='7'/><feDisplacementMap in='SourceGraphic' scale='4'/><feGaussianBlur stdDeviation='0.45'/></filter><filter id='p' x='-10%' y='-10%' width='120%' height='120%'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='1' seed='2'/><feDisplacementMap in='SourceGraphic' scale='1.2'/></filter></defs><g filter='url(%23w)'><ellipse cx='80' cy='91' rx='76' ry='6' fill='%23E8DCC4' opacity='.7'/><rect x='34' y='26' width='92' height='64' fill='%23F3E3CC' opacity='.95'/><rect x='30' y='22' width='100' height='6' fill='%23C9A27E' opacity='.55'/><rect x='56' y='8' width='48' height='12' rx='2' fill='%232E6B4E' opacity='.7'/><rect x='34' y='30' width='92' height='10' fill='%23FFFFFF' opacity='.95'/><rect x='34' y='30' width='8' height='10' fill='%23E5866A' opacity='.65'/><circle cx='38' cy='40' r='4' fill='%23E5866A' opacity='.65'/><circle cx='46' cy='40' r='4' fill='%23FFFFFF' opacity='.95'/><rect x='50' y='30' width='8' height='10' fill='%23E5866A' opacity='.65'/><circle cx='54' cy='40' r='4' fill='%23E5866A' opacity='.65'/><circle cx='62' cy='40' r='4' fill='%23FFFFFF' opacity='.95'/><rect x='66' y='30' width='8' height='10' fill='%23E5866A' opacity='.65'/><circle cx='70' cy='40' r='4' fill='%23E5866A' opacity='.65'/><circle cx='78' cy='40' r='4' fill='%23FFFFFF' opacity='.95'/><rect x='82' y='30' width='8' height='10' fill='%23E5866A' opacity='.65'/><circle cx='86' cy='40' r='4' fill='%23E5866A' opacity='.65'/><circle cx='94' cy='40' r='4' fill='%23FFFFFF' opacity='.95'/><rect x='98' y='30' width='8' height='10' fill='%23E5866A' opacity='.65'/><circle cx='102' cy='40' r='4' fill='%23E5866A' opacity='.65'/><circle cx='110' cy='40' r='4' fill='%23FFFFFF' opacity='.95'/><rect x='114' y='30' width='8' height='10' fill='%23E5866A' opacity='.65'/><circle cx='118' cy='40' r='4' fill='%23E5866A' opacity='.65'/><circle cx='126' cy='40' r='4' fill='%23FFFFFF' opacity='.95'/><rect x='40' y='50' width='34' height='24' rx='2' fill='%23F6D58E' opacity='.6'/><rect x='106' y='50' width='16' height='24' rx='2' fill='%23F6D58E' opacity='.55'/><ellipse cx='57' cy='68' rx='9' ry='2' fill='%23C98F4E' opacity='.45'/><circle cx='57' cy='56' r='3' fill='%23E5866A' opacity='.5'/><rect x='84' y='50' width='16' height='40' rx='1' fill='%235E9A73' opacity='.6'/><rect x='87' y='54' width='10' height='13' rx='1' fill='%23F6D58E' opacity='.55'/><rect x='40' y='75' width='34' height='5' fill='%23C98F4E' opacity='.55'/><circle cx='43' cy='74' r='3.4' fill='%237FB28E' opacity='.65'/><circle cx='49' cy='74' r='3.4' fill='%237FB28E' opacity='.65'/><circle cx='55' cy='74' r='3.4' fill='%237FB28E' opacity='.65'/><circle cx='61' cy='74' r='3.4' fill='%237FB28E' opacity='.65'/><circle cx='67' cy='74' r='3.4' fill='%237FB28E' opacity='.65'/><circle cx='71' cy='74' r='3.4' fill='%237FB28E' opacity='.65'/><circle cx='47' cy='72' r='1.6' fill='%23E5866A' opacity='.8'/><circle cx='59' cy='72' r='1.6' fill='%23E5866A' opacity='.8'/><circle cx='69' cy='72' r='1.6' fill='%23E5866A' opacity='.8'/><path d='M2 56 Q16 44 30 56 Z' fill='%23E5866A' opacity='.55'/><ellipse cx='16' cy='76' rx='10' ry='2.6' fill='%23FFFFFF' opacity='.95'/><circle cx='13' cy='74' r='1.8' fill='%23BFDCE3' opacity='.8'/><circle cx='19' cy='74.5' r='1.6' fill='%23E5866A' opacity='.6'/><rect x='136' y='64' width='16' height='18' rx='1' fill='%234A524D' opacity='.6'/><circle cx='131' cy='83' r='6' fill='%237FB28E' opacity='.5'/><circle cx='156' cy='82' r='6' fill='%23A9CC8A' opacity='.55'/></g><g filter='url(%23p)' fill='none' stroke='%2355705E' stroke-width='1' stroke-linecap='round' stroke-linejoin='round' opacity='.8'><path d='M34 26v64h92V26M30 22h100v6H30z'/><path d='M34 30h92'/><path d='M34 40a4 4 0 0 0 8 0M42 40a4 4 0 0 0 8 0M50 40a4 4 0 0 0 8 0M58 40a4 4 0 0 0 8 0M66 40a4 4 0 0 0 8 0M74 40a4 4 0 0 0 8 0M82 40a4 4 0 0 0 8 0M90 40a4 4 0 0 0 8 0M98 40a4 4 0 0 0 8 0M106 40a4 4 0 0 0 8 0M114 40a4 4 0 0 0 8 0M122 40a4 4 0 0 0 8 0'/><rect x='56' y='8' width='48' height='12' rx='2'/><rect x='40' y='50' width='34' height='24' rx='2'/><path d='M57 50v24M40 62h34'/><rect x='106' y='50' width='16' height='24' rx='2'/><path d='M114 50v24M106 62h16'/><rect x='84' y='50' width='16' height='40' rx='1'/><path d='M97 72v3'/><path d='M16 50v28M10 86l3-10M22 86l-3-10'/><path d='M4 86v-9h5v9M28 86v-9h-5v9M4 80h5M23 80h5'/><path d='M136 64h16v18h-16zM138 90l2-8M150 90l-2-8'/><path d='M139 69h10M139 73h8M139 77h9' stroke='%23FFFFFF' opacity='.8'/><path d='M2 90h156'/></g><text x='80' y='17' text-anchor='middle' font-family='Georgia,serif' font-style='italic' font-size='8.5' fill='%23FFFFFF'>Bistrot</text><g fill='%23F6C64E' opacity='.9'><circle cx='38' cy='45' r='1.3'/><circle cx='50' cy='46.6' r='1.3'/><circle cx='62' cy='47.3' r='1.3'/><circle cx='74' cy='47.3' r='1.3'/><circle cx='86' cy='46.8' r='1.3'/><circle cx='98' cy='47.3' r='1.3'/><circle cx='110' cy='47.3' r='1.3'/><circle cx='122' cy='46.4' r='1.3'/></g><path d='M34 44Q80 52 126 44' fill='none' stroke='%2355705E' stroke-width='.6' opacity='.6'/></svg>");background-color:#EDEAE3;background-size:auto 92%}
+.th-choix{background-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'><defs><filter id='w' x='-20%' y='-20%' width='140%' height='140%'><feTurbulence type='fractalNoise' baseFrequency='0.05' numOctaves='3' seed='4'/><feDisplacementMap in='SourceGraphic' scale='4'/><feGaussianBlur stdDeviation='0.45'/></filter><filter id='p' x='-10%' y='-10%' width='120%' height='120%'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='1' seed='2'/><feDisplacementMap in='SourceGraphic' scale='1.2'/></filter></defs><g filter='url(%23w)'><path d='M8 52 Q80 40 152 52 L156 92 Q80 98 4 92 Z' fill='%23F7F1E6' opacity='.95'/><path d='M12 50 L8 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M24 50 L20 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M36 50 L32 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M48 50 L44 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M60 50 L56 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M72 50 L68 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M84 50 L80 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M96 50 L92 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M108 50 L104 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M120 50 L116 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M132 50 L128 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M144 50 L140 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M6 58 Q80 52 154 58' stroke='%23E5866A' stroke-width='5' fill='none' opacity='.18'/><path d='M6 70 Q80 64 154 70' stroke='%23E5866A' stroke-width='5' fill='none' opacity='.18'/><path d='M6 82 Q80 76 154 82' stroke='%23E5866A' stroke-width='5' fill='none' opacity='.18'/><ellipse cx='72' cy='70' rx='30' ry='16' fill='%23FFFFFF'/><ellipse cx='72' cy='70' rx='30' ry='16' fill='none' stroke='%23B9CFC0' stroke-width='3' opacity='.7'/><ellipse cx='66' cy='67' rx='12' ry='7' fill='%237FB28E' opacity='.65'/><ellipse cx='77' cy='65' rx='9' ry='6' fill='%235E9A73' opacity='.55'/><ellipse cx='80' cy='72' rx='9' ry='5' fill='%23A9CC8A' opacity='.65'/><circle cx='68' cy='72' r='3.4' fill='%23E5866A' opacity='.75'/><circle cx='84' cy='66' r='3.4' fill='%23E5866A' opacity='.75'/><circle cx='62' cy='64' r='3.4' fill='%23E5866A' opacity='.75'/><ellipse cx='60' cy='70' rx='3.5' ry='2.6' fill='%23F2E3A6' opacity='.95'/><ellipse cx='74' cy='74' rx='3.5' ry='2.6' fill='%23F2E3A6' opacity='.95'/><ellipse cx='72' cy='62' rx='4' ry='2.4' fill='%23FFFFFF' opacity='.9'/><circle cx='72' cy='62' r='1.5' fill='%23F6C64E'/><path d='M24 60 l14 -2 l4 26 l-14 2z' fill='%23BFDCE3' opacity='.6'/><ellipse cx='122' cy='76' rx='17' ry='8' fill='%23C98F4E' opacity='.5'/><ellipse cx='117' cy='70' rx='9' ry='4.5' fill='%23E2B57A' opacity='.85' transform='rotate(-15 117 70)'/><ellipse cx='128' cy='70' rx='8' ry='4' fill='%23D9A562' opacity='.8' transform='rotate(12 128 70)'/><path d='M100 26 h10 l-1 6 q8 6 8 16 v12 q0 4 -4 4 h-16 q-4 0 -4 -4 v-12 q0 -10 8 -16z' fill='%23BFDCE3' opacity='.5'/><path d='M94 46 h22 v14 q0 4 -4 4 h-14 q-4 0 -4 -4z' fill='%239CC7D2' opacity='.35'/><rect x='132' y='38' width='11' height='18' rx='3' fill='%23BFDCE3' opacity='.55'/><rect x='133' y='46' width='9' height='9' rx='2' fill='%239CC7D2' opacity='.4'/><rect x='40' y='38' width='9' height='14' rx='4' fill='%23E8DCC4' opacity='.95'/><circle cx='40' cy='26' r='4' fill='%23E5866A' opacity='.7'/><circle cx='49' cy='24' r='3.6' fill='%23F6C64E' opacity='.8'/><circle cx='45' cy='18' r='3.4' fill='%23E5866A' opacity='.6'/><ellipse cx='37' cy='33' rx='4' ry='2' fill='%237FB28E' opacity='.7' transform='rotate(-30 37 33)'/></g><g filter='url(%23p)' fill='none' stroke='%2355705E' stroke-width='1' stroke-linecap='round' stroke-linejoin='round' opacity='.8'><path d='M8 52 Q80 40 152 52 L156 92 Q80 98 4 92 Z'/><path d='M42 70 a30 16 0 0 0 60 0'/><path d='M30 58v26M27 58v6a3 3 0 0 0 6 0v-6'/><path d='M106 66c-2 2-3 6-3 9h3M106 66v20'/><path d='M100 26 h10 l-1 6 q8 6 8 16 v12 q0 4 -4 4 h-16 q-4 0 -4 -4 v-12 q0 -10 8 -16z'/><rect x='132' y='38' width='11' height='18' rx='3'/><path d='M106 78 q16 10 32 0'/><rect x='40' y='38' width='9' height='14' rx='4'/><path d='M42 38 L40 29M45 38 L45 21M47 38 L49 27'/></g></svg>");background-color:#EDEAE3;background-size:auto 92%}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #F5F3EE; color: #1B201D; font-family: Figtree, system-ui, sans-serif; overflow: hidden">
+
+  <main style="flex: 1; overflow-y: auto; padding: 28px 20px 20px; display: flex; flex-direction: column; gap: 16px">
+
+    <sc-if value="{{ ensemble }}" hint-placeholder-val="{{ true }}">
+      <div style="flex: none; display: flex; flex-direction: column; gap: 4px">
+        <p style="margin: 0; font-size: 15px; font-weight: 600; color: #59605B">Du 5 octobre au 1er novembre</p>
+        <h1 style="margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800">Tes menus</h1>
+        <p style="margin: 4px 0 0; font-size: 16px; line-height: 1.45; color: #59605B">4 semaines. Chaque dimanche, le Rituel prépare la semaine suivante.</p>
+      </div>
+
+      <sc-for list="{{ semaines }}" as="w" hint-placeholder-count="4">
+        <button onClick="{{ w.ouvrir }}" aria-label="{{ w.label }}" style="flex: none; display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 24px; border: 2px solid {{ w.bc }}; background: #FFFFFF; color: #1B201D; text-align: left">
+          <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%">
+            <span style="display: flex; flex-direction: column; gap: 2px">
+              <span style="font-size: 18px; font-weight: 800">Semaine {{ w.n }}</span>
+              <span style="font-size: 15px; color: #59605B">{{ w.dates }}</span>
+            </span>
+            <span style="display: flex; align-items: center; gap: 8px">
+              <span style="padding: 4px 10px; border-radius: 10px; font-size: 13px; font-weight: 700; background: {{ w.statutBg }}; color: {{ w.statutFg }}">{{ w.statut }}</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#59605B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+            </span>
+          </span>
+          <span style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; width: 100%">
+            <sc-for list="{{ w.photos }}" as="ph" hint-placeholder-count="4">
+              <span class="th th-{{ ph.k }}" style="height: 56px; border-radius: 12px; opacity: {{ w.opacite }}"></span>
+            </sc-for>
+          </span>
+          <span style="font-size: 14px; font-weight: 600; color: #3D443F">3 midis en Box · 3 dîners prêts · 3 soirs express</span>
+        </button>
+      </sc-for>
+
+      <section aria-label="Après ces menus" style="flex: none; display: flex; flex-direction: column; gap: 10px; padding: 18px; border-radius: 24px; background: #FBEEDC; color: #6E3F00">
+        <span style="font-size: 17px; font-weight: 800">Et après le 1er novembre ?</span>
+        <span style="font-size: 15px; line-height: 1.45">À partir du 25 octobre, tu pourras préparer tes 4 prochaines semaines. On repartira de tes réponses au guide, et de ce que tu as aimé ou pas.</span>
+        <a href="Main.dc.html" style="font-size: 15px; font-weight: 700; color: #6E3F00">Revoir mes réponses au guide</a>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{ detail }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ retour }}" style="flex: none; align-self: flex-start; height: 44px; display: flex; align-items: center; gap: 6px; padding: 0 14px 0 4px; border: none; border-radius: 22px; background: transparent; color: #2E6B4E; font-size: 16px; font-weight: 700">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+        Toutes les semaines
+      </button>
+
+      <div role="tablist" aria-label="Semaines" style="flex: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 4px; border-radius: 18px; background: #EAE6DE">
+        <sc-for list="{{ onglets }}" as="o" hint-placeholder-count="4">
+          <button role="tab" aria-selected="{{ o.sel }}" onClick="{{ o.choisir }}" style="height: 40px; border: none; border-radius: 14px; background: {{ o.bg }}; color: {{ o.fg }}; font-size: 15px; font-weight: 700">S{{ o.n }}</button>
+        </sc-for>
+      </div>
+
+      <div style="flex: none; display: flex; flex-direction: column; gap: 6px">
+        <h1 style="margin: 0; font-size: 26px; line-height: 1.2; font-weight: 800">Semaine {{ cur.n }} · {{ cur.dates }}</h1>
+        <p style="margin: 0; font-size: 15px; color: #59605B">{{ cur.origine }}</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px">
+          <span style="padding: 6px 10px; border-radius: 10px; font-size: 13px; font-weight: 700; background: #2E6B4E; color: #FFFFFF">3 midis en Box</span>
+          <span style="padding: 6px 10px; border-radius: 10px; font-size: 13px; font-weight: 700; background: #E3EEE7; color: #1F4D37">3 dîners prêts</span>
+          <span style="padding: 6px 10px; border-radius: 10px; font-size: 13px; font-weight: 700; background: #EDEAE3; color: #3D443F">3 soirs en 20 min max</span>
+        </div>
+      </div>
+
+      <sc-for list="{{ jours }}" as="d" hint-placeholder-count="7">
+        <article style="flex: none; display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 20px; background: #FFFFFF; border: 2px solid {{ d.bc }}">
+          <div style="display: flex; justify-content: space-between; align-items: center">
+            <h2 style="margin: 0; font-size: 16px; font-weight: 800">{{ d.nom }}</h2>
+            <sc-if value="{{ d.today }}" hint-placeholder-val="{{ false }}">
+              <span style="padding: 3px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; background: #2E6B4E; color: #FFFFFF">Aujourd'hui</span>
+            </sc-if>
+          </div>
+          <sc-for list="{{ d.repas }}" as="r" hint-placeholder-count="2">
+            <sc-if value="{{ r.aRecette }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ r.ouvrir }}" aria-label="{{ r.aria }}" style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 0; border: none; background: transparent; color: #1B201D; text-align: left">
+                <span class="th th-{{ r.ph }}" style="flex: none; width: 52px; height: 52px; border-radius: 14px"></span>
+                <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px">
+                  <span style="font-size: 13px; font-weight: 700; color: #59605B">{{ r.moment }}</span>
+                  <span style="font-size: 15px; font-weight: 600; line-height: 1.3; color: {{ r.fg }}">{{ r.nom }}</span>
+                  <sc-if value="{{ r.congele }}" hint-placeholder-val="{{ false }}">
+                    <span style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: #2E6B4E"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" style="flex: none"><path d="M12 2v20M3.3 7l17.4 10M3.3 17 20.7 7M9 4l3 2.5L15 4M9 20l3-2.5 3 2.5"/></svg>{{ r.sortir }}</span>
+                  </sc-if>
+                </span>
+                <span style="flex: none; padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; background: {{ r.tagBg }}; color: {{ r.tagFg }}">{{ r.tag }}</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#59605B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="m9 5 7 7-7 7"/></svg>
+              </button>
+            </sc-if>
+            <sc-if value="{{ r.sansRecette }}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; align-items: center; gap: 12px">
+                <span class="th th-{{ r.ph }}" style="flex: none; width: 52px; height: 52px; border-radius: 14px"></span>
+                <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px">
+                  <span style="font-size: 13px; font-weight: 700; color: #59605B">{{ r.moment }}</span>
+                  <span style="font-size: 15px; font-weight: 600; line-height: 1.3; color: {{ r.fg }}">{{ r.nom }}</span>
+                </span>
+                <span style="flex: none; padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; background: {{ r.tagBg }}; color: {{ r.tagFg }}">{{ r.tag }}</span>
+                <span style="flex: none; width: 18px"></span>
+              </div>
+            </sc-if>
+          </sc-for>
+        </article>
+      </sc-for>
+    </sc-if>
+
+    <sc-if value="{{ enFiche }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ fermerFiche }}" style="flex: none; align-self: flex-start; height: 44px; display: flex; align-items: center; gap: 6px; padding: 0 14px 0 4px; border: none; border-radius: 22px; background: transparent; color: #2E6B4E; font-size: 16px; font-weight: 700">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+        {{ fiche.retour }}
+      </button>
+      <div class="th th-{{ fiche.ph }}" role="img" aria-label="Photo : {{ fiche.titre }}" style="flex: none; height: 200px; border-radius: 24px"></div>
+      <div style="flex: none; display: flex; flex-direction: column; gap: 8px">
+        <p style="margin: 0; font-size: 15px; font-weight: 600; color: #59605B">{{ fiche.quand }}</p>
+        <h1 style="margin: 0; font-size: 28px; line-height: 1.2; font-weight: 800">{{ fiche.titre }}</h1>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px">
+          <span style="padding: 5px 10px; border-radius: 10px; font-size: 13px; font-weight: 700; background: {{ fiche.tagBg }}; color: {{ fiche.tagFg }}">{{ fiche.tag }}</span>
+          <span style="padding: 5px 10px; border-radius: 10px; font-size: 13px; font-weight: 700; background: #FFFFFF; color: #3D443F">Pour 2</span>
+          <span style="padding: 5px 10px; border-radius: 10px; font-size: 13px; font-weight: 700; background: #FFFFFF; color: #3D443F">{{ fiche.temps }}</span>
+        </div>
+      </div>
+
+      <section aria-label="Le jour même" style="flex: none; display: flex; flex-direction: column; gap: 6px; padding: 16px; border-radius: 20px; background: #E3EEE7; color: #1F4D37">
+        <h2 style="margin: 0; font-size: 13px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase">{{ fiche.jourTitre }}</h2>
+        <span style="font-size: 16px; line-height: 1.45">{{ fiche.jourJ }}</span>
+        <sc-if value="{{ fiche.congele }}" hint-placeholder-val="{{ false }}">
+          <span style="display: flex; gap: 8px; padding: 10px 12px; border-radius: 12px; background: #FFFFFF; font-size: 15px; line-height: 1.45"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" style="flex: none; margin-top: 2px"><path d="M12 2v20M3.3 7l17.4 10M3.3 17 20.7 7M9 4l3 2.5L15 4M9 20l3-2.5 3 2.5"/></svg><span>{{ fiche.congeleTexte }}</span></span>
+        </sc-if>
+        <sc-if value="{{ fiche.aGarde }}" hint-placeholder-val="{{ true }}">
+          <span style="font-size: 14px; line-height: 1.45; font-weight: 600">Se garde : {{ fiche.garde }}</span>
+        </sc-if>
+      </section>
+
+      <section aria-label="Ingrédients" style="flex: none; display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 800">Ingrédients <span style="font-weight: 600; color: #59605B">· pour 2</span></h2>
+        <ul style="margin: 0; padding: 6px 16px; list-style: none; border-radius: 20px; background: #FFFFFF">
+          <sc-for list="{{ fiche.ingredients }}" as="g" hint-placeholder-count="6">
+            <li style="padding: 10px 0; border-bottom: 1px solid {{ g.trait }}; font-size: 15px; line-height: 1.4">{{ g.t }}</li>
+          </sc-for>
+        </ul>
+      </section>
+
+      <section aria-label="{{ fiche.etapesTitre }}" style="flex: none; display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 800">{{ fiche.etapesTitre }}</h2>
+        <p style="margin: 0; font-size: 14px; color: #59605B">{{ fiche.origine }}</p>
+        <ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px">
+          <sc-for list="{{ fiche.etapes }}" as="e" hint-placeholder-count="4">
+            <li style="display: flex; gap: 12px; padding: 14px; border-radius: 18px; background: #FFFFFF">
+              <span style="flex: none; width: 28px; height: 28px; border-radius: 14px; background: #2E6B4E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800">{{ e.n }}</span>
+              <span style="flex: 1; font-size: 15px; line-height: 1.45">{{ e.t }}</span>
+            </li>
+          </sc-for>
+        </ol>
+      </section>
+    </sc-if>
+  </main>
+
+  <nav aria-label="Navigation principale" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 8px 8px 14px; background: #FFFFFF; border-top: 1px solid #E2DED5">
+    <a href="Accueil.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; text-decoration: none; color: #59605B; font-size: 12px; font-weight: 600">
+      <span style="width: 60px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span>Accueil</a>
+    <a href="Menus.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; text-decoration: none; color: #1F4D37; font-size: 12px; font-weight: 700">
+      <span style="width: 60px; height: 32px; border-radius: 16px; background: #E3EEE7; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg></span>Menus</a>
+    <a href="Courses.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; text-decoration: none; color: #59605B; font-size: 12px; font-weight: 600">
+      <span style="width: 60px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h18l-1.5 10.5a1.5 1.5 0 0 1-1.5 1.5H6a1.5 1.5 0 0 1-1.5-1.5z"/><path d="m8 9 4-6 4 6"/></svg></span>Courses</a>
+    <a href="Foyer.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; text-decoration: none; color: #59605B; font-size: 12px; font-weight: 600">
+      <span style="width: 60px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14.5c1.9.8 3 2.7 3 5.5"/></svg></span>Foyer</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // fiche : null ou { k, type, w, i, moment }
+    this.state = { vue: -1, fiche: null };
+  }
+  renderVals() {
+    const s = this.state;
+    const PLATS = {
+      quinoa: "Taboulé de quinoa, feta",
+      curry: "Curry de lentilles corail",
+      gratin: "Gratin de courge, pois chiches",
+      lentilles: "Salade de lentilles, œuf",
+      chili: "Chili sin carne, riz",
+      omelette: "Omelette aux herbes · 15 min",
+      wrap: "Wrap poulet, crudités",
+      poulet: "Poulet rôti, légumes d'automne",
+      pesto: "Pâtes au pesto de roquette · 20 min",
+      minestrone: "Soupe minestrone · 20 min",
+      rituel: "Assiette du Rituel"
+    };
+    const TAG = {
+      box: { tag: "Box", tagBg: "#2E6B4E", tagFg: "#FFFFFF" },
+      pret: { tag: "Prêt", tagBg: "#E3EEE7", tagFg: "#1F4D37" },
+      frais: { tag: "Frais", tagBg: "#EDEAE3", tagFg: "#3D443F" },
+      rituel: { tag: "Rituel", tagBg: "#F3DFC4", tagFg: "#6E3F00" },
+      dehors: { tag: "Dehors", tagBg: "#EDEAE3", tagFg: "#3D443F" },
+      libre: { tag: "Libre", tagBg: "#EDEAE3", tagFg: "#3D443F" }
+    };
+    // [midi, soir] par jour, du lundi au dimanche : [plat, type]
+    // Conservation (docs/conservation.md) : J0 = le Rituel du dimanche ; au-delà de FRIGO jours, le plat est congelé au Rituel.
+    // Taboulé, wrap et salade de lentilles ne se congèlent pas : ils restent en début de semaine.
+    const SEMAINES = [
+      [[["wrap", "box"], ["curry", "pret"]], [["", "dehors"], ["pesto", "frais"]], [["lentilles", "box"], ["poulet", "pret"]], [["", "dehors"], ["omelette", "frais"]], [["gratin", "box"], ["chili", "pret"]], [["", "libre"], ["minestrone", "frais"]], [["", "libre"], ["rituel", "rituel"]]],
+      [[["quinoa", "box"], ["curry", "pret"]], [["", "dehors"], ["omelette", "frais"]], [["lentilles", "box"], ["chili", "pret"]], [["", "dehors"], ["pesto", "frais"]], [["poulet", "box"], ["gratin", "pret"]], [["", "libre"], ["minestrone", "frais"]], [["", "libre"], ["rituel", "rituel"]]],
+      [[["quinoa", "box"], ["poulet", "pret"]], [["", "dehors"], ["omelette", "frais"]], [["lentilles", "box"], ["chili", "pret"]], [["", "dehors"], ["pesto", "frais"]], [["curry", "box"], ["gratin", "pret"]], [["", "libre"], ["minestrone", "frais"]], [["", "libre"], ["rituel", "rituel"]]],
+      [[["quinoa", "box"], ["chili", "pret"]], [["", "dehors"], ["minestrone", "frais"]], [["lentilles", "box"], ["gratin", "pret"]], [["", "dehors"], ["omelette", "frais"]], [["curry", "box"], ["poulet", "pret"]], [["", "libre"], ["pesto", "frais"]], [["", "libre"], ["rituel", "rituel"]]]
+    ];
+    // jours maximum au frigo après le Rituel (J+n)
+    const FRIGO = { quinoa: 2, wrap: 2, lentilles: 3, curry: 3, gratin: 3, chili: 3, poulet: 3 };
+
+    const JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+    const date = (w, i) => {
+      const n = 5 + 7 * w + i;
+      return n > 31 ? { j: n - 31, m: "novembre", c: "nov." } : { j: n, m: "octobre", c: "oct." };
+    };
+    const dates = (w) => {
+      const a = date(w, 0), b = date(w, 6);
+      return a.m === b.m ? a.j + " – " + b.j + " " + b.c : a.j + " " + a.c + " – " + b.j + " " + b.c;
+    };
+    const STATUT = [
+      { statut: "Passée", statutBg: "#EDEAE3", statutFg: "#59605B", bc: "#FFFFFF", opacite: "0.55" },
+      { statut: "En cours", statutBg: "#2E6B4E", statutFg: "#FFFFFF", bc: "#2E6B4E", opacite: "1" },
+      { statut: "À venir", statutBg: "#E3EEE7", statutFg: "#1F4D37", bc: "#FFFFFF", opacite: "1" },
+      { statut: "À venir", statutBg: "#E3EEE7", statutFg: "#1F4D37", bc: "#FFFFFF", opacite: "1" }
+    ];
+    const ORIGINE = [
+      "Préparée au Rituel du dimanche 4 octobre",
+      "Préparée au Rituel du dimanche 11 octobre",
+      "À préparer au Rituel du dimanche 18 octobre",
+      "À préparer au Rituel du dimanche 25 octobre"
+    ];
+    // recettes pour 2 personnes
+    const RECETTES = {
+      quinoa: { titre: "Taboulé de quinoa, feta", temps: "15 min au Rituel", garde: "2 jours au frigo. Ne se congèle pas : c'est une Box de début de semaine.",
+        jour: "Se mange froid. Prends la Box du frigo le matin, remue avant de manger.",
+        ingredients: ["150 g de quinoa", "1 concombre", "2 tomates", "100 g de feta", "1 bouquet de menthe", "1 citron", "Huile d'olive, sel, poivre"],
+        etapes: ["Rince le quinoa et cuis-le 10 min dans l'eau bouillante salée. Égoutte.", "Coupe le concombre et les tomates en petits dés.", "Mélange le quinoa tiédi, les légumes, la feta émiettée, la menthe ciselée, le jus du citron et 2 cuillères d'huile.", "Répartis dans 2 Box."] },
+      lentilles: { titre: "Salade de lentilles, œuf", temps: "20 min au Rituel", garde: "3 jours au frigo. Ne se congèle pas, à cause des œufs durs.",
+        jour: "Froide ou tiède. Ajoute la roquette du petit sachet au moment de manger.",
+        ingredients: ["150 g de lentilles vertes", "4 œufs", "1 échalote", "1 cuillère à café de moutarde", "2 cuillères à soupe de vinaigre de cidre", "3 cuillères à soupe d'huile d'olive", "1 sachet de roquette"],
+        etapes: ["Cuis les lentilles 20 min dans l'eau non salée. Sale à la fin.", "Cuis les œufs 10 min, passe-les sous l'eau froide, écale-les.", "Vinaigrette : échalote ciselée, moutarde, vinaigre, huile.", "Mélange les lentilles tièdes et la vinaigrette, ajoute les œufs en quartiers. La roquette va dans un sachet à part."] },
+      curry: { titre: "Curry de lentilles corail", temps: "25 min au Rituel", garde: "3 jours au frigo, 3 mois au congélateur",
+        jour: "3 min au micro-ondes, couvercle entrouvert. S'il est au congélateur, sors-le la veille au soir.",
+        ingredients: ["200 g de lentilles corail", "1 oignon", "2 cuillères à soupe de pâte de curry", "40 cl de lait de coco", "50 cl d'eau", "1 poignée de pousses d'épinard"],
+        etapes: ["Fais revenir l'oignon émincé 3 min avec la pâte de curry.", "Ajoute les lentilles rincées, le lait de coco et l'eau.", "Laisse mijoter 20 min à feu doux, en remuant de temps en temps.", "Hors du feu, ajoute les épinards : ils fondent tout seuls."] },
+      gratin: { titre: "Gratin de courge, pois chiches", temps: "40 min de four au Rituel", garde: "3 jours au frigo, 2 mois au congélateur",
+        jour: "10 min au four à 180 °C, ou 3 min au micro-ondes.",
+        ingredients: ["600 g de courge butternut", "1 conserve de pois chiches (400 g)", "20 cl de crème", "60 g d'emmental râpé", "1 gousse d'ail", "Muscade, sel, poivre"],
+        etapes: ["Épluche la courge et coupe-la en dés de 2 cm.", "Dans un plat : courge, pois chiches égouttés, ail haché, crème, muscade, sel et poivre.", "Parsème d'emmental.", "40 min au four à 200 °C."] },
+      chili: { titre: "Chili sin carne, riz", temps: "30 min au Rituel", garde: "3 jours au frigo, 3 mois au congélateur. Le riz se cuit le soir même : cuit, il se garde mal.",
+        jour: "5 min à la casserole avec un fond d'eau. Pendant ce temps, cuis le riz : 10 min.",
+        ingredients: ["1 conserve de haricots rouges (400 g)", "1 conserve de tomates concassées", "1 poivron rouge", "2 oignons", "2 gousses d'ail", "1 cuillère à café de cumin et 1 de paprika", "150 g de riz"],
+        etapes: ["Fais revenir les oignons et l'ail 5 min.", "Ajoute le poivron en dés, les haricots égouttés, les tomates et les épices.", "Couvre et laisse mijoter 25 min à feu doux.", "Le riz ne se prépare pas au Rituel : tu le cuis le soir même, en 10 min."] },
+      wrap: { titre: "Wrap poulet, crudités", temps: "20 min au Rituel", garde: "2 jours au frigo. Ne se congèle pas : c'est une Box de début de semaine.",
+        jour: "Se mange froid. Coupe-le en deux au moment de manger.",
+        ingredients: ["4 galettes de blé", "2 blancs de poulet", "1 carotte", "¼ de chou rouge", "2 cuillères à soupe de fromage frais", "Quelques feuilles de salade"],
+        etapes: ["Cuis les blancs de poulet 10 min à la poêle, coupe-les en lamelles.", "Râpe la carotte, émince finement le chou.", "Tartine les galettes de fromage frais, garnis et roule serré.", "Emballe chaque wrap dans du papier cuisson : 2 par Box."] },
+      poulet: { titre: "Poulet rôti, légumes d'automne", temps: "1 h de four au Rituel", garde: "3 jours au frigo, 3 mois au congélateur",
+        jour: "10 min au four à 180 °C, ou 3 min au micro-ondes.",
+        ingredients: ["1 poulet de 1,2 kg", "600 g de pommes de terre", "4 carottes", "2 oignons rouges", "Thym, huile d'olive, sel, poivre"],
+        etapes: ["Coupe les légumes en gros morceaux dans un plat : huile, sel, thym.", "Pose le poulet dessus, frotte-le d'huile, sale et poivre.", "1 h au four à 200 °C, sans y toucher.", "Laisse tiédir, découpe et range la viande avec les légumes."] },
+      omelette: { titre: "Omelette aux herbes", temps: "15 min", garde: "",
+        jour: "15 min, à faire le soir même. Rien n'a été préparé au Rituel.",
+        ingredients: ["5 œufs", "1 bouquet de ciboulette et de persil", "30 g de parmesan", "1 noix de beurre", "Une salade verte pour accompagner"],
+        etapes: ["Bats les œufs avec le parmesan râpé, sel et poivre.", "Ajoute les herbes ciselées.", "Fais fondre le beurre dans une poêle, verse les œufs, remue doucement 2 min.", "Plie l'omelette quand le dessus est encore baveux. Sers avec la salade."] },
+      pesto: { titre: "Pâtes au pesto de roquette", temps: "20 min", garde: "",
+        jour: "20 min, à faire le soir même. Rien n'a été préparé au Rituel.",
+        ingredients: ["250 g de pâtes", "1 sachet de roquette (80 g)", "40 g de parmesan", "30 g d'amandes", "1 gousse d'ail", "6 cuillères à soupe d'huile d'olive"],
+        etapes: ["Mets les pâtes à cuire.", "Mixe la roquette, le parmesan, les amandes, l'ail et l'huile.", "Égoutte les pâtes en gardant un fond d'eau de cuisson.", "Mélange les pâtes, le pesto et un peu d'eau de cuisson pour lier."] },
+      minestrone: { titre: "Soupe minestrone", temps: "20 min", garde: "",
+        jour: "20 min, à faire le soir même. Rien n'a été préparé au Rituel.",
+        ingredients: ["1 courgette", "2 carottes", "1 branche de céleri", "1 conserve de haricots blancs", "1 conserve de tomates concassées", "80 g de petites pâtes", "1 l de bouillon de légumes"],
+        etapes: ["Coupe les légumes en petits dés.", "Fais-les revenir 3 min, ajoute les tomates et le bouillon.", "Ajoute les pâtes et les haricots égouttés : 10 min à petits frémissements.", "Sers avec un peu de parmesan ou un filet d'huile d'olive."] },
+      rituel: { titre: "Assiette du Rituel", temps: "Pendant le Rituel", garde: "",
+        jour: "Rien à préparer en plus : tu manges ce que tu viens de cuisiner.",
+        ingredients: ["Une petite part de chaque plat du Rituel", "Du pain ou une salade verte"],
+        etapes: ["Pendant le Rituel, garde une petite portion de chaque plat.", "Compose une assiette à partager : c'est l'occasion de goûter avant de remplir les Box."] }
+    };
+    const RITUEL_DATE = ["4 octobre", "11 octobre", "18 octobre", "25 octobre"];
+    const w = Math.max(s.vue, 0);
+    const repas = (r, moment, i) => {
+      const [plat, type] = r;
+      const congele = (type === "box" || type === "pret") && i + 1 > (FRIGO[plat] || 3);
+      const nom = plat ? PLATS[plat] : type === "dehors" ? "Tu manges dehors" : "Au choix";
+      return Object.assign({
+        moment, nom, ph: plat || (type === "dehors" ? "dehors" : "choix"), fg: plat ? "#1B201D" : "#59605B",
+        aRecette: !!plat, sansRecette: !plat,
+        congele, sortir: congele ? (type === "box" ? "Congelée" : "Congelé") + " · à sortir " + JOURS[i - 1].toLowerCase() + " soir" : "",
+        aria: "Voir la recette : " + nom,
+        ouvrir: () => { if (plat) this.setState({ fiche: { k: plat, type, w, i, moment } }); }
+      }, TAG[type]);
+    };
+    const f = s.fiche;
+    let fiche = null;
+    if (f) {
+      const R = RECETTES[f.k] || RECETTES.rituel;
+      const d = date(f.w, f.i);
+      const prepare = f.type === "box" || f.type === "pret";
+      const passe = f.w < 2;
+      const congele = prepare && f.i + 1 > (FRIGO[f.k] || 3);
+      const veille = congele ? JOURS[f.i - 1].toLowerCase() : "";
+      fiche = Object.assign({
+        retour: "Semaine " + (f.w + 1),
+        ph: f.k,
+        titre: R.titre,
+        quand: JOURS[f.i] + " " + d.j + " " + d.m + " · " + f.moment.toLowerCase(),
+        temps: R.temps,
+        jourTitre: f.type === "box" ? "Le midi, avec ta Box" : f.type === "pret" ? "Le soir, déjà prêt" : f.type === "rituel" ? "Le jour du Rituel" : "Le soir même",
+        jourJ: R.jour,
+        congele,
+        congeleTexte: !congele ? "" : f.type === "box"
+          ? (passe ? "Congelée" : "À congeler") + " au Rituel : au frigo, elle ne tiendrait pas jusqu'à " + JOURS[f.i].toLowerCase() + ". Sors-la du congélateur " + veille + " soir et mets-la au frigo. Tu recevras un rappel."
+          : (passe ? "Congelé" : "À congeler") + " au Rituel : au frigo, il ne tiendrait pas jusqu'à " + JOURS[f.i].toLowerCase() + ". Sors-le du congélateur " + veille + " soir et mets-le au frigo. Tu recevras un rappel.",
+        aGarde: prepare && !!R.garde,
+        garde: R.garde,
+        ingredients: R.ingredients.map((t, j) => ({ t, trait: j === R.ingredients.length - 1 ? "transparent" : "#EEEAE2" })),
+        etapesTitre: prepare ? "Comment c'est préparé" : "La recette",
+        origine: prepare ? (passe ? "Préparé au Rituel du dimanche " : "À préparer au Rituel du dimanche ") + RITUEL_DATE[f.w] + (congele ? (passe ? ", puis congelé" : ", puis à congeler") : "") : "Pas à pas, au moment du repas",
+        etapes: R.etapes.map((t, j) => ({ n: String(j + 1), t }))
+      }, TAG[f.type]);
+    }
+    return {
+      enFiche: !!f,
+      fiche: fiche || { congele: false, congeleTexte: "", retour: "", ph: "libre", titre: "", quand: "", temps: "", tag: "", tagBg: "", tagFg: "", jourTitre: "", jourJ: "", aGarde: false, garde: "", ingredients: [], etapesTitre: "", origine: "", etapes: [] },
+      fermerFiche: () => this.setState({ fiche: null }),
+      ensemble: !f && s.vue < 0,
+      detail: !f && s.vue >= 0,
+      semaines: SEMAINES.map((sem, k) => Object.assign({
+        n: k + 1,
+        dates: dates(k),
+        label: "Semaine " + (k + 1) + ", " + dates(k) + ", " + STATUT[k].statut,
+        photos: [sem[0][1][0], sem[2][1][0], sem[4][1][0], sem[2][0][0]].map((k) => ({ k })),
+        ouvrir: () => this.setState({ vue: k })
+      }, STATUT[k])),
+      retour: () => this.setState({ vue: -1 }),
+      onglets: [0, 1, 2, 3].map((k) => ({
+        n: k + 1,
+        sel: k === w ? "true" : "false",
+        bg: k === w ? "#FFFFFF" : "transparent",
+        fg: k === w ? "#1F4D37" : "#59605B",
+        choisir: () => this.setState({ vue: k })
+      })),
+      cur: { n: w + 1, dates: dates(w), origine: ORIGINE[w] },
+      jours: SEMAINES[w].map((j, i) => {
+        const d = date(w, i);
+        const today = w === 1 && i === 2;
+        return {
+          nom: JOURS[i] + " " + d.j + " " + d.m,
+          today,
+          bc: today ? "#2E6B4E" : "#FFFFFF",
+          repas: [repas(j[0], "Midi", i), repas(j[1], "Soir", i)]
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

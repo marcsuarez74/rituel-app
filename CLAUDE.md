@@ -29,26 +29,29 @@ le coût réel des vérifications et les pièges déjà payés une fois.
   `docs/superpowers/plans/` → TDD. **Tout changement d'UI passe d'abord par une maquette HTML
   dans `docs/superpowers/mockups/`, validée explicitement par Marc** — pas de code d'UI avant.
 
-## Refonte en cours : « Marché coloré » (2026-10)
+## Chantier en cours : l'app native (2026-10)
 
-Validée par Marc, en cours d'intégration en 4 PR (thème → navigation 4 onglets → rituel →
-courses / semaine type / assistant). Avant de toucher à l'UI, lire
-`docs/superpowers/specs/2026-10-12-refonte-ergo-marche.md` (spec + plan + annexe A des valeurs
-exactes) et le brief `docs/superpowers/plans/2026-10-12-refonte-ergo-marche-passation.md`.
-Tant que la PR 1 n'est pas fusionnée, le code est encore au thème Herbes.
+La PWA reste en prod, en maintenance, avec la refonte « Marché coloré » livrée (thème,
+4 onglets, Rituel v2, assistant des prochains menus). Le prochain chantier repart de zéro en **app native Android** (Expo) : lire
+`docs/superpowers/specs/2026-10-14-refonte-native-from-scratch.md`, les maquettes de
+`docs/superpowers/mockups/2026-10-14-app-native/`, `docs/conservation.md` (règle de code des
+durées de conservation) et `docs/cgu.md`. Les specs et plans des chantiers PWA déjà livrés ont
+été supprimés : ils restent dans l'historique git.
 
 - **Vocabulaire** : le mot « cycle » n'apparaît **jamais** dans un texte visible. Le programme
-  de 4 semaines = « menus » ; « Rituel » = uniquement la session de cuisine du dimanche. Les
+  de 4 semaines = « menus » ; « Rituel » = uniquement la session de cuisine du dimanche ; les
+  repas du midi préparés = « Box » (jamais « boîte »). Les
   identifiants de code (`cycle/`, `CycleActif`, clés localStorage) ne changent pas.
-- **Semaine type (« option B »)** : elle ne modifie jamais les menus en cours, elle nourrit
+- **Semaine type de la PWA (« option B »)** : elle ne modifie jamais les menus en cours, elle nourrit
   seulement le prompt des **prochains** menus — ce n'est pas un bug, l'UI doit le rendre visible.
 
 ## Carte du dépôt
 
 | Chemin | Rôle |
 |---|---|
-| `docs/superpowers/specs/` · `plans/` | un fichier daté par chantier ; le plan s'exécute, la spec fait foi |
-| `docs/superpowers/mockups/` | maquettes HTML versionnées (dont la maquette du thème « Marché coloré ») |
+| `docs/superpowers/specs/` · `plans/` | un fichier daté par chantier en cours ou par brique d'infra encore en service ; le plan s'exécute, la spec fait foi ; un chantier livré ou abandonné est supprimé (l'historique git le garde) |
+| `docs/superpowers/mockups/` | maquettes versionnées ; `2026-10-14-app-native/` = canevas de l'app native (format Claude Design `.dc.html`) |
+| `docs/conservation.md` · `docs/cgu.md` | table de conservation (sources réglementaires) et CGU de l'app native, brouillon |
 | `ai/agent/` · `ai/context/` | configs d'agents IA — à lire **avant** tout travail dans leur domaine (design-agent pour l'UI) |
 | `docs/ameliorations.md` | mémoire d'idées, **pas une spec** |
 | `docs/backend.md` + `server/` | API de sync (Hono + SQLite) ; `server/` est un sous-projet : node_modules et scripts à part, `npm run check` |

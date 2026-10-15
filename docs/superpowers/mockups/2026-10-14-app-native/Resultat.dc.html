@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Ta routine</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#2E6B4E}a:hover{color:#1F4D37}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid #2E6B4E;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #F5F3EE; color: #1B201D; font-family: Figtree, system-ui, sans-serif; overflow: hidden">
+
+  <main style="flex: 1; overflow-y: auto; padding: 32px 20px 16px; display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <p style="margin: 0; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #2E6B4E">Ta routine</p>
+      <h1 style="margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800">Voici ce qu'on te propose</h1>
+      <p style="margin: 0; font-size: 17px; line-height: 1.45; color: #59605B">Une session de cuisine par semaine pour avoir des repas prêts, et emporter ta Box certains midis. Choisis le dosage qui te va.</p>
+    </div>
+
+    <div role="group" aria-label="Dosage" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; background: #E9E5DC; border-radius: 16px">
+      <sc-for list="{{ dosages }}" as="d" hint-placeholder-count="3">
+        <button aria-pressed="{{ d.pressed }}" onClick="{{ d.choisir }}" style="min-height: 56px; padding: 6px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; border: none; border-radius: 12px; background: {{ d.bg }}; color: {{ d.fg }}">
+          <span style="font-size: 15px; font-weight: 700">{{ d.label }}</span>
+          <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #2E6B4E; visibility: {{ d.conseil }}">Conseillé</span>
+        </button>
+      </sc-for>
+    </div>
+
+    <section style="display: flex; flex-direction: column; gap: 18px; padding: 20px; background: #FFFFFF; border-radius: 24px">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <h2 style="margin: 0; font-size: 22px; font-weight: 800">{{ p.titre }}</h2>
+        <p style="margin: 0; font-size: 16px; line-height: 1.45; color: #59605B">{{ p.phrase }}</p>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+        <div style="display: flex; flex-direction: column; gap: 2px; padding: 12px; background: #F5F3EE; border-radius: 14px">
+          <span style="font-size: 20px; font-weight: 800">{{ p.duree }}</span>
+          <span style="font-size: 13px; color: #59605B">de Rituel par semaine</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 2px; padding: 12px; background: #F5F3EE; border-radius: 14px">
+          <span style="font-size: 20px; font-weight: 800">{{ p.boites }}</span>
+          <span style="font-size: 13px; color: #59605B">midis en Box au lieu de dehors</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 2px; padding: 12px; background: #F5F3EE; border-radius: 14px">
+          <span style="font-size: 20px; font-weight: 800">{{ p.diners }}</span>
+          <span style="font-size: 13px; color: #59605B">dîners déjà prêts</span>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <p style="margin: 0; font-size: 15px; font-weight: 700">Ta semaine</p>
+        <div style="display: grid; grid-template-columns: 40px repeat(7, minmax(0, 1fr)); gap: 5px; align-items: center">
+          <span></span>
+          <sc-for list="{{ entetes }}" as="e" hint-placeholder-count="7">
+            <span style="height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: {{ e.bg }}; color: {{ e.fg }}; font-size: 12px; font-weight: 700">{{ e.court }}</span>
+          </sc-for>
+          <span style="font-size: 12px; font-weight: 700; color: #6E3F00">Rituel</span>
+          <sc-for list="{{ entetes }}" as="e" hint-placeholder-count="7">
+            <div style="height: 36px; display: flex; align-items: center; justify-content: center">
+              <sc-if value="{{ e.rituel }}" hint-placeholder-val="{{ false }}">
+                <div role="img" aria-label="{{ e.aria }}" style="width: 100%; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: #F3DFC4; color: #6E3F00">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11h16v6a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3zM2 11h20M9 7c0-1.5 1-2 1-3.5M14 7c0-1.5 1-2 1-3.5"/></svg>
+                </div>
+              </sc-if>
+            </div>
+          </sc-for>
+          <span style="font-size: 12px; font-weight: 700; color: #59605B">Midi</span>
+          <sc-for list="{{ midis }}" as="j" hint-placeholder-count="7">
+            <div role="img" aria-label="{{ j.aria }}" style="height: 36px; box-sizing: border-box; border-radius: 10px; border: 2px {{ j.trait }} {{ j.bc }}; background: {{ j.bg }}"></div>
+          </sc-for>
+          <span style="font-size: 12px; font-weight: 700; color: #59605B">Soir</span>
+          <sc-for list="{{ soirs }}" as="j" hint-placeholder-count="7">
+            <div role="img" aria-label="{{ j.aria }}" style="height: 36px; box-sizing: border-box; border-radius: 10px; border: 2px solid {{ j.bc }}; background: {{ j.bg }}"></div>
+          </sc-for>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: #59605B">
+          <span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 4px; background: #2E6B4E"></span>Préparé au Rituel</span>
+          <span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; box-sizing: border-box; border-radius: 4px; border: 2px dashed #2E6B4E; background: #E3EEE7"></span>Box (nouveau)</span>
+          <span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; box-sizing: border-box; border-radius: 4px; border: 2px solid #9AA39C"></span>Cuisiné sur place</span>
+          <span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 4px; background: #F3DFC4"></span>Dehors</span>
+          <span style="display: flex; align-items: center; gap: 6px"><span style="width: 12px; height: 12px; border-radius: 4px; background: #6E3F00"></span>Jour du Rituel</span>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 0; border-top: 1px solid #EEEAE2; border-bottom: 1px solid #EEEAE2">
+        <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px">
+          <span style="font-size: 15px; color: #59605B">Jour du Rituel</span>
+          <span style="font-size: 17px; font-weight: 800">{{ jourNom }}</span>
+        </span>
+        <div role="group" aria-label="Jour du Rituel" style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px">
+          <sc-for list="{{ joursRituel }}" as="j" hint-placeholder-count="7">
+            <button aria-label="{{ j.nom }}" aria-pressed="{{ j.pressed }}" onClick="{{ j.choisir }}" style="height: 44px; padding: 0; border-radius: 12px; border: 2px solid {{ j.bc }}; background: {{ j.bg }}; color: {{ j.fg }}; font-size: 14px; font-weight: 700">{{ j.court }}</button>
+          </sc-for>
+        </div>
+        <p style="margin: 0; font-size: 14px; line-height: 1.4; color: #59605B">{{ jourTexte }}</p>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+          <span style="font-size: 15px; color: #59605B">Ton budget courses</span>
+          <span style="font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums">{{ budget }} € / sem.</span>
+        </div>
+        <p style="margin: 0; font-size: 14px; line-height: 1.4; color: #59605B">Les menus seront composés pour tenir dedans. Le détail, article par article, sera dans ta liste de courses.</p>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 10px">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 800">Pourquoi ce dosage</h2>
+      <sc-for list="{{ pourquoi }}" as="w" hint-placeholder-count="3">
+        <div style="display: flex; gap: 12px; align-items: flex-start">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2E6B4E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+          <p style="margin: 0; font-size: 16px; line-height: 1.45">{{ w }}</p>
+        </div>
+      </sc-for>
+    </section>
+
+    <section aria-labelledby="quand" style="display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <h2 id="quand" style="margin: 0; font-size: 17px; font-weight: 800">Tu commences quand ?</h2>
+        <p style="margin: 0; font-size: 15px; line-height: 1.45; color: #59605B">Rien ne presse : prends le temps de finir ce qu'il y a au frigo et dans les placards.</p>
+      </div>
+      <div role="radiogroup" aria-labelledby="quand" style="display: flex; flex-direction: column; gap: 8px">
+        <sc-for list="{{ debuts }}" as="o" hint-placeholder-count="3">
+          <button role="radio" aria-checked="{{ o.coche }}" onClick="{{ o.choisir }}" style="display: flex; align-items: center; gap: 14px; min-height: 72px; padding: 12px 16px; text-align: left; border-radius: 18px; border: 2px solid {{ o.bc }}; background: {{ o.bg }}; color: #1B201D">
+            <span style="flex: none; width: 22px; height: 22px; box-sizing: border-box; border-radius: 11px; border: {{ o.rond }}; background: #FFFFFF"></span>
+            <span style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+              <span style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+                <span style="font-size: 17px; font-weight: 700">{{ o.titre }}</span>
+                <sc-if value="{{ o.conseil }}" hint-placeholder-val="{{ false }}">
+                  <span style="padding: 2px 8px; border-radius: 8px; background: #E3EEE7; color: #1F4D37; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase">Conseillé</span>
+                </sc-if>
+              </span>
+              <span style="font-size: 14px; line-height: 1.4; color: #59605B">{{ o.detail }}</span>
+            </span>
+          </button>
+        </sc-for>
+      </div>
+    </section>
+  </main>
+
+  <footer style="display: flex; flex-direction: column; gap: 4px; padding: 12px 20px 24px">
+    <a href="{{ suite }}" style="height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 30px; background: #2E6B4E; color: #FFFFFF; font-size: 18px; font-weight: 700; text-decoration: none">C'est parti</a>
+    <a href="Main.dc.html" style="height: 48px; display: flex; align-items: center; justify-content: center; color: #59605B; font-size: 16px; font-weight: 600; text-decoration: none">Revoir mes réponses</a>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // debut : 0 = au prochain Rituel, 1 = celui d'après, 2 = dès aujourd'hui
+    this.state = { dosage: "equilibre", jour: 6, debut: 0 };
+  }
+  renderVals() {
+    const BUDGET = 120;
+    const JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+    const T = {
+      rituel: { bc: "#2E6B4E", bg: "#2E6B4E", trait: "solid", nom: "préparé au Rituel" },
+      boite: { bc: "#2E6B4E", bg: "#E3EEE7", trait: "dashed", nom: "Box préparée au Rituel, à la place de dehors" },
+      place: { bc: "#9AA39C", bg: "#FFFFFF", trait: "solid", nom: "cuisiné sur place" },
+      dehors: { bc: "#F3DFC4", bg: "#F3DFC4", trait: "solid", nom: "dehors, comme aujourd'hui" }
+    };
+    // Réponses du guide (valeurs par défaut) : midis de semaine dehors, vendredi soir dehors.
+    const DOSAGES = {
+      lot: {
+        label: "Plus de Box", titre: "Tous tes midis en Box",
+        phrase: "Tes 5 midis dehors deviennent des Box faites maison, et 4 dîners sont prêts d'avance.",
+        duree: "2 h 30", boites: "5", diners: "4", budget: 132,
+        midis: ["boite", "boite", "boite", "boite", "boite", "place", "place"],
+        soirs: ["rituel", "rituel", "place", "rituel", "dehors", "place", "rituel"],
+        pourquoi: [
+          "Tu manges dehors 5 midis par semaine : ici, ils passent tous en Box faite maison.",
+          "Plus qu'un soir à cuisiner sur place en semaine, en 20 min maximum.",
+          "2 h 30 d'affilée : de quoi préparer 9 repas. C'est un vrai rythme, à viser une fois rodé."
+        ]
+      },
+      equilibre: {
+        label: "Équilibré", titre: "Le juste milieu",
+        phrase: "Une Box un midi sur deux, et 3 dîners sortent du Rituel. Les autres soirs : 20 min, pas plus.",
+        duree: "1 h 30", boites: "3", diners: "3", budget: 118,
+        midis: ["boite", "dehors", "boite", "dehors", "boite", "place", "place"],
+        soirs: ["rituel", "place", "rituel", "place", "dehors", "place", "rituel"],
+        pourquoi: [
+          "Tu manges dehors 5 midis par semaine : une Box faite maison un jour sur deux, c'est un bon rythme.",
+          "Tu as environ 20 min le soir : les recettes fraîches tiennent dedans.",
+          "1 h 30 d'affilée : de quoi préparer 6 repas."
+        ]
+      },
+      frais: {
+        label: "Pour débuter", titre: "Un premier Rituel tout simple",
+        phrase: "45 min pour tes 2 premières Box du midi. Tes soirs ne changent pas.",
+        duree: "45 min", boites: "2", diners: "0", budget: 112,
+        midis: ["boite", "dehors", "dehors", "boite", "dehors", "place", "place"],
+        soirs: ["place", "place", "place", "place", "dehors", "place", "place"],
+        pourquoi: [
+          "Tu n'as jamais cuisiné à l'avance : on commence petit, avec 2 midis sur 5 en Box.",
+          "Tu as environ 20 min le soir : tes soirs restent comme aujourd'hui.",
+          "45 min pour 2 repas : de quoi voir si ça te plaît, sans y passer l'après-midi."
+        ]
+      }
+    };
+    const p = DOSAGES[this.state.dosage];
+    const cases = (types, moment) => types.map((t, i) => Object.assign({ aria: JOURS[i] + " " + moment + " : " + T[t].nom }, T[t]));
+    // Maquette : l'app est installée le lundi 12 octobre.
+    const AUJ = 12;
+    const ecart = this.state.jour === 0 ? 7 : this.state.jour;
+    const jourMin = JOURS[this.state.jour].toLowerCase();
+    const DEBUTS = [
+      { titre: JOURS[this.state.jour] + " " + (AUJ + ecart) + " octobre", conseil: true,
+        detail: "Ton premier Rituel, dans " + ecart + " jours. D'ici là, tu manges comme d'habitude." },
+      { titre: JOURS[this.state.jour] + " " + (AUJ + ecart + 7) + " octobre", conseil: false,
+        detail: "Une semaine de plus pour finir tes réserves et t'équiper en Box." },
+      { titre: "Dès aujourd'hui", conseil: false,
+        detail: "Des recettes rapides le soir en attendant ton premier Rituel, " + jourMin + ". Tes Box commencent après." }
+    ];
+    return {
+      debuts: DEBUTS.map((o, i) => {
+        const on = this.state.debut === i;
+        return Object.assign({}, o, { coche: on ? "true" : "false", bc: on ? "#2E6B4E" : "#E2DED5", bg: on ? "#F2F7F4" : "#FFFFFF", rond: on ? "7px solid #2E6B4E" : "2px solid #B8BDB9", choisir: () => this.setState({ debut: i }) });
+      }),
+      suite: this.state.debut === 2 ? "Accueil.dc.html" : "Attente.dc.html",
+      p: p,
+      dosages: ["frais", "equilibre", "lot"].map((id) => ({
+        label: DOSAGES[id].label,
+        pressed: this.state.dosage === id ? "true" : "false",
+        bg: this.state.dosage === id ? "#FFFFFF" : "transparent",
+        fg: this.state.dosage === id ? "#1F4D37" : "#59605B",
+        conseil: id === "equilibre" ? "visible" : "hidden",
+        choisir: () => this.setState({ dosage: id })
+      })),
+      entetes: JOURS.map((j, i) => {
+        const rituel = i === this.state.jour;
+        return { court: j.slice(0, 3), rituel: rituel, aria: "Rituel le " + j.toLowerCase(), bg: rituel ? "#6E3F00" : "transparent", fg: rituel ? "#FFFFFF" : "#59605B" };
+      }),
+      midis: cases(p.midis, "midi"),
+      soirs: cases(p.soirs, "soir"),
+      jourNom: JOURS[this.state.jour] + (this.state.jour === 6 ? " · proposé" : ""),
+      joursRituel: JOURS.map((nom, i) => {
+        const on = this.state.jour === i;
+        return { nom: nom, court: nom.slice(0, 3), pressed: on ? "true" : "false", bc: on ? "#2E6B4E" : "#E2DED5", bg: on ? "#E3EEE7" : "#FFFFFF", fg: on ? "#1F4D37" : "#1B201D", choisir: () => this.setState({ jour: i }) };
+      }),
+      jourTexte: this.state.jour >= 5
+        ? "Proposé : le jour où tu es le plus à la maison. N'importe quel jour convient."
+        : "Un soir de semaine marche aussi : le Rituel prépare alors les jours qui suivent.",
+      budget: BUDGET,
+      pourquoi: p.pourquoi
+    };
+  }
+}
+</script>
+</body>
+</html>

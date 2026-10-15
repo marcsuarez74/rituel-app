@@ -29,7 +29,7 @@ au moment de choisir la prochaine itération.
 ## 1. Design & identité visuelle
 
 → **Livré** (chantier 1, thème « Herbes ») :
-`docs/superpowers/specs/2026-09-09-refonte-herbes-design.md` — thème clair
+spec 2026-09-09-refonte-herbes-design (supprimée, voir l'historique git) — thème clair
 sauge/basilic/citron, respiration, icônes SVG maison, nav segmented + swipe.
 Ressenti initial noté pour mémoire :
 
@@ -48,7 +48,7 @@ design — les maquettes v3 validées utilisaient ces tailles, à arbitrer.
 ## 2. Onboarding enrichi (process au chargement de l'app)
 
 → **Livré** (chantier 3, profil v2.1) :
-`docs/superpowers/specs/2026-09-09-maison-courses-design.md` — magasin,
+spec 2026-09-09-maison-courses-design (supprimée, voir l'historique git) — magasin,
 budget (estimé menu / payé réel / max hebdo), dépenses réelles (historique +
 comparatif par magasin), préférences (types de plats), personnes/repas par jour,
 onboarding 5e étape, « Copier les paramètres IA ». Noté pour mémoire :
@@ -73,7 +73,7 @@ onboarding 5e étape, « Copier les paramètres IA ». Noté pour mémoire :
 ## 3. Profil & objectifs
 
 → **Livré** (chantier 2, profil v2) :
-`docs/superpowers/specs/2026-09-09-profil-objectifs-design.md` — profil v2
+spec 2026-09-09-profil-objectifs-design (supprimée, voir l'historique git) — profil v2
 (date de naissance, objectif 4 types + échéance, compléments, régime),
 onboarding (4 étapes à la livraison, 5e étape ajoutée par le chantier 3)
 avec migration préremplie, bloc Objectif dans le suivi,

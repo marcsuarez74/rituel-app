@@ -64,7 +64,7 @@ Mise en place du jeton : `server/README.md` § Signaler un bug.
 
 ## Supprimer son profil — `DELETE /foyers/moi`
 
-Profil › « Supprimer mon profil » (spec `docs/superpowers/specs/2026-10-12-supprimer-profil-design.md`).
+Profil › « Supprimer mon profil ».
 Route authentifiée (Bearer) : l'appareil quitte le foyer, dans une seule transaction SQLite.
 
 - Le jeton est révoqué (table `tokens_revoques`, empreinte sha256) : ses requêtes suivantes

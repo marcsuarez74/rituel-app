@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Avant de commencer</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#2E6B4E}a:hover{color:#1F4D37}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid #2E6B4E;outline-offset:2px}
+.th{background-color:#D8CDBB;background-size:cover;background-position:center;background-repeat:no-repeat}
+.th-quinoa{background-image:url(/_blob/90e2e4dd98db337c7a6195f3f8d1f7ef)}
+.th-curry{background-image:url(/_blob/ecf78911b4aefd9c01eb28b40d620a17)}
+.th-gratin{background-image:url(/_blob/4422b0e576c70f5ab47b99aa07ea5481)}
+.th-lentilles{background-image:url(/_blob/6af1422c00c748952338871477145d8e)}
+.th-chili{background-image:url(/_blob/af38fe1821e9a8b0a7f8410caa0b338e)}
+.th-omelette{background-image:url(/_blob/3672a5ec1405c58025f97e28417e1f98)}
+.th-wrap{background-image:url(/_blob/73c555fd678538c1ca14edded3d271fc)}
+.th-poulet{background-image:url(/_blob/8d5a59b8888bd983b0b0815e11a7cc1f)}
+.th-pesto{background-image:url(/_blob/9e8157ad07139d6a1b9556edd00bee65)}
+.th-minestrone{background-image:url(/_blob/a6b2a67242ec77e84e993ed8f453e344)}
+.th-rituel{background-image:url(/_blob/e094661e54bb31f25754b03fbe28ecf6)}
+.th-libre{background-image:none;background-color:#EDEAE3}
+.th-dehors{background-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'><defs><filter id='w' x='-20%' y='-20%' width='140%' height='140%'><feTurbulence type='fractalNoise' baseFrequency='0.05' numOctaves='3' seed='7'/><feDisplacementMap in='SourceGraphic' scale='4'/><feGaussianBlur stdDeviation='0.45'/></filter><filter id='p' x='-10%' y='-10%' width='120%' height='120%'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='1' seed='2'/><feDisplacementMap in='SourceGraphic' scale='1.2'/></filter></defs><g filter='url(%23w)'><ellipse cx='80' cy='91' rx='76' ry='6' fill='%23E8DCC4' opacity='.7'/><rect x='34' y='26' width='92' height='64' fill='%23F3E3CC' opacity='.95'/><rect x='30' y='22' width='100' height='6' fill='%23C9A27E' opacity='.55'/><rect x='56' y='8' width='48' height='12' rx='2' fill='%232E6B4E' opacity='.7'/><rect x='34' y='30' width='92' height='10' fill='%23FFFFFF' opacity='.95'/><rect x='34' y='30' width='8' height='10' fill='%23E5866A' opacity='.65'/><circle cx='38' cy='40' r='4' fill='%23E5866A' opacity='.65'/><circle cx='46' cy='40' r='4' fill='%23FFFFFF' opacity='.95'/><rect x='50' y='30' width='8' height='10' fill='%23E5866A' opacity='.65'/><circle cx='54' cy='40' r='4' fill='%23E5866A' opacity='.65'/><circle cx='62' cy='40' r='4' fill='%23FFFFFF' opacity='.95'/><rect x='66' y='30' width='8' height='10' fill='%23E5866A' opacity='.65'/><circle cx='70' cy='40' r='4' fill='%23E5866A' opacity='.65'/><circle cx='78' cy='40' r='4' fill='%23FFFFFF' opacity='.95'/><rect x='82' y='30' width='8' height='10' fill='%23E5866A' opacity='.65'/><circle cx='86' cy='40' r='4' fill='%23E5866A' opacity='.65'/><circle cx='94' cy='40' r='4' fill='%23FFFFFF' opacity='.95'/><rect x='98' y='30' width='8' height='10' fill='%23E5866A' opacity='.65'/><circle cx='102' cy='40' r='4' fill='%23E5866A' opacity='.65'/><circle cx='110' cy='40' r='4' fill='%23FFFFFF' opacity='.95'/><rect x='114' y='30' width='8' height='10' fill='%23E5866A' opacity='.65'/><circle cx='118' cy='40' r='4' fill='%23E5866A' opacity='.65'/><circle cx='126' cy='40' r='4' fill='%23FFFFFF' opacity='.95'/><rect x='40' y='50' width='34' height='24' rx='2' fill='%23F6D58E' opacity='.6'/><rect x='106' y='50' width='16' height='24' rx='2' fill='%23F6D58E' opacity='.55'/><ellipse cx='57' cy='68' rx='9' ry='2' fill='%23C98F4E' opacity='.45'/><circle cx='57' cy='56' r='3' fill='%23E5866A' opacity='.5'/><rect x='84' y='50' width='16' height='40' rx='1' fill='%235E9A73' opacity='.6'/><rect x='87' y='54' width='10' height='13' rx='1' fill='%23F6D58E' opacity='.55'/><rect x='40' y='75' width='34' height='5' fill='%23C98F4E' opacity='.55'/><circle cx='43' cy='74' r='3.4' fill='%237FB28E' opacity='.65'/><circle cx='49' cy='74' r='3.4' fill='%237FB28E' opacity='.65'/><circle cx='55' cy='74' r='3.4' fill='%237FB28E' opacity='.65'/><circle cx='61' cy='74' r='3.4' fill='%237FB28E' opacity='.65'/><circle cx='67' cy='74' r='3.4' fill='%237FB28E' opacity='.65'/><circle cx='71' cy='74' r='3.4' fill='%237FB28E' opacity='.65'/><circle cx='47' cy='72' r='1.6' fill='%23E5866A' opacity='.8'/><circle cx='59' cy='72' r='1.6' fill='%23E5866A' opacity='.8'/><circle cx='69' cy='72' r='1.6' fill='%23E5866A' opacity='.8'/><path d='M2 56 Q16 44 30 56 Z' fill='%23E5866A' opacity='.55'/><ellipse cx='16' cy='76' rx='10' ry='2.6' fill='%23FFFFFF' opacity='.95'/><circle cx='13' cy='74' r='1.8' fill='%23BFDCE3' opacity='.8'/><circle cx='19' cy='74.5' r='1.6' fill='%23E5866A' opacity='.6'/><rect x='136' y='64' width='16' height='18' rx='1' fill='%234A524D' opacity='.6'/><circle cx='131' cy='83' r='6' fill='%237FB28E' opacity='.5'/><circle cx='156' cy='82' r='6' fill='%23A9CC8A' opacity='.55'/></g><g filter='url(%23p)' fill='none' stroke='%2355705E' stroke-width='1' stroke-linecap='round' stroke-linejoin='round' opacity='.8'><path d='M34 26v64h92V26M30 22h100v6H30z'/><path d='M34 30h92'/><path d='M34 40a4 4 0 0 0 8 0M42 40a4 4 0 0 0 8 0M50 40a4 4 0 0 0 8 0M58 40a4 4 0 0 0 8 0M66 40a4 4 0 0 0 8 0M74 40a4 4 0 0 0 8 0M82 40a4 4 0 0 0 8 0M90 40a4 4 0 0 0 8 0M98 40a4 4 0 0 0 8 0M106 40a4 4 0 0 0 8 0M114 40a4 4 0 0 0 8 0M122 40a4 4 0 0 0 8 0'/><rect x='56' y='8' width='48' height='12' rx='2'/><rect x='40' y='50' width='34' height='24' rx='2'/><path d='M57 50v24M40 62h34'/><rect x='106' y='50' width='16' height='24' rx='2'/><path d='M114 50v24M106 62h16'/><rect x='84' y='50' width='16' height='40' rx='1'/><path d='M97 72v3'/><path d='M16 50v28M10 86l3-10M22 86l-3-10'/><path d='M4 86v-9h5v9M28 86v-9h-5v9M4 80h5M23 80h5'/><path d='M136 64h16v18h-16zM138 90l2-8M150 90l-2-8'/><path d='M139 69h10M139 73h8M139 77h9' stroke='%23FFFFFF' opacity='.8'/><path d='M2 90h156'/></g><text x='80' y='17' text-anchor='middle' font-family='Georgia,serif' font-style='italic' font-size='8.5' fill='%23FFFFFF'>Bistrot</text><g fill='%23F6C64E' opacity='.9'><circle cx='38' cy='45' r='1.3'/><circle cx='50' cy='46.6' r='1.3'/><circle cx='62' cy='47.3' r='1.3'/><circle cx='74' cy='47.3' r='1.3'/><circle cx='86' cy='46.8' r='1.3'/><circle cx='98' cy='47.3' r='1.3'/><circle cx='110' cy='47.3' r='1.3'/><circle cx='122' cy='46.4' r='1.3'/></g><path d='M34 44Q80 52 126 44' fill='none' stroke='%2355705E' stroke-width='.6' opacity='.6'/></svg>");background-color:#EDEAE3;background-size:auto 92%}
+.th-choix{background-image:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'><defs><filter id='w' x='-20%' y='-20%' width='140%' height='140%'><feTurbulence type='fractalNoise' baseFrequency='0.05' numOctaves='3' seed='4'/><feDisplacementMap in='SourceGraphic' scale='4'/><feGaussianBlur stdDeviation='0.45'/></filter><filter id='p' x='-10%' y='-10%' width='120%' height='120%'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='1' seed='2'/><feDisplacementMap in='SourceGraphic' scale='1.2'/></filter></defs><g filter='url(%23w)'><path d='M8 52 Q80 40 152 52 L156 92 Q80 98 4 92 Z' fill='%23F7F1E6' opacity='.95'/><path d='M12 50 L8 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M24 50 L20 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M36 50 L32 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M48 50 L44 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M60 50 L56 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M72 50 L68 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M84 50 L80 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M96 50 L92 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M108 50 L104 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M120 50 L116 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M132 50 L128 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M144 50 L140 94' stroke='%23E5866A' stroke-width='5' opacity='.18'/><path d='M6 58 Q80 52 154 58' stroke='%23E5866A' stroke-width='5' fill='none' opacity='.18'/><path d='M6 70 Q80 64 154 70' stroke='%23E5866A' stroke-width='5' fill='none' opacity='.18'/><path d='M6 82 Q80 76 154 82' stroke='%23E5866A' stroke-width='5' fill='none' opacity='.18'/><ellipse cx='72' cy='70' rx='30' ry='16' fill='%23FFFFFF'/><ellipse cx='72' cy='70' rx='30' ry='16' fill='none' stroke='%23B9CFC0' stroke-width='3' opacity='.7'/><ellipse cx='66' cy='67' rx='12' ry='7' fill='%237FB28E' opacity='.65'/><ellipse cx='77' cy='65' rx='9' ry='6' fill='%235E9A73' opacity='.55'/><ellipse cx='80' cy='72' rx='9' ry='5' fill='%23A9CC8A' opacity='.65'/><circle cx='68' cy='72' r='3.4' fill='%23E5866A' opacity='.75'/><circle cx='84' cy='66' r='3.4' fill='%23E5866A' opacity='.75'/><circle cx='62' cy='64' r='3.4' fill='%23E5866A' opacity='.75'/><ellipse cx='60' cy='70' rx='3.5' ry='2.6' fill='%23F2E3A6' opacity='.95'/><ellipse cx='74' cy='74' rx='3.5' ry='2.6' fill='%23F2E3A6' opacity='.95'/><ellipse cx='72' cy='62' rx='4' ry='2.4' fill='%23FFFFFF' opacity='.9'/><circle cx='72' cy='62' r='1.5' fill='%23F6C64E'/><path d='M24 60 l14 -2 l4 26 l-14 2z' fill='%23BFDCE3' opacity='.6'/><ellipse cx='122' cy='76' rx='17' ry='8' fill='%23C98F4E' opacity='.5'/><ellipse cx='117' cy='70' rx='9' ry='4.5' fill='%23E2B57A' opacity='.85' transform='rotate(-15 117 70)'/><ellipse cx='128' cy='70' rx='8' ry='4' fill='%23D9A562' opacity='.8' transform='rotate(12 128 70)'/><path d='M100 26 h10 l-1 6 q8 6 8 16 v12 q0 4 -4 4 h-16 q-4 0 -4 -4 v-12 q0 -10 8 -16z' fill='%23BFDCE3' opacity='.5'/><path d='M94 46 h22 v14 q0 4 -4 4 h-14 q-4 0 -4 -4z' fill='%239CC7D2' opacity='.35'/><rect x='132' y='38' width='11' height='18' rx='3' fill='%23BFDCE3' opacity='.55'/><rect x='133' y='46' width='9' height='9' rx='2' fill='%239CC7D2' opacity='.4'/><rect x='40' y='38' width='9' height='14' rx='4' fill='%23E8DCC4' opacity='.95'/><circle cx='40' cy='26' r='4' fill='%23E5866A' opacity='.7'/><circle cx='49' cy='24' r='3.6' fill='%23F6C64E' opacity='.8'/><circle cx='45' cy='18' r='3.4' fill='%23E5866A' opacity='.6'/><ellipse cx='37' cy='33' rx='4' ry='2' fill='%237FB28E' opacity='.7' transform='rotate(-30 37 33)'/></g><g filter='url(%23p)' fill='none' stroke='%2355705E' stroke-width='1' stroke-linecap='round' stroke-linejoin='round' opacity='.8'><path d='M8 52 Q80 40 152 52 L156 92 Q80 98 4 92 Z'/><path d='M42 70 a30 16 0 0 0 60 0'/><path d='M30 58v26M27 58v6a3 3 0 0 0 6 0v-6'/><path d='M106 66c-2 2-3 6-3 9h3M106 66v20'/><path d='M100 26 h10 l-1 6 q8 6 8 16 v12 q0 4 -4 4 h-16 q-4 0 -4 -4 v-12 q0 -10 8 -16z'/><rect x='132' y='38' width='11' height='18' rx='3'/><path d='M106 78 q16 10 32 0'/><rect x='40' y='38' width='9' height='14' rx='4'/><path d='M42 38 L40 29M45 38 L45 21M47 38 L49 27'/></g></svg>");background-color:#EDEAE3;background-size:auto 92%}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #F5F3EE; color: #1B201D; font-family: Figtree, system-ui, sans-serif; overflow: hidden">
+
+  <main style="flex: 1; overflow-y: auto; padding: 28px 20px 20px; display: flex; flex-direction: column; gap: 16px">
+   <sc-if value="{{ base }}" hint-placeholder-val="{{ true }}">
+    <div style="flex: none; display: flex; flex-direction: column; gap: 6px">
+      <p style="margin: 0; font-size: 15px; font-weight: 600; color: #59605B">Lundi 12 octobre</p>
+      <h1 style="margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800">{{ titre }}</h1>
+      <p style="margin: 0; font-size: 17px; line-height: 1.45; color: #59605B">{{ sousTitre }}</p>
+    </div>
+
+    <section aria-label="Ton premier Rituel" style="flex: none; display: flex; flex-direction: column; gap: 14px; padding: 20px; background: #1F4D37; color: #FFFFFF; border-radius: 24px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #BFE0CC">Ton premier Rituel</span>
+        <span style="font-size: 22px; font-weight: 800">{{ date }}</span>
+        <span style="font-size: 15px; color: #D6EADD">{{ dans }} · 1 h 30 · 3 Box, 3 dîners</span>
+      </div>
+      <div aria-hidden="true" style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px">
+        <sc-for list="{{ frise }}" as="f" hint-placeholder-count="7">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px">
+            <span style="font-size: 12px; font-weight: 700; color: {{ f.lfg }}">{{ f.court }}</span>
+            <span style="width: 100%; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 9px; background: {{ f.bg }}; color: {{ f.fg }}; font-size: 13px; font-weight: 800">{{ f.num }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <a href="Courses.dc.html" style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 16px; background: #2A5C43; color: #FFFFFF; text-decoration: none">
+        <span style="display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 15px">
+          <span style="font-weight: 700">Ta liste de courses</span>
+          <span style="display: flex; align-items: center; gap: 4px; font-variant-numeric: tabular-nums">≈ 70 à 85 € sur 120 €
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+          </span>
+        </span>
+        <span style="height: 8px; border-radius: 4px; background: #1A4130; overflow: hidden" aria-hidden="true"><span style="display: block; width: 71%; height: 100%; border-radius: 4px; background: #9FD3B3"></span></span>
+        <span style="font-size: 14px; color: #D6EADD">31 articles · le mieux : vendredi ou samedi</span>
+      </a>
+      <sc-if value="{{ fermeChoix }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ ouvrirChoix }}" style="height: 48px; border-radius: 24px; border: 2px solid #4C7F65; background: transparent; color: #FFFFFF; font-size: 16px; font-weight: 700">Changer la date</button>
+      </sc-if>
+      <sc-if value="{{ choix }}" hint-placeholder-val="{{ false }}">
+        <div role="radiogroup" aria-label="Date du premier Rituel" style="display: flex; flex-direction: column; gap: 8px">
+          <sc-for list="{{ options }}" as="o" hint-placeholder-count="2">
+            <button role="radio" aria-checked="{{ o.coche }}" onClick="{{ o.choisir }}" style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 8px 14px; text-align: left; border-radius: 16px; border: 2px solid {{ o.bc }}; background: {{ o.bg }}; color: #FFFFFF">
+              <span style="flex: none; width: 20px; height: 20px; box-sizing: border-box; border-radius: 10px; border: {{ o.rond }}"></span>
+              <span style="flex: 1; display: flex; flex-direction: column">
+                <span style="font-size: 16px; font-weight: 700">{{ o.titre }}</span>
+                <span style="font-size: 13px; color: #D6EADD">{{ o.detail }}</span>
+              </span>
+            </button>
+          </sc-for>
+          <a href="Accueil.dc.html" style="min-height: 48px; display: flex; align-items: center; justify-content: center; border-radius: 24px; background: #FFFFFF; color: #1F4D37; font-size: 16px; font-weight: 700; text-decoration: none">Je commence dès aujourd'hui</a>
+        </div>
+      </sc-if>
+    </section>
+
+    <section aria-labelledby="pret" style="flex: none; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px">
+        <h2 id="pret" style="margin: 0; font-size: 18px; font-weight: 800">Pour être prêt</h2>
+        <span style="font-size: 14px; font-weight: 700; color: #59605B; font-variant-numeric: tabular-nums">{{ compte }}</span>
+      </div>
+      <p style="margin: 0; font-size: 15px; line-height: 1.45; color: #59605B">Rien d'obligatoire. Coche au fur et à mesure.</p>
+      <sc-for list="{{ taches }}" as="t" hint-placeholder-count="4">
+        <article style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 20px; background: #FFFFFF">
+          <button aria-pressed="{{ t.pressed }}" onClick="{{ t.basculer }}" style="display: flex; align-items: flex-start; gap: 12px; padding: 0; border: none; background: transparent; color: #1B201D; text-align: left">
+            <span style="flex: none; width: 28px; height: 28px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border-radius: 9px; border: 2px solid {{ t.cbc }}; background: {{ t.cbg }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: {{ t.op }}"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+            </span>
+            <span style="flex: 1; display: flex; flex-direction: column; gap: 3px">
+              <span style="font-size: 17px; font-weight: 700; text-decoration: {{ t.barre }}; color: {{ t.tfg }}">{{ t.titre }}</span>
+              <span style="font-size: 15px; line-height: 1.45; color: #59605B">{{ t.detail }}</span>
+            </span>
+          </button>
+          <sc-if value="{{ t.aIdees }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-wrap: wrap; gap: 6px; padding-left: 40px">
+              <sc-for list="{{ t.idees }}" as="i" hint-placeholder-count="3">
+                <span style="padding: 6px 10px; border-radius: 10px; background: #F5F3EE; font-size: 14px; font-weight: 600; color: #3D443F">{{ i }}</span>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ t.aLien }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ t.ouvrir }}" style="align-self: flex-start; margin-left: 40px; min-height: 40px; display: flex; align-items: center; gap: 6px; padding: 0; border: none; background: transparent; color: #2E6B4E; font-size: 15px; font-weight: 700">
+              {{ t.lien }}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+            </button>
+          </sc-if>
+        </article>
+      </sc-for>
+    </section>
+   </sc-if>
+
+   <sc-if value="{{ voletEntete }}" hint-placeholder-val="{{ false }}">
+    <button onClick="{{ fermer }}" style="flex: none; align-self: flex-start; height: 44px; display: flex; align-items: center; gap: 6px; padding: 0 14px 0 4px; border: none; background: transparent; color: #2E6B4E; font-size: 16px; font-weight: 700">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+      Avant de commencer
+    </button>
+    <div style="flex: none; display: flex; flex-direction: column; gap: 6px">
+      <h1 style="margin: 0; font-size: 28px; line-height: 1.2; font-weight: 800">{{ voletTitre }}</h1>
+      <p style="margin: 0; font-size: 16px; line-height: 1.45; color: #59605B">{{ voletTexte }}</p>
+    </div>
+   </sc-if>
+
+   <sc-if value="{{ voletMenus }}" hint-placeholder-val="{{ false }}">
+    <sc-for list="{{ semaine }}" as="j" hint-placeholder-count="7">
+      <article style="flex: none; display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: 20px; background: #FFFFFF">
+        <span style="font-size: 15px; font-weight: 800">{{ j.nom }}</span>
+        <sc-for list="{{ j.repas }}" as="r" hint-placeholder-count="2">
+          <sc-if value="{{ r.aRecette }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ r.ouvrir }}" aria-label="{{ r.aria }}" style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 0; border: none; background: transparent; color: #1B201D; text-align: left">
+              <span class="th th-{{ r.ph }}" style="flex: none; width: 52px; height: 52px; border-radius: 14px"></span>
+              <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px">
+                <span style="font-size: 13px; font-weight: 700; color: #59605B">{{ r.moment }}</span>
+                <span style="font-size: 15px; font-weight: 600; line-height: 1.3; color: {{ r.fg }}">{{ r.nom }}</span>
+                <sc-if value="{{ r.congele }}" hint-placeholder-val="{{ false }}">
+                  <span style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: #2E6B4E"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" style="flex: none"><path d="M12 2v20M3.3 7l17.4 10M3.3 17 20.7 7M9 4l3 2.5L15 4M9 20l3-2.5 3 2.5"/></svg>{{ r.sortir }}</span>
+                </sc-if>
+              </span>
+              <span style="flex: none; padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; background: {{ r.tagBg }}; color: {{ r.tagFg }}">{{ r.tag }}</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#59605B" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="m9 5 7 7-7 7"/></svg>
+            </button>
+          </sc-if>
+          <sc-if value="{{ r.sansRecette }}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; align-items: center; gap: 12px">
+              <span class="th th-{{ r.ph }}" style="flex: none; width: 52px; height: 52px; border-radius: 14px"></span>
+              <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px">
+                <span style="font-size: 13px; font-weight: 700; color: #59605B">{{ r.moment }}</span>
+                <span style="font-size: 15px; font-weight: 600; line-height: 1.3; color: {{ r.fg }}">{{ r.nom }}</span>
+              </span>
+              <span style="flex: none; padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; background: {{ r.tagBg }}; color: {{ r.tagFg }}">{{ r.tag }}</span>
+              <span style="flex: none; width: 18px"></span>
+            </div>
+          </sc-if>
+        </sc-for>
+      </article>
+    </sc-for>
+   </sc-if>
+
+   <sc-if value="{{ enFiche }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ fermerFiche }}" style="flex: none; align-self: flex-start; height: 44px; display: flex; align-items: center; gap: 6px; padding: 0 14px 0 4px; border: none; border-radius: 22px; background: transparent; color: #2E6B4E; font-size: 16px; font-weight: 700">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+        {{ fiche.retour }}
+      </button>
+      <div class="th th-{{ fiche.ph }}" role="img" aria-label="Photo : {{ fiche.titre }}" style="flex: none; height: 200px; border-radius: 24px"></div>
+      <div style="flex: none; display: flex; flex-direction: column; gap: 8px">
+        <p style="margin: 0; font-size: 15px; font-weight: 600; color: #59605B">{{ fiche.quand }}</p>
+        <h1 style="margin: 0; font-size: 28px; line-height: 1.2; font-weight: 800">{{ fiche.titre }}</h1>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px">
+          <span style="padding: 5px 10px; border-radius: 10px; font-size: 13px; font-weight: 700; background: {{ fiche.tagBg }}; color: {{ fiche.tagFg }}">{{ fiche.tag }}</span>
+          <span style="padding: 5px 10px; border-radius: 10px; font-size: 13px; font-weight: 700; background: #FFFFFF; color: #3D443F">Pour 2</span>
+          <span style="padding: 5px 10px; border-radius: 10px; font-size: 13px; font-weight: 700; background: #FFFFFF; color: #3D443F">{{ fiche.temps }}</span>
+        </div>
+      </div>
+
+      <section aria-label="Le jour même" style="flex: none; display: flex; flex-direction: column; gap: 6px; padding: 16px; border-radius: 20px; background: #E3EEE7; color: #1F4D37">
+        <h2 style="margin: 0; font-size: 13px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase">{{ fiche.jourTitre }}</h2>
+        <span style="font-size: 16px; line-height: 1.45">{{ fiche.jourJ }}</span>
+        <sc-if value="{{ fiche.congele }}" hint-placeholder-val="{{ false }}">
+          <span style="display: flex; gap: 8px; padding: 10px 12px; border-radius: 12px; background: #FFFFFF; font-size: 15px; line-height: 1.45"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" style="flex: none; margin-top: 2px"><path d="M12 2v20M3.3 7l17.4 10M3.3 17 20.7 7M9 4l3 2.5L15 4M9 20l3-2.5 3 2.5"/></svg><span>{{ fiche.congeleTexte }}</span></span>
+        </sc-if>
+        <sc-if value="{{ fiche.aGarde }}" hint-placeholder-val="{{ true }}">
+          <span style="font-size: 14px; line-height: 1.45; font-weight: 600">Se garde : {{ fiche.garde }}</span>
+        </sc-if>
+      </section>
+
+      <section aria-label="Ingrédients" style="flex: none; display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 800">Ingrédients <span style="font-weight: 600; color: #59605B">· pour 2</span></h2>
+        <ul style="margin: 0; padding: 6px 16px; list-style: none; border-radius: 20px; background: #FFFFFF">
+          <sc-for list="{{ fiche.ingredients }}" as="g" hint-placeholder-count="6">
+            <li style="padding: 10px 0; border-bottom: 1px solid {{ g.trait }}; font-size: 15px; line-height: 1.4">{{ g.t }}</li>
+          </sc-for>
+        </ul>
+      </section>
+
+      <section aria-label="{{ fiche.etapesTitre }}" style="flex: none; display: flex; flex-direction: column; gap: 8px">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 800">{{ fiche.etapesTitre }}</h2>
+        <p style="margin: 0; font-size: 14px; color: #59605B">{{ fiche.origine }}</p>
+        <ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px">
+          <sc-for list="{{ fiche.etapes }}" as="e" hint-placeholder-count="4">
+            <li style="display: flex; gap: 12px; padding: 14px; border-radius: 18px; background: #FFFFFF">
+              <span style="flex: none; width: 28px; height: 28px; border-radius: 14px; background: #2E6B4E; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800">{{ e.n }}</span>
+              <span style="flex: 1; font-size: 15px; line-height: 1.45">{{ e.t }}</span>
+            </li>
+          </sc-for>
+        </ol>
+      </section>
+    </sc-if>
+
+   <sc-if value="{{ voletCourses }}" hint-placeholder-val="{{ false }}">
+    <section aria-label="Budget" style="flex: none; display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 20px; background: #FFFFFF">
+      <span style="display: flex; justify-content: space-between; font-size: 16px">
+        <span style="font-weight: 700">Environ 70 à 85 €</span>
+        <span style="color: #59605B">sur tes 120 €</span>
+      </span>
+      <span aria-hidden="true" style="height: 8px; border-radius: 4px; background: #EEEAE2; overflow: hidden"><span style="display: block; width: 71%; height: 100%; border-radius: 4px; background: #2E6B4E"></span></span>
+      <span style="font-size: 14px; color: #59605B">C'est une estimation : les prix changent d'un magasin à l'autre. Après les courses, tu saisis ton ticket pour suivre ton budget.</span>
+    </section>
+    <sc-for list="{{ rayons }}" as="y" hint-placeholder-count="3">
+      <article style="flex: none; display: flex; flex-direction: column; gap: 6px; padding: 14px 16px; border-radius: 20px; background: #FFFFFF">
+        <span style="display: flex; justify-content: space-between; gap: 12px">
+          <span style="font-size: 16px; font-weight: 800">{{ y.nom }}</span>
+        </span>
+        <span style="font-size: 14px; line-height: 1.45; color: #59605B">{{ y.apercu }}</span>
+      </article>
+    </sc-for>
+    <a href="Courses.dc.html" style="flex: none; height: 52px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 26px; background: #2E6B4E; color: #FFFFFF; font-size: 17px; font-weight: 700; text-decoration: none">
+      Ouvrir la liste complète
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>
+    </a>
+   </sc-if>
+  </main>
+
+  <nav aria-label="Navigation principale" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 8px 8px 14px; background: #FFFFFF; border-top: 1px solid #E2DED5">
+    <a href="Accueil.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; text-decoration: none; color: #1F4D37; font-size: 12px; font-weight: 700">
+      <span style="width: 60px; height: 32px; border-radius: 16px; background: #E3EEE7; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span>Accueil</a>
+    <a href="Menus.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; text-decoration: none; color: #59605B; font-size: 12px; font-weight: 600">
+      <span style="width: 60px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg></span>Menus</a>
+    <a href="Courses.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; text-decoration: none; color: #59605B; font-size: 12px; font-weight: 600">
+      <span style="width: 60px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9h18l-1.5 10.5a1.5 1.5 0 0 1-1.5 1.5H6a1.5 1.5 0 0 1-1.5-1.5z"/><path d="m8 9 4-6 4 6"/></svg></span>Courses</a>
+    <a href="Foyer.dc.html" style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 4px 0; text-decoration: none; color: #59605B; font-size: 12px; font-weight: 600">
+      <span style="width: 60px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14.5c1.9.8 3 2.7 3 5.5"/></svg></span>Foyer</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // Maquette : installée le lundi 12 octobre, Rituel le dimanche, dosage Équilibré pour 2 adultes.
+    // debut : 0 = dimanche 18, 1 = dimanche 25
+    // volet : null, "menus" ou "courses" (aperçus ouverts depuis cet écran)
+    this.state = { debut: 0, choix: false, faites: [], volet: null, fiche: null };
+    // fiche : null ou { k, type, i, moment } (recette ouverte depuis l'aperçu des menus)
+  }
+  renderVals() {
+    const s = this.state;
+    const DATES = [
+      { titre: "Dimanche 18 octobre", jours: 6 },
+      { titre: "Dimanche 25 octobre", jours: 13 }
+    ];
+    const d = DATES[s.debut];
+    const TACHES = [
+      { titre: "Finir ce qu'il reste au frigo", detail: "Jusqu'au Rituel, rien ne change : tu manges comme d'habitude. Profites-en pour finir ce que tu as déjà, et ne rien jeter. Des idées faciles :",
+        idees: ["Omelette du frigo", "Soupe de légumes", "Riz sauté", "Tarte aux restes"] },
+      { titre: "Acheter 6 Box", detail: "Une Box, c'est ton déjeuner préparé le dimanche, que tu emportes au travail. Il en faut 6 : une par personne, pour 3 midis. En magasin, choisis-les :",
+        idees: ["En verre", "Avec un couvercle étanche", "D'environ 750 ml", "Qui vont au micro-ondes et au congélateur"] },
+      { titre: "Regarder tes premiers menus", detail: "Pour savoir ce que tu mangeras la première semaine, midi et soir.",
+        lien: "Voir les menus", volet: "menus" },
+      { titre: "Faire les courses", detail: "Ta liste est déjà prête. Elle contient tout ce qu'il faut pour le Rituel : compte entre 70 et 85 € selon ton magasin, pour un budget de 120 €. Le mieux, c'est d'y aller vendredi ou samedi : les produits seront frais.",
+        lien: "Voir la liste", volet: "courses" }
+    ];
+    const JC = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+    const debut = s.debut === 0 ? 12 : 19;
+    const TAG = {
+      box: { tag: "Box", tagBg: "#2E6B4E", tagFg: "#FFFFFF" },
+      pret: { tag: "Prêt", tagBg: "#E3EEE7", tagFg: "#1F4D37" },
+      dehors: { tag: "Dehors", tagBg: "#EDEAE3", tagFg: "#3D443F" },
+      frais: { tag: "Frais", tagBg: "#EDEAE3", tagFg: "#3D443F" },
+      rituel: { tag: "Rituel", tagBg: "#F3DFC4", tagFg: "#6E3F00" },
+      libre: { tag: "Libre", tagBg: "#EDEAE3", tagFg: "#3D443F" }
+    };
+    // Première semaine (semaine 1 des Menus), qui démarre le lendemain du premier Rituel.
+    // [nom, type, photo] : mêmes vignettes que l'écran Menus
+    // Conservation (docs/conservation.md) : au-delà de J+3, le plat est congelé au Rituel.
+    const S1 = [
+      [["Taboulé de quinoa, feta", "box", "quinoa"], ["Poulet rôti, légumes d'automne", "pret", "poulet"]],
+      [["Tu manges dehors", "dehors", "dehors"], ["Omelette aux herbes", "frais", "omelette"]],
+      [["Salade de lentilles, œuf", "box", "lentilles"], ["Chili sin carne, riz", "pret", "chili"]],
+      [["Tu manges dehors", "dehors", "dehors"], ["Pâtes au pesto de roquette", "frais", "pesto"]],
+      [["Curry de lentilles corail", "box", "curry"], ["Gratin de courge, pois chiches", "pret", "gratin"]],
+      [["Au choix", "libre", "choix"], ["Soupe minestrone", "frais", "minestrone"]],
+      [["Au choix", "libre", "choix"], ["Assiette du Rituel", "rituel", "rituel"]]
+    ];
+    const FRIGO = { quinoa: 2, wrap: 2, lentilles: 3, curry: 3, gratin: 3, chili: 3, poulet: 3 };
+    const estCongele = (ph, type, i) => (type === "box" || type === "pret") && i + 1 > (FRIGO[ph] || 3);
+
+    // recettes pour 2 personnes
+    const RECETTES = {
+      quinoa: { titre: "Taboulé de quinoa, feta", temps: "15 min au Rituel", garde: "2 jours au frigo. Ne se congèle pas : c'est une Box de début de semaine.",
+        jour: "Se mange froid. Prends la Box du frigo le matin, remue avant de manger.",
+        ingredients: ["150 g de quinoa", "1 concombre", "2 tomates", "100 g de feta", "1 bouquet de menthe", "1 citron", "Huile d'olive, sel, poivre"],
+        etapes: ["Rince le quinoa et cuis-le 10 min dans l'eau bouillante salée. Égoutte.", "Coupe le concombre et les tomates en petits dés.", "Mélange le quinoa tiédi, les légumes, la feta émiettée, la menthe ciselée, le jus du citron et 2 cuillères d'huile.", "Répartis dans 2 Box."] },
+      lentilles: { titre: "Salade de lentilles, œuf", temps: "20 min au Rituel", garde: "3 jours au frigo. Ne se congèle pas, à cause des œufs durs.",
+        jour: "Froide ou tiède. Ajoute la roquette du petit sachet au moment de manger.",
+        ingredients: ["150 g de lentilles vertes", "4 œufs", "1 échalote", "1 cuillère à café de moutarde", "2 cuillères à soupe de vinaigre de cidre", "3 cuillères à soupe d'huile d'olive", "1 sachet de roquette"],
+        etapes: ["Cuis les lentilles 20 min dans l'eau non salée. Sale à la fin.", "Cuis les œufs 10 min, passe-les sous l'eau froide, écale-les.", "Vinaigrette : échalote ciselée, moutarde, vinaigre, huile.", "Mélange les lentilles tièdes et la vinaigrette, ajoute les œufs en quartiers. La roquette va dans un sachet à part."] },
+      curry: { titre: "Curry de lentilles corail", temps: "25 min au Rituel", garde: "3 jours au frigo, 3 mois au congélateur",
+        jour: "3 min au micro-ondes, couvercle entrouvert. S'il est au congélateur, sors-le la veille au soir.",
+        ingredients: ["200 g de lentilles corail", "1 oignon", "2 cuillères à soupe de pâte de curry", "40 cl de lait de coco", "50 cl d'eau", "1 poignée de pousses d'épinard"],
+        etapes: ["Fais revenir l'oignon émincé 3 min avec la pâte de curry.", "Ajoute les lentilles rincées, le lait de coco et l'eau.", "Laisse mijoter 20 min à feu doux, en remuant de temps en temps.", "Hors du feu, ajoute les épinards : ils fondent tout seuls."] },
+      gratin: { titre: "Gratin de courge, pois chiches", temps: "40 min de four au Rituel", garde: "3 jours au frigo, 2 mois au congélateur",
+        jour: "10 min au four à 180 °C, ou 3 min au micro-ondes.",
+        ingredients: ["600 g de courge butternut", "1 conserve de pois chiches (400 g)", "20 cl de crème", "60 g d'emmental râpé", "1 gousse d'ail", "Muscade, sel, poivre"],
+        etapes: ["Épluche la courge et coupe-la en dés de 2 cm.", "Dans un plat : courge, pois chiches égouttés, ail haché, crème, muscade, sel et poivre.", "Parsème d'emmental.", "40 min au four à 200 °C."] },
+      chili: { titre: "Chili sin carne, riz", temps: "30 min au Rituel", garde: "3 jours au frigo, 3 mois au congélateur. Le riz se cuit le soir même : cuit, il se garde mal.",
+        jour: "5 min à la casserole avec un fond d'eau. Pendant ce temps, cuis le riz : 10 min.",
+        ingredients: ["1 conserve de haricots rouges (400 g)", "1 conserve de tomates concassées", "1 poivron rouge", "2 oignons", "2 gousses d'ail", "1 cuillère à café de cumin et 1 de paprika", "150 g de riz"],
+        etapes: ["Fais revenir les oignons et l'ail 5 min.", "Ajoute le poivron en dés, les haricots égouttés, les tomates et les épices.", "Couvre et laisse mijoter 25 min à feu doux.", "Le riz ne se prépare pas au Rituel : tu le cuis le soir même, en 10 min."] },
+      wrap: { titre: "Wrap poulet, crudités", temps: "20 min au Rituel", garde: "2 jours au frigo. Ne se congèle pas : c'est une Box de début de semaine.",
+        jour: "Se mange froid. Coupe-le en deux au moment de manger.",
+        ingredients: ["4 galettes de blé", "2 blancs de poulet", "1 carotte", "¼ de chou rouge", "2 cuillères à soupe de fromage frais", "Quelques feuilles de salade"],
+        etapes: ["Cuis les blancs de poulet 10 min à la poêle, coupe-les en lamelles.", "Râpe la carotte, émince finement le chou.", "Tartine les galettes de fromage frais, garnis et roule serré.", "Emballe chaque wrap dans du papier cuisson : 2 par Box."] },
+      poulet: { titre: "Poulet rôti, légumes d'automne", temps: "1 h de four au Rituel", garde: "3 jours au frigo, 3 mois au congélateur",
+        jour: "10 min au four à 180 °C, ou 3 min au micro-ondes.",
+        ingredients: ["1 poulet de 1,2 kg", "600 g de pommes de terre", "4 carottes", "2 oignons rouges", "Thym, huile d'olive, sel, poivre"],
+        etapes: ["Coupe les légumes en gros morceaux dans un plat : huile, sel, thym.", "Pose le poulet dessus, frotte-le d'huile, sale et poivre.", "1 h au four à 200 °C, sans y toucher.", "Laisse tiédir, découpe et range la viande avec les légumes."] },
+      omelette: { titre: "Omelette aux herbes", temps: "15 min", garde: "",
+        jour: "15 min, à faire le soir même. Rien n'a été préparé au Rituel.",
+        ingredients: ["5 œufs", "1 bouquet de ciboulette et de persil", "30 g de parmesan", "1 noix de beurre", "Une salade verte pour accompagner"],
+        etapes: ["Bats les œufs avec le parmesan râpé, sel et poivre.", "Ajoute les herbes ciselées.", "Fais fondre le beurre dans une poêle, verse les œufs, remue doucement 2 min.", "Plie l'omelette quand le dessus est encore baveux. Sers avec la salade."] },
+      pesto: { titre: "Pâtes au pesto de roquette", temps: "20 min", garde: "",
+        jour: "20 min, à faire le soir même. Rien n'a été préparé au Rituel.",
+        ingredients: ["250 g de pâtes", "1 sachet de roquette (80 g)", "40 g de parmesan", "30 g d'amandes", "1 gousse d'ail", "6 cuillères à soupe d'huile d'olive"],
+        etapes: ["Mets les pâtes à cuire.", "Mixe la roquette, le parmesan, les amandes, l'ail et l'huile.", "Égoutte les pâtes en gardant un fond d'eau de cuisson.", "Mélange les pâtes, le pesto et un peu d'eau de cuisson pour lier."] },
+      minestrone: { titre: "Soupe minestrone", temps: "20 min", garde: "",
+        jour: "20 min, à faire le soir même. Rien n'a été préparé au Rituel.",
+        ingredients: ["1 courgette", "2 carottes", "1 branche de céleri", "1 conserve de haricots blancs", "1 conserve de tomates concassées", "80 g de petites pâtes", "1 l de bouillon de légumes"],
+        etapes: ["Coupe les légumes en petits dés.", "Fais-les revenir 3 min, ajoute les tomates et le bouillon.", "Ajoute les pâtes et les haricots égouttés : 10 min à petits frémissements.", "Sers avec un peu de parmesan ou un filet d'huile d'olive."] },
+      rituel: { titre: "Assiette du Rituel", temps: "Pendant le Rituel", garde: "",
+        jour: "Rien à préparer en plus : tu manges ce que tu viens de cuisiner.",
+        ingredients: ["Une petite part de chaque plat du Rituel", "Du pain ou une salade verte"],
+        etapes: ["Pendant le Rituel, garde une petite portion de chaque plat.", "Compose une assiette à partager : c'est l'occasion de goûter avant de remplir les Box."] }
+    };
+    const JL = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+    const lundi = s.debut === 0 ? 19 : 26;
+    const jourDate = (i) => {
+      const n = lundi + i;
+      return n > 31 ? n - 31 + " novembre" : n + " octobre";
+    };
+    const RAYONS = [
+      { nom: "Fruits et légumes", apercu: "12 articles : pommes de terre, carottes, courge butternut, tomates, concombre…" },
+      { nom: "Épicerie", apercu: "13 articles : quinoa, lentilles, haricots rouges, lait de coco, riz…" },
+      { nom: "Frais", apercu: "6 articles : poulet entier, œufs, feta, parmesan, crème, emmental" }
+    ];
+    const f = s.fiche;
+    let fiche = null;
+    if (f && RECETTES[f.k]) {
+      const R = RECETTES[f.k];
+      const prepare = f.type === "box" || f.type === "pret";
+      const jourRituel = s.debut === 0 ? "18 octobre" : "25 octobre";
+      const congele = estCongele(f.k, f.type, f.i);
+      const veille = congele ? JL[f.i - 1].toLowerCase() : "";
+      fiche = Object.assign({
+        retour: "Ta première semaine",
+        ph: f.k,
+        titre: R.titre,
+        quand: JL[f.i] + " " + jourDate(f.i) + " · " + f.moment.toLowerCase(),
+        temps: R.temps,
+        jourTitre: f.type === "box" ? "Le midi, avec ta Box" : f.type === "pret" ? "Le soir, déjà prêt" : f.type === "rituel" ? "Le jour du Rituel" : "Le soir même",
+        jourJ: R.jour,
+        congele,
+        congeleTexte: !congele ? "" : f.type === "box"
+          ? "À congeler au Rituel : au frigo, elle ne tiendrait pas jusqu'à " + JL[f.i].toLowerCase() + ". Sors-la du congélateur " + veille + " soir et mets-la au frigo. Tu recevras un rappel."
+          : "À congeler au Rituel : au frigo, il ne tiendrait pas jusqu'à " + JL[f.i].toLowerCase() + ". Sors-le du congélateur " + veille + " soir et mets-le au frigo. Tu recevras un rappel.",
+        aGarde: prepare && !!R.garde,
+        garde: R.garde,
+        ingredients: R.ingredients.map((t, j) => ({ t, trait: j === R.ingredients.length - 1 ? "transparent" : "#EEEAE2" })),
+        etapesTitre: prepare ? "Comment c'est préparé" : "La recette",
+        origine: prepare ? "À préparer à ton premier Rituel, dimanche " + jourRituel + (congele ? ", puis à congeler" : "") : "Pas à pas, au moment du repas",
+        etapes: R.etapes.map((t, j) => ({ n: String(j + 1), t }))
+      }, TAG[f.type]);
+    }
+    return {
+      base: !s.volet,
+      voletOuvert: !!s.volet,
+      voletEntete: !!s.volet && !s.fiche,
+      voletMenus: s.volet === "menus" && !s.fiche,
+      enFiche: !!fiche,
+      fiche: fiche || { congele: false, congeleTexte: "", retour: "", ph: "libre", titre: "", quand: "", temps: "", tag: "", tagBg: "", tagFg: "", jourTitre: "", jourJ: "", aGarde: false, garde: "", ingredients: [], etapesTitre: "", origine: "", etapes: [] },
+      fermerFiche: () => this.setState({ fiche: null }),
+      voletCourses: s.volet === "courses",
+      fermer: () => this.setState({ volet: null, fiche: null }),
+      voletTitre: s.volet === "courses" ? "Tes courses" : "Ta première semaine",
+      voletTexte: s.volet === "courses"
+        ? "Un aperçu par rayon. La liste complète est déjà prête, avec un mode magasin pour cocher en rayon."
+        : "Du " + jourDate(0) + " au " + jourDate(6) + ", juste après ton premier Rituel. Les Box et les plats « Prêt » sortent du Rituel.",
+      semaine: S1.map((j, i) => ({
+        nom: JL[i] + " " + jourDate(i),
+        repas: j.map(([nom, type, ph], k) => Object.assign({ ph, moment: k === 0 ? "Midi" : "Soir", nom,
+          aRecette: !!RECETTES[ph], sansRecette: !RECETTES[ph], aria: "Voir la recette : " + nom,
+          congele: estCongele(ph, type, i), sortir: estCongele(ph, type, i) ? (type === "box" ? "Congelée" : "Congelé") + " · à sortir " + JL[i - 1].toLowerCase() + " soir" : "",
+          ouvrir: () => { if (RECETTES[ph]) this.setState({ fiche: { k: ph, type, i, moment: k === 0 ? "Midi" : "Soir" } }); }, fg: type === "dehors" || type === "libre" ? "#59605B" : "#1B201D" }, TAG[type]))
+      })),
+      rayons: RAYONS,
+      titre: "On commence " + (s.debut === 0 ? "dimanche." : "dimanche 25."),
+      sousTitre: s.debut === 0
+        ? "D'ici là, finis tranquillement ta semaine. On prépare le terrain avec toi."
+        : "Tu as deux semaines devant toi. Finis tes réserves, on s'occupe du reste.",
+      date: d.titre,
+      dans: "Dans " + d.jours + " jours",
+      frise: JC.map((c, i) => {
+        const rituel = i === 6;
+        const auj = s.debut === 0 && i === 0;
+        return {
+          court: c, num: String(debut + i),
+          bg: rituel ? "#F3DFC4" : auj ? "#FFFFFF" : "#2A5C43",
+          fg: rituel ? "#6E3F00" : auj ? "#1F4D37" : "#D6EADD",
+          lfg: rituel ? "#F3DFC4" : "#BFE0CC"
+        };
+      }),
+      fermeChoix: !s.choix,
+      choix: s.choix,
+      ouvrirChoix: () => this.setState({ choix: true }),
+      options: DATES.map((o, i) => {
+        const on = s.debut === i;
+        return {
+          titre: o.titre, detail: i === 0 ? "Ton prochain Rituel" : "Une semaine de plus pour t'organiser",
+          coche: on ? "true" : "false", bc: on ? "#FFFFFF" : "#4C7F65", bg: on ? "#2A5C43" : "transparent",
+          rond: on ? "6px solid #FFFFFF" : "2px solid #BFE0CC",
+          choisir: () => this.setState({ debut: i, choix: false })
+        };
+      }),
+      compte: s.faites.length + " sur " + TACHES.length,
+      taches: TACHES.map((t, i) => {
+        const fait = s.faites.indexOf(i) >= 0;
+        return {
+          titre: t.titre, detail: t.detail,
+          aIdees: !!t.idees && !fait, idees: t.idees || [],
+          aLien: !!t.lien && !fait, lien: t.lien || "",
+          ouvrir: () => { if (t.volet) this.setState({ volet: t.volet }); },
+          pressed: fait ? "true" : "false",
+          cbc: fait ? "#2E6B4E" : "#B8BDB9", cbg: fait ? "#2E6B4E" : "#FFFFFF", op: fait ? "1" : "0",
+          barre: fait ? "line-through" : "none", tfg: fait ? "#59605B" : "#1B201D",
+          basculer: () => this.setState({ faites: fait ? s.faites.filter((x) => x !== i) : s.faites.concat([i]) })
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

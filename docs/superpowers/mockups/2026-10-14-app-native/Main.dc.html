@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Guide de routine</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#2E6B4E}a:hover{color:#1F4D37}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid #2E6B4E;outline-offset:2px}
+@keyframes vapeur{0%{transform:translateY(6px);opacity:0}30%{opacity:.9}100%{transform:translateY(-14px);opacity:0}}
+@keyframes mijote{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes tourne{to{transform:rotate(360deg)}}
+@keyframes apparait{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.vap{animation:vapeur 1.8s ease-out infinite}
+.vap2{animation-delay:.6s}.vap3{animation-delay:1.2s}
+.couvercle{animation:mijote .9s ease-in-out infinite}
+.roue{animation:tourne .9s linear infinite}
+.coche{animation:apparait .3s ease-out both}
+@media (prefers-reduced-motion:reduce){.vap,.couvercle,.roue,.coche{animation:none}.vap{opacity:.6}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #F5F3EE; color: #1B201D; font-family: Figtree, system-ui, sans-serif; overflow: hidden">
+
+  <sc-if value="{{ avecEntete }}" hint-placeholder-val="{{ true }}">
+  <header style="display: flex; align-items: center; gap: 12px; padding: 20px 20px 8px">
+    <button aria-label="Étape précédente" onClick="{{ back }}" disabled="{{ premiere }}" style="width: 44px; height: 44px; flex: none; display: flex; align-items: center; justify-content: center; border: none; border-radius: 22px; background: #FFFFFF; color: #1B201D; opacity: {{ backOpacity }}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    </button>
+    <div style="flex: 1; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px" aria-hidden="true">
+      <sc-for list="{{ segs }}" as="seg" hint-placeholder-count="6">
+        <div style="height: 6px; border-radius: 3px; background: {{ seg.bg }}"></div>
+      </sc-for>
+    </div>
+    <span style="min-width: 44px; text-align: right; font-size: 14px; font-weight: 600; color: #59605B; font-variant-numeric: tabular-nums">{{ stepLabel }}</span>
+  </header>
+  </sc-if>
+
+  <main style="flex: 1; overflow-y: auto; padding: 24px 20px 16px">
+
+    <sc-if value="{{ s0 }}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 24px">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <p style="margin: 0; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #2E6B4E">Le foyer</p>
+          <h1 style="margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800">Qui mange à la maison ?</h1>
+          <p style="margin: 0; font-size: 17px; line-height: 1.45; color: #59605B">Pour calibrer les quantités, et donc le budget.</p>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 14px; padding: 16px 16px 18px 20px; background: #FFFFFF; border-radius: 20px">
+            <div style="display: flex; align-items: center; justify-content: space-between">
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: 18px; font-weight: 700">Adultes</span>
+                <span style="font-size: 14px; color: #59605B">Ados compris</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px">
+                <button aria-label="Un adulte de moins" onClick="{{ adultesMoins }}" style="width: 48px; height: 48px; border-radius: 24px; border: 2px solid #E2DED5; background: #FFFFFF; font-size: 24px; color: #1B201D">−</button>
+                <span aria-live="polite" style="width: 36px; text-align: center; font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums">{{ adultes }}</span>
+                <button aria-label="Un adulte de plus" onClick="{{ adultesPlus }}" style="width: 48px; height: 48px; border-radius: 24px; border: none; background: #2E6B4E; font-size: 24px; color: #FFFFFF">+</button>
+              </div>
+            </div>
+            <sc-for list="{{ champsPrenoms }}" as="c" hint-placeholder-count="2">
+              <label style="display: flex; flex-direction: column; gap: 6px">
+                <span style="font-size: 14px; font-weight: 600; color: #59605B">{{ c.libelle }}</span>
+                <input type="text" autocomplete="given-name" maxlength="20" placeholder="{{ c.exemple }}" value="{{ c.valeur }}" onInput="{{ c.saisir }}" style="height: 48px; box-sizing: border-box; padding: 0 14px; border-radius: 14px; border: 2px solid #E2DED5; background: #FAF8F4; font-family: inherit; font-size: 17px; color: #1B201D">
+              </label>
+            </sc-for>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 14px; padding: 16px 16px 18px 20px; background: #FFFFFF; border-radius: 20px">
+            <div style="display: flex; align-items: center; justify-content: space-between">
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: 18px; font-weight: 700">Enfants</span>
+                <span style="font-size: 14px; color: #59605B">Petites portions</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px">
+                <button aria-label="Un enfant de moins" onClick="{{ enfantsMoins }}" style="width: 48px; height: 48px; border-radius: 24px; border: 2px solid #E2DED5; background: #FFFFFF; font-size: 24px; color: #1B201D">−</button>
+                <span aria-live="polite" style="width: 36px; text-align: center; font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums">{{ enfants }}</span>
+                <button aria-label="Un enfant de plus" onClick="{{ enfantsPlus }}" style="width: 48px; height: 48px; border-radius: 24px; border: none; background: #2E6B4E; font-size: 24px; color: #FFFFFF">+</button>
+              </div>
+            </div>
+            <sc-for list="{{ champsEnfants }}" as="c" hint-placeholder-count="0">
+              <label style="display: flex; flex-direction: column; gap: 6px">
+                <span style="font-size: 14px; font-weight: 600; color: #59605B">{{ c.libelle }}</span>
+                <input type="text" autocomplete="off" maxlength="20" placeholder="Facultatif" value="{{ c.valeur }}" onInput="{{ c.saisir }}" style="height: 48px; box-sizing: border-box; padding: 0 14px; border-radius: 14px; border: 2px solid #E2DED5; background: #FAF8F4; font-family: inherit; font-size: 17px; color: #1B201D">
+              </label>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ s1 }}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 18px">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <p style="margin: 0; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #2E6B4E">Tes repas</p>
+          <h1 style="margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800">{{ repasTitre }}</h1>
+          <p style="margin: 0; font-size: 17px; line-height: 1.45; color: #59605B">{{ repasSousTitre }}</p>
+        </div>
+        <sc-if value="{{ plusieurs }}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <div role="tablist" aria-label="Semaine de qui ?" style="display: flex; gap: 4px; padding: 4px; background: #ECE8DF; border-radius: 24px; overflow-x: auto">
+              <sc-for list="{{ onglets }}" as="o" hint-placeholder-count="3">
+                <button role="tab" aria-selected="{{ o.sel }}" onClick="{{ o.choisir }}" style="flex: 1 0 auto; min-height: 44px; padding: 0 14px; border-radius: 20px; border: none; background: {{ o.bg }}; color: {{ o.fg }}; font-size: 15px; font-weight: 700; white-space: nowrap">{{ o.label }}</button>
+              </sc-for>
+            </div>
+            <sc-if value="{{ copiable }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ copier }}" style="align-self: flex-start; min-height: 44px; padding: 0 16px; display: flex; align-items: center; gap: 8px; border-radius: 22px; border: 2px solid #E2DED5; background: #FFFFFF; color: #1F4D37; font-size: 15px; font-weight: 700">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>
+                {{ copierLabel }}
+              </button>
+            </sc-if>
+          </div>
+        </sc-if>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div style="display: grid; grid-template-columns: 48px minmax(0, 1fr) minmax(0, 1fr); gap: 8px; padding: 0 0 2px; font-size: 13px; font-weight: 700; color: #59605B">
+            <span></span><span style="text-align: center">Midi</span><span style="text-align: center">Soir</span>
+          </div>
+          <sc-for list="{{ grille }}" as="g" hint-placeholder-count="7">
+            <div style="display: grid; grid-template-columns: 48px minmax(0, 1fr) minmax(0, 1fr); gap: 8px; align-items: center">
+              <span style="font-size: 15px; font-weight: 700">{{ g.court }}</span>
+              <button aria-label="{{ g.midiAria }}" aria-disabled="{{ g.lecture }}" onClick="{{ g.midiCycle }}" style="height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 14px; border: 2px solid {{ g.midi.bc }}; background: {{ g.midi.bg }}; color: {{ g.midi.fg }}; font-size: 15px; font-weight: 700">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ g.midi.icone }}"/></svg>
+                {{ g.midi.label }}
+              </button>
+              <button aria-label="{{ g.soirAria }}" aria-disabled="{{ g.lecture }}" onClick="{{ g.soirCycle }}" style="height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 14px; border: 2px solid {{ g.soir.bc }}; background: {{ g.soir.bg }}; color: {{ g.soir.fg }}; font-size: 15px; font-weight: 700">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ g.soir.icone }}"/></svg>
+                {{ g.soir.label }}
+              </button>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; background: #FFFFFF; border-radius: 16px">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2E6B4E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 1px"><path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 11v5M12 7.5v.5"/></svg>
+          <p aria-live="polite" style="margin: 0; font-size: 16px; line-height: 1.45">{{ repasTexte }}</p>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ s2 }}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 24px">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <p style="margin: 0; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #2E6B4E">Le soir</p>
+          <h1 style="margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800">Combien de temps pour cuisiner le soir ?</h1>
+          <p style="margin: 0; font-size: 17px; line-height: 1.45; color: #59605B">Un ordre de grandeur suffit.</p>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <sc-for list="{{ tempsOptions }}" as="o" hint-placeholder-count="3">
+            <button aria-pressed="{{ o.pressed }}" onClick="{{ o.choisir }}" style="display: flex; align-items: center; gap: 16px; min-height: 76px; padding: 14px 18px; text-align: left; border-radius: 20px; border: 2px solid {{ o.bc }}; background: {{ o.bg }}; color: #1B201D">
+              <span style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: 18px; font-weight: 700">{{ o.titre }}</span>
+                <span style="font-size: 15px; color: #59605B">{{ o.detail }}</span>
+              </span>
+              <span style="width: 26px; height: 26px; flex: none; box-sizing: border-box; border-radius: 13px; border: 2px solid {{ o.bc }}; display: flex; align-items: center; justify-content: center">
+                <span style="width: 12px; height: 12px; border-radius: 6px; background: #2E6B4E; visibility: {{ o.mark }}"></span>
+              </span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ s3 }}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 20px">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <p style="margin: 0; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #2E6B4E">Le Rituel</p>
+          <h1 style="margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800">Et si tu cuisinais une fois pour plusieurs repas ?</h1>
+          <p style="margin: 0; font-size: 17px; line-height: 1.45; color: #59605B">C'est le batch cooking : une session pour préparer plusieurs repas de la semaine d'un coup. Combien de temps serais-tu prêt à y consacrer ?</p>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <sc-for list="{{ batchOptions }}" as="o" hint-placeholder-count="4">
+            <button aria-pressed="{{ o.pressed }}" onClick="{{ o.choisir }}" style="display: flex; align-items: center; gap: 16px; min-height: 72px; padding: 12px 18px; text-align: left; border-radius: 20px; border: 2px solid {{ o.bc }}; background: {{ o.bg }}; color: #1B201D">
+              <span style="width: 76px; flex: none; font-size: 20px; font-weight: 800">{{ o.titre }}</span>
+              <span style="flex: 1; font-size: 15px; line-height: 1.35; color: #3D443F">{{ o.detail }}</span>
+              <span style="width: 26px; height: 26px; flex: none; box-sizing: border-box; border-radius: 13px; border: 2px solid {{ o.bc }}; display: flex; align-items: center; justify-content: center">
+                <span style="width: 12px; height: 12px; border-radius: 6px; background: #2E6B4E; visibility: {{ o.mark }}"></span>
+              </span>
+            </button>
+          </sc-for>
+        </div>
+        <p style="margin: 0; font-size: 15px; line-height: 1.45; color: #59605B">Jamais fait ? Aucun souci : le Rituel te guide étape par étape, et on commence petit.</p>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ s4 }}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 20px">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <p style="margin: 0; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #2E6B4E">À table</p>
+          <h1 style="margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800">Un régime, des aliments à éviter ?</h1>
+          <p style="margin: 0; font-size: 17px; line-height: 1.45; color: #59605B">Tout est facultatif. Plusieurs choix possibles.</p>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <p style="margin: 0; font-size: 15px; font-weight: 700">Régime</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <sc-for list="{{ regimesOptions }}" as="c" hint-placeholder-count="10">
+              <button aria-pressed="{{ c.pressed }}" onClick="{{ c.toggle }}" style="min-height: 44px; padding: 0 16px; display: flex; align-items: center; gap: 6px; border-radius: 22px; border: 2px solid {{ c.bc }}; background: {{ c.bg }}; color: {{ c.fg }}; font-size: 15px; font-weight: 600">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display: {{ c.checkDisplay }}"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+                {{ c.label }}
+              </button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <p style="margin: 0; font-size: 15px; font-weight: 700">À éviter</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <sc-for list="{{ evitesOptions }}" as="c" hint-placeholder-count="7">
+              <button aria-pressed="{{ c.pressed }}" onClick="{{ c.toggle }}" style="min-height: 44px; padding: 0 16px; display: flex; align-items: center; gap: 6px; border-radius: 22px; border: 2px solid {{ c.bc }}; background: {{ c.bg }}; color: {{ c.fg }}; font-size: 15px; font-weight: 600">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display: {{ c.checkDisplay }}"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+                {{ c.label }}
+              </button>
+            </sc-for>
+          </div>
+        </div>
+        <p style="margin: 0; font-size: 15px; color: #59605B">{{ contraintesTexte }}</p>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ s5 }}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 24px">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <p style="margin: 0; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #2E6B4E">Le budget</p>
+          <h1 style="margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800">Combien pour les courses ?</h1>
+          <p style="margin: 0; font-size: 17px; line-height: 1.45; color: #59605B">Choisis la période qui te parle, puis le montant.</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; background: #E9E5DC; border-radius: 16px">
+          <sc-for list="{{ periodes }}" as="p" hint-placeholder-count="3">
+            <button aria-pressed="{{ p.pressed }}" onClick="{{ p.choisir }}" style="height: 48px; border: none; border-radius: 12px; background: {{ p.bg }}; color: {{ p.fg }}; font-size: 16px; font-weight: 700">{{ p.label }}</button>
+          </sc-for>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 24px 16px; background: #FFFFFF; border-radius: 24px">
+          <div style="display: flex; align-items: center; gap: 16px">
+            <button aria-label="Diminuer le budget" onClick="{{ budgetMoins }}" style="width: 56px; height: 56px; border-radius: 28px; border: 2px solid #E2DED5; background: #FFFFFF; font-size: 28px; color: #1B201D">−</button>
+            <span aria-live="polite" style="min-width: 150px; text-align: center; font-size: 48px; font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums">{{ montant }} €</span>
+            <button aria-label="Augmenter le budget" onClick="{{ budgetPlus }}" style="width: 56px; height: 56px; border-radius: 28px; border: none; background: #2E6B4E; font-size: 28px; color: #FFFFFF">+</button>
+          </div>
+          <p style="margin: 0; font-size: 15px; color: #59605B">par {{ periodeNom }} · {{ parRepas }}</p>
+        </div>
+        <p style="margin: 0; font-size: 15px; line-height: 1.45; color: #59605B">Si la liste dépasse, tu verras une simple information. Rien n'est bloqué.</p>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ s6 }}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 20px">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <h1 style="margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800">C'est noté.</h1>
+          <p style="margin: 0; font-size: 17px; line-height: 1.45; color: #59605B">Voici ce qu'on retient. Touche une ligne pour la corriger.</p>
+        </div>
+        <div style="display: flex; flex-direction: column; background: #FFFFFF; border-radius: 20px; overflow: hidden">
+          <sc-for list="{{ recap }}" as="r" hint-placeholder-count="6">
+            <button onClick="{{ r.modifier }}" style="display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 12px 16px 12px 20px; text-align: left; border: none; border-bottom: 1px solid #EEEAE2; background: #FFFFFF; color: #1B201D">
+              <span style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+                <span style="font-size: 14px; color: #59605B">{{ r.q }}</span>
+                <span style="font-size: 17px; font-weight: 700">{{ r.a }}</span>
+                <sc-if value="{{ r.passe }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size: 13px; color: #8A5300">Étape passée · valeur courante</span>
+                </sc-if>
+              </span>
+              <span style="font-size: 15px; font-weight: 700; color: #2E6B4E">Modifier</span>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ s7 }}" hint-placeholder-val="{{ false }}">
+      <div style="min-height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 28px">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center">
+          <svg width="132" height="112" viewBox="0 0 132 112" aria-hidden="true">
+            <path class="vap" d="M50 34c-5-6 5-10 0-17" fill="none" stroke="#B9CFC2" stroke-width="4" stroke-linecap="round"/>
+            <path class="vap vap2" d="M66 32c-5-6 5-10 0-17" fill="none" stroke="#B9CFC2" stroke-width="4" stroke-linecap="round"/>
+            <path class="vap vap3" d="M82 34c-5-6 5-10 0-17" fill="none" stroke="#B9CFC2" stroke-width="4" stroke-linecap="round"/>
+            <g class="couvercle">
+              <rect x="60" y="38" width="12" height="6" rx="3" fill="#1F4D37"/>
+              <path d="M28 52c0-6 17-9 38-9s38 3 38 9z" fill="#2E6B4E"/>
+            </g>
+            <rect x="16" y="58" width="12" height="7" rx="3.5" fill="#1F4D37"/>
+            <rect x="104" y="58" width="12" height="7" rx="3.5" fill="#1F4D37"/>
+            <path d="M26 54h80v30c0 10-8 16-18 16H44c-10 0-18-6-18-16z" fill="#2E6B4E"/>
+            <path d="M34 64h64" stroke="#5E9479" stroke-width="3" stroke-linecap="round"/>
+            <ellipse cx="66" cy="106" rx="40" ry="4" fill="#E2DED5"/>
+          </svg>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <h1 aria-live="polite" style="margin: 0; font-size: 28px; line-height: 1.2; font-weight: 800">{{ genTitre }}</h1>
+            <p style="margin: 0; font-size: 17px; line-height: 1.45; color: #59605B">{{ genSousTitre }}</p>
+          </div>
+        </div>
+        <ul style="margin: 0; padding: 8px 16px; list-style: none; display: flex; flex-direction: column; background: #FFFFFF; border-radius: 20px">
+          <sc-for list="{{ genLignes }}" as="l" hint-placeholder-count="5">
+            <li style="display: flex; align-items: center; gap: 12px; min-height: 52px; border-bottom: 1px solid {{ l.trait }}">
+              <span style="flex: none; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center">
+                <sc-if value="{{ l.fait }}" hint-placeholder-val="{{ true }}">
+                  <svg class="coche" width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><circle cx="13" cy="13" r="13" fill="#2E6B4E"/><path d="m8 13.5 3.5 3.5L18 10" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </sc-if>
+                <sc-if value="{{ l.actif }}" hint-placeholder-val="{{ false }}">
+                  <svg class="roue" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="#E3EEE7" stroke-width="3"/><path d="M12 3a9 9 0 0 1 9 9" fill="none" stroke="#2E6B4E" stroke-width="3" stroke-linecap="round"/></svg>
+                </sc-if>
+                <sc-if value="{{ l.attente }}" hint-placeholder-val="{{ false }}">
+                  <span style="width: 10px; height: 10px; border-radius: 5px; background: #DDD8CC"></span>
+                </sc-if>
+              </span>
+              <span style="flex: 1; font-size: 16px; line-height: 1.35; font-weight: {{ l.poids }}; color: {{ l.fg }}">{{ l.t }}</span>
+            </li>
+          </sc-for>
+        </ul>
+      </div>
+    </sc-if>
+  </main>
+
+  <footer style="display: flex; flex-direction: column; gap: 4px; padding: 12px 20px 24px">
+    <sc-if value="{{ enCours }}" hint-placeholder-val="{{ true }}">
+      <button onClick="{{ next }}" style="height: 60px; border: none; border-radius: 30px; background: #2E6B4E; color: #FFFFFF; font-size: 18px; font-weight: 700">Continuer</button>
+      <button onClick="{{ skip }}" style="height: 48px; border: none; background: transparent; color: #59605B; font-size: 16px; font-weight: 600">Passer cette étape</button>
+    </sc-if>
+    <sc-if value="{{ s6 }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ generer }}" style="height: 60px; display: flex; align-items: center; justify-content: center; gap: 10px; border: none; border-radius: 30px; background: #2E6B4E; color: #FFFFFF; font-size: 18px; font-weight: 700">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>
+        Générer ma routine
+      </button>
+      <p style="margin: 0; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #59605B">Tout reste modifiable plus tard.</p>
+    </sc-if>
+    <sc-if value="{{ genPret }}" hint-placeholder-val="{{ false }}">
+      <a href="Resultat.dc.html" style="height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 30px; background: #2E6B4E; color: #FFFFFF; font-size: 18px; font-weight: 700; text-decoration: none">Voir ma routine</a>
+      <button onClick="{{ revoir }}" style="height: 48px; border: none; background: transparent; color: #59605B; font-size: 16px; font-weight: 600">Revoir mes réponses</button>
+    </sc-if>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // Une semaine par adulte. Exemple : Toi dehors tous les midis de semaine, Adulte 2 dehors mardi et jeudi midi ; vendredi soir dehors à deux.
+    const toi = [0, 1, 2, 3, 4, 5, 6].map((i) => ({ midi: i < 5 ? "dehors" : "maison", soir: i === 4 ? "dehors" : "maison" }));
+    const adulte2 = [0, 1, 2, 3, 4, 5, 6].map((i) => ({ midi: i === 1 || i === 3 ? "dehors" : "maison", soir: i === 4 ? "dehors" : "maison" }));
+    // Les enfants partagent une semaine : cantine les midis d'école, maison le reste.
+    const enfants = [0, 1, 2, 3, 4, 5, 6].map((i) => ({ midi: i < 5 && i !== 2 ? "dehors" : "maison", soir: i === 4 ? "dehors" : "maison" }));
+    this.state = { step: 0, adultes: 2, enfants: 0, repasPar: [toi, adulte2], repasEnfants: enfants, personne: 0, prenoms: [], prenomsEnfants: [], temps: "20", batch: "90", contraintes: [], periode: "semaine", montant: 120, passees: [], gen: 0 };
+  }
+  generer() {
+    // Démo : une ligne cochée toutes les 1,1 s. Dans l'app, le rythme suit la vraie génération.
+    if (this.horloge) clearInterval(this.horloge);
+    this.setState({ step: 7, gen: 0 });
+    this.horloge = setInterval(() => {
+      const g = this.state.gen + 1;
+      if (g >= 5) { clearInterval(this.horloge); this.horloge = null; }
+      this.setState({ gen: g });
+    }, 1100);
+  }
+  renderVals() {
+    const s = this.state;
+    const ON = { bc: "#2E6B4E", bg: "#E3EEE7", fg: "#1F4D37", pressed: "true", mark: "visible", checkDisplay: "block" };
+    const OFF = { bc: "#E2DED5", bg: "#FFFFFF", fg: "#1B201D", pressed: "false", mark: "hidden", checkDisplay: "none" };
+    const pick = (on) => (on ? ON : OFF);
+    const toggle = (key, v) => () => {
+      const a = this.state[key];
+      this.setState({ [key]: a.includes(v) ? a.filter((x) => x !== v) : a.concat(v) });
+    };
+    const JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+    const pl = (n, a, b) => n + " " + (n > 1 ? b : a);
+
+    const LIEUX = {
+      maison: { label: "Maison", nom: "à la maison", bc: "#E2DED5", bg: "#FFFFFF", fg: "#1B201D", icone: "M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" },
+      dehors: { label: "Dehors", nom: "dehors (cantine, resto, travail)", bc: "#E9CFA9", bg: "#FBEEDC", fg: "#6E3F00", icone: "M7 3v8a2 2 0 0 0 2 2v8M5 3v5a2 2 0 0 0 2 2M9 3v5a2 2 0 0 1-2 2M17 3c-2 2-2 6 0 8v10" }
+    };
+    const CYCLE_MIDI = { maison: "dehors", dehors: "maison" };
+    const CYCLE_SOIR = CYCLE_MIDI;
+    const N = s.adultes;
+    const E = s.enfants;
+    const T = N + E;
+    const plusieurs = T > 1;
+    const NOMS = Array.from({ length: N }, (_, k) => ((s.prenoms[k] || "").trim() || (k === 0 ? "Toi" : "Adulte " + (k + 1))));
+    // Prénoms des enfants facultatifs : on ne les affiche que s'ils sont tous renseignés.
+    const PRENOMS_E = Array.from({ length: E }, (_, k) => (s.prenomsEnfants[k] || "").trim());
+    const enfantsNommes = E > 0 && PRENOMS_E.every(Boolean);
+    const liste = (a) => (a.length < 2 ? a[0] : a.slice(0, -1).join(", ") + " et " + a[a.length - 1]);
+    const NOM_ENFANTS = enfantsNommes ? liste(PRENOMS_E) : E > 1 ? "Les enfants" : "L'enfant";
+    const nomEnfantsDans = enfantsNommes ? NOM_ENFANTS : NOM_ENFANTS.toLowerCase();
+    const MAISON_PARTOUT = JOURS.map(() => ({ midi: "maison", soir: "maison" }));
+    // personne : index d'adulte, -2 = les enfants (une semaine commune), -1 = le foyer (lecture seule).
+    const ENF = -2;
+    const semaine = (k) => (k === ENF ? s.repasEnfants : s.repasPar[k] || MAISON_PARTOUT);
+    const ensemble = plusieurs && s.personne === -1;
+    const vueEnfants = E > 0 && s.personne === ENF;
+    const pers = ensemble ? -1 : vueEnfants ? ENF : s.personne >= 0 && s.personne < N ? s.personne : 0;
+    const nomDe = (k) => (k === ENF ? NOM_ENFANTS : NOMS[k]);
+    const changer = (i, moment, cycle) => () => {
+      if (pers === -1) return;
+      const maj = semaine(pers).map((r, k) => (k === i ? Object.assign({}, r, { [moment]: cycle[r[moment]] }) : r));
+      if (pers === ENF) return this.setState({ repasEnfants: maj });
+      const repasPar = this.state.repasPar.slice();
+      repasPar[pers] = maj;
+      this.setState({ repasPar: repasPar });
+    };
+    const maisonDe = (k) => semaine(k).reduce((n, r) => n + (r.midi === "maison") + (r.soir === "maison"), 0);
+    const parAdulte = NOMS.map((_, k) => maisonDe(k));
+    const maisonEnfants = E > 0 ? maisonDe(ENF) : 0;
+    const repasMaison = pers === -1 ? 0 : maisonDe(pers);
+    const nbDehors = 14 - repasMaison;
+    const repasResume = plusieurs
+      ? NOMS.map((n, k) => n + " : " + parAdulte[k] + " à la maison").concat(E > 0 ? [NOM_ENFANTS + " : " + maisonEnfants + " à la maison"] : []).join(" · ")
+      : pl(repasMaison, "repas à la maison", "repas à la maison") + " · " + pl(nbDehors, "dehors", "dehors");
+    // Vue Le foyer : combien de personnes à table, repas par repas (enfants compris).
+    const presentsAdultes = (i, m) => NOMS.filter((_, k) => semaine(k)[i][m] === "maison");
+    const enfantsLa = (i, m) => E > 0 && s.repasEnfants[i][m] === "maison";
+    const nbPresents = (i, m) => presentsAdultes(i, m).length + (enfantsLa(i, m) ? E : 0);
+    const ICONE_PERSONNE = "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM5 21a7 7 0 0 1 14 0";
+    const caseEnsemble = (i, m) => {
+      const n = nbPresents(i, m);
+      const noms = presentsAdultes(i, m).concat(enfantsLa(i, m) ? [nomEnfantsDans] : []);
+      if (n === T) return { label: "À " + T, nom: "tout le foyer à la maison", bc: "#2E6B4E", bg: "#E3EEE7", fg: "#1F4D37", icone: LIEUX.maison.icone };
+      if (n === 0) return Object.assign({}, LIEUX.dehors, { label: "Personne", nom: "personne à la maison" });
+      const label = T === 2 ? (presentsAdultes(i, m)[0] || "Enfant") : "À " + n;
+      return { label: label, nom: n + " à la maison : " + noms.join(", "), bc: "#E2DED5", bg: "#FFFFFF", fg: "#1B201D", icone: ICONE_PERSONNE };
+    };
+    const tallies = { tous: 0, certains: 0, aucun: 0 };
+    let portionsSemaine = 0;
+    JOURS.forEach((_, i) => ["midi", "soir"].forEach((m) => {
+      const n = nbPresents(i, m);
+      tallies[n === T ? "tous" : n === 0 ? "aucun" : "certains"]++;
+      portionsSemaine += presentsAdultes(i, m).length + (enfantsLa(i, m) ? E * 0.6 : 0);
+    }));
+
+    const TEMPS = [
+      { id: "10", titre: "10 min", detail: "Réchauffer, assembler, servir" },
+      { id: "20", titre: "20 min", detail: "Une cuisson simple en plus" },
+      { id: "40", titre: "40 min ou plus", detail: "Une vraie recette, sans stress" }
+    ];
+    const BATCH = [
+      { id: "45", titre: "45 min", detail: "Pour essayer : quelques repas d'avance" },
+      { id: "90", titre: "1 h 30", detail: "4 à 5 repas prêts dans la semaine" },
+      { id: "150", titre: "2 h 30", detail: "L'essentiel de la semaine" },
+      { id: "?", titre: "Je ne sais pas", detail: "On commence petit, tu ajusteras" }
+    ];
+    const REGIMES = ["Végétarien", "Végan", "Flexitarien", "Cétogène (keto)", "Low carb", "Paléo", "Méditerranéen", "Sans gluten", "Sans lactose", "Halal", "Casher", "Pauvre en sel"];
+    const EVITES = ["Porc", "Fruits à coque", "Poisson", "Fruits de mer", "Champignons", "Œufs", "Épicé"];
+    const PERIODES = [
+      { id: "semaine", label: "Semaine", nom: "semaine", j: 7, pas: 5 },
+      { id: "quinzaine", label: "15 jours", nom: "quinzaine", j: 14, pas: 10 },
+      { id: "mois", label: "Mois", nom: "mois", j: 30, pas: 20 }
+    ];
+    const per = PERIODES.find((p) => p.id === s.periode);
+    const parRepasVal = s.montant / ((per.j / 7) * Math.max(1, portionsSemaine));
+
+    const recapData = [
+      { q: "Foyer", a: pl(s.adultes, "adulte", "adultes") + (s.enfants ? " · " + pl(s.enfants, "enfant", "enfants") : "") },
+      { q: "Repas", a: repasResume },
+      { q: "Cuisine le soir", a: TEMPS.find((t) => t.id === s.temps).titre },
+      { q: "Rituel (batch cooking)", a: s.batch === "?" ? "À découvrir, on commence petit" : BATCH.find((b) => b.id === s.batch).titre + " en une fois" },
+      { q: "Régime et à éviter", a: s.contraintes.length ? s.contraintes.join(", ") : "Rien de particulier" },
+      { q: "Budget courses", a: s.montant + " € par " + per.nom }
+    ];
+
+    return {
+      s7: s.step === 7,
+      avecEntete: s.step < 7,
+      generer: () => this.generer(),
+      genPret: s.step === 7 && s.gen >= 5,
+      revoir: () => { if (this.horloge) { clearInterval(this.horloge); this.horloge = null; } this.setState({ step: 6, gen: 0 }); },
+      genTitre: s.gen >= 5 ? "Ta routine est prête" : "On prépare ta routine…",
+      genSousTitre: s.gen >= 5 ? "4 semaines de menus, tes Box du midi et ta liste de courses." : "On choisit des menus pour 4 semaines, à partir de tes réponses.",
+      genLignes: [
+        "Les repas à la maison, personne par personne",
+        "Des recettes en " + TEMPS.find((t) => t.id === s.temps).titre + " le soir",
+        s.batch === "?" ? "Un premier Rituel tout simple" : "Un Rituel de " + BATCH.find((b) => b.id === s.batch).titre + " et tes Box du midi",
+        s.contraintes.length ? "En respectant : " + s.contraintes.join(", ") : "Des plats variés, de saison",
+        "Des courses dans tes " + s.montant + " € par " + per.nom
+      ].map((t, k, a) => {
+        const fait = s.gen > k, actif = s.gen === k;
+        return { t, fait, actif, attente: !fait && !actif, fg: fait || actif ? "#1B201D" : "#8B918C", poids: actif ? "700" : "500", trait: k === a.length - 1 ? "transparent" : "#EEEAE2" };
+      }),
+      s0: s.step === 0, s1: s.step === 1, s2: s.step === 2, s3: s.step === 3, s4: s.step === 4, s5: s.step === 5, s6: s.step === 6,
+      enCours: s.step < 6,
+      premiere: s.step === 0,
+      backOpacity: s.step === 0 ? "0.35" : "1",
+      stepLabel: s.step < 6 ? s.step + 1 + " / 6" : "Récap",
+      segs: [0, 1, 2, 3, 4, 5].map((i) => ({ bg: i <= s.step ? "#2E6B4E" : "#DDD8CC" })),
+      back: () => this.setState({ step: Math.max(0, s.step - 1) }),
+      next: () => this.setState({ step: Math.min(6, s.step + 1), passees: s.passees.filter((x) => x !== s.step) }),
+      skip: () => this.setState({ step: Math.min(6, s.step + 1), passees: s.passees.includes(s.step) ? s.passees : s.passees.concat(s.step) }),
+
+      adultes: s.adultes,
+      enfants: s.enfants,
+      adultesMoins: () => this.setState({ adultes: Math.max(1, s.adultes - 1) }),
+      adultesPlus: () => this.setState({ adultes: Math.min(8, s.adultes + 1) }),
+      enfantsMoins: () => this.setState({ enfants: Math.max(0, s.enfants - 1) }),
+      enfantsPlus: () => this.setState({ enfants: Math.min(6, s.enfants + 1) }),
+
+      repasTitre: plusieurs ? "Où mange chacun, midi et soir ?" : "Où manges-tu, midi et soir ?",
+      repasSousTitre: ensemble
+        ? "Le résumé du foyer, enfants compris : combien de personnes à table à chaque repas. C'est ce qui fixe les portions à cuisiner. Pour changer une case, ouvre la semaine d'une personne."
+        : vueEnfants
+          ? (enfantsNommes ? (E > 1 ? "Une seule semaine pour " + NOM_ENFANTS + "." : "La semaine de " + NOM_ENFANTS + ".") : E > 1 ? "Une seule semaine pour tous les enfants." : "La semaine de l'enfant.") + " On a pré-rempli la cantine les midis d'école : touche une case pour changer."
+        : N > 1
+          ? "Chaque adulte a sa semaine habituelle. Touche une case pour changer."
+          : "Une semaine habituelle, telle qu'elle est aujourd'hui. Touche une case pour changer.",
+      plusieurs: plusieurs,
+      onglets: NOMS.map((n, k) => ({ label: n, i: k })).concat(E > 0 ? [{ label: enfantsNommes && E <= 2 ? NOM_ENFANTS : E > 1 ? "Enfants" : "Enfant", i: ENF }] : []).concat([{ label: "Le foyer", i: -1 }]).map((o) => {
+        const sel = pers === o.i;
+        return { label: o.label, sel: sel ? "true" : "false", bg: sel ? "#FFFFFF" : "transparent", fg: sel ? "#1F4D37" : "#59605B", choisir: () => this.setState({ personne: o.i }) };
+      }),
+      champsPrenoms: NOMS.map((_, k) => ({
+        libelle: k === 0 ? "Ton prénom" : "Prénom de l'adulte " + (k + 1),
+        exemple: k === 0 ? "Ex. Marc" : "Facultatif",
+        valeur: s.prenoms[k] || "",
+        saisir: (e) => {
+          const prenoms = this.state.prenoms.slice();
+          prenoms[k] = e.target.value;
+          this.setState({ prenoms: prenoms });
+        }
+      })),
+      champsEnfants: PRENOMS_E.map((_, k) => ({
+        libelle: E > 1 ? "Prénom de l'enfant " + (k + 1) : "Prénom de l'enfant",
+        valeur: s.prenomsEnfants[k] || "",
+        saisir: (e) => {
+          const prenomsEnfants = this.state.prenomsEnfants.slice();
+          prenomsEnfants[k] = e.target.value;
+          this.setState({ prenomsEnfants: prenomsEnfants });
+        }
+      })),
+      copiable: pers > 0,
+      copierLabel: "Même semaine que " + NOMS[0],
+      copier: () => {
+        const repasPar = this.state.repasPar.slice();
+        repasPar[pers] = semaine(0).map((r) => Object.assign({}, r));
+        this.setState({ repasPar: repasPar });
+      },
+      grille: JOURS.map((jour, i) => {
+        if (ensemble) {
+          const mi = caseEnsemble(i, "midi"), so = caseEnsemble(i, "soir");
+          return { court: jour.slice(0, 3), midi: mi, soir: so, lecture: "true", midiAria: jour + " midi : " + mi.nom + ".", soirAria: jour + " soir : " + so.nom + ".", midiCycle: () => {}, soirCycle: () => {} };
+        }
+        const r = semaine(pers)[i];
+        const qui = plusieurs ? nomDe(pers) + ", " : "";
+        return {
+          court: jour.slice(0, 3),
+          midi: LIEUX[r.midi],
+          soir: LIEUX[r.soir],
+          lecture: "false",
+          midiAria: qui + jour + " midi : " + LIEUX[r.midi].nom + ". Toucher pour changer.",
+          soirAria: qui + jour + " soir : " + LIEUX[r.soir].nom + ". Toucher pour changer.",
+          midiCycle: changer(i, "midi", CYCLE_MIDI),
+          soirCycle: changer(i, "soir", CYCLE_SOIR)
+        };
+      }),
+      repasTexte: ensemble
+        ? "Sur 14 repas par semaine : " + tallies.tous + " pour tout le foyer, " + tallies.certains + " pour une partie seulement, " + tallies.aucun + " sans personne à cuisiner."
+        : (plusieurs ? nomDe(pers) + " : " : "") + pl(repasMaison, "repas", "repas") + " à la maison et " + pl(nbDehors, "repas", "repas") + " dehors par semaine. Rien à changer pour l'instant : on fera des propositions ensuite.",
+
+      tempsOptions: TEMPS.map((t) => Object.assign({}, t, pick(s.temps === t.id), { choisir: () => this.setState({ temps: t.id }) })),
+      batchOptions: BATCH.map((b) => Object.assign({}, b, pick(s.batch === b.id), { choisir: () => this.setState({ batch: b.id }) })),
+
+      regimesOptions: REGIMES.map((c) => Object.assign({ label: c }, pick(s.contraintes.includes(c)), { toggle: toggle("contraintes", c) })),
+      evitesOptions: EVITES.map((c) => Object.assign({ label: c }, pick(s.contraintes.includes(c)), { toggle: toggle("contraintes", c) })),
+      contraintesTexte: s.contraintes.length ? pl(s.contraintes.length, "choix retenu", "choix retenus") + " pour tous les menus." : "Rien de coché : tout est permis.",
+
+      periodes: PERIODES.map((p) => ({
+        label: p.label,
+        pressed: s.periode === p.id ? "true" : "false",
+        bg: s.periode === p.id ? "#FFFFFF" : "transparent",
+        fg: s.periode === p.id ? "#1F4D37" : "#59605B",
+        choisir: () => {
+          const hebdo = (s.montant / per.j) * 7;
+          const montant = Math.max(p.pas, Math.round((hebdo * p.j) / 7 / p.pas) * p.pas);
+          this.setState({ periode: p.id, montant: montant });
+        }
+      })),
+      montant: s.montant,
+      periodeNom: per.nom,
+      parRepas: "≈ " + parRepasVal.toFixed(2).replace(".", ",") + " € par repas et par personne",
+      budgetMoins: () => this.setState({ montant: Math.max(per.pas, s.montant - per.pas) }),
+      budgetPlus: () => this.setState({ montant: s.montant + per.pas }),
+
+      recap: recapData.map((r, i) => Object.assign({}, r, { passe: s.passees.includes(i), modifier: () => this.setState({ step: i }) }))
+    };
+  }
+}
+</script>
+</body>
+</html>
