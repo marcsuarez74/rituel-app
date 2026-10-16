@@ -6,6 +6,14 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 Ce fichier est **généré par [release-please](https://github.com/googleapis/release-please)** à partir des conventional commits (`feat` → mineur, `fix`/`perf` → correctif, `!` ou `BREAKING CHANGE:` → majeur) : ne pas l'éditer à la main. L'historique ci-dessous (jusqu'à 2.1.0) est conservé tel quel.
 
+## [2.12.0](https://github.com/marcsuarez74/rituel-app/compare/v2.11.0...v2.12.0) (2026-10-16)
+
+
+### Ajouté
+
+* **server:** contrat des menus /v2 et validateur ([35d66d5](https://github.com/marcsuarez74/rituel-app/commit/35d66d55f8efb1eaeee5805c4da539cdb7123ab0))
+* **server:** contrat des menus /v2 et validateur ([c053d7b](https://github.com/marcsuarez74/rituel-app/commit/c053d7b2144776503a10866a1e0c2f5adcddb9e8))
+
 ## [2.11.0](https://github.com/marcsuarez74/rituel-app/compare/v2.10.0...v2.11.0) (2026-10-16)
 
 
