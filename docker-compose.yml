@@ -16,6 +16,15 @@ services:
       # « Signaler un bug » : valeurs lues dans .env (jamais dans le dépôt) ; vides = 503.
       - GITHUB_BUG_TOKEN=${GITHUB_BUG_TOKEN:-}
       - GITHUB_REPO=${GITHUB_REPO:-}
+      # App native (/v2) : génération des menus et photos des recettes — clés dans .env, jamais
+      # dans le dépôt. Sans ANTHROPIC_API_KEY : génération en 503 ; sans PEXELS_API_KEY : pas
+      # de photos (elles attendent). Les autres sont facultatives (défauts dans server/README.md).
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - PEXELS_API_KEY=${PEXELS_API_KEY:-}
+      - IA_MODELE=${IA_MODELE:-}
+      - IA_EFFORT=${IA_EFFORT:-}
+      - IA_QUOTA_JOUR=${IA_QUOTA_JOUR:-}
+      - IA_MODELE_VISION=${IA_MODELE_VISION:-}
     volumes:
       - ./data:/app/data
     restart: unless-stopped

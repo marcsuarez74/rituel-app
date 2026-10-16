@@ -136,7 +136,7 @@ TDD à chaque étape ; une étape d'app = un écran fonctionnel, conforme à sa 
       `<dataDir>/photos/<id>.jpg`. `GET /v2/photos/:id` public (aucune donnée de foyer),
       `immutable` ; **404 = pas (encore) de photo : l'image neutre de la famille est choisie
       par l'app**, pas par le serveur. Il faut `PEXELS_API_KEY` **et** `ANTHROPIC_API_KEY`.
-11. [ ] Infra et docs : variables `ANTHROPIC_API_KEY`, `PEXELS_API_KEY`, `IA_MODELE`, `IA_EFFORT`, `IA_MODELE_VISION`, `IA_QUOTA_JOUR`
+11. [x] Infra et docs : variables `ANTHROPIC_API_KEY`, `PEXELS_API_KEY`, `IA_MODELE`, `IA_EFFORT`, `IA_MODELE_VISION`, `IA_QUOTA_JOUR`
     dans `docker-compose.yml` (valeurs dans le `.env` du VPS, jamais dans le
     dépôt) ; `docs/backend.md`, `server/README.md`. Une PR par étape ou groupe d'étapes, CI verte.
 
