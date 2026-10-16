@@ -88,7 +88,8 @@ TDD à chaque étape ; une étape d'app = un écran fonctionnel, conforme à sa 
      `betaZodOutputFormat`, lecture par `JSON.parse` + zod ; le helper ramène aussi les `enum`
      à des descriptions, l'id d'ingrédient inconnu reste attrapé par le validateur. Profil
      **sans aucun texte libre** (schéma zod strict). Quota : 3 générations / 24 h glissantes /
-     foyer, échecs compris (`IA_QUOTA_JOUR`) ; une seule à la fois (409, périmée après 15 min).
+     foyer, échecs de l'IA compris mais pas les pannes de l'API (`IA_QUOTA_JOUR`, décidé avec
+     Marc le 2026-10-16) ; une seule à la fois (409, périmée après 15 min).
      Env : `ANTHROPIC_API_KEY` (absente = 503), `IA_MODELE`, `IA_EFFORT`. Le plat de la
      bibliothèque en dernier recours arrive avec l'étape 8.
 8. [ ] **Bibliothèque partagée** (`v2_recettes`) : toute recette validée y entre ; la génération y

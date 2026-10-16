@@ -94,6 +94,19 @@ describe('POST /v2/menus/generer', () => {
     expect((await generer(app, await foyerPret(app))).status).toBe(200);
   });
 
+  it('une panne de l’API ne consomme pas le quota ; un échec de l’IA, si', async () => {
+    let panne = true;
+    const { app } = creerContexte(async () => {
+      if (panne) throw new Error('panne');
+      return { fin: 'refus', texte: '' };
+    }, 1);
+    const jeton = await foyerPret(app);
+    expect((await generer(app, jeton)).status).toBe(502);
+    panne = false;
+    expect((await generer(app, jeton)).status).toBe(502);
+    expect((await generer(app, jeton)).status).toBe(429);
+  });
+
   it('les générations de plus de 24 h ne comptent plus', async () => {
     const { app, db } = creerContexte(iaOk, 1);
     const jeton = await foyerPret(app);

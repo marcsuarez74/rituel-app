@@ -207,8 +207,12 @@ export const creerRoutesV2 = ({ db, secret, limites, ia, quotaJour = 3 }: Option
         .prepare("select 1 from v2_generations where foyer_id = ? and statut = 'en-cours' and debut > ?")
         .get(foyerId, new Date(maintenant - GENERATION_PERIMEE).toISOString());
       if (enCours) return 'en-cours';
+      // Une panne de l'API (erreur-ia) ne coûte presque rien et n'est pas du fait du foyer :
+      // hors quota. Un échec où l'IA a travaillé (refus, non-conforme…) a coûté : il compte.
       const { n } = db
-        .prepare('select count(*) as n from v2_generations where foyer_id = ? and debut > ?')
+        .prepare(
+          "select count(*) as n from v2_generations where foyer_id = ? and debut > ? and coalesce(raison, '') <> 'erreur-ia'",
+        )
         .get(foyerId, new Date(maintenant - UN_JOUR).toISOString()) as { n: number };
       if (n >= quotaJour) return 'quota';
       return Number(
