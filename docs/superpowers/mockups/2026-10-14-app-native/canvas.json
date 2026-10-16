@@ -90,9 +90,19 @@
       "title": "1b · Conditions, avant les menus",
       "is_interactive": true,
       "radius": 28
+    },
+    "Icone.dc.html": {
+      "x": 470,
+      "y": 964,
+      "w": 390,
+      "h": 844,
+      "title": "0 · Icône de l'app",
+      "is_interactive": true,
+      "radius": 28
     }
   },
   "order": [
+    "Icone.dc.html",
     "Main.dc.html",
     "Cgu.dc.html",
     "Resultat.dc.html",
@@ -107,7 +117,7 @@
     "titre": {
       "x": 0,
       "y": -300,
-      "text": "Rituel natif — 9 écrans, parcours cliquable",
+      "text": "Rituel natif — 9 écrans, parcours cliquable, et l'icône",
       "kind": "title1",
       "maxW": 3210
     }
