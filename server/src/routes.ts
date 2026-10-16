@@ -19,7 +19,7 @@ import {
 } from './bugs.js';
 import { creerLimiteur } from './rate-limit.js';
 import { creerRegistreSse, type RegistreSse } from './sse.js';
-import { creerRoutesV2 } from './v2/routes.js';
+import { creerRoutesV2, type LimitesV2 } from './v2/routes.js';
 
 export type TableSync = 'weeks' | 'checks' | 'weights' | 'depenses' | 'profiles' | 'etat';
 
@@ -58,6 +58,8 @@ export interface OptionsApp {
     urlPublique?: string | undefined;
     fetch?: typeof fetch | undefined;
   };
+  /** API de l'app native (/v2). Tests : limites de rejoindre réduites. */
+  v2?: { limites?: LimitesV2 | undefined };
 }
 
 type EnvApp = { Variables: { foyerId: string; jeton: string } };
@@ -102,7 +104,7 @@ const normaliser = (r: Record<string, unknown>): Record<string, unknown> => {
 const IMMUABLE = 'public, max-age=31536000, immutable';
 const cacheDe = (chemin: string): string => (chemin.startsWith('/assets/') ? IMMUABLE : 'no-cache');
 
-export const creerApp = ({ db, secret, origines, heartbeatMs, statique, commit, dataDir, bugs }: OptionsApp): Hono<EnvApp> => {
+export const creerApp = ({ db, secret, origines, heartbeatMs, statique, commit, dataDir, bugs, v2 }: OptionsApp): Hono<EnvApp> => {
   const app = new Hono<EnvApp>();
   const limiter = creerLimiteur({ max: 10, fenetreMs: 60_000 });
   const registre: RegistreSse = creerRegistreSse({ heartbeatMs });
@@ -476,7 +478,7 @@ export const creerApp = ({ db, secret, origines, heartbeatMs, statique, commit, 
 
   // ---- App native (plan 2026-10-16-app-native) ----
 
-  app.route('/v2', creerRoutesV2());
+  app.route('/v2', creerRoutesV2({ db, secret, limites: v2?.limites }));
 
   // ---- PWA (après l'API : ses routes gardent la main) ----
 

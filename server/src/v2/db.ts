@@ -7,6 +7,14 @@ create table if not exists v2_foyers (
   code_empreinte text not null unique,  -- HMAC-SHA256 du code de 6 caractères (recherche directe)
   cree_le text not null
 );
+-- Un appareil connecté = un jeton. Quitter le foyer supprime la ligne : le jeton est refusé.
+create table if not exists v2_appareils (
+  jeton_empreinte text primary key,     -- sha256 du jeton, jamais le jeton brut
+  foyer_id text not null references v2_foyers on delete cascade,
+  cree_le text not null,
+  expire_le text not null
+);
+create index if not exists v2_appareils_foyer on v2_appareils (foyer_id);
 `;
 
 export const migrerV2 = (db: Database): void => {
