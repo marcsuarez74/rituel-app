@@ -12,102 +12,64 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
 <style>
 body{margin:0}
-button{font-family:inherit;cursor:pointer}
-button:focus-visible{outline:3px solid #2E6B4E;outline-offset:2px}
 </style>
 </helmet>
 <div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #F5F3EE; color: #1B201D; font-family: Figtree, system-ui, sans-serif; overflow: hidden">
-  <main style="flex: 1; overflow-y: auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 18px">
+  <main style="flex: 1; overflow-y: auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 22px">
     <div style="flex: none; display: flex; flex-direction: column; gap: 8px">
       <span style="font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #2E6B4E">Icône de l'app</span>
-      <h1 style="margin: 0; font-size: 28px; line-height: 1.15; font-weight: 800">4 pistes</h1>
-      <p style="margin: 0; font-size: 15px; line-height: 1.45; color: #59605B">Touche une piste pour la comparer. Les couleurs sont celles du Marché coloré.</p>
+      <h1 style="margin: 0; font-size: 28px; line-height: 1.15; font-weight: 800">La Box</h1>
+      <p style="margin: 0; font-size: 15px; line-height: 1.45; color: #59605B">La boîte du midi vue du dessus, trois compartiments : le repas préparé à l'avance, promesse de l'app. Aplats aux couleurs du Marché coloré.</p>
     </div>
-    <div style="flex: none; display: flex; flex-wrap: wrap; gap: 16px">
-      <button onClick="{{ choisir0 }}" aria-pressed="{{ pr0 }}" style="flex: none; width: 167px; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px; border-radius: 22px; border: 3px solid {{ bord0 }}; background: #FFFFFF; color: #1B201D; text-align: left">
-        <div style="width: 88px; height: 88px; border-radius: 26px; overflow: hidden; box-shadow: 0 2px 6px rgba(27,32,29,0.18)"><svg width="88" height="88" viewBox="0 0 108 108" aria-hidden="true" style="display: block"><rect width="108" height="108" fill="#2E6B4E"/><rect x="27" y="36" width="54" height="11" rx="5.5" fill="#E3EEE7"/><rect x="31" y="47" width="46" height="28" rx="8" fill="#F5F3EE"/><path d="M54 51v20" stroke="#2E6B4E" stroke-width="3" stroke-linecap="round"/><circle cx="42.5" cy="61" r="6" fill="#F0A23B"/><circle cx="65.5" cy="61" r="6" fill="#E0583A"/></svg></div>
-        <span style="font-size: 16px; font-weight: 800">La Box</span>
-        <span style="font-size: 13px; line-height: 1.35; color: #59605B">Le repas du midi préparé : la promesse de l'app.</span>
-      </button>
-      <button onClick="{{ choisir1 }}" aria-pressed="{{ pr1 }}" style="flex: none; width: 167px; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px; border-radius: 22px; border: 3px solid {{ bord1 }}; background: #FFFFFF; color: #1B201D; text-align: left">
-        <div style="width: 88px; height: 88px; border-radius: 26px; overflow: hidden; box-shadow: 0 2px 6px rgba(27,32,29,0.18)"><svg width="88" height="88" viewBox="0 0 108 108" aria-hidden="true" style="display: block"><rect width="108" height="108" fill="#F5F3EE"/><path d="M44 30c-3 3 3 5 0 8M54 27c-3 3 3 5 0 8M64 30c-3 3 3 5 0 8" stroke="#F0A23B" stroke-width="3" fill="none" stroke-linecap="round"/><rect x="49" y="40" width="10" height="6" rx="3" fill="#1F4D37"/><rect x="27" y="45" width="54" height="8" rx="4" fill="#1F4D37"/><rect x="31" y="53" width="46" height="25" rx="10" fill="#2E6B4E"/><rect x="23" y="58" width="9" height="6" rx="3" fill="#2E6B4E"/><rect x="76" y="58" width="9" height="6" rx="3" fill="#2E6B4E"/></svg></div>
-        <span style="font-size: 16px; font-weight: 800">La cocotte</span>
-        <span style="font-size: 13px; line-height: 1.35; color: #59605B">Le Rituel du dimanche : on cuisine une fois pour la semaine.</span>
-      </button>
-      <button onClick="{{ choisir2 }}" aria-pressed="{{ pr2 }}" style="flex: none; width: 167px; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px; border-radius: 22px; border: 3px solid {{ bord2 }}; background: #FFFFFF; color: #1B201D; text-align: left">
-        <div style="width: 88px; height: 88px; border-radius: 26px; overflow: hidden; box-shadow: 0 2px 6px rgba(27,32,29,0.18)"><svg width="88" height="88" viewBox="0 0 108 108" aria-hidden="true" style="display: block"><rect width="108" height="108" fill="#F5F3EE"/><circle cx="54" cy="54" r="28" fill="#FFFFFF" stroke="#2E6B4E" stroke-width="5"/><path d="M54 54V32a22 22 0 0 1 22 22z" fill="#2E6B4E"/><path d="M54 54h22a22 22 0 0 1-22 22z" fill="#F0A23B"/><path d="M54 54v22a22 22 0 0 1-22-22z" fill="#E0583A"/><path d="M54 54H32a22 22 0 0 1 22-22z" fill="#8DB580"/></svg></div>
-        <span style="font-size: 16px; font-weight: 800">La semaine</span>
-        <span style="font-size: 13px; line-height: 1.35; color: #59605B">Une assiette en 4 parts : les repas de la semaine, déjà prévus.</span>
-      </button>
-      <button onClick="{{ choisir3 }}" aria-pressed="{{ pr3 }}" style="flex: none; width: 167px; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px; border-radius: 22px; border: 3px solid {{ bord3 }}; background: #FFFFFF; color: #1B201D; text-align: left">
-        <div style="width: 88px; height: 88px; border-radius: 26px; overflow: hidden; box-shadow: 0 2px 6px rgba(27,32,29,0.18)"><svg width="88" height="88" viewBox="0 0 108 108" aria-hidden="true" style="display: block"><rect width="108" height="108" fill="#2E6B4E"/><text x="52" y="75" text-anchor="middle" font-family="Figtree, system-ui, sans-serif" font-size="58" font-weight="800" fill="#F5F3EE">R</text><circle cx="74" cy="36" r="6" fill="#F0A23B"/></svg></div>
-        <span style="font-size: 16px; font-weight: 800">Le R</span>
-        <span style="font-size: 13px; line-height: 1.35; color: #59605B">Le monogramme actuel, redessiné aux couleurs du Marché coloré.</span>
-      </button>
-    </div>
+    <div style="flex: none; align-self: center; width: 168px; height: 168px; border-radius: 40px; overflow: hidden; box-shadow: 0 6px 20px rgba(27,32,29,0.22)"><svg width="168" height="168" viewBox="0 0 108 108" aria-hidden="true" style="display: block"><rect width="108" height="108" fill="#F5F3EE"/><rect x="22" y="30" width="64" height="48" rx="13" fill="#2E6B4E"/><rect x="27" y="35" width="29" height="38" rx="8" fill="#E3EEE7"/><rect x="60" y="35" width="21" height="17" rx="6" fill="#F0A23B"/><rect x="60" y="56" width="21" height="17" rx="6" fill="#E0583A"/><path d="M31 62C31 51 37 44 48 44C48 55 42 62 31 62Z" fill="#8DB580"/><path d="M33 60L45 47" stroke="#2E6B4E" stroke-width="2" stroke-linecap="round"/><circle cx="46" cy="65" r="4" fill="#2E6B4E"/><circle cx="66" cy="43.5" r="3" fill="#F5F3EE"/><circle cx="75" cy="43.5" r="3" fill="#F5F3EE"/><circle cx="70.5" cy="64.5" r="4.5" fill="#F5F3EE" opacity="0.55"/></svg></div>
+    <section aria-label="Tailles" style="flex: none; display: flex; flex-direction: column; gap: 10px">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 800">De la fiche Play Store à la notification</h2>
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; padding: 18px 14px; border-radius: 22px; background: #FFFFFF">
+        <div style="flex: none; display: flex; flex-direction: column; align-items: center; gap: 8px">
+          <div style="width: 104px; height: 104px; border-radius: 26px; overflow: hidden; box-shadow: 0 2px 6px rgba(27,32,29,0.18)"><svg width="104" height="104" viewBox="0 0 108 108" aria-hidden="true" style="display: block"><rect width="108" height="108" fill="#F5F3EE"/><rect x="22" y="30" width="64" height="48" rx="13" fill="#2E6B4E"/><rect x="27" y="35" width="29" height="38" rx="8" fill="#E3EEE7"/><rect x="60" y="35" width="21" height="17" rx="6" fill="#F0A23B"/><rect x="60" y="56" width="21" height="17" rx="6" fill="#E0583A"/><path d="M31 62C31 51 37 44 48 44C48 55 42 62 31 62Z" fill="#8DB580"/><path d="M33 60L45 47" stroke="#2E6B4E" stroke-width="2" stroke-linecap="round"/><circle cx="46" cy="65" r="4" fill="#2E6B4E"/><circle cx="66" cy="43.5" r="3" fill="#F5F3EE"/><circle cx="75" cy="43.5" r="3" fill="#F5F3EE"/><circle cx="70.5" cy="64.5" r="4.5" fill="#F5F3EE" opacity="0.55"/></svg></div>
+          <span style="font-size: 12px; color: #59605B">Play Store</span>
+        </div>
+        <div style="flex: none; display: flex; flex-direction: column; align-items: center; gap: 8px">
+          <div style="width: 56px; height: 56px; border-radius: 28px; overflow: hidden"><svg width="56" height="56" viewBox="0 0 108 108" aria-hidden="true" style="display: block"><rect width="108" height="108" fill="#F5F3EE"/><rect x="22" y="30" width="64" height="48" rx="13" fill="#2E6B4E"/><rect x="27" y="35" width="29" height="38" rx="8" fill="#E3EEE7"/><rect x="60" y="35" width="21" height="17" rx="6" fill="#F0A23B"/><rect x="60" y="56" width="21" height="17" rx="6" fill="#E0583A"/><path d="M31 62C31 51 37 44 48 44C48 55 42 62 31 62Z" fill="#8DB580"/><path d="M33 60L45 47" stroke="#2E6B4E" stroke-width="2" stroke-linecap="round"/><circle cx="46" cy="65" r="4" fill="#2E6B4E"/><circle cx="66" cy="43.5" r="3" fill="#F5F3EE"/><circle cx="75" cy="43.5" r="3" fill="#F5F3EE"/><circle cx="70.5" cy="64.5" r="4.5" fill="#F5F3EE" opacity="0.55"/></svg></div>
+          <span style="font-size: 12px; color: #59605B">Accueil</span>
+        </div>
+        <div style="flex: none; display: flex; flex-direction: column; align-items: center; gap: 8px">
+          <div style="width: 40px; height: 40px; border-radius: 20px; overflow: hidden"><svg width="40" height="40" viewBox="0 0 108 108" aria-hidden="true" style="display: block"><rect width="108" height="108" fill="#F5F3EE"/><rect x="22" y="30" width="64" height="48" rx="13" fill="#2E6B4E"/><rect x="27" y="35" width="29" height="38" rx="8" fill="#E3EEE7"/><rect x="60" y="35" width="21" height="17" rx="6" fill="#F0A23B"/><rect x="60" y="56" width="21" height="17" rx="6" fill="#E0583A"/><path d="M31 62C31 51 37 44 48 44C48 55 42 62 31 62Z" fill="#8DB580"/><path d="M33 60L45 47" stroke="#2E6B4E" stroke-width="2" stroke-linecap="round"/><circle cx="46" cy="65" r="4" fill="#2E6B4E"/><circle cx="66" cy="43.5" r="3" fill="#F5F3EE"/><circle cx="75" cy="43.5" r="3" fill="#F5F3EE"/><circle cx="70.5" cy="64.5" r="4.5" fill="#F5F3EE" opacity="0.55"/></svg></div>
+          <span style="font-size: 12px; color: #59605B">Réglages</span>
+        </div>
+        <div style="flex: none; display: flex; flex-direction: column; align-items: center; gap: 8px">
+          <div style="width: 24px; height: 24px; border-radius: 12px; overflow: hidden"><svg width="24" height="24" viewBox="0 0 108 108" aria-hidden="true" style="display: block"><rect width="108" height="108" fill="#E3EEE7"/><rect x="23" y="31" width="62" height="46" rx="12" fill="none" stroke="#1F4D37" stroke-width="5"/><path d="M57 33v42M59 54h24" stroke="#1F4D37" stroke-width="4"/><path d="M30 60C30 50 36 44 46 44C46 54 40 60 30 60Z" fill="#1F4D37"/><circle cx="71" cy="43" r="5" fill="#1F4D37"/><circle cx="71" cy="65" r="5" fill="#1F4D37"/></svg></div>
+          <span style="font-size: 12px; color: #59605B">Notification</span>
+        </div>
+      </div>
+    </section>
     <section aria-label="Sur l'écran d'accueil" style="flex: none; display: flex; flex-direction: column; gap: 10px">
       <h2 style="margin: 0; font-size: 17px; font-weight: 800">Sur l'écran d'accueil</h2>
-      <div style="display: flex; justify-content: space-between; padding: 18px 12px; border-radius: 22px; background: linear-gradient(160deg, #3C4A44, #1B201D)">
+      <div style="display: flex; justify-content: center; gap: 28px; padding: 18px 12px; border-radius: 22px; background: linear-gradient(160deg, #3C4A44, #1B201D)">
         <div style="flex: none; width: 64px; display: flex; flex-direction: column; align-items: center; gap: 6px">
-          <div style="width: 56px; height: 56px; border-radius: 28px; overflow: hidden"><svg width="56" height="56" viewBox="0 0 108 108" aria-hidden="true" style="display: block"><rect width="108" height="108" fill="#2E6B4E"/><rect x="27" y="36" width="54" height="11" rx="5.5" fill="#E3EEE7"/><rect x="31" y="47" width="46" height="28" rx="8" fill="#F5F3EE"/><path d="M54 51v20" stroke="#2E6B4E" stroke-width="3" stroke-linecap="round"/><circle cx="42.5" cy="61" r="6" fill="#F0A23B"/><circle cx="65.5" cy="61" r="6" fill="#E0583A"/></svg></div>
-          <span style="font-size: 12px; font-weight: 600; color: #FFFFFF">Rituel</span>
-        </div>
-        <div style="flex: none; width: 64px; display: flex; flex-direction: column; align-items: center; gap: 6px">
-          <div style="width: 56px; height: 56px; border-radius: 28px; overflow: hidden"><svg width="56" height="56" viewBox="0 0 108 108" aria-hidden="true" style="display: block"><rect width="108" height="108" fill="#F5F3EE"/><path d="M44 30c-3 3 3 5 0 8M54 27c-3 3 3 5 0 8M64 30c-3 3 3 5 0 8" stroke="#F0A23B" stroke-width="3" fill="none" stroke-linecap="round"/><rect x="49" y="40" width="10" height="6" rx="3" fill="#1F4D37"/><rect x="27" y="45" width="54" height="8" rx="4" fill="#1F4D37"/><rect x="31" y="53" width="46" height="25" rx="10" fill="#2E6B4E"/><rect x="23" y="58" width="9" height="6" rx="3" fill="#2E6B4E"/><rect x="76" y="58" width="9" height="6" rx="3" fill="#2E6B4E"/></svg></div>
-          <span style="font-size: 12px; font-weight: 600; color: #FFFFFF">Rituel</span>
-        </div>
-        <div style="flex: none; width: 64px; display: flex; flex-direction: column; align-items: center; gap: 6px">
-          <div style="width: 56px; height: 56px; border-radius: 28px; overflow: hidden"><svg width="56" height="56" viewBox="0 0 108 108" aria-hidden="true" style="display: block"><rect width="108" height="108" fill="#F5F3EE"/><circle cx="54" cy="54" r="28" fill="#FFFFFF" stroke="#2E6B4E" stroke-width="5"/><path d="M54 54V32a22 22 0 0 1 22 22z" fill="#2E6B4E"/><path d="M54 54h22a22 22 0 0 1-22 22z" fill="#F0A23B"/><path d="M54 54v22a22 22 0 0 1-22-22z" fill="#E0583A"/><path d="M54 54H32a22 22 0 0 1 22-22z" fill="#8DB580"/></svg></div>
-          <span style="font-size: 12px; font-weight: 600; color: #FFFFFF">Rituel</span>
-        </div>
-        <div style="flex: none; width: 64px; display: flex; flex-direction: column; align-items: center; gap: 6px">
-          <div style="width: 56px; height: 56px; border-radius: 28px; overflow: hidden"><svg width="56" height="56" viewBox="0 0 108 108" aria-hidden="true" style="display: block"><rect width="108" height="108" fill="#2E6B4E"/><text x="52" y="75" text-anchor="middle" font-family="Figtree, system-ui, sans-serif" font-size="58" font-weight="800" fill="#F5F3EE">R</text><circle cx="74" cy="36" r="6" fill="#F0A23B"/></svg></div>
+          <div style="width: 56px; height: 56px; border-radius: 28px; overflow: hidden"><svg width="56" height="56" viewBox="0 0 108 108" aria-hidden="true" style="display: block"><rect width="108" height="108" fill="#F5F3EE"/><rect x="22" y="30" width="64" height="48" rx="13" fill="#2E6B4E"/><rect x="27" y="35" width="29" height="38" rx="8" fill="#E3EEE7"/><rect x="60" y="35" width="21" height="17" rx="6" fill="#F0A23B"/><rect x="60" y="56" width="21" height="17" rx="6" fill="#E0583A"/><path d="M31 62C31 51 37 44 48 44C48 55 42 62 31 62Z" fill="#8DB580"/><path d="M33 60L45 47" stroke="#2E6B4E" stroke-width="2" stroke-linecap="round"/><circle cx="46" cy="65" r="4" fill="#2E6B4E"/><circle cx="66" cy="43.5" r="3" fill="#F5F3EE"/><circle cx="75" cy="43.5" r="3" fill="#F5F3EE"/><circle cx="70.5" cy="64.5" r="4.5" fill="#F5F3EE" opacity="0.55"/></svg></div>
           <span style="font-size: 12px; font-weight: 600; color: #FFFFFF">Rituel</span>
         </div>
       </div>
     </section>
     <section aria-label="Thème monochrome" style="flex: none; display: flex; flex-direction: column; gap: 10px">
-      <h2 style="margin: 0; font-size: 17px; font-weight: 800">Icônes à thème (Android 13 et plus)</h2>
-      <div style="display: flex; justify-content: space-between; padding: 18px 12px; border-radius: 22px; background: #FFFFFF">
+      <h2 style="margin: 0; font-size: 17px; font-weight: 800">Icône à thème (Android 13 et plus)</h2>
+      <div style="display: flex; justify-content: center; gap: 28px; padding: 18px 12px; border-radius: 22px; background: #FFFFFF">
         <div style="flex: none; width: 64px; display: flex; flex-direction: column; align-items: center; gap: 6px">
-          <div style="width: 56px; height: 56px; border-radius: 28px; overflow: hidden"><svg width="56" height="56" viewBox="0 0 108 108" aria-hidden="true" style="display: block"><rect width="108" height="108" fill="#E3EEE7"/><rect x="27" y="36" width="54" height="11" rx="5.5" fill="#1F4D37"/><rect x="32.5" y="50" width="43" height="24" rx="7" fill="none" stroke="#1F4D37" stroke-width="4"/><path d="M54 52v20" stroke="#1F4D37" stroke-width="3" stroke-linecap="round"/><circle cx="43" cy="62" r="5" fill="#1F4D37"/><circle cx="65" cy="62" r="5" fill="#1F4D37"/></svg></div>
-          <span style="font-size: 12px; font-weight: 600; color: #1B201D">Box</span>
-        </div>
-        <div style="flex: none; width: 64px; display: flex; flex-direction: column; align-items: center; gap: 6px">
-          <div style="width: 56px; height: 56px; border-radius: 28px; overflow: hidden"><svg width="56" height="56" viewBox="0 0 108 108" aria-hidden="true" style="display: block"><rect width="108" height="108" fill="#E3EEE7"/><path d="M44 30c-3 3 3 5 0 8M54 27c-3 3 3 5 0 8M64 30c-3 3 3 5 0 8" stroke="#1F4D37" stroke-width="3" fill="none" stroke-linecap="round"/><rect x="49" y="40" width="10" height="6" rx="3" fill="#1F4D37"/><rect x="27" y="45" width="54" height="8" rx="4" fill="#1F4D37"/><rect x="31" y="56" width="46" height="22" rx="10" fill="#1F4D37"/><rect x="23" y="59" width="9" height="6" rx="3" fill="#1F4D37"/><rect x="76" y="59" width="9" height="6" rx="3" fill="#1F4D37"/></svg></div>
-          <span style="font-size: 12px; font-weight: 600; color: #1B201D">Cocotte</span>
-        </div>
-        <div style="flex: none; width: 64px; display: flex; flex-direction: column; align-items: center; gap: 6px">
-          <div style="width: 56px; height: 56px; border-radius: 28px; overflow: hidden"><svg width="56" height="56" viewBox="0 0 108 108" aria-hidden="true" style="display: block"><rect width="108" height="108" fill="#E3EEE7"/><circle cx="54" cy="54" r="28" fill="none" stroke="#1F4D37" stroke-width="5"/><path d="M54 54V32a22 22 0 0 1 22 22z" fill="#1F4D37"/><path d="M54 54v22a22 22 0 0 1-22-22z" fill="#1F4D37"/><path d="M54 54h22a22 22 0 0 1-22 22zM54 54H32a22 22 0 0 1 22-22z" fill="none" stroke="#1F4D37" stroke-width="3" stroke-linejoin="round"/></svg></div>
-          <span style="font-size: 12px; font-weight: 600; color: #1B201D">Semaine</span>
-        </div>
-        <div style="flex: none; width: 64px; display: flex; flex-direction: column; align-items: center; gap: 6px">
-          <div style="width: 56px; height: 56px; border-radius: 28px; overflow: hidden"><svg width="56" height="56" viewBox="0 0 108 108" aria-hidden="true" style="display: block"><rect width="108" height="108" fill="#E3EEE7"/><text x="52" y="75" text-anchor="middle" font-family="Figtree, system-ui, sans-serif" font-size="58" font-weight="800" fill="#1F4D37">R</text><circle cx="74" cy="36" r="6" fill="#1F4D37"/></svg></div>
-          <span style="font-size: 12px; font-weight: 600; color: #1B201D">R</span>
+          <div style="width: 56px; height: 56px; border-radius: 28px; overflow: hidden"><svg width="56" height="56" viewBox="0 0 108 108" aria-hidden="true" style="display: block"><rect width="108" height="108" fill="#E3EEE7"/><rect x="23" y="31" width="62" height="46" rx="12" fill="none" stroke="#1F4D37" stroke-width="5"/><path d="M57 33v42M59 54h24" stroke="#1F4D37" stroke-width="4"/><path d="M30 60C30 50 36 44 46 44C46 54 40 60 30 60Z" fill="#1F4D37"/><circle cx="71" cy="43" r="5" fill="#1F4D37"/><circle cx="71" cy="65" r="5" fill="#1F4D37"/></svg></div>
+          <span style="font-size: 12px; font-weight: 600; color: #1B201D">Rituel</span>
         </div>
       </div>
-      <p style="margin: 0; font-size: 13px; line-height: 1.4; color: #59605B">Android recolore l'icône dans la teinte du fond d'écran : il faut un dessin lisible en une seule couleur.</p>
+      <p style="margin: 0; font-size: 13px; line-height: 1.4; color: #59605B">Android recolore l'icône dans la teinte du fond d'écran : la boîte et ses cloisons restent lisibles en une seule couleur.</p>
     </section>
-    <div style="flex: none; padding: 14px 16px; border-radius: 18px; background: #E3EEE7; color: #1F4D37; font-size: 14px; line-height: 1.45; font-weight: 600">{{ verdict }}</div>
+    <div style="flex: none; padding: 14px 16px; border-radius: 18px; background: #E3EEE7; color: #1F4D37; font-size: 14px; line-height: 1.45; font-weight: 600">Validée le 2026-10-16. À décliner en icône adaptative Android : fond crème uni, premier plan = la boîte, plus la version monochrome.</div>
   </main>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
-  constructor(props) {
-    super(props);
-    this.state = { choix: 0 };
-  }
   renderVals() {
-    const c = this.state.choix;
-    const NOMS = ['La Box', 'La cocotte', 'La semaine', 'Le R'];
-    const v = { verdict: "Piste choisie : " + NOMS[c] + ". Elle sera déclinée en icône adaptative Android (premier plan et fond séparés) et en version monochrome." };
-    NOMS.forEach((_, i) => {
-      v["choisir" + i] = () => this.setState({ choix: i });
-      v["bord" + i] = c === i ? "#2E6B4E" : "transparent";
-      v["pr" + i] = c === i ? "true" : "false";
-    });
-    return v;
+    return {};
   }
 }
 </script>

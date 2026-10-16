@@ -115,6 +115,9 @@ liste de courses dès cet écran, choix de ne pas commencer tout de suite.
   congélateur la veille, dernier jour d'un plat). Détail dans `docs/conservation.md` §5. Activés
   par défaut ; les désactiver demande une **confirmation explicite** : l'utilisateur prend alors
   le relais.
+- **Icône de l'app** (validée le 2026-10-16) : **la Box** vue du dessus, trois compartiments en
+  aplats aux couleurs du Marché coloré, sur fond crème. Icône adaptative Android (fond uni +
+  premier plan) et version monochrome pour les icônes à thème. Maquette `Icone.dc.html`.
 - **CGU** : résumé dans Foyer › À propos, texte complet dans [`docs/cgu.md`](../../cgu.md)
   (brouillon, relecture juridique à prévoir). On ne peut pas s'exonérer de toute responsabilité
   (code de la consommation, art. R. 212-1, 6°) : on informe clairement et on trace les choix.
