@@ -19,6 +19,7 @@ import {
 } from './bugs.js';
 import { creerLimiteur } from './rate-limit.js';
 import { creerRegistreSse, type RegistreSse } from './sse.js';
+import { creerRoutesV2 } from './v2/routes.js';
 
 export type TableSync = 'weeks' | 'checks' | 'weights' | 'depenses' | 'profiles' | 'etat';
 
@@ -472,6 +473,10 @@ export const creerApp = ({ db, secret, origines, heartbeatMs, statique, commit, 
       },
     });
   });
+
+  // ---- App native (plan 2026-10-16-app-native) ----
+
+  app.route('/v2', creerRoutesV2());
 
   // ---- PWA (après l'API : ses routes gardent la main) ----
 

@@ -23,7 +23,7 @@ TDD à chaque étape ; une étape d'app = un écran fonctionnel, conforme à sa 
 
 ## A. Backend `/v2` (dans ce dépôt, `server/`)
 
-1. [ ] Squelette : `server/src/v2/` (routeur Hono monté sous `/v2`), tables `v2_*` dans `db.ts`,
+1. [x] Squelette : `server/src/v2/` (routeur Hono monté sous `/v2`), tables `v2_*` dans `db.ts`,
    tests `server/test/v2-*.test.ts`. `/sante` inchangé.
 2. [ ] **Foyer à code de 6 caractères** : alphabet sans caractères ambigus (pas de `0/O`, `1/I/L`) ;
    code stocké en **HMAC-SHA256 avec un secret serveur** (colonne indexée, recherche directe — le

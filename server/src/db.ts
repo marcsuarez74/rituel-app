@@ -1,4 +1,5 @@
 import Database from 'better-sqlite3';
+import { migrerV2 } from './v2/db.js';
 
 // Schéma de sync (spec 2026-09-26 §3.1) — JSON en text (SQLite), foyer_id au
 // lieu de household_id (nouvelle base, pas de legacy), pas de RLS (le serveur
@@ -77,5 +78,6 @@ export const ouvrirDb = (chemin: string): Database.Database => {
   if (!colonnes.some((c) => c.name === 'appareils_suivis')) {
     db.exec('alter table foyers add column appareils_suivis integer not null default 0');
   }
+  migrerV2(db);
   return db;
 };
