@@ -136,7 +136,7 @@ données et évite une dépendance supplémentaire.
 
 ## 9. Prochaines étapes
 
-1. Écran d'acceptation des CGU (maquette `Cgu.dc.html`, à valider) : dernière étape du guide,
+1. Écran d'acceptation des CGU (maquette `Cgu.dc.html`, validée le 2026-10-16) : dernière étape du guide,
    avant la génération des menus, et à l'arrivée dans un foyer ; case à cocher obligatoire,
    date et version de l'acceptation enregistrées.
 2. Rédiger le plan d'implémentation dans `docs/superpowers/plans/`.
