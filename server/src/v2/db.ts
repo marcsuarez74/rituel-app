@@ -15,6 +15,13 @@ create table if not exists v2_appareils (
   expire_le text not null
 );
 create index if not exists v2_appareils_foyer on v2_appareils (foyer_id);
+-- Acceptation des CGU, par appareil et par version ; date posée par le serveur.
+create table if not exists v2_acceptations (
+  jeton_empreinte text not null references v2_appareils on delete cascade,
+  version text not null,
+  accepte_le text not null,
+  primary key (jeton_empreinte, version)
+);
 -- État partagé du foyer : une ligne par entité, « dernière écriture gagne » sur modifie_le.
 -- rev = numéro du lot qui l'a écrite (croissant par foyer) : le curseur de GET /v2/sync?depuis=.
 -- Une suppression est gardée (supprime = 1) pour que les autres appareils l'apprennent.

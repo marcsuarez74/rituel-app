@@ -5,6 +5,7 @@ import { bodyLimit } from 'hono/body-limit';
 import type { Context } from 'hono';
 import { DUREE_TOKEN_S, empreinteToken, signerToken, verifierToken } from '../auth.js';
 import { creerLimiteur } from '../rate-limit.js';
+import { accepterCgu, VERSION_CGU } from './cgu.js';
 import { CONTRAT } from './contrat.js';
 import { deriverSecret, empreinteCode, genererCode, normaliserCode } from './foyer.js';
 import { pousser, revCourante, tirer, validerLot } from './sync.js';
@@ -143,6 +144,19 @@ export const creerRoutesV2 = ({ db, secret, limites }: OptionsV2): Hono<EnvV2> =
       };
       if (restants.n === 0) db.prepare('delete from v2_foyers where id = ?').run(foyerId);
     })();
+    return c.body(null, 204);
+  });
+
+  // ---- CGU (plan §A.4) ----
+
+  v2.get('/cgu', (c) => c.json({ version: VERSION_CGU }));
+
+  // L'app envoie la version affichée : si elle n'est plus en vigueur, l'utilisateur doit
+  // relire le nouveau texte, pas accepter l'ancien.
+  v2.post('/cgu/acceptation', auth, async (c) => {
+    const corps = await lireCorps(c);
+    if (corps?.version !== VERSION_CGU) return c.json({ erreur: 'cgu-perimees', version: VERSION_CGU }, 409);
+    accepterCgu(db, empreinteToken(c.get('jeton')));
     return c.body(null, 204);
   });
 
