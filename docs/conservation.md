@@ -68,6 +68,8 @@ n'est pas en cause tant que la chaîne du froid est tenue.
 
 ## 4. Règles que le code applique
 
+La table du §3 est codée dans `server/src/v2/conservation.ts` : les deux restent alignées.
+
 Pour chaque repas issu du Rituel, avec `jour` = son jour de consommation :
 
 1. `jour − J0 ≤ frigoMax(catégorie)` → le plat va au frigo.
