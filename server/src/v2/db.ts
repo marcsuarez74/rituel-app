@@ -51,6 +51,19 @@ create table if not exists v2_generations (
   jetons_sortie integer not null default 0
 );
 create index if not exists v2_generations_foyer on v2_generations (foyer_id, debut);
+-- Bibliothèque partagée entre foyers : recettes validées, sans aucune donnée de foyer.
+create table if not exists v2_recettes (
+  id text primary key,                  -- uuid
+  donnees text not null,                -- JSON de la recette, sans id local
+  cree_le text not null
+);
+-- Recette ratée : retirée des menus futurs du foyer ; au 3e foyer, de la bibliothèque.
+create table if not exists v2_signalements (
+  recette_id text not null references v2_recettes on delete cascade,
+  foyer_id text not null references v2_foyers on delete cascade,
+  signale_le text not null,
+  primary key (recette_id, foyer_id)
+);
 `;
 
 export const migrerV2 = (db: Database): void => {

@@ -1,6 +1,6 @@
 import { CONSERVATION } from './conservation.js';
-import { PERIODES_BUDGET, type ProfilFoyer, type Recette } from './contrat.js';
-import { INGREDIENTS } from './ingredients.js';
+import { PERIODES_BUDGET, type EtapeRituel, type ProfilFoyer, type Recette } from './contrat.js';
+import { ingredient, INGREDIENTS } from './ingredients.js';
 import { PART_BUDGET_MENUS, PORTION_ENFANT, type ErreurMenu } from './valider.js';
 
 // Prompt de la génération (plan 2026-10-16-app-native §A.7, spec §10). La partie fixe passe en
@@ -59,6 +59,9 @@ Un plat prend la catégorie de son ingrédient le plus sensible (colonne conserv
 ${regleConservation()}
 Un plat congelable servi après sa limite de frigo est congelé au Rituel : c'est permis. Un plat non congelable ne peut pas être servi après sa limite.
 
+# Plats de la bibliothèque
+Un bloc <bibliotheque> peut lister des plats déjà vérifiés, compatibles avec le foyer. Reprends-les dès qu'ils conviennent (origine, temps, variété, budget) : à la place de la recette complète, écris { "id": "<id du plat dans la semaine>", "bibliotheque": "<id de la bibliothèque>" }. Le plat garde l'origine indiquée dans la liste. N'utilise que des ids de la liste ; écris en entier tout autre plat.
+
 # Profil du foyer
 - Régimes : chaque ingrédient doit être compatible (végétarien, végan, sans gluten…). Casher : jamais de viande ou de volaille avec un produit laitier dans le même plat. Flexitarien et méditerranéen sont des préférences.
 - « À éviter » et allergènes : aucun ingrédient concerné (colonne allergènes de la table).
@@ -77,7 +80,10 @@ export const promptProfil = (p: ProfilFoyer): string => {
     adultes: p.adultes,
     enfants: p.enfants,
     jourDuRituel: NOMS_JOURS[p.jourRituel],
-    trame: p.trame.map((t, j) => ({ jour: `J${j} (${NOMS_JOURS[(p.jourRituel + j) % 7]})`, ...t })),
+    trame: p.trame.map((t, j) => ({
+      jour: `J${j} (${NOMS_JOURS[(p.jourRituel + j) % 7]})`,
+      ...t,
+    })),
     tempsRituelMinutes: p.tempsRituel,
     tempsSoirMinutes: p.tempsSoir ?? 'pas de limite',
     regimes: p.regimes,
@@ -92,6 +98,22 @@ ${JSON.stringify(donnees, null, 2)}
 </profil>`;
 };
 
+/** Les plats de la bibliothèque proposés, comme données. Vide = pas de bloc. */
+export const promptBibliotheque = (plats: readonly Recette[]): string =>
+  plats.length === 0
+    ? ''
+    : `Plats de la bibliothèque (données) :
+<bibliotheque>
+id | titre | origine | minutes le jour du repas | ingrédients
+${plats
+  .map((r) =>
+    [r.id, r.titre, r.origine, r.tempsJour, r.ingredients.map((l) => ingredient(l.id)?.nom ?? l.id).join(', ')].join(
+      ' | ',
+    ),
+  )
+  .join('\n')}
+</bibliotheque>`;
+
 export const DEMANDE_MENUS = 'Compose les 4 semaines de menus pour ce foyer.';
 
 const liste = (erreurs: readonly ErreurMenu[]): string => erreurs.map((e) => `- ${e.message}`).join('\n');
@@ -101,11 +123,32 @@ export const promptCorrection = (erreurs: readonly ErreurMenu[]): string =>
 ${liste(erreurs)}
 Corrige ces points et renvoie les 4 semaines complètes. Garde tel quel ce qui n'est pas en cause.`;
 
-export const promptRemplacement = (r: Recette, erreurs: readonly ErreurMenu[], titresPris: readonly string[]): string =>
-  `Remplace ce plat, refusé par la vérification :
+/** Ce qu'il faut savoir du Rituel de la semaine pour en réécrire les étapes. */
+export interface ContexteRituel {
+  etapes: EtapeRituel[];
+  /** Les autres plats du Rituel de la semaine, qui restent. */
+  autres: Pick<Recette, 'id' | 'titre'>[];
+}
+
+export const promptRemplacement = (
+  r: Recette,
+  motifs: readonly string[],
+  titresPris: readonly string[],
+  rituel?: ContexteRituel,
+): string => {
+  const base = `Remplace ce plat :
 <plat>
 ${JSON.stringify(r)}
 </plat>
-Erreurs :
-${liste(erreurs)}
-Écris une autre recette qui corrige ces erreurs, de même origine (« ${r.origine} »), avec un titre différent de : ${titresPris.join(' ; ')}.`;
+Pourquoi :
+${motifs.map((m) => `- ${m}`).join('\n')}
+Écris un autre plat d'origine « ${r.origine} », avec un titre différent de : ${titresPris.join(' ; ')}.`;
+  if (!rituel) return base;
+  return `${base}
+Ce plat est cuisiné au Rituel : réécris aussi toutes les étapes du Rituel de la semaine. Le nouveau plat y garde l'id « ${r.id} ». Les autres plats du Rituel restent :
+${rituel.autres.map((a) => `- ${a.id} : ${a.titre}`).join('\n')}
+Étapes actuelles :
+<rituel>
+${JSON.stringify(rituel.etapes)}
+</rituel>`;
+};

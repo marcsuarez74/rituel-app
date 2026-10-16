@@ -40,12 +40,14 @@ describe('creerAppelClaude', () => {
     expect(JSON.stringify(p.output_config)).toContain('semaines');
   });
 
-  it('format recette → schéma d’une recette', async () => {
+  it('formats plat → schéma d’un plat ; le plat du Rituel exige aussi les étapes du Rituel', async () => {
     const { appel, params } = simuler({ stop_reason: 'end_turn', content: [{ type: 'text', text: '{}' }] });
-    await appel({ ...requete, format: 'recette' });
-    const schema = JSON.stringify(params[0].output_config);
-    expect(schema).toContain('etapes');
-    expect(schema).not.toContain('semaines');
+    await appel({ ...requete, format: 'plat-frais' });
+    await appel({ ...requete, format: 'plat-rituel' });
+    const [frais, rituel] = params.map((p) => (p.output_config as { format: { schema: { required: string[] } } }).format.schema);
+    expect(frais.required).toEqual(['recette']);
+    expect(rituel.required).toEqual(['recette', 'rituel']);
+    expect(JSON.stringify(frais)).not.toContain('semaines');
   });
 
   it('texte et jetons (cache compris)', async () => {

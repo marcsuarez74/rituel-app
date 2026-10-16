@@ -40,6 +40,8 @@ export interface Recette {
   tempsJour: number;
   /** Requête courte en anglais pour la photo (spec §10.4). */
   photo: string;
+  /** Id du plat dans la bibliothèque partagée (posé par le serveur) : sert à le signaler. */
+  bibliotheque?: string;
 }
 
 export interface EtapeRituel {

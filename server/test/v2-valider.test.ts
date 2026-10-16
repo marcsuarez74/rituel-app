@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { CONTRAT, type Menus, type ProfilFoyer, type Recette } from '../src/v2/contrat.js';
-import { validerMenus, type CodeErreur } from '../src/v2/valider.js';
+import { controlerRecette, validerMenus, type CodeErreur } from '../src/v2/valider.js';
 import { menus, profil, recette } from './v2-fixtures.js';
 
 // Validateur de menus (plan 2026-10-16-app-native §A.6, spec §10.2.3) : le verrou de sécurité
 // entre l'IA et le foyer. Chaque test part d'un menu conforme et en abîme un point.
-
 
 const codes = (m: Menus, p: ProfilFoyer = profil()): CodeErreur[] => validerMenus(m, p).erreurs.map((e) => e.code);
 
@@ -251,5 +250,31 @@ describe('validerMenus — messages', () => {
     }
     // Poulet servi lundi soir (J+1 d'un Rituel le dimanche).
     expect(r.erreurs[0].message).toMatch(/lundi soir/);
+  });
+});
+
+// Contrôles d'un plat seul (bibliothèque, étape 8) : ce qui ne dépend pas de sa place au menu.
+describe('controlerRecette', () => {
+  const omelette = () => menus().semaines[0].recettes.find((r) => r.id === 'omelette-1')!;
+  const curry = () => menus().semaines[0].recettes.find((r) => r.id === 'curry-1')!;
+
+  it('plat conforme → aucune erreur', () => {
+    expect(controlerRecette(omelette(), profil())).toEqual([]);
+    expect(controlerRecette(curry(), profil())).toEqual([]);
+  });
+
+  it('ingrédient, régime, allergène, « à éviter », temps du soir', () => {
+    const avec = (r: Recette, id: string, qte = 40): Recette => ({ ...r, ingredients: [...r.ingredients, { id, qte }] });
+    expect(controlerRecette(avec(omelette(), 'inconnu'), profil()).map((e) => e.code)).toEqual(['ingredient-inconnu']);
+    expect(controlerRecette(avec(omelette(), 'lardons'), profil({ eviter: ['porc'] })).map((e) => e.code)).toContain('eviter');
+    expect(controlerRecette(avec(omelette(), 'lardons'), profil({ regimes: ['vegetarien'] })).map((e) => e.code)).toContain('regime');
+    expect(controlerRecette(omelette(), profil({ allergenes: ['oeufs'] })).map((e) => e.code)).toContain('allergene');
+    expect(controlerRecette({ ...omelette(), tempsJour: 60 }, profil()).map((e) => e.code)).toEqual(['temps-soir']);
+  });
+
+  it('plat du Rituel avec un ingrédient cru exclu → conservation', () => {
+    const r = curry();
+    const oeufCru: Recette = { ...r, ingredients: [...r.ingredients, { id: 'oeuf', qte: 1, cru: true }] };
+    expect(controlerRecette(oeufCru, profil()).map((e) => e.code)).toContain('conservation');
   });
 });
