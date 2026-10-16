@@ -58,6 +58,28 @@ Les captures facultatives (PNG/JPEG/WebP, 5 Mo max) sont écrites dans `data/bug
 Elles ne sont écrites qu'une fois la validation, le quota et le jeton vérifiés, et
 supprimées si GitHub refuse.
 
+### App native : génération des menus et photos (`/v2`)
+
+`POST /v2/menus/generer` et `/v2/menus/remplacer` appellent l'API Claude ; les photos des
+recettes viennent de Pexels, vérifiées par un modèle de vision (plan
+`docs/superpowers/plans/2026-10-16-app-native.md`, étapes 7 à 10). Les clés ne quittent jamais
+le serveur et ne vont jamais dans le dépôt : `.env` à côté du `docker-compose.yml`, puis
+`docker compose up -d`.
+
+| Variable | Rôle | Absente |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | clé de l'API Claude (console Anthropic, workspace dédié avec limite de dépense) | génération en 503, pas de photos |
+| `PEXELS_API_KEY` | clé de l'API Pexels (gratuite, pexels.com/api) | pas de photos : elles restent à faire et partent au redémarrage suivant avec la clé |
+| `IA_MODELE` | modèle de la génération | `claude-opus-5-5` |
+| `IA_EFFORT` | `low` · `medium` · `high` · `xhigh` · `max` | `medium` |
+| `IA_QUOTA_JOUR` | générations (et remplacements) par foyer sur 24 h glissantes | `3` |
+| `IA_MODELE_VISION` | modèle qui vérifie les photos | `claude-haiku-5-5` |
+
+Changer de modèle, d'effort ou de prompt : passer d'abord la batterie (`npm run batterie`
+dans `server/`, payant, hors CI ; mêmes variables). Les photos retenues sont dans
+`data/photos/` (volume `./data`). Le backup ne couvre que la base : une photo perdue n'est pas
+regénérée, l'app montre alors l'image neutre.
+
 ### Mise en place (une fois)
 
 Depuis l'ancien service systemd `rituel` (API seule) :

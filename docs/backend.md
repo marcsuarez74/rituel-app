@@ -62,6 +62,14 @@ facultative et quelques infos d'appareil à `POST /bugs`, qui crée une issue Gi
 de donnée de santé : le dépôt est public. Quota 3/jour/foyer (table `bug_reports`).
 Mise en place du jeton : `server/README.md` § Signaler un bug.
 
+## App native (`/v2`) : génération des menus et photos
+
+L'API `/v2` sert l'app native (Expo). La génération des menus appelle l'API Claude
+(`ANTHROPIC_API_KEY`), les photos des recettes viennent de Pexels (`PEXELS_API_KEY`),
+vérifiées par vision. Variables et défauts : `server/README.md` § App native. Le profil
+envoyé par l'app ne contient aucun texte libre ; un menu non conforme au profil n'est jamais
+renvoyé.
+
 ## Supprimer son profil — `DELETE /foyers/moi`
 
 Profil › « Supprimer mon profil ».
