@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Conditions</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#2E6B4E}a:hover{color:#1F4D37}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid #2E6B4E;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #F5F3EE; color: #1B201D; font-family: Figtree, system-ui, sans-serif; overflow: hidden">
+
+  <header style="flex: none; display: flex; align-items: center; padding: 16px 20px 0">
+    <sc-if value="{{ enLecture }}" hint-placeholder-val="{{ false }}">
+      <button onClick="{{ fermerLecture }}" style="height: 44px; display: flex; align-items: center; gap: 4px; padding: 0 12px 0 4px; border: none; border-radius: 22px; background: transparent; color: #1F4D37; font-size: 16px; font-weight: 700">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+        L'essentiel
+      </button>
+    </sc-if>
+    <sc-if value="{{ pasLecture }}" hint-placeholder-val="{{ true }}">
+      <a href="Main.dc.html" style="height: 44px; display: flex; align-items: center; gap: 4px; padding: 0 12px 0 4px; border-radius: 22px; color: #1F4D37; font-size: 16px; font-weight: 700; text-decoration: none">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>
+        Mes réponses
+      </a>
+    </sc-if>
+  </header>
+
+  <sc-if value="{{ enLecture }}" hint-placeholder-val="{{ false }}">
+  <main style="flex: 1; overflow-y: auto; padding: 12px 20px 24px; display: flex; flex-direction: column; gap: 16px">
+    <div style="flex: none; display: flex; flex-direction: column; gap: 6px">
+      <h1 style="margin: 0; font-size: 28px; line-height: 1.2; font-weight: 800">{{ doc.titre }}</h1>
+      <span style="font-size: 13px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #2E6B4E">{{ doc.version }}</span>
+    </div>
+    <sc-for list="{{ texte }}" as="t" hint-placeholder-count="9">
+      <section aria-label="{{ t.titre }}" style="flex: none; display: flex; flex-direction: column; gap: 6px; padding: 16px; border-radius: 20px; background: #FFFFFF">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 800">{{ t.titre }}</h2>
+        <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #3D443F">{{ t.texte }}</p>
+      </section>
+    </sc-for>
+  </main>
+  </sc-if>
+
+  <sc-if value="{{ pasLecture }}" hint-placeholder-val="{{ true }}">
+  <main style="flex: 1; overflow-y: auto; padding: 12px 20px 16px; display: flex; flex-direction: column; gap: 16px">
+    <div style="flex: none; display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #2E6B4E">Dernière étape</span>
+      <h1 style="margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800">Avant de créer tes menus</h1>
+      <p style="margin: 0; font-size: 16px; line-height: 1.45; color: #59605B">Rituel va créer ton foyer. Voici, en clair, comment ça marche.</p>
+    </div>
+
+    <div style="flex: none; display: flex; flex-direction: column; background: #FFFFFF; border-radius: 24px; overflow: hidden">
+      <sc-for list="{{ points }}" as="p" hint-placeholder-count="5">
+        <div style="display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px; border-bottom: 1px solid {{ p.trait }}">
+          <span aria-hidden="true" style="flex: none; width: 40px; height: 40px; border-radius: 20px; background: {{ p.fond }}; color: {{ p.encre }}; display: flex; align-items: center; justify-content: center">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="{{ p.icone }}"/></svg>
+          </span>
+          <span style="flex: 1; display: flex; flex-direction: column; gap: 3px">
+            <span style="font-size: 16px; font-weight: 800">{{ p.titre }}</span>
+            <span style="font-size: 14px; line-height: 1.45; color: #3D443F">{{ p.texte }}</span>
+          </span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="flex: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+      <button onClick="{{ ouvrirCgu }}" style="height: 48px; border-radius: 24px; border: 2px solid #E2DED5; background: #FFFFFF; color: #1B201D; font-size: 15px; font-weight: 700">Texte complet</button>
+      <button onClick="{{ ouvrirConfid }}" style="height: 48px; border-radius: 24px; border: 2px solid #E2DED5; background: #FFFFFF; color: #1B201D; font-size: 15px; font-weight: 700">Confidentialité</button>
+    </div>
+  </main>
+
+  <footer style="flex: none; display: flex; flex-direction: column; gap: 10px; padding: 12px 20px 20px; background: #F5F3EE; border-top: 1px solid #E2DED5">
+    <button role="checkbox" aria-checked="{{ coche }}" onClick="{{ cocher }}" style="min-height: 56px; display: flex; align-items: center; gap: 14px; padding: 8px 14px; text-align: left; border: 2px solid {{ caseBord }}; border-radius: 18px; background: #FFFFFF; color: #1B201D">
+      <span aria-hidden="true" style="flex: none; width: 28px; height: 28px; box-sizing: border-box; border-radius: 8px; border: 2px solid {{ caseBord }}; background: {{ caseFond }}; display: flex; align-items: center; justify-content: center">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" style="visibility: {{ marque }}"><path d="m5 12 5 5 9-10"/></svg>
+      </span>
+      <span style="font-size: 16px; line-height: 1.35; font-weight: 700">J'ai lu et j'accepte les conditions d'utilisation</span>
+    </button>
+    <sc-if value="{{ aide }}" hint-placeholder-val="{{ false }}">
+      <span role="status" style="font-size: 14px; font-weight: 600; color: #8A5300">Coche la case pour continuer.</span>
+    </sc-if>
+    <sc-if value="{{ coche }}" hint-placeholder-val="{{ false }}">
+      <a href="Resultat.dc.html" style="height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 30px; background: #2E6B4E; color: #FFFFFF; font-size: 18px; font-weight: 700; text-decoration: none">Accepter et créer mes menus</a>
+    </sc-if>
+    <sc-if value="{{ pasCoche }}" hint-placeholder-val="{{ true }}">
+      <button aria-disabled="true" onClick="{{ insister }}" style="height: 60px; border: none; border-radius: 30px; background: #E2DED5; color: #6B716C; font-size: 18px; font-weight: 700">Accepter et créer mes menus</button>
+    </sc-if>
+    <span style="font-size: 13px; line-height: 1.4; color: #59605B; text-align: center">Version du 15 octobre. Tu les retrouves dans Foyer › À propos.</span>
+  </footer>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { coche: false, aide: false, lecture: null };
+  }
+  renderVals() {
+    const s = this.state;
+    // L'essentiel, en 5 points : ce que Rituel fait, ce qui reste à la charge du foyer.
+    const POINTS = [
+      ["Un outil d'organisation", "Les recettes sont proposées par une IA, puis vérifiées automatiquement : conservation, régime, allergènes.", "M4 11h16M6 11V8a6 6 0 0 1 12 0v3M5 11l1 8h12l1-8"],
+      ["Conservation des plats", "Chaque plat se mange dans les 3 jours ; ceux de la fin de semaine passent par le congélateur. Pour que ça tienne : un frigo réglé à 4 °C, et les Box rangées dès la fin du Rituel.", "M7 3h10v18H7zM7 10h10M10 6v2M10 13v3"],
+      ["Des rappels au bon moment", "Rituel te rappelle quand ranger les plats et quand sortir ceux du congélateur. Chaque rappel peut être désactivé ; tu t'en occupes alors toi-même.", "M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"],
+      ["Allergies et régimes", "Les menus respectent ton régime. Si tu le suis pour raison de santé, garde l'avis de ton médecin. La composition varie selon les marques : en cas d'allergie, vérifie les étiquettes.", "M9 3h6M10 3v5l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"],
+      ["Tes données restent au foyer", "Seules les personnes qui ont le code de ton foyer les voient. Ni nom, ni e-mail ; rien n'est vendu.", "M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"]
+    ];
+    const AMBRE = [false, false, false, false, false];
+    const CGU_COMPLET = [
+      ["1. Objet", "Rituel aide un foyer à organiser ses repas : un guide de routine, des menus sur 4 semaines, une session de cuisine en lot (le Rituel), une liste de courses avec budget et des rappels. Utiliser l'app vaut acceptation de ces conditions, présentées à la création ou à l'arrivée dans un foyer."],
+      ["2. Ce que Rituel n'est pas", "Rituel n'est ni un service médical, ni un service de diététique. Les menus, les quantités et les régimes proposés sont des suggestions d'organisation, pas des prescriptions. Les recettes sont écrites par une intelligence artificielle puis vérifiées par des règles automatiques (conservation, régime, allergènes). Leurs photos sont des illustrations libres de droits, fournies par Pexels (pexels.com) : elles ne sont pas contractuelles et ne montrent pas forcément le plat tel qu'il sortira de ta cuisine."],
+      ["3. Conservation des plats", "Les menus sont construits pour qu'aucun plat du Rituel gardé au frigo ne soit mangé plus de 3 jours après sa préparation, 2 jours pour le riz, les pâtes, le poisson et les crudités. Cette règle s'inspire de la restauration collective (arrêté du 21 décembre 2009, annexe IV). Au-delà, le plat est prévu au congélateur dès le Rituel, puis décongelé au frigo la veille. Ces règles supposent une chaîne du froid que toi seul maîtrises : frigo à 4 °C au plus, plats rangés dans les 2 h après la cuisson, un seul réchauffage, pas de recongélation. Au moindre doute (odeur, aspect, frigo en panne, plat oublié dehors), le plat se jette, quelle que soit la date affichée."],
+      ["4. Rappels", "Trois rappels sont activés par défaut : ranger après le Rituel, sortir du congélateur la veille, dernier jour d'un plat. Ils passent par les notifications du téléphone : Rituel ne peut pas garantir leur réception (notifications refusées, téléphone éteint, économie d'énergie). Désactiver un rappel demande une confirmation qui rappelle la règle ; elle est enregistrée avec sa date, et tu t'engages alors à appliquer la règle toi-même. Chaque rappel se réactive à tout moment, et chaque membre du foyer règle les siens."],
+      ["5. Régimes, allergies, santé", "Les régimes proposés (végétarien, sans gluten, sans lactose, keto…) adaptent les recettes sans suivi médical. Rituel ne garantit pas l'absence d'un allergène : tout dépend des produits achetés. En cas d'allergie, d'intolérance, de grossesse ou de maladie, vérifie les étiquettes et demande l'avis d'un professionnel de santé. Certains régimes, comme le keto, sont déconseillés à certaines personnes sans avis médical."],
+      ["6. Budget et prix", "Les montants affichés avant les courses sont des estimations en fourchette, à partir de prix moyens. Le prix réel dépend du magasin. Seul le ticket que tu saisis compte dans le budget. Rituel ne bloque jamais une dépense."],
+      ["7. Foyer et données", "Le foyer est identifié par un code de 6 caractères : toute personne qui l'a peut rejoindre le foyer et voir ses menus, sa liste et son budget. Partage-le avec soin ; tu peux le réinitialiser. Le détail des données est dans la page Confidentialité."],
+      ["8. Responsabilité", "Rituel s'engage à ce que les menus et les rappels respectent les articles 3 et 4. Il ne peut pas répondre de ce qui lui échappe : température du frigo, délais de rangement, état des produits achetés, rappels désactivés ou bloqués par le téléphone, choix alimentaires faits sans avis médical. Rien dans ces conditions ne limite les droits que la loi t'accorde."],
+      ["9. Modification", "Ces conditions peuvent évoluer. Toute modification importante est signalée dans l'app et doit être acceptée à nouveau."]
+    ];
+    const CONFID = [
+      ["Ce qui est enregistré", "Les réponses du guide, les menus, la liste de courses, le budget et les tickets saisis. Rien d'autre : ni nom, ni e-mail, ni position."],
+      ["Où", "Sur ton téléphone, et sur le serveur de Rituel pour que tout le foyer voie la même chose. Les réglages des rappels restent sur ton téléphone."],
+      ["Qui le voit", "Les membres de ton foyer, c'est-à-dire ceux qui ont le code. Partage-le avec soin ; tu peux le changer à tout moment."],
+      ["Ce qui n'est jamais fait", "Aucune donnée vendue, aucune publicité, aucun suivi pour des tiers."],
+      ["Tes droits", "Tu peux demander une copie de tes données ou leur suppression. Quitter le foyer efface ses données de ton téléphone."]
+    ];
+    return {
+      points: POINTS.map(([titre, texte, icone], i) => ({
+        titre, texte, icone,
+        fond: AMBRE[i] ? "#FBEEDC" : "#E3EEE7",
+        encre: AMBRE[i] ? "#6E3F00" : "#1F4D37",
+        trait: i === POINTS.length - 1 ? "transparent" : "#EEEAE2"
+      })),
+      coche: s.coche,
+      pasCoche: !s.coche,
+      caseBord: s.coche ? "#2E6B4E" : (s.aide ? "#C27A1A" : "#B9B4AA"),
+      caseFond: s.coche ? "#2E6B4E" : "#FFFFFF",
+      marque: s.coche ? "visible" : "hidden",
+      cocher: () => this.setState({ coche: !s.coche, aide: false }),
+      aide: s.aide && !s.coche,
+      insister: () => this.setState({ aide: true }),
+      enLecture: !!s.lecture,
+      pasLecture: !s.lecture,
+      ouvrirCgu: () => this.setState({ lecture: "cgu" }),
+      ouvrirConfid: () => this.setState({ lecture: "confid" }),
+      fermerLecture: () => this.setState({ lecture: null }),
+      doc: s.lecture === "confid"
+        ? { titre: "Confidentialité", version: "Ce que Rituel enregistre" }
+        : { titre: "Conditions d'utilisation", version: "Texte complet · version du 15 octobre" },
+      texte: (s.lecture === "confid" ? CONFID : CGU_COMPLET).map(([titre, texte]) => ({ titre, texte }))
+    };
+  }
+}
+</script>
+</body>
+</html>

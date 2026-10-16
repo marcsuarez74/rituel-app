@@ -1,0 +1,126 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-10-14T10:00:00Z"
+  },
+  "title": "Rituel natif — maquettes",
+  "launch": {
+    "view": "canvas"
+  },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "1 · Guide de routine",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "Resultat.dc.html": {
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "2 · Ton compromis",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "Accueil.dc.html": {
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "3 · Accueil",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "Menus.dc.html": {
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "4 · Menus (4 semaines)",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "Rituel.dc.html": {
+      "x": 1880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "5 · Rituel pas à pas",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "Courses.dc.html": {
+      "x": 2350,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "6 · Courses et budget",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "Foyer.dc.html": {
+      "x": 2820,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "7 · Foyer",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "Attente.dc.html": {
+      "x": 940,
+      "y": 964,
+      "w": 390,
+      "h": 844,
+      "title": "3b · Accueil, avant de commencer",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "Cgu.dc.html": {
+      "x": 0,
+      "y": 964,
+      "w": 390,
+      "h": 844,
+      "title": "1b · Conditions, avant les menus",
+      "is_interactive": true,
+      "radius": 28
+    },
+    "Icone.dc.html": {
+      "x": 470,
+      "y": 964,
+      "w": 390,
+      "h": 844,
+      "title": "0 · Icône de l'app",
+      "is_interactive": true,
+      "radius": 28
+    }
+  },
+  "order": [
+    "Icone.dc.html",
+    "Main.dc.html",
+    "Cgu.dc.html",
+    "Resultat.dc.html",
+    "Accueil.dc.html",
+    "Attente.dc.html",
+    "Menus.dc.html",
+    "Rituel.dc.html",
+    "Courses.dc.html",
+    "Foyer.dc.html"
+  ],
+  "notes": {
+    "titre": {
+      "x": 0,
+      "y": -300,
+      "text": "Rituel natif — 9 écrans, parcours cliquable, et l'icône",
+      "kind": "title1",
+      "maxW": 3210
+    }
+  },
+  "designSystems": []
+}

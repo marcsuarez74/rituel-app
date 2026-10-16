@@ -115,6 +115,9 @@ liste de courses dès cet écran, choix de ne pas commencer tout de suite.
   congélateur la veille, dernier jour d'un plat). Détail dans `docs/conservation.md` §5. Activés
   par défaut ; les désactiver demande une **confirmation explicite** : l'utilisateur prend alors
   le relais.
+- **Icône de l'app** (validée le 2026-10-16) : **la Box** vue du dessus, trois compartiments en
+  aplats aux couleurs du Marché coloré, sur fond crème. Icône adaptative Android (fond uni +
+  premier plan) et version monochrome pour les icônes à thème. Maquette `Icone.dc.html`.
 - **CGU** : résumé dans Foyer › À propos, texte complet dans [`docs/cgu.md`](../../cgu.md)
   (brouillon, relecture juridique à prévoir). On ne peut pas s'exonérer de toute responsabilité
   (code de la consommation, art. R. 212-1, 6°) : on informe clairement et on trace les choix.
@@ -136,7 +139,9 @@ données et évite une dépendance supplémentaire.
 
 ## 9. Prochaines étapes
 
-1. Maquetter l'écran d'acceptation des CGU à la création du foyer.
+1. Écran d'acceptation des CGU (maquette `Cgu.dc.html`, validée le 2026-10-16) : dernière étape du guide,
+   avant la génération des menus, et à l'arrivée dans un foyer ; case à cocher obligatoire,
+   date et version de l'acceptation enregistrées.
 2. Rédiger le plan d'implémentation dans `docs/superpowers/plans/`.
 3. Exécuter le plan en TDD, par étapes (une étape = un écran fonctionnel).
 4. Avant la sortie : relecture juridique de `docs/cgu.md`, politique de confidentialité, relecture
@@ -198,7 +203,9 @@ recette dans la bibliothèque. Image générée par IA et illustrations par fami
   Unsplash écarté : son API impose d'afficher les images depuis ses serveurs, ce qui casse le
   hors ligne. Limites de l'API Pexels (200 requêtes/h, 20 000/mois) : sans enjeu grâce au cache
   de la bibliothèque. Conditions à relire sur pexels.com/license avant la sortie.
-- **Crédit** : « Photo : <photographe> · Pexels » avec lien, sous l'image dans la fiche recette.
+- **Crédit** : aucun sous l'image (décidé le 2026-10-16 : la licence Pexels ne l'impose pas). Le
+  lien visible vers Pexels exigé par les règles de l'API est dans les CGU (article 2 et résumé,
+  Foyer › À propos). Le nom du photographe reste stocké avec la photo, pour pouvoir le réafficher.
 - **Recherche** : l'IA fournit, avec la recette, une requête courte en anglais centrée sur les
   ingrédients visibles (« chickpea curry rice bowl ») ; le serveur cherche, la photo est copiée
   et stockée côté serveur avec son crédit.
@@ -207,5 +214,5 @@ recette dans la bibliothèque. Image générée par IA et illustrations par fami
   vérifiée par un modèle de vision contre la recette (pas de viande ni de poisson pour un plat
   végétarien, ingrédient principal reconnaissable) ; la première conforme est gardée ; aucune
   conforme → image neutre de la famille du plat, jamais une photo trompeuse.
-- **Dans l'app** : mention « Photo d'illustration » ; « Signaler la photo » renvoie la recette en
-  vérification.
+- **Dans l'app** : rien sous l'image (ni crédit, ni bouton de signalement : décidé le 2026-10-16) ;
+  la vérification par le modèle de vision est le seul garde-fou.
