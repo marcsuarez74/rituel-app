@@ -16,6 +16,10 @@ export interface Tarif {
 // Écriture du cache 5 min = 1,25 × l'entrée. À tenir à jour avec la grille d'Anthropic.
 export const TARIFS: Record<string, Tarif> = {
   'claude-opus-5-5': { entree: 4, sortie: 20, cacheLu: 0.2, cacheEcrit: 5 },
+  'claude-sonnet-5-5': { entree: 2, sortie: 10, cacheLu: 0.2, cacheEcrit: 2.5 },
+  // Prompt de 100 000 jetons au plus (au-delà : 0,50 / 2,50) ; cache selon la règle générale
+  // (lecture 0,1 ×, écriture 1,25 ×), à vérifier sur la grille.
+  'claude-haiku-5-5': { entree: 0.1, sortie: 0.5, cacheLu: 0.01, cacheEcrit: 0.125 },
 };
 
 /** Coût en dollars ; `entree` compte aussi les jetons lus et écrits en cache. */
