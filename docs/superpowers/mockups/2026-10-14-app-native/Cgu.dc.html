@@ -54,7 +54,7 @@ button:focus-visible,a:focus-visible{outline:3px solid #2E6B4E;outline-offset:2p
     <div style="flex: none; display: flex; flex-direction: column; gap: 8px">
       <span style="font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #2E6B4E">Dernière étape</span>
       <h1 style="margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800">Avant de créer tes menus</h1>
-      <p style="margin: 0; font-size: 16px; line-height: 1.45; color: #59605B">Rituel va créer ton foyer. Voici en clair ce qu'il fait pour toi, et ce qui reste entre tes mains.</p>
+      <p style="margin: 0; font-size: 16px; line-height: 1.45; color: #59605B">Rituel va créer ton foyer. Voici, en clair, comment ça marche.</p>
     </div>
 
     <div style="flex: none; display: flex; flex-direction: column; background: #FFFFFF; border-radius: 24px; overflow: hidden">
@@ -108,13 +108,13 @@ class Component extends DCLogic {
     const s = this.state;
     // L'essentiel, en 5 points : ce que Rituel fait, ce qui reste à la charge du foyer.
     const POINTS = [
-      ["Rituel organise, tu cuisines", "Ce n'est ni un avis médical, ni un avis de diététicien. Les recettes sont écrites par une IA, puis vérifiées par des règles.", "M4 11h16M6 11V8a6 6 0 0 1 12 0v3M5 11l1 8h12l1-8"],
-      ["La conservation se joue à deux", "Les menus respectent 3 jours au frigo au plus ; au-delà, le plat passe au congélateur. Chez toi : frigo à 4 °C, tout rangé dans les 2 h, et au moindre doute on jette.", "M7 3h10v18H7zM7 10h10M10 6v2M10 13v3"],
-      ["Les rappels sont activés", "Si tu en désactives un, tu prends le relais : Rituel ne peut plus te prévenir.", "M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"],
-      ["Allergies : vérifie les étiquettes", "Les régimes adaptent les recettes sans suivi médical. La composition réelle dépend des produits que tu achètes.", "M12 3 3 20h18zM12 10v4M12 17h.01"],
-      ["Tes données restent au foyer", "Partagées avec ceux qui ont le code du foyer. Ni nom, ni e-mail, rien de vendu.", "M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"]
+      ["Un outil d'organisation", "Les recettes sont proposées par une IA, puis vérifiées automatiquement. Rituel ne remplace pas l'avis d'un médecin ou d'un diététicien.", "M4 11h16M6 11V8a6 6 0 0 1 12 0v3M5 11l1 8h12l1-8"],
+      ["Conservation des plats", "Chaque plat est prévu pour être mangé frais ; ceux de la fin de semaine passent par le congélateur. Il te reste à garder le frigo bien froid et à ranger les Box après le Rituel.", "M7 3h10v18H7zM7 10h10M10 6v2M10 13v3"],
+      ["Des rappels au bon moment", "Rituel te rappelle quand ranger les plats et quand sortir ceux du congélateur. Chaque rappel peut être désactivé ; tu t'en occupes alors toi-même.", "M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"],
+      ["Allergies et régimes", "Les menus respectent ton régime. La composition varie selon les marques : en cas d'allergie, vérifie les étiquettes.", "M9 3h6M10 3v5l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"],
+      ["Tes données restent au foyer", "Seules les personnes qui ont le code de ton foyer les voient. Ni nom, ni e-mail ; rien n'est vendu.", "M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4"]
     ];
-    const AMBRE = [false, false, false, true, false];
+    const AMBRE = [false, false, false, false, false];
     const CGU_COMPLET = [
       ["1. Objet", "Rituel aide un foyer à organiser ses repas : un guide de routine, des menus sur 4 semaines, une session de cuisine en lot (le Rituel), une liste de courses avec budget et des rappels. Utiliser l'app vaut acceptation de ces conditions, présentées à la création ou à l'arrivée dans un foyer."],
       ["2. Ce que Rituel n'est pas", "Rituel n'est ni un service médical, ni un service de diététique. Les menus, les quantités et les régimes proposés sont des suggestions d'organisation, pas des prescriptions. Les recettes sont écrites par une intelligence artificielle puis vérifiées par des règles automatiques (conservation, régime, allergènes). Leurs photos sont des illustrations libres de droits, fournies par Pexels (pexels.com) : elles ne sont pas contractuelles et ne montrent pas forcément le plat tel qu'il sortira de ta cuisine."],
