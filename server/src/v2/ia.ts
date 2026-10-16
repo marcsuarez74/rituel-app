@@ -2,7 +2,7 @@ import type Anthropic from '@anthropic-ai/sdk';
 import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod';
 import type { AppelIA, ReponseIA } from './generer.js';
 import { PROMPT_FIXE } from './prompt.js';
-import { schemaRecette, schemaSortieMenus } from './schema.js';
+import { schemaSortieMenus, schemaSortiePlatFrais, schemaSortiePlatRituel } from './schema.js';
 
 // Adaptateur Claude de la génération (plan 2026-10-16-app-native §A.7) : la seule pièce qui
 // parle à l'API. Streaming (4 semaines = sortie longue), sortie structurée, prompt fixe en cache,
@@ -22,8 +22,18 @@ const BETA_REPLI = 'server-side-fallback-2026-07-01';
 
 // Schéma JSON sans la fonction parse du helper : on garde la main sur la lecture.
 const FORMATS = {
-  menus: { type: 'json_schema', schema: betaZodOutputFormat(schemaSortieMenus).schema },
-  recette: { type: 'json_schema', schema: betaZodOutputFormat(schemaRecette).schema },
+  menus: {
+    type: 'json_schema',
+    schema: betaZodOutputFormat(schemaSortieMenus).schema,
+  },
+  'plat-frais': {
+    type: 'json_schema',
+    schema: betaZodOutputFormat(schemaSortiePlatFrais).schema,
+  },
+  'plat-rituel': {
+    type: 'json_schema',
+    schema: betaZodOutputFormat(schemaSortiePlatRituel).schema,
+  },
 } as const;
 
 export const creerAppelClaude = ({ client, modele, effort }: OptionsClaude): AppelIA => {
@@ -36,7 +46,13 @@ export const creerAppelClaude = ({ client, modele, effort }: OptionsClaude): App
         fallbacks: 'default',
         // Le prompt fixe d'abord, en cache ; le cache automatique couvre en plus la conversation
         // (les corrections renvoient la longue sortie précédente).
-        system: [{ type: 'text', text: PROMPT_FIXE, cache_control: { type: 'ephemeral' } }],
+        system: [
+          {
+            type: 'text',
+            text: PROMPT_FIXE,
+            cache_control: { type: 'ephemeral' },
+          },
+        ],
         cache_control: { type: 'ephemeral' },
         output_config: { effort, format: FORMATS[format] },
         messages,

@@ -6,10 +6,11 @@ import type { Context } from 'hono';
 import { DUREE_TOKEN_S, empreinteToken, signerToken, verifierToken } from '../auth.js';
 import { creerLimiteur } from '../rate-limit.js';
 import { accepterCgu, cguAcceptees, VERSION_CGU } from './cgu.js';
-import { CONTRAT } from './contrat.js';
+import { CONTRAT, type Recette } from './contrat.js';
 import { deriverSecret, empreinteCode, genererCode, normaliserCode } from './foyer.js';
-import { genererMenus, type AppelIA } from './generer.js';
-import { schemaProfil } from './schema.js';
+import { ajouterRecettes, piocher, signaler } from './bibliotheque.js';
+import { genererMenus, remplacerPlat, type AppelIA, type ResultatGeneration } from './generer.js';
+import { schemaMenus, schemaProfil } from './schema.js';
 import { pousser, revCourante, tirer, validerLot } from './sync.js';
 
 export interface LimitesV2 {
@@ -90,7 +91,9 @@ export const creerRoutesV2 = ({ db, secret, limites, ia, quotaJour = 3 }: Option
     const connecte =
       jeton &&
       foyerId &&
-      db.prepare('select 1 from v2_appareils where jeton_empreinte = ? and foyer_id = ?').get(empreinteToken(jeton), foyerId);
+      db
+        .prepare('select 1 from v2_appareils where jeton_empreinte = ? and foyer_id = ?')
+        .get(empreinteToken(jeton), foyerId);
     if (!jeton || !foyerId || !connecte) return c.json({ erreur: 'token-invalide' }, 401);
     c.set('foyerId', foyerId);
     c.set('jeton', jeton);
@@ -106,11 +109,9 @@ export const creerRoutesV2 = ({ db, secret, limites, ia, quotaJour = 3 }: Option
     const foyerId = randomUUID();
     const creer = db.transaction(() => {
       const code = poserNouveauCode((empreinte) =>
-        db.prepare('insert into v2_foyers (id, code_empreinte, cree_le) values (?, ?, ?)').run(
-          foyerId,
-          empreinte,
-          new Date().toISOString(),
-        ),
+        db
+          .prepare('insert into v2_foyers (id, code_empreinte, cree_le) values (?, ?, ?)')
+          .run(foyerId, empreinte, new Date().toISOString()),
       );
       return { code, jeton: nouvelAppareil(foyerId) };
     });
@@ -126,9 +127,9 @@ export const creerRoutesV2 = ({ db, secret, limites, ia, quotaJour = 3 }: Option
     const corps = await lireCorps(c);
     const code = normaliserCode(corps?.code);
     if (!code) return c.json({ erreur: 'code-invalide' }, 400);
-    const foyer = db.prepare('select id from v2_foyers where code_empreinte = ?').get(empreinteCode(code, secretCode)) as
-      | { id: string }
-      | undefined;
+    const foyer = db
+      .prepare('select id from v2_foyers where code_empreinte = ?')
+      .get(empreinteCode(code, secretCode)) as { id: string } | undefined;
     if (!foyer) return c.json({ erreur: 'code-inconnu' }, 404);
     return c.json({ foyerId: foyer.id, jeton: nouvelAppareil(foyer.id) });
   });
@@ -189,17 +190,24 @@ export const creerRoutesV2 = ({ db, secret, limites, ia, quotaJour = 3 }: Option
     },
   );
 
-  // ---- Génération des menus (plan §A.7) ----
+  // ---- Génération des menus (plan §A.7–A.8) ----
 
-  // Synchrone : la réponse arrive quand le menu est validé (ou définitivement refusé).
-  v2.post('/menus/generer', auth, async (c) => {
+  /** CGU acceptées ? sinon la réponse 403 à renvoyer. */
+  const sansCgu = (c: Context<EnvV2>) =>
+    cguAcceptees(db, empreinteToken(c.get('jeton')))
+      ? null
+      : c.json({ erreur: 'cgu-requises', version: VERSION_CGU }, 403);
+
+  /** Réserve une génération (quota, une à la fois), lance `travail` avec la pioche de la
+   * bibliothèque, enregistre l'issue ; un menu réussi range ses nouveaux plats. Synchrone : la
+   * réponse arrive quand le menu est validé (ou définitivement refusé). */
+  const lancer = async (
+    c: Context<EnvV2>,
+    appel: AppelIA,
+    profil: Parameters<typeof piocher>[2],
+    travail: (appel: AppelIA, plats: Recette[]) => Promise<ResultatGeneration>,
+  ) => {
     const foyerId = c.get('foyerId');
-    if (!cguAcceptees(db, empreinteToken(c.get('jeton'))))
-      return c.json({ erreur: 'cgu-requises', version: VERSION_CGU }, 403);
-    const profil = schemaProfil.safeParse((await lireCorps(c))?.profil);
-    if (!profil.success) return c.json({ erreur: 'profil-invalide' }, 400);
-    if (!ia) return c.json({ erreur: 'generation-indisponible' }, 503);
-
     const maintenant = Date.now();
     // Vérifier et réserver d'un bloc : deux requêtes simultanées ne passent pas toutes les deux.
     const reserver = db.transaction((): number | 'quota' | 'en-cours' => {
@@ -233,7 +241,7 @@ export const creerRoutesV2 = ({ db, secret, limites, ia, quotaJour = 3 }: Option
         .run(new Date().toISOString(), statut, raison, appels, jetons.entree, jetons.sortie, id);
     let r;
     try {
-      r = await genererMenus(ia, profil.data);
+      r = await travail(appel, piocher(db, foyerId, profil));
     } catch (e) {
       console.error('[v2] génération : erreur IA', e instanceof Error ? e.message : e);
       terminer('echec', 'erreur-ia');
@@ -243,9 +251,55 @@ export const creerRoutesV2 = ({ db, secret, limites, ia, quotaJour = 3 }: Option
       terminer('echec', r.raison, r.appels, r.jetons);
       return c.json({ erreur: 'generation-echouee', raison: r.raison }, 502);
     }
+    ajouterRecettes(
+      db,
+      r.menus.semaines.flatMap((s) => s.recettes),
+    );
     terminer('ok', null, r.appels, r.jetons);
     return c.json({ contrat: CONTRAT, menus: r.menus, estimation: r.estimation });
+  };
+
+  v2.post('/menus/generer', auth, async (c) => {
+    const refus = sansCgu(c);
+    if (refus) return refus;
+    const profil = schemaProfil.safeParse((await lireCorps(c))?.profil);
+    if (!profil.success) return c.json({ erreur: 'profil-invalide' }, 400);
+    if (!ia) return c.json({ erreur: 'generation-indisponible' }, 503);
+    return lancer(c, ia, profil.data, (appel, plats) => genererMenus(appel, profil.data, plats));
   });
+
+  // « Remplacer ce plat » : l'app renvoie ses menus ; même quota que la génération.
+  v2.post(
+    '/menus/remplacer',
+    auth,
+    bodyLimit({ maxSize: 1024 * 1024, onError: (c) => c.json({ erreur: 'corps-invalide' }, 413) }),
+    async (c) => {
+      const refus = sansCgu(c);
+      if (refus) return refus;
+      const corps = await lireCorps(c);
+      const profil = schemaProfil.safeParse(corps?.profil);
+      if (!profil.success) return c.json({ erreur: 'profil-invalide' }, 400);
+      const menus = schemaMenus.safeParse(corps?.menus);
+      const semaine = corps?.semaine;
+      const recette = corps?.recette;
+      if (
+        !menus.success ||
+        typeof semaine !== 'number' ||
+        typeof recette !== 'string' ||
+        !menus.data.semaines[semaine]?.recettes.some((r) => r.id === recette)
+      )
+        return c.json({ erreur: 'corps-invalide' }, 400);
+      if (!ia) return c.json({ erreur: 'generation-indisponible' }, 503);
+      return lancer(c, ia, profil.data, (appel, plats) =>
+        remplacerPlat(appel, profil.data, menus.data, semaine, recette, plats),
+      );
+    },
+  );
+
+  // Signaler un plat : retiré pour ce foyer, puis pour tous au 3e foyer (bibliotheque.ts).
+  v2.post('/recettes/:id/signaler', auth, (c) =>
+    signaler(db, c.get('foyerId'), c.req.param('id') ?? '') ? c.body(null, 204) : c.json({ erreur: 'introuvable' }, 404),
+  );
 
   // Toujours en dernier : une route /v2 inconnue ne doit jamais tomber sur la PWA.
   v2.all('*', (c) => c.json({ erreur: 'introuvable' }, 404));

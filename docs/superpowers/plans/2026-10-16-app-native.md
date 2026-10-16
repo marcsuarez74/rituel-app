@@ -92,10 +92,33 @@ TDD à chaque étape ; une étape d'app = un écran fonctionnel, conforme à sa 
      Marc le 2026-10-16) ; une seule à la fois (409, périmée après 15 min).
      Env : `ANTHROPIC_API_KEY` (absente = 503), `IA_MODELE`, `IA_EFFORT`. Le plat de la
      bibliothèque en dernier recours arrive avec l'étape 8.
-8. [ ] **Bibliothèque partagée** (`v2_recettes`) : toute recette validée y entre ; la génération y
+8. [x] **Bibliothèque partagée** (`v2_recettes`) : toute recette validée y entre ; la génération y
    pioche d'abord les plats compatibles, l'IA n'écrit que ce qui manque.
    `POST /v2/menus/remplacer` (« Remplacer ce plat », mêmes contrôles, même quota) ;
    `POST /v2/recettes/:id/signaler` (recette ratée).
+   Décisions (Marc, 2026-10-17) :
+   - **pioche** : le serveur choisit jusqu'à 60 plats de la bibliothèque compatibles avec le
+     profil (mêmes contrôles plat par plat que le validateur, extraits en `controlerRecette`),
+     tirés au hasard, titres dédoublonnés ; ils sont listés à l'IA (données, après le profil),
+     qui peut en reprendre un par référence `{ id, bibliotheque }` au lieu de l'écrire. Le
+     serveur déplie la référence ; une référence hors liste est une erreur corrigée par la boucle.
+     Chaque recette d'un menu validé porte son id de bibliothèque (`Recette.bibliotheque`,
+     optionnel) ; les nouvelles y entrent ;
+   - **plat du Rituel remplacé** (regénération ou « Remplacer ce plat ») : l'IA réécrit aussi les
+     étapes du Rituel de la semaine (les textes citent les plats) ; un plat frais est remplacé
+     seul. Corrige la regénération livrée à l'étape 7, qui laissait des étapes périmées ;
+   - **dernier recours** : un plat frais encore fautif est remplacé par un plat frais compatible
+     de la bibliothèque, sans IA ; un plat du Rituel, non (il faudrait réécrire les étapes) ;
+   - **remplacer** : `{ profil, menus, semaine, recette }`, mêmes contrôles et même quota que la
+     génération ; accepté si le nouveau plat est conforme et que rien de la semaine n'empire
+     (budget, durée du Rituel). Un menu devenu non conforme après un changement de profil peut
+     donc être réparé plat par plat ;
+   - **signaler** : la recette sort des menus futurs du foyer ; au 3e foyer, de la bibliothèque
+     pour tous. Les menus en cours ne changent pas.
+   - **Livré (2026-10-17)** : `v2/bibliotheque.ts` (`ajouterRecettes`, `piocher`, `signaler`),
+     `remplacerPlat` dans `v2/generer.ts`, formats de sortie `plat-frais` / `plat-rituel`,
+     `schemaMenus` (menus renvoyés par l'app, 1 Mo au plus). Erreurs : `corps-invalide` (400)
+     pour des menus, une semaine ou un plat introuvables ; signaler un id inconnu = 404.
 9. [ ] **Batterie de profils difficiles** (keto + sans gluten, végétarien, allergie à l'arachide,
    Rituel de 10 min, petit budget) : script `npm run batterie` dans `server/`, contre l'API réelle,
    **hors CI** (payant) ; obligatoire avant tout changement de prompt ou de modèle. Sortie : taux

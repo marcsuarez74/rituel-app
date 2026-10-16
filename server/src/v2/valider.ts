@@ -113,7 +113,7 @@ const CRUDITES: readonly Famille[] = ['legume', 'fruit', 'champignon', 'herbe', 
 // Crus, œufs, viandes et poissons excluent le plat du Rituel (comme la sauce aux œufs crus).
 const CRUS_EXCLUS: readonly Famille[] = ['oeuf', 'volaille', 'viande', 'porc', 'poisson', 'fruits-de-mer'];
 
-const normaliser = (titre: string): string =>
+export const normaliser = (titre: string): string =>
   titre.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().replace(/\s+/g, ' ').trim();
 
 type Place = { jour: number; moment: Moment };
@@ -128,6 +128,44 @@ const categorie = (r: Recette): CategorieConservation =>
       return [i.conservation];
     }),
   );
+
+/** Contrôles d'un plat seul, quelle que soit sa place au menu : vocabulaire, quantités, régimes,
+ * allergènes, « à éviter », ingrédient cru exclu du Rituel, temps du soir. Sert aussi à choisir
+ * les plats compatibles de la bibliothèque. */
+export const controlerRecette = (r: Recette, profil: ProfilFoyer): { code: CodeErreur; texte: string }[] => {
+  const erreurs: { code: CodeErreur; texte: string }[] = [];
+  const ajouter = (code: CodeErreur, texte: string) => erreurs.push({ code, texte });
+  const regimes = REGIMES.filter((reg) => profil.regimes.includes(reg));
+  const connus: Ingredient[] = [];
+  for (const l of r.ingredients) {
+    const i = ingredient(l.id);
+    if (!i) {
+      ajouter('ingredient-inconnu', `ingrédient « ${l.id} » hors de la table.`);
+      continue;
+    }
+    connus.push(i);
+    const [min, max] = i.unite === 'piece' ? PLAGE_PIECE : PLAGES[i.famille];
+    const unite = i.unite === 'piece' ? ' pièce(s)' : i.unite === 'l' ? ' ml' : ' g';
+    if (!(l.qte >= min && l.qte <= max)) ajouter('quantite', `${i.nom} : ${l.qte}${unite} par personne, hors de ${min} à ${max}.`);
+    for (const reg of regimes)
+      if (!regimesCompatibles(i).includes(reg)) ajouter('regime', `${i.nom} est incompatible avec le régime ${NOMS_REGIMES[reg]}.`);
+    for (const a of i.allergenes)
+      if (profil.allergenes.includes(a)) ajouter('allergene', `${i.nom} contient l'allergène « ${a} ».`);
+    for (const e of profil.eviter)
+      if (EVITE[e](i)) ajouter('eviter', `${i.nom} fait partie des aliments à éviter (« ${e} »).`);
+  }
+  if (
+    regimes.includes('casher') &&
+    connus.some((i) => FAMILLES_ANIMALES_CASHER.includes(i.famille)) &&
+    connus.some((i) => i.famille === 'laitier' || i.allergenes.includes('lait'))
+  )
+    ajouter('regime', 'viande et laitier dans le même plat : incompatible avec le régime casher.');
+  if (r.origine === 'rituel') {
+    if (CONSERVATION[categorie(r)].frigoMax === null) ajouter('conservation', 'contient un ingrédient cru exclu des plats du Rituel.');
+  } else if (profil.tempsSoir !== null && r.tempsJour > profil.tempsSoir)
+    ajouter('temps-soir', `${r.tempsJour} min de préparation, au-delà des ${profil.tempsSoir} min du soir.`);
+  return erreurs;
+};
 
 /** Durée du Rituel : chaque étape commence quand la précédente libère la personne qui
  * cuisine ; un minuteur continue seul. La fin est la dernière étape ou le dernier minuteur. */
@@ -165,7 +203,6 @@ export const validerMenus = (menus: Menus, profil: ProfilFoyer): ResultatValidat
   if (menus.semaines.length !== SEMAINES)
     erreurs.push({ code: 'structure', message: `${menus.semaines.length} semaines au lieu de ${SEMAINES}.` });
 
-  const regimes = REGIMES.filter((r) => profil.regimes.includes(r));
   const budgetHebdo = (profil.budget.montant * 7) / PERIODES_BUDGET[profil.budget.periode];
   const idsVus = new Set<string>();
   const titresVus = new Set<string>();
@@ -234,45 +271,16 @@ export const validerMenus = (menus: Menus, profil: ProfilFoyer): ResultatValidat
       titresVus.add(titre);
       if (r.origine === 'frais' && servi.length > 1) surPlat('variete', r, `recette fraîche servie ${servi.length} fois.`);
 
-      // Ingrédients : vocabulaire fermé, quantités, régimes, allergènes, « à éviter ».
-      const connus: Ingredient[] = [];
-      for (const l of r.ingredients) {
-        const i = ingredient(l.id);
-        if (!i) {
-          surPlat('ingredient-inconnu', r, `ingrédient « ${l.id} » hors de la table.`);
-          continue;
-        }
-        connus.push(i);
-        const [min, max] = i.unite === 'piece' ? PLAGE_PIECE : PLAGES[i.famille];
-        const unite = i.unite === 'piece' ? ' pièce(s)' : i.unite === 'l' ? ' ml' : ' g';
-        if (!(l.qte >= min && l.qte <= max))
-          surPlat('quantite', r, `${i.nom} : ${l.qte}${unite} par personne, hors de ${min} à ${max}.`);
-        for (const reg of regimes)
-          if (!regimesCompatibles(i).includes(reg))
-            surPlat('regime', r, `${i.nom} est incompatible avec le régime ${NOMS_REGIMES[reg]}.`);
-        for (const a of i.allergenes)
-          if (profil.allergenes.includes(a)) surPlat('allergene', r, `${i.nom} contient l'allergène « ${a} ».`);
-        for (const e of profil.eviter)
-          if (EVITE[e](i)) surPlat('eviter', r, `${i.nom} fait partie des aliments à éviter (« ${e} »).`);
-      }
-      if (
-        regimes.includes('casher') &&
-        connus.some((i) => FAMILLES_ANIMALES_CASHER.includes(i.famille)) &&
-        connus.some((i) => i.famille === 'laitier' || i.allergenes.includes('lait'))
-      )
-        surPlat('regime', r, 'viande et laitier dans le même plat : incompatible avec le régime casher.');
+      for (const e of controlerRecette(r, profil)) surPlat(e.code, r, e.texte);
 
-      // Conservation (docs/conservation.md §4) : seuls les plats du Rituel attendent.
+      // Conservation au-delà du frigo (docs/conservation.md §4) : dépend des jours servis.
       if (r.origine === 'rituel') {
-        const cat = categorie(r);
-        const { frigoMax, congelable } = CONSERVATION[cat];
-        if (frigoMax === null) surPlat('conservation', r, 'contient un ingrédient cru exclu des plats du Rituel.');
-        else
+        const { frigoMax, congelable } = CONSERVATION[categorie(r)];
+        if (frigoMax !== null)
           for (const p of servi)
             if (p.jour > frigoMax && !congelable)
               surPlat('conservation', r, `se garde ${frigoMax} jours au frigo et ne se congèle pas : servi à J+${p.jour}.`, p);
-      } else if (profil.tempsSoir !== null && r.tempsJour > profil.tempsSoir)
-        surPlat('temps-soir', r, `${r.tempsJour} min de préparation, au-delà des ${profil.tempsSoir} min du soir.`);
+      }
     }
 
     const duree = dureeRituel(s);
