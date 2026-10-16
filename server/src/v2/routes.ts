@@ -1,4 +1,6 @@
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import type { Database } from 'better-sqlite3';
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
@@ -10,6 +12,7 @@ import { CONTRAT, type Recette } from './contrat.js';
 import { deriverSecret, empreinteCode, genererCode, normaliserCode } from './foyer.js';
 import { ajouterRecettes, piocher, signaler } from './bibliotheque.js';
 import { genererMenus, remplacerPlat, type AppelIA, type ResultatGeneration } from './generer.js';
+import type { FilePhotos } from './photos.js';
 import { schemaMenus, schemaProfil } from './schema.js';
 import { pousser, revCourante, tirer, validerLot } from './sync.js';
 
@@ -28,6 +31,10 @@ export interface OptionsV2 {
   ia?: AppelIA | undefined;
   /** Générations par foyer sur 24 h glissantes (défaut 3). */
   quotaJour?: number | undefined;
+  /** File des photos (Pexels + vision) ; absente = les photos restent à faire. */
+  photos?: FilePhotos | undefined;
+  /** Dossier des photos copiées (défaut data/photos). */
+  dossierPhotos?: string | undefined;
 }
 
 type EnvV2 = { Variables: { foyerId: string; jeton: string } };
@@ -39,7 +46,15 @@ const UN_JOUR = 24 * UNE_HEURE;
 const GENERATION_PERIMEE = 15 * 60_000;
 
 // API de l'app native, montée sous /v2 par creerApp (avant la PWA).
-export const creerRoutesV2 = ({ db, secret, limites, ia, quotaJour = 3 }: OptionsV2): Hono<EnvV2> => {
+export const creerRoutesV2 = ({
+  db,
+  secret,
+  limites,
+  ia,
+  quotaJour = 3,
+  photos,
+  dossierPhotos = join('data', 'photos'),
+}: OptionsV2): Hono<EnvV2> => {
   const v2 = new Hono<EnvV2>();
   const secretCode = deriverSecret(secret, 'code-foyer');
   const secretJeton = deriverSecret(secret, 'jeton');
@@ -255,6 +270,7 @@ export const creerRoutesV2 = ({ db, secret, limites, ia, quotaJour = 3 }: Option
       db,
       r.menus.semaines.flatMap((s) => s.recettes),
     );
+    photos?.relancer();
     terminer('ok', null, r.appels, r.jetons);
     return c.json({ contrat: CONTRAT, menus: r.menus, estimation: r.estimation });
   };
@@ -298,8 +314,30 @@ export const creerRoutesV2 = ({ db, secret, limites, ia, quotaJour = 3 }: Option
 
   // Signaler un plat : retiré pour ce foyer, puis pour tous au 3e foyer (bibliotheque.ts).
   v2.post('/recettes/:id/signaler', auth, (c) =>
-    signaler(db, c.get('foyerId'), c.req.param('id') ?? '') ? c.body(null, 204) : c.json({ erreur: 'introuvable' }, 404),
+    signaler(db, c.get('foyerId'), c.req.param('id') ?? '')
+      ? c.body(null, 204)
+      : c.json({ erreur: 'introuvable' }, 404),
   );
+
+  // Photo d'une recette de la bibliothèque : publique (ni foyer ni donnée personnelle), jamais
+  // modifiée une fois choisie. 404 = pas (encore) de photo : l'app montre une image neutre.
+  v2.get('/photos/:id', (c) => {
+    const id = c.req.param('id');
+    const ok =
+      /^[0-9a-f-]{36}$/.test(id) &&
+      db.prepare("select 1 from v2_photos where recette_id = ? and statut = 'ok'").get(id);
+    if (!ok) return c.json({ erreur: 'introuvable' }, 404);
+    let image: Buffer;
+    try {
+      image = readFileSync(join(dossierPhotos, `${id}.jpg`));
+    } catch {
+      return c.json({ erreur: 'introuvable' }, 404);
+    }
+    return c.body(new Uint8Array(image), 200, {
+      'Content-Type': 'image/jpeg',
+      'Cache-Control': 'public, max-age=31536000, immutable',
+    });
+  });
 
   // Toujours en dernier : une route /v2 inconnue ne doit jamais tomber sur la PWA.
   v2.all('*', (c) => c.json({ erreur: 'introuvable' }, 404));

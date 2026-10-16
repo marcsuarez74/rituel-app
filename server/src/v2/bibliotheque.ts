@@ -10,10 +10,11 @@ import { controlerRecette, normaliser } from './valider.js';
 export const SEUIL_RETRAIT = 3;
 export const PIOCHE_MAX = 60;
 
-/** Range des recettes validées et pose leur id de bibliothèque (en place). Une recette qui en
+/** Range des recettes validées, pose leur id de bibliothèque (en place) et met leur photo à faire. Une recette qui en
  * vient déjà (bibliotheque posé) n'est pas rangée deux fois. */
 export const ajouterRecettes = (db: Database, recettes: readonly Recette[]): void => {
   const inserer = db.prepare('insert into v2_recettes (id, donnees, cree_le) values (?, ?, ?)');
+  const aFaire = db.prepare("insert into v2_photos (recette_id, statut, maj_le) values (?, 'a-faire', ?)");
   const maintenant = new Date().toISOString();
   db.transaction(() => {
     for (const r of recettes) {
@@ -25,6 +26,7 @@ export const ajouterRecettes = (db: Database, recettes: readonly Recette[]): voi
         JSON.stringify({ titre, origine, ingredients, etapes, tempsJour, photo }),
         maintenant,
       );
+      aFaire.run(r.bibliotheque, maintenant);
     }
   })();
 };
