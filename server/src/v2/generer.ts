@@ -26,8 +26,11 @@ export interface RequeteIA {
 }
 
 export interface Jetons {
+  /** Toute l'entrée, cache compris. */
   entree: number;
   sortie: number;
+  cacheLu?: number;
+  cacheEcrit?: number;
 }
 
 /** refus : le modèle (et son repli) a décliné ; coupe : sortie tronquée (max_tokens). */
@@ -85,6 +88,8 @@ const session = (appel: AppelIA) => {
       const r = await appel(requete);
       s.jetons.entree += r.jetons?.entree ?? 0;
       s.jetons.sortie += r.jetons?.sortie ?? 0;
+      s.jetons.cacheLu = (s.jetons.cacheLu ?? 0) + (r.jetons?.cacheLu ?? 0);
+      s.jetons.cacheEcrit = (s.jetons.cacheEcrit ?? 0) + (r.jetons?.cacheEcrit ?? 0);
       return r.fin === 'ok' ? { texte: r.texte } : { raison: r.fin };
     },
     fin(e: Etape, profil: ProfilFoyer): ResultatGeneration {

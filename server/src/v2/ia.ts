@@ -9,7 +9,12 @@ import { schemaSortieMenus, schemaSortiePlatFrais, schemaSortiePlatRituel } from
 // repli serveur si le modèle décline. Le texte est relu par generer.ts : on ne laisse pas le SDK
 // parser lui-même (il lèverait avant qu'on lise stop_reason sur une sortie coupée).
 
-export type Effort = 'low' | 'medium' | 'high' | 'xhigh' | 'max';
+export const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'] as const;
+export type Effort = (typeof EFFORTS)[number];
+
+/** IA_EFFORT de l'environnement ; absent ou inconnu = medium. */
+export const lireEffort = (v: string | undefined): Effort => EFFORTS.find((e) => e === v) ?? 'medium';
+export const MODELE_PAR_DEFAUT = 'claude-opus-5-5';
 
 export interface OptionsClaude {
   client: Pick<Anthropic, 'beta'>;
@@ -63,6 +68,8 @@ export const creerAppelClaude = ({ client, modele, effort }: OptionsClaude): App
     const jetons = {
       entree: u.input_tokens + (u.cache_creation_input_tokens ?? 0) + (u.cache_read_input_tokens ?? 0),
       sortie: u.output_tokens,
+      cacheLu: u.cache_read_input_tokens ?? 0,
+      cacheEcrit: u.cache_creation_input_tokens ?? 0,
     };
     if (message.stop_reason === 'refusal') return { fin: 'refus', texte: '', jetons };
     if (message.stop_reason !== 'end_turn') return { fin: 'coupe', texte: '', jetons };

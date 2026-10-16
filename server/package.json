@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "eslint .",
     "test": "vitest run",
-    "check": "npm run typecheck && npm run lint && npm test"
+    "check": "npm run typecheck && npm run lint && npm test",
+    "batterie": "npm run build && node dist/v2/batterie-cli.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",

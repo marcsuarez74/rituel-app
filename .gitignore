@@ -43,3 +43,4 @@ supabase/.temp/
 /.env
 /data/
 /backups/
+server/batterie-resultats/
