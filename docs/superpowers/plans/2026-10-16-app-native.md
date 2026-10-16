@@ -23,15 +23,16 @@ TDD à chaque étape ; une étape d'app = un écran fonctionnel, conforme à sa 
 
 ## A. Backend `/v2` (dans ce dépôt, `server/`)
 
-1. [ ] Squelette : `server/src/v2/` (routeur Hono monté sous `/v2`), tables `v2_*` dans `db.ts`,
+1. [x] Squelette : `server/src/v2/` (routeur Hono monté sous `/v2`), tables `v2_*` dans `db.ts`,
    tests `server/test/v2-*.test.ts`. `/sante` inchangé.
-2. [ ] **Foyer à code de 6 caractères** : alphabet sans caractères ambigus (pas de `0/O`, `1/I/L`) ;
-   code stocké en **HMAC-SHA256 avec un secret serveur** (colonne indexée, recherche directe — le
+2. [x] **Foyer à code de 6 caractères** : alphabet sans caractères ambigus (pas de `0/O`, `1/I/L`) ;
+   code stocké en **HMAC-SHA256 avec un secret dérivé de `JWT_SECRET`** (colonne indexée, recherche directe — le
    schéma PBKDF2 actuel, qui parcourt tous les foyers et exige 12 caractères, ne convient pas).
    Routes : `POST /v2/foyers` (crée, rend le code), `POST /v2/foyers/rejoindre`,
    `POST /v2/foyers/code` (réinitialise : l'ancien code cesse de marcher, les appareils déjà
-   connectés restent connectés), `DELETE /v2/foyers/moi`. Jeton d'appareil (JWT existant,
-   audience `v2`). **Rate-limit fort** sur `rejoindre` (par IP et global) : 6 caractères se
+   connectés restent connectés), `DELETE /v2/foyers/moi` (le dernier appareil emporte le foyer).
+   Jeton d'appareil (JWT existant, signé avec un secret v2 dérivé : un jeton de la PWA ne passe
+   pas, ni l'inverse ; table `v2_appareils`). **Rate-limit fort** sur `rejoindre` (par IP et global) : 6 caractères se
    devinent si on laisse essayer. Tests : collision de code, code réinitialisé refusé, rate-limit.
 3. [ ] **État partagé** : une ligne par entité (`v2_entites` : foyer, type, id, version, données
    JSON, `modifie_le`, supprimé). `POST /v2/sync` (pousse) et `GET /v2/sync?depuis=` (tire),
@@ -78,8 +79,8 @@ TDD à chaque étape ; une étape d'app = un écran fonctionnel, conforme à sa 
     recette ; réponse en sortie structurée `conforme / raison`) ; la première conforme est copiée
     dans `data/photos/` avec le nom du photographe ; aucune conforme → image neutre de la famille
     du plat. `GET /v2/photos/:id` (cache long). Tests avec Pexels et Claude simulés.
-11. [ ] Infra et docs : variables `ANTHROPIC_API_KEY`, `PEXELS_API_KEY`, `IA_MODELE`,
-    `CODE_FOYER_SECRET` dans `docker-compose.yml` (valeurs dans le `.env` du VPS, jamais dans le
+11. [ ] Infra et docs : variables `ANTHROPIC_API_KEY`, `PEXELS_API_KEY`, `IA_MODELE`
+    dans `docker-compose.yml` (valeurs dans le `.env` du VPS, jamais dans le
     dépôt) ; `docs/backend.md`, `server/README.md`. Une PR par étape ou groupe d'étapes, CI verte.
 
 ## B. App native (nouveau dépôt)
@@ -122,9 +123,9 @@ TDD à chaque étape ; une étape d'app = un écran fonctionnel, conforme à sa 
 
 ## C. Actions manuelles (Marc)
 
-1. [ ] Créer le dépôt GitHub de l'app ; compte Expo + `eas login`.
+1. [x] Créer le dépôt GitHub de l'app (`rituel-native`, privé) ; compte Expo et projet EAS créés.
 2. [ ] Clé d'API Anthropic (plafond de dépense mensuel réglé dans la console) et clé Pexels → `.env`
-   du VPS, avec `CODE_FOYER_SECRET`.
+   du VPS.
 3. [ ] Relire pexels.com/license ; relecture juridique de `docs/cgu.md` et politique de
    confidentialité ; relecture de `docs/conservation.md` par un professionnel (HACCP).
 4. [ ] Valider le coût mesuré par la batterie (A.9) et le quota par foyer qui en découle.
