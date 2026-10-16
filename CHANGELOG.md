@@ -6,6 +6,17 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 Ce fichier est **généré par [release-please](https://github.com/googleapis/release-please)** à partir des conventional commits (`feat` → mineur, `fix`/`perf` → correctif, `!` ou `BREAKING CHANGE:` → majeur) : ne pas l'éditer à la main. L'historique ci-dessous (jusqu'à 2.1.0) est conservé tel quel.
 
+## [2.10.0](https://github.com/marcsuarez74/rituel-app/compare/v2.9.0...v2.10.0) (2026-10-16)
+
+
+### Ajouté
+
+* **server:** API /v2 de l'app native — squelette et foyer à code de 6 caractères ([8f9dc84](https://github.com/marcsuarez74/rituel-app/commit/8f9dc84bb9abe4d2ba0ed6e1e892a664432602b3))
+* **server:** état partagé du foyer /v2 (sync) ([c18797a](https://github.com/marcsuarez74/rituel-app/commit/c18797a438406ecc40a6be2058c8229b93bd8978))
+* **server:** état partagé du foyer /v2 (sync) ([3a79785](https://github.com/marcsuarez74/rituel-app/commit/3a797850876a53ba3cb626d2222a0c2607ce850a))
+* **server:** foyer /v2 à code de 6 caractères ([4cba8fa](https://github.com/marcsuarez74/rituel-app/commit/4cba8fafff266fcab34b54f339cda20d0263a601))
+* **server:** squelette de l'API /v2 de l'app native ([2d007b5](https://github.com/marcsuarez74/rituel-app/commit/2d007b5a294a83d4dcb10fa055b13742b6aaac86))
+
 ## [2.9.0](https://github.com/marcsuarez74/rituel-app/compare/v2.8.0...v2.9.0) (2026-10-13)
 
 

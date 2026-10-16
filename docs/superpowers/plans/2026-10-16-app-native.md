@@ -39,8 +39,10 @@ TDD à chaque étape ; une étape d'app = un écran fonctionnel, conforme à sa 
    512 Ko chacune, 8 Mo au total) et `GET /v2/sync?depuis=<rev>` (tire), « dernière écriture gagne »
    par entité (une écriture plus ancienne est ignorée et renvoyée dans `ignorees`). Pas de SSE en v1 (peu fiable en React Native) : l'app
    tire à l'ouverture, au retour au premier plan et en tirant l'écran vers le bas.
-4. [ ] **Acceptation des CGU** : `v2_acceptations` (appareil, version, date) ; enregistrée à la
-   dernière étape du guide et à l'arrivée dans un foyer ; la génération la vérifie.
+4. [x] **Acceptation des CGU** : `v2_acceptations` (appareil, version, date serveur) ; `GET /v2/cgu`
+   (version en vigueur, `VERSION_CGU` dans `server/src/v2/cgu.ts`) et `POST /v2/cgu/acceptation`
+   (409 si la version envoyée est périmée) ; enregistrée à la dernière étape du guide et à l'arrivée
+   dans un foyer ; la génération la vérifiera (`cguAcceptees`, étape 7).
 5. [x] **Table d'ingrédients** : `server/src/v2/ingredients.ts` + `donnees/ingredients.ts`
    (213 ingrédients) : id, nom, famille, allergènes (14 allergènes réglementaires), glucides,
    catégorie de conservation (`server/src/v2/conservation.ts`, reprise de `docs/conservation.md`),

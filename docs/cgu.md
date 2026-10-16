@@ -3,6 +3,9 @@
 Statut : **brouillon à faire relire par un juriste avant la sortie**. Rédigé le 2026-10-15 pour
 l'app native (voir `superpowers/specs/2026-10-14-refonte-native-from-scratch.md`).
 
+Version : **2026-10-15** — doit rester égale à `VERSION_CGU` (`server/src/v2/cgu.ts`). Toute
+modification du texte change la version : chaque appareil devra l'accepter de nouveau.
+
 Ce texte est le « texte complet » ouvert depuis Foyer › À propos › Conditions d'utilisation.
 L'écran en montre un résumé en 7 blocs ; les deux doivent rester alignés.
 
