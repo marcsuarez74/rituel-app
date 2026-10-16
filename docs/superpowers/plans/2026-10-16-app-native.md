@@ -50,11 +50,20 @@ TDD à chaque étape ; une étape d'app = un écran fonctionnel, conforme à sa 
    flexitarien et méditerranéen restent des préférences du prompt. Ids publiés figés
    (`donnees/ingredients-ids.ts`). Reste pour l'étape 6 : casher au niveau du plat (pas de viande
    avec du laitier). Tests de cohérence de la table.
-6. [ ] **Validateur de menus** (TDD sur des sorties figées, cœur de la sécurité, spec §10.2.3) :
-   ingrédient hors table, conservation (frigo J+3 / congélation / erreur bloquante), régime et
-   allergènes **déduits des ingrédients**, temps du Rituel, budget estimé dans la cible du foyer,
-   quantités par personne plausibles, variété sur 4 semaines, structure (Box aux midis prévus,
-   jours « dehors » et « libre »). Chaque erreur nomme le plat fautif.
+6. [x] **Validateur de menus** (`server/src/v2/valider.ts`, TDD sur des sorties figées, cœur
+   de la sécurité, spec §10.2.3). Contrat posé dans `contrat.ts` : une semaine commence le jour
+   du Rituel (`jours[0]` = J0) ; 5 types de repas (`box`, `pret`, `frais`, `dehors`, `libre` —
+   le « Rituel » de la maquette Menus n'est qu'un `pret` servi à J0) ; ingrédients par id, quantité
+   pour un adulte (g, ml ou pièces), `cru` pour la conservation ; profil du foyer avec la trame du
+   compromis, les 14 allergènes **en plus** des 7 « à éviter » du guide (décidé le 2026-10-16 ;
+   l'ajout au guide passera par une maquette). Contrôles : ingrédient hors table, conservation
+   (crudités J+2 non congelables, œufs/viande/poisson crus exclus du Rituel), régimes, casher au
+   niveau du plat, allergènes, « à éviter », durée du Rituel avec cuissons en parallèle (fin de la
+   dernière étape ou du dernier minuteur), temps du soir, budget (**coût estimé ≤ 85 % du budget
+   ramené à la semaine**, enfant = 0,6 portion — décidé le 2026-10-16), quantités par famille,
+   variété (id et titre normalisé uniques sur 4 semaines, recette fraîche servie une fois),
+   structure (trame, origine des recettes, étapes du Rituel). Chaque erreur nomme le plat et le
+   jour réel.
 7. [ ] **Génération** `POST /v2/menus/generer` (connexion requise, quota par foyer —
    `v2_generations`, plafond à fixer après mesure du coût) :
    - prompt : partie fixe (règles + table d'ingrédients) en tête avec `cache_control` (prompt
