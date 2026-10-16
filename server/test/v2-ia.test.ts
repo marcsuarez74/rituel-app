@@ -52,7 +52,7 @@ describe('creerAppelClaude', () => {
 
   it('texte et jetons (cache compris)', async () => {
     const { appel } = simuler({ stop_reason: 'end_turn', content: [{ type: 'text', text: '{"a":' }, { type: 'text', text: '1}' }] });
-    expect(await appel(requete)).toEqual({ fin: 'ok', texte: '{"a":1}', jetons: { entree: 150, sortie: 50 } });
+    expect(await appel(requete)).toEqual({ fin: 'ok', texte: '{"a":1}', jetons: { entree: 150, sortie: 50, cacheLu: 30, cacheEcrit: 20 } });
   });
 
   it('après un repli, seul le texte du modèle qui a fini compte', async () => {

@@ -3,7 +3,7 @@ import { serve } from '@hono/node-server';
 import { dirname, join } from 'node:path';
 import { ouvrirDb } from './db.js';
 import { creerApp } from './routes.js';
-import { creerAppelClaude, type Effort } from './v2/ia.js';
+import { creerAppelClaude, lireEffort, MODELE_PAR_DEFAUT } from './v2/ia.js';
 import { creerFilePhotos, creerPexels, creerVerificationClaude } from './v2/photos.js';
 
 // Boot VPS : secrets uniquement via l'environnement (systemd
@@ -27,10 +27,9 @@ const bugs = {
 };
 
 // Génération des menus de l'app native : clé API via l'environnement ; absente = 503.
-const EFFORTS: readonly Effort[] = ['low', 'medium', 'high', 'xhigh', 'max'];
-const effort = EFFORTS.find((e) => e === process.env.IA_EFFORT) ?? 'medium';
+const effort = lireEffort(process.env.IA_EFFORT);
 const ia = process.env.ANTHROPIC_API_KEY
-  ? creerAppelClaude({ client: new Anthropic(), modele: process.env.IA_MODELE || 'claude-opus-5-5', effort })
+  ? creerAppelClaude({ client: new Anthropic(), modele: process.env.IA_MODELE || MODELE_PAR_DEFAUT, effort })
   : undefined;
 const quotaJour = Number(process.env.IA_QUOTA_JOUR) || undefined;
 

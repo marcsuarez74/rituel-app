@@ -57,7 +57,7 @@ describe('genererMenus — premier essai', () => {
     expect(r.menus).toEqual({ contrat: CONTRAT, semaines: menus().semaines });
     expect(r.estimation).toHaveLength(4);
     expect(r.appels).toBe(1);
-    expect(r.jetons).toEqual({ entree: 1000, sortie: 500 });
+    expect(r.jetons).toEqual({ entree: 1000, sortie: 500, cacheLu: 0, cacheEcrit: 0 });
     expect(requetes).toHaveLength(1);
     expect(requetes[0].format).toBe('menus');
   });
