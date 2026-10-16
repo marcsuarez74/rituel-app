@@ -136,7 +136,9 @@ données et évite une dépendance supplémentaire.
 
 ## 9. Prochaines étapes
 
-1. Maquetter l'écran d'acceptation des CGU à la création du foyer.
+1. Écran d'acceptation des CGU (maquette `Cgu.dc.html`, à valider) : dernière étape du guide,
+   avant la génération des menus, et à l'arrivée dans un foyer ; case à cocher obligatoire,
+   date et version de l'acceptation enregistrées.
 2. Rédiger le plan d'implémentation dans `docs/superpowers/plans/`.
 3. Exécuter le plan en TDD, par étapes (une étape = un écran fonctionnel).
 4. Avant la sortie : relecture juridique de `docs/cgu.md`, politique de confidentialité, relecture

@@ -107,7 +107,7 @@ Les conditions peuvent évoluer. Toute modification importante est signalée dan
 
 - Identité de l'éditeur (nom, adresse, contact) — obligatoire (mentions légales, LCEN).
 - Politique de confidentialité (RGPD) et durée de conservation des données du serveur.
-- Écran d'acceptation à la création du foyer : maquette à faire et à valider.
+- Écran d'acceptation à la création du foyer : maquette `Cgu.dc.html` faite, à valider.
 - Relecture par un juriste, et relecture de `conservation.md` par un professionnel (HACCP).
 
 Sources : article R. 212-1 du code de la consommation —
