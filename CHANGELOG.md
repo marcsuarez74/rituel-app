@@ -6,6 +6,14 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr-FR/1.1.0/) et le
 
 Ce fichier est **généré par [release-please](https://github.com/googleapis/release-please)** à partir des conventional commits (`feat` → mineur, `fix`/`perf` → correctif, `!` ou `BREAKING CHANGE:` → majeur) : ne pas l'éditer à la main. L'historique ci-dessous (jusqu'à 2.1.0) est conservé tel quel.
 
+## [2.15.0](https://github.com/marcsuarez74/rituel-app/compare/v2.14.0...v2.15.0) (2026-10-16)
+
+
+### Ajouté
+
+* **server:** batterie de profils difficiles pour la génération /v2 ([58a3856](https://github.com/marcsuarez74/rituel-app/commit/58a3856bc96c26faaac8513a42de4a23b5aee40c))
+* **server:** photos des recettes vérifiées par vision /v2 ([78097a7](https://github.com/marcsuarez74/rituel-app/commit/78097a7392db95bf37459bd39b708bd085a118d1))
+
 ## [2.14.0](https://github.com/marcsuarez74/rituel-app/compare/v2.13.0...v2.14.0) (2026-10-16)
 
 
