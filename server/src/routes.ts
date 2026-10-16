@@ -19,6 +19,7 @@ import {
 } from './bugs.js';
 import { creerLimiteur } from './rate-limit.js';
 import { creerRegistreSse, type RegistreSse } from './sse.js';
+import type { AppelIA } from './v2/generer.js';
 import { creerRoutesV2, type LimitesV2 } from './v2/routes.js';
 
 export type TableSync = 'weeks' | 'checks' | 'weights' | 'depenses' | 'profiles' | 'etat';
@@ -59,7 +60,7 @@ export interface OptionsApp {
     fetch?: typeof fetch | undefined;
   };
   /** API de l'app native (/v2). Tests : limites de rejoindre réduites. */
-  v2?: { limites?: LimitesV2 | undefined };
+  v2?: { limites?: LimitesV2 | undefined; ia?: AppelIA | undefined; quotaJour?: number | undefined };
 }
 
 type EnvApp = { Variables: { foyerId: string; jeton: string } };
@@ -478,7 +479,7 @@ export const creerApp = ({ db, secret, origines, heartbeatMs, statique, commit, 
 
   // ---- App native (plan 2026-10-16-app-native) ----
 
-  app.route('/v2', creerRoutesV2({ db, secret, limites: v2?.limites }));
+  app.route('/v2', creerRoutesV2({ db, secret, ...v2 }));
 
   // ---- PWA (après l'API : ses routes gardent la main) ----
 

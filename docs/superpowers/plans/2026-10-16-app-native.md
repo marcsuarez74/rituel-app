@@ -64,7 +64,7 @@ TDD à chaque étape ; une étape d'app = un écran fonctionnel, conforme à sa 
    variété (id et titre normalisé uniques sur 4 semaines, recette fraîche servie une fois),
    structure (trame, origine des recettes, étapes du Rituel). Chaque erreur nomme le plat et le
    jour réel.
-7. [ ] **Génération** `POST /v2/menus/generer` (connexion requise, quota par foyer —
+7. [x] **Génération** `POST /v2/menus/generer` (connexion requise, quota par foyer —
    `v2_generations`, plafond à fixer après mesure du coût) :
    - prompt : partie fixe (règles + table d'ingrédients) en tête avec `cache_control` (prompt
      caching, préfixe identique d'un appel à l'autre — rien de variable dedans) ; profil du foyer
@@ -82,6 +82,16 @@ TDD à chaque étape ; une étape d'app = un écran fonctionnel, conforme à sa 
    - **boucle de correction** : erreurs du validateur renvoyées (2 essais au plus), puis
      regénération du seul plat fautif, puis plat de la bibliothèque. Un menu non conforme n'est
      jamais renvoyé. Tests avec un client Claude simulé (sorties figées bonnes et fautives).
+   - **Livré (2026-10-16)** : `v2/generer.ts` (boucle), `v2/prompt.ts`, `v2/schema.ts`,
+     `v2/ia.ts` (seul fichier qui parle à l'API). Écarts au plan : pas de `.parse()` du SDK (il
+     lève sur une sortie invalide avant qu'on lise `stop_reason`) — schéma JSON tiré de
+     `betaZodOutputFormat`, lecture par `JSON.parse` + zod ; le helper ramène aussi les `enum`
+     à des descriptions, l'id d'ingrédient inconnu reste attrapé par le validateur. Profil
+     **sans aucun texte libre** (schéma zod strict). Quota : 3 générations / 24 h glissantes /
+     foyer, échecs de l'IA compris mais pas les pannes de l'API (`IA_QUOTA_JOUR`, décidé avec
+     Marc le 2026-10-16) ; une seule à la fois (409, périmée après 15 min).
+     Env : `ANTHROPIC_API_KEY` (absente = 503), `IA_MODELE`, `IA_EFFORT`. Le plat de la
+     bibliothèque en dernier recours arrive avec l'étape 8.
 8. [ ] **Bibliothèque partagée** (`v2_recettes`) : toute recette validée y entre ; la génération y
    pioche d'abord les plats compatibles, l'IA n'écrit que ce qui manque.
    `POST /v2/menus/remplacer` (« Remplacer ce plat », mêmes contrôles, même quota) ;

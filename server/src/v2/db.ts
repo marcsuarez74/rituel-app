@@ -37,6 +37,20 @@ create table if not exists v2_entites (
   primary key (foyer_id, type, id)
 );
 create index if not exists v2_entites_rev on v2_entites (foyer_id, rev);
+-- Générations de menus par l'IA : quota par foyer, une à la fois, coût mesuré (jetons).
+-- Ni profil ni menu stockés ici : le menu retourne à l'app, qui le synchronise.
+create table if not exists v2_generations (
+  id integer primary key autoincrement,
+  foyer_id text not null references v2_foyers on delete cascade,
+  debut text not null,
+  fin text,
+  statut text not null,                 -- en-cours | ok | echec
+  raison text,                          -- en échec : refus, coupe, sortie-invalide, non-conforme, erreur-ia
+  appels integer not null default 0,
+  jetons_entree integer not null default 0,
+  jetons_sortie integer not null default 0
+);
+create index if not exists v2_generations_foyer on v2_generations (foyer_id, debut);
 `;
 
 export const migrerV2 = (db: Database): void => {
