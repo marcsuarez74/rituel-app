@@ -2,7 +2,8 @@
 
 Date : 2026-10-14
 Statut : **maquettes validées** (2026-10-15) ; génération des menus tranchée (2026-10-16, §10) ;
-images des recettes tranchées (§10.4) ; prochaine étape : le plan d'implémentation.
+images des recettes tranchées (§10.4) ; stack et backend tranchés, plan d'implémentation rédigé
+(2026-10-16) : `docs/superpowers/plans/2026-10-16-app-native.md`.
 
 ## 1. Intention
 
@@ -67,13 +68,17 @@ Tout le reste est mis de côté pour l'instant.
 - Le mot « cycle » n'apparaît jamais dans un texte visible. Les identifiants de code peuvent
   rester en anglais.
 
-## 5. Stack (proposition à valider)
+## 5. Stack (décidée le 2026-10-16)
 
 - **Expo / React Native** : vraie app native Android, produit un APK. Permet de réutiliser la
   logique TypeScript existante (règles de menus, calcul de courses) sans reprendre l'UI.
 - **Stockage local** : SQLite (expo-sqlite), base locale pour fonctionner hors ligne.
-- **Synchronisation du foyer** : code court unique. Le backend (API du dépôt `server/`, Hono +
-  SQLite) est à confirmer.
+- **Synchronisation du foyer** : code court unique, backend en routes `/v2` de `server/` (§8).
+- **Dépôt** : un nouveau dépôt pour l'app ; la logique utile de celui-ci y est recopiée avec ses
+  tests.
+- **APK** : EAS Build (cloud Expo), APK installé à la main ; Play Store plus tard.
+- **IA** : Claude (Anthropic), sortie structurée pour les menus et vision pour les photos, une
+  seule clé côté serveur.
 - **Tests** : logique métier en TDD (Vitest ou Jest). Parcours critiques sur émulateur.
 
 Alternative écartée : Capacitor (encapsuler la web app actuelle), car l'objectif est une app native.
@@ -122,7 +127,7 @@ liste de courses dès cet écran, choix de ne pas commencer tout de suite.
   (brouillon, relecture juridique à prévoir). On ne peut pas s'exonérer de toute responsabilité
   (code de la consommation, art. R. 212-1, 6°) : on informe clairement et on trace les choix.
 
-## 8. Backend (proposition)
+## 8. Backend (décidé le 2026-10-16)
 
 L'API actuelle (Hono + SQLite, avec bugs, routes de cycle, etc.) fait plus que le besoin. Pour la
 nouvelle app, il suffit de :
@@ -133,16 +138,18 @@ nouvelle app, il suffit de :
 - réinitialiser le code ;
 - générer les menus (§10) : la clé de l'API d'IA ne quitte jamais le serveur, quota par foyer.
 
-Je propose donc un **backend minimal** (Hono + SQLite, repris à zéro dans `server/` ou dans un
-nouveau dossier) avec ces quelques routes, plutôt qu'un service tiers. Cela garde le contrôle des
-données et évite une dépendance supplémentaire.
+Ces routes vivent sous **`/v2` dans `server/`** (Hono + SQLite), dans le même conteneur et le même
+déploiement que l'API actuelle, avec des tables séparées (`v2_*`) : la PWA en prod n'est pas
+touchée. Pas de service tiers : on garde le contrôle des données. Le code de 6 caractères impose
+un stockage recherchable (HMAC avec un secret serveur) et un rate-limit fort, détaillés dans le plan.
 
 ## 9. Prochaines étapes
 
 1. Écran d'acceptation des CGU (maquette `Cgu.dc.html`, validée le 2026-10-16) : dernière étape du guide,
    avant la génération des menus, et à l'arrivée dans un foyer ; case à cocher obligatoire,
    date et version de l'acceptation enregistrées.
-2. Rédiger le plan d'implémentation dans `docs/superpowers/plans/`.
+2. ~~Rédiger le plan d'implémentation~~ : fait le 2026-10-16,
+   `docs/superpowers/plans/2026-10-16-app-native.md`.
 3. Exécuter le plan en TDD, par étapes (une étape = un écran fonctionnel).
 4. Avant la sortie : relecture juridique de `docs/cgu.md`, politique de confidentialité, relecture
    de `docs/conservation.md` par un professionnel.
