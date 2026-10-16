@@ -1,11 +1,13 @@
 import { randomUUID } from 'node:crypto';
 import type { Database } from 'better-sqlite3';
 import { Hono } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
 import type { Context } from 'hono';
 import { DUREE_TOKEN_S, empreinteToken, signerToken, verifierToken } from '../auth.js';
 import { creerLimiteur } from '../rate-limit.js';
 import { CONTRAT } from './contrat.js';
 import { deriverSecret, empreinteCode, genererCode, normaliserCode } from './foyer.js';
+import { pousser, revCourante, tirer, validerLot } from './sync.js';
 
 export interface LimitesV2 {
   /** Essais de /foyers/rejoindre par IP sur 15 min. */
@@ -143,6 +145,26 @@ export const creerRoutesV2 = ({ db, secret, limites }: OptionsV2): Hono<EnvV2> =
     })();
     return c.body(null, 204);
   });
+
+  // ---- État partagé (plan §A.3) ----
+
+  v2.get('/sync', auth, (c) => {
+    const foyerId = c.get('foyerId');
+    const depuis = Number.parseInt(c.req.query('depuis') ?? '', 10);
+    const entites = tirer(db, foyerId, Number.isFinite(depuis) && depuis > 0 ? depuis : 0);
+    return c.json({ contrat: CONTRAT, rev: revCourante(db, foyerId), entites });
+  });
+
+  v2.post(
+    '/sync',
+    auth,
+    bodyLimit({ maxSize: 8 * 1024 * 1024, onError: (c) => c.json({ erreur: 'lot-trop-gros' }, 413) }),
+    async (c) => {
+      const lot = validerLot((await lireCorps(c))?.entites);
+      if (!lot) return c.json({ erreur: 'lot-invalide' }, 400);
+      return c.json({ contrat: CONTRAT, ...pousser(db, c.get('foyerId'), lot) });
+    },
+  );
 
   // Toujours en dernier : une route /v2 inconnue ne doit jamais tomber sur la PWA.
   v2.all('*', (c) => c.json({ erreur: 'introuvable' }, 404));

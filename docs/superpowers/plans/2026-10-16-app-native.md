@@ -34,9 +34,10 @@ TDD à chaque étape ; une étape d'app = un écran fonctionnel, conforme à sa 
    Jeton d'appareil (JWT existant, signé avec un secret v2 dérivé : un jeton de la PWA ne passe
    pas, ni l'inverse ; table `v2_appareils`). **Rate-limit fort** sur `rejoindre` (par IP et global) : 6 caractères se
    devinent si on laisse essayer. Tests : collision de code, code réinitialisé refusé, rate-limit.
-3. [ ] **État partagé** : une ligne par entité (`v2_entites` : foyer, type, id, version, données
-   JSON, `modifie_le`, supprimé). `POST /v2/sync` (pousse) et `GET /v2/sync?depuis=` (tire),
-   « dernière écriture gagne » par entité. Pas de SSE en v1 (peu fiable en React Native) : l'app
+3. [x] **État partagé** : une ligne par entité (`v2_entites` : foyer, type, id, version, données
+   JSON, `modifie_le`, supprimé, `rev`). `POST /v2/sync` (pousse un lot, tout ou rien : 500 entités,
+   512 Ko chacune, 8 Mo au total) et `GET /v2/sync?depuis=<rev>` (tire), « dernière écriture gagne »
+   par entité (une écriture plus ancienne est ignorée et renvoyée dans `ignorees`). Pas de SSE en v1 (peu fiable en React Native) : l'app
    tire à l'ouverture, au retour au premier plan et en tirant l'écran vers le bas.
 4. [ ] **Acceptation des CGU** : `v2_acceptations` (appareil, version, date) ; enregistrée à la
    dernière étape du guide et à l'arrivée dans un foyer ; la génération la vérifie.
