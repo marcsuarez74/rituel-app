@@ -41,9 +41,13 @@ TDD à chaque étape ; une étape d'app = un écran fonctionnel, conforme à sa 
    tire à l'ouverture, au retour au premier plan et en tirant l'écran vers le bas.
 4. [ ] **Acceptation des CGU** : `v2_acceptations` (appareil, version, date) ; enregistrée à la
    dernière étape du guide et à l'arrivée dans un foyer ; la génération la vérifie.
-5. [ ] **Table d'ingrédients** : `server/src/v2/ingredients.ts` (+ données versionnées) : id,
-   noms, allergènes (14 allergènes réglementaires), régimes compatibles, catégorie de
-   conservation (`docs/conservation.md`), prix moyen, unité, rayon. Tests de cohérence de la table.
+5. [x] **Table d'ingrédients** : `server/src/v2/ingredients.ts` + `donnees/ingredients.ts`
+   (213 ingrédients) : id, nom, famille, allergènes (14 allergènes réglementaires), glucides,
+   catégorie de conservation (`server/src/v2/conservation.ts`, reprise de `docs/conservation.md`),
+   prix moyen estimé, unité, rayon. Régimes **déduits** de ces faits (`regimesCompatibles`) ;
+   flexitarien et méditerranéen restent des préférences du prompt. Ids publiés figés
+   (`donnees/ingredients-ids.ts`). Reste pour l'étape 6 : casher au niveau du plat (pas de viande
+   avec du laitier). Tests de cohérence de la table.
 6. [ ] **Validateur de menus** (TDD sur des sorties figées, cœur de la sécurité, spec §10.2.3) :
    ingrédient hors table, conservation (frigo J+3 / congélation / erreur bloquante), régime et
    allergènes **déduits des ingrédients**, temps du Rituel, budget estimé dans la cible du foyer,
