@@ -1,9 +1,10 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { serve } from '@hono/node-server';
-import { dirname } from 'node:path';
+import { dirname, join } from 'node:path';
 import { ouvrirDb } from './db.js';
 import { creerApp } from './routes.js';
 import { creerAppelClaude, type Effort } from './v2/ia.js';
+import { creerFilePhotos, creerPexels, creerVerificationClaude } from './v2/photos.js';
 
 // Boot VPS : secrets uniquement via l'environnement (systemd
 // EnvironmentFile=/etc/rituel.env) — jamais dans le repo.
@@ -33,6 +34,20 @@ const ia = process.env.ANTHROPIC_API_KEY
   : undefined;
 const quotaJour = Number(process.env.IA_QUOTA_JOUR) || undefined;
 
+// Photos des recettes : Pexels + vérification par vision ; il faut les deux clés (jamais de photo
+// non vérifiée). La file reprend au démarrage les photos restées à faire.
+const photos =
+  process.env.PEXELS_API_KEY && process.env.ANTHROPIC_API_KEY
+    ? creerFilePhotos(db, join(dirname(cheminDb), 'photos'), {
+        ...creerPexels({ cle: process.env.PEXELS_API_KEY }),
+        verifier: creerVerificationClaude({
+          client: new Anthropic(),
+          modele: process.env.IA_MODELE_VISION || 'claude-haiku-5-5',
+        }),
+      })
+    : undefined;
+photos?.relancer();
+
 serve({
   fetch: creerApp({
     db,
@@ -42,7 +57,7 @@ serve({
     commit: process.env.APP_COMMIT,
     dataDir: dirname(cheminDb),
     bugs,
-    v2: { ia, quotaJour },
+    v2: { ia, quotaJour, photos },
   }).fetch,
   port,
 });

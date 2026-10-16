@@ -64,6 +64,17 @@ create table if not exists v2_signalements (
   signale_le text not null,
   primary key (recette_id, foyer_id)
 );
+
+-- Photo de chaque recette de la bibliothèque (spec §10.4) : a-faire → ok (fichier
+-- <dataDir>/photos/<recette_id>.jpg, crédit gardé) ou aucune (l'app montre une image neutre).
+create table if not exists v2_photos (
+  recette_id text primary key references v2_recettes on delete cascade,
+  statut text not null check (statut in ('a-faire', 'ok', 'aucune')),
+  photographe text,
+  source text,
+  essais integer not null default 0,
+  maj_le text not null
+);
 `;
 
 export const migrerV2 = (db: Database): void => {

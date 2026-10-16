@@ -123,12 +123,20 @@ TDD à chaque étape ; une étape d'app = un écran fonctionnel, conforme à sa 
    Rituel de 10 min, petit budget) : script `npm run batterie` dans `server/`, contre l'API réelle,
    **hors CI** (payant) ; obligatoire avant tout changement de prompt ou de modèle. Sortie : taux
    de conformité au premier essai, coût et durée par génération → fixe le quota de l'étape 7.
-10. [ ] **Photos** (spec §10.4) : l'IA fournit une requête courte en anglais ; le serveur
+10. [x] **Photos** (spec §10.4) : l'IA fournit une requête courte en anglais ; le serveur
     interroge Pexels, vérifie chaque candidate par **vision** (Claude, image en base64 +
     recette ; réponse en sortie structurée `conforme / raison`) ; la première conforme est copiée
     dans `data/photos/` avec le nom du photographe ; aucune conforme → image neutre de la famille
     du plat. `GET /v2/photos/:id` (cache long). Tests avec Pexels et Claude simulés.
-11. [ ] Infra et docs : variables `ANTHROPIC_API_KEY`, `PEXELS_API_KEY`, `IA_MODELE`
+    - **Livré (2026-10-17)** : `v2/photos.ts`. En arrière-plan, une photo à la fois (table
+      `v2_photos` : `a-faire` → `ok` | `aucune`), la génération ne l'attend pas ; reprise au
+      démarrage ; 3 pannes = `aucune`. 5 candidates Pexels (paysage, taille « large », CDN
+      `images.pexels.com` seul) ; vision par `IA_MODELE_VISION` (défaut `claude-haiku-5-5`,
+      effort `low`) ; dans le doute (refus, sortie illisible) = non conforme. Fichiers dans
+      `<dataDir>/photos/<id>.jpg`. `GET /v2/photos/:id` public (aucune donnée de foyer),
+      `immutable` ; **404 = pas (encore) de photo : l'image neutre de la famille est choisie
+      par l'app**, pas par le serveur. Il faut `PEXELS_API_KEY` **et** `ANTHROPIC_API_KEY`.
+11. [ ] Infra et docs : variables `ANTHROPIC_API_KEY`, `PEXELS_API_KEY`, `IA_MODELE`, `IA_EFFORT`, `IA_MODELE_VISION`, `IA_QUOTA_JOUR`
     dans `docker-compose.yml` (valeurs dans le `.env` du VPS, jamais dans le
     dépôt) ; `docs/backend.md`, `server/README.md`. Une PR par étape ou groupe d'étapes, CI verte.
 
