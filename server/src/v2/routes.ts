@@ -5,9 +5,11 @@ import { bodyLimit } from 'hono/body-limit';
 import type { Context } from 'hono';
 import { DUREE_TOKEN_S, empreinteToken, signerToken, verifierToken } from '../auth.js';
 import { creerLimiteur } from '../rate-limit.js';
-import { accepterCgu, VERSION_CGU } from './cgu.js';
+import { accepterCgu, cguAcceptees, VERSION_CGU } from './cgu.js';
 import { CONTRAT } from './contrat.js';
 import { deriverSecret, empreinteCode, genererCode, normaliserCode } from './foyer.js';
+import { genererMenus, type AppelIA } from './generer.js';
+import { schemaProfil } from './schema.js';
 import { pousser, revCourante, tirer, validerLot } from './sync.js';
 
 export interface LimitesV2 {
@@ -21,15 +23,22 @@ export interface OptionsV2 {
   db: Database;
   secret: string;
   limites?: LimitesV2 | undefined;
+  /** Client IA de la génération ; absent = génération indisponible (503). */
+  ia?: AppelIA | undefined;
+  /** Générations par foyer sur 24 h glissantes (défaut 3). */
+  quotaJour?: number | undefined;
 }
 
 type EnvV2 = { Variables: { foyerId: string; jeton: string } };
 
 const QUINZE_MIN = 15 * 60_000;
 const UNE_HEURE = 60 * 60_000;
+const UN_JOUR = 24 * UNE_HEURE;
+// Au-delà, une génération restée « en-cours » (process tué en route) ne bloque plus le foyer.
+const GENERATION_PERIMEE = 15 * 60_000;
 
 // API de l'app native, montée sous /v2 par creerApp (avant la PWA).
-export const creerRoutesV2 = ({ db, secret, limites }: OptionsV2): Hono<EnvV2> => {
+export const creerRoutesV2 = ({ db, secret, limites, ia, quotaJour = 3 }: OptionsV2): Hono<EnvV2> => {
   const v2 = new Hono<EnvV2>();
   const secretCode = deriverSecret(secret, 'code-foyer');
   const secretJeton = deriverSecret(secret, 'jeton');
@@ -179,6 +188,60 @@ export const creerRoutesV2 = ({ db, secret, limites }: OptionsV2): Hono<EnvV2> =
       return c.json({ contrat: CONTRAT, ...pousser(db, c.get('foyerId'), lot) });
     },
   );
+
+  // ---- Génération des menus (plan §A.7) ----
+
+  // Synchrone : la réponse arrive quand le menu est validé (ou définitivement refusé).
+  v2.post('/menus/generer', auth, async (c) => {
+    const foyerId = c.get('foyerId');
+    if (!cguAcceptees(db, empreinteToken(c.get('jeton'))))
+      return c.json({ erreur: 'cgu-requises', version: VERSION_CGU }, 403);
+    const profil = schemaProfil.safeParse((await lireCorps(c))?.profil);
+    if (!profil.success) return c.json({ erreur: 'profil-invalide' }, 400);
+    if (!ia) return c.json({ erreur: 'generation-indisponible' }, 503);
+
+    const maintenant = Date.now();
+    // Vérifier et réserver d'un bloc : deux requêtes simultanées ne passent pas toutes les deux.
+    const reserver = db.transaction((): number | 'quota' | 'en-cours' => {
+      const enCours = db
+        .prepare("select 1 from v2_generations where foyer_id = ? and statut = 'en-cours' and debut > ?")
+        .get(foyerId, new Date(maintenant - GENERATION_PERIMEE).toISOString());
+      if (enCours) return 'en-cours';
+      const { n } = db
+        .prepare('select count(*) as n from v2_generations where foyer_id = ? and debut > ?')
+        .get(foyerId, new Date(maintenant - UN_JOUR).toISOString()) as { n: number };
+      if (n >= quotaJour) return 'quota';
+      return Number(
+        db
+          .prepare("insert into v2_generations (foyer_id, debut, statut) values (?, ?, 'en-cours')")
+          .run(foyerId, new Date(maintenant).toISOString()).lastInsertRowid,
+      );
+    });
+    const id = reserver.immediate();
+    if (id === 'en-cours') return c.json({ erreur: 'generation-en-cours' }, 409);
+    if (id === 'quota') return c.json({ erreur: 'quota-atteint' }, 429);
+
+    const terminer = (statut: 'ok' | 'echec', raison: string | null, appels = 0, jetons = { entree: 0, sortie: 0 }) =>
+      db
+        .prepare(
+          'update v2_generations set fin = ?, statut = ?, raison = ?, appels = ?, jetons_entree = ?, jetons_sortie = ? where id = ?',
+        )
+        .run(new Date().toISOString(), statut, raison, appels, jetons.entree, jetons.sortie, id);
+    let r;
+    try {
+      r = await genererMenus(ia, profil.data);
+    } catch (e) {
+      console.error('[v2] génération : erreur IA', e instanceof Error ? e.message : e);
+      terminer('echec', 'erreur-ia');
+      return c.json({ erreur: 'generation-echouee', raison: 'erreur-ia' }, 502);
+    }
+    if (!r.ok) {
+      terminer('echec', r.raison, r.appels, r.jetons);
+      return c.json({ erreur: 'generation-echouee', raison: r.raison }, 502);
+    }
+    terminer('ok', null, r.appels, r.jetons);
+    return c.json({ contrat: CONTRAT, menus: r.menus, estimation: r.estimation });
+  });
 
   // Toujours en dernier : une route /v2 inconnue ne doit jamais tomber sur la PWA.
   v2.all('*', (c) => c.json({ erreur: 'introuvable' }, 404));
